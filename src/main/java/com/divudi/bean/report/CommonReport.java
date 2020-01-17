@@ -177,6 +177,12 @@ public class CommonReport implements Serializable {
     private BillsTotals purchaseCancelled;
     private BillsTotals purchaseReturn;
     private BillsTotals purchaseReturnCancel;
+
+    private BillsTotals grnAndPurchaseBilled;
+    private BillsTotals grnAndPurchaseCancelled;
+    private BillsTotals grnAndPurchaseReturn;
+    private BillsTotals grnAndPurchaseReturnCancel;
+
     private BillsTotals GrnPaymentBill;
     private BillsTotals GrnPaymentReturn;
     private BillsTotals GrnPaymentCancell;
@@ -1227,6 +1233,41 @@ public class CommonReport implements Serializable {
 
     }
 
+    
+    private List<Bill> getBills(Bill billClass, List<BillType> billTypes, Department dep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT b FROM Bill b WHERE type(b)=:bill"
+                + " and b.retired=false and "
+                + " b.billType in :btp "
+                + " and b.department=:d "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (institution != null) {
+            sql += " and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            temMap.put("ins", getReferenceInstitution());
+        }
+
+        sql += " order by b.id  ";
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("bill", billClass.getClass());
+        temMap.put("btp", billTypes);
+        temMap.put("d", dep);
+
+        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    
+    
     private List<BillItem> getBillItems(Bill billClass, BillType billType, Department dep) {
         String sql;
         Map m = new HashMap();
@@ -2099,6 +2140,39 @@ public class CommonReport implements Serializable {
 
     }
 
+    
+    private double calValueNetTotal(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, Department dep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT sum(b.netTotal) FROM Bill b WHERE"
+                + " type(b)=:bill and b.retired=false and "
+                + " b.billType in :btp and b.department=:d "
+                + " and b.paymentMethod=:pm "
+                + "  and b.createdAt between :fromDate and :toDate";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            temMap.put("ins", getReferenceInstitution());
+        }
+
+        if (institution != null) {
+            sql += " and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("btp", billTypes);
+        temMap.put("pm", paymentMethod);
+        temMap.put("d", dep);
+        temMap.put("bill", billClass.getClass());
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    
     private double calValueSaleValue(Bill billClass, BillType billType, PaymentMethod paymentMethod, Department dep) {
         String sql;
         Map temMap = new HashMap();
@@ -2130,6 +2204,40 @@ public class CommonReport implements Serializable {
 
     }
 
+    
+    private double calValueSaleValue(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, Department dep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "SELECT sum(b.saleValue) FROM Bill b WHERE"
+                + " type(b)=:bill and b.retired=false and "
+                + " b.billType in :btp and b.department=:d "
+                + " and b.paymentMethod=:pm "
+                + "  and b.createdAt between :fromDate and :toDate";
+
+        if (getReferenceInstitution() != null) {
+            sql += " and b.referenceInstitution=:ins ";
+            temMap.put("ins", getReferenceInstitution());
+        }
+
+        if (institution != null) {
+            sql += " and b.fromInstitution=:fIns ";
+            temMap.put("fIns", institution);
+        }
+
+        temMap.put("fromDate", getFromDate());
+        temMap.put("toDate", getToDate());
+        temMap.put("btp", billTypes);
+        temMap.put("pm", paymentMethod);
+        temMap.put("d", dep);
+        temMap.put("bill", billClass.getClass());
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
+    
+    
     private double calValueNetTotal(Bill billClass, BillType billType, Department dep) {
         String sql;
         Map temMap = new HashMap();
@@ -3445,6 +3553,67 @@ public class CommonReport implements Serializable {
         getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery(/faces/pharmacy/pharmacy_report_grn_detail.xhtml)");
+    }
+
+    public void createGrnAndPurchaseBillsTable() {
+//        createPurchaseDetailTable();
+//        createGrnDetailTable();
+
+        Date startTime = new Date();
+
+        recreteModal();
+        grnAndPurchaseBilled = new BillsTotals();
+        grnAndPurchaseCancelled = new BillsTotals();
+        grnAndPurchaseReturn = new BillsTotals();
+        grnAndPurchaseReturnCancel = new BillsTotals();
+
+        if (getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        List<BillType> grnAndPharmacyPurchaseBills = new ArrayList<>();
+        grnAndPharmacyPurchaseBills.add(BillType.PharmacyPurchaseBill);
+        grnAndPharmacyPurchaseBills.add(BillType.PharmacyGrnBill);
+        
+        List<BillType> grnAndPharmacyPurchaseReturnBills = new ArrayList<>();
+        grnAndPharmacyPurchaseReturnBills.add(BillType.PharmacyReturnWithoutTraising);
+        grnAndPharmacyPurchaseReturnBills.add(BillType.PharmacyGrnReturn);
+        grnAndPharmacyPurchaseReturnBills.add(BillType.PurchaseReturn);
+        
+        
+        
+        //Purchase Billed Bills
+        getGrnAndPurchaseBilled().setBills(getBills(new BilledBill(), grnAndPharmacyPurchaseBills, getDepartment()));
+        getGrnAndPurchaseBilled().setCash(calValueNetTotal(new BilledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseBilled().setCredit(calValueNetTotal(new BilledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Credit, getDepartment()));
+
+        getGrnAndPurchaseBilled().setSaleCash(calValueSaleValue(new BilledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseBilled().setSaleCredit(calValueSaleValue(new BilledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Credit, getDepartment()));
+
+        //Purchase Cancelled Bill
+        getGrnAndPurchaseCancelled().setBills(getBills(new CancelledBill(), grnAndPharmacyPurchaseBills, getDepartment()));
+        getGrnAndPurchaseCancelled().setCash(calValueNetTotal(new CancelledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseCancelled().setCredit(calValueNetTotal(new CancelledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Credit, getDepartment()));
+
+        getGrnAndPurchaseCancelled().setSaleCash(calValueSaleValue(new CancelledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseCancelled().setSaleCredit(calValueSaleValue(new CancelledBill(), grnAndPharmacyPurchaseBills, PaymentMethod.Credit, getDepartment()));
+
+        //Purchase Refunded Bill
+        getGrnAndPurchaseReturn().setCredit(calValueNetTotal(new BilledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Credit, getDepartment()));
+
+        getGrnAndPurchaseReturn().setSaleCash(calValueSaleValue(new BilledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseReturn().setSaleCredit(calValueSaleValue(new BilledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Credit, getDepartment()));
+
+        //Purchase Refunded Bill Cancel
+        getGrnAndPurchaseReturnCancel().setBills(getBills(new CancelledBill(), grnAndPharmacyPurchaseReturnBills, getDepartment()));
+        getGrnAndPurchaseReturnCancel().setCash(calValueNetTotal(new CancelledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Credit, getDepartment()));
+
+        getGrnAndPurchaseReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Cash, getDepartment()));
+        getGrnAndPurchaseReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), grnAndPharmacyPurchaseReturnBills, PaymentMethod.Credit, getDepartment()));
+
+        
     }
 
     public void createGrnDetailTableStore() {
@@ -4900,6 +5069,35 @@ public class CommonReport implements Serializable {
         return dataTableData;
     }
 
+    
+    public List<String1Value1> getGrnAndPurchaseTotal() {
+        List<BillsTotals> list = new ArrayList<>();
+        list.add(getGrnAndPurchaseBilled());
+        list.add(getGrnAndPurchaseCancelled());
+        list.add(getGrnAndPurchaseReturn());
+        list.add(getGrnAndPurchaseReturnCancel());
+
+        dataTableData = new ArrayList<>();
+        String1Value1 tmp1 = new String1Value1();
+        tmp1.setString("Final Credit Total");
+        tmp1.setValue(getFinalCreditTotal(list));
+
+        String1Value1 tmp5 = new String1Value1();
+        tmp5.setString("Final Cash Total");
+        tmp5.setValue(getFinalCashTotal(list));
+
+        String1Value1 tmp6 = new String1Value1();
+        tmp6.setString("Final Credit & Cash Total");
+        tmp6.setValue(getFinalCashTotal(list) + getFinalCreditTotal(list));
+
+        dataTableData.add(tmp1);
+        dataTableData.add(tmp5);
+        dataTableData.add(tmp6);
+
+        return dataTableData;
+    }
+
+    
     public List<String1Value1> getGRNPaymentTotal() {
         List<BillsTotals> list = new ArrayList<>();
         list.add(getGrnPaymentBill());
@@ -5219,6 +5417,38 @@ public class CommonReport implements Serializable {
 
     public void setRefBillItems(List<BillItem> refBillItems) {
         this.refBillItems = refBillItems;
+    }
+
+    public BillsTotals getGrnAndPurchaseBilled() {
+        return grnAndPurchaseBilled;
+    }
+
+    public void setGrnAndPurchaseBilled(BillsTotals grnAndPurchaseBilled) {
+        this.grnAndPurchaseBilled = grnAndPurchaseBilled;
+    }
+
+    public BillsTotals getGrnAndPurchaseCancelled() {
+        return grnAndPurchaseCancelled;
+    }
+
+    public void setGrnAndPurchaseCancelled(BillsTotals grnAndPurchaseCancelled) {
+        this.grnAndPurchaseCancelled = grnAndPurchaseCancelled;
+    }
+
+    public BillsTotals getGrnAndPurchaseReturn() {
+        return grnAndPurchaseReturn;
+    }
+
+    public void setGrnAndPurchaseReturn(BillsTotals grnAndPurchaseReturn) {
+        this.grnAndPurchaseReturn = grnAndPurchaseReturn;
+    }
+
+    public BillsTotals getGrnAndPurchaseReturnCancel() {
+        return grnAndPurchaseReturnCancel;
+    }
+
+    public void setGrnAndPurchaseReturnCancel(BillsTotals grnAndPurchaseReturnCancel) {
+        this.grnAndPurchaseReturnCancel = grnAndPurchaseReturnCancel;
     }
 
     public class CollectingCenteRow {
