@@ -1352,7 +1352,9 @@ public class PatientReportController implements Serializable {
         }
         if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
             if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
-                AppEmail e = new AppEmail();
+                AppEmail e;
+
+                e = new AppEmail();
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
 
@@ -1414,6 +1416,46 @@ public class PatientReportController implements Serializable {
         }
         UtilityController.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
+    }
+
+    public void sendSmsForPatientReport() {
+        Date startTime = new Date();
+        if (currentPatientReport == null) {
+            UtilityController.addErrorMessage("Nothing to approve");
+            return;
+        }
+        if (currentPatientReport.getDataEntered() == false) {
+            UtilityController.addErrorMessage("First Save report");
+            return;
+        }
+        if (currentPatientReport.getApproved() == false) {
+            UtilityController.addErrorMessage("First Approve report");
+            return;
+        }
+
+        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+            Sms e = new Sms();
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setSendingMessage(smsBody(currentPatientReport));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setSentSuccessfully(false);
+            getSmsFacade().create(e);
+            smsManager.sendSms(e.getReceipientNumber(), e.getSendingMessage(),
+                    e.getInstitution().getSmsSendingUsername(),
+                    e.getInstitution().getSmsSendingPassword(),
+                    e.getInstitution().getSmsSendingAlias());
+        }
+
+        UtilityController.addSuccessMessage("SMS Sent");
+//        commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
 
     public void reverseApprovalOfPatientReport() {
