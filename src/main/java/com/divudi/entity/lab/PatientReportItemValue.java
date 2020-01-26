@@ -167,7 +167,11 @@ public class PatientReportItemValue implements Serializable {
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:
-                value = Double.toString(this.doubleValue);
+                if (this.doubleValue == null) {
+                    value = "";
+                } else {
+                    value = Double.toString(this.doubleValue);
+                }
                 break;
             case Varchar:
                 value = this.strValue;

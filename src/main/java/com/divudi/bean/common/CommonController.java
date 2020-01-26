@@ -41,6 +41,16 @@ public class CommonController implements Serializable {
     public CommonController() {
     }
 
+    private int number;
+ 
+    public int getNumber() {
+        return number;
+    }
+ 
+    public void increment() {
+        number++;
+    }
+    
     public String getBaseUrl() {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String url = req.getRequestURL().toString();
