@@ -538,6 +538,7 @@ public class ChannelBean {
     }
 
     public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(Staff s, Date d) {
+        System.out.println("generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew");
         List<ServiceSession> createdSessions = new ArrayList<>();
         Date start = new Date();
         Date nowDate;
@@ -554,16 +555,16 @@ public class ChannelBean {
         c.set(Calendar.MINUTE, 59);
         c.set(Calendar.SECOND, 59);
         Date toDate = c.getTime();
-//        System.out.println("toDate = " + toDate);
+        System.out.println("toDate = " + toDate);
         Integer tmp = 0;
         int rowIndex = 0;
-//        System.err.println("Time 1 = " + new Date());
+        System.err.println("Time 1 = " + new Date());
 
         createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate);
 
-//        System.err.println("Time 2 = " + new Date());
+        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
-//        System.err.println("Time 3 = " + new Date());
+        System.err.println("Time 3 = " + new Date());
 
         Date end = new Date();
         double time = (start.getTime() - end.getTime()) / 1000;
@@ -804,6 +805,7 @@ public class ChannelBean {
     }
 
     public List<ServiceSession> fetchCreatedServiceSessions(Staff s, Date fd, Date td) {
+        System.out.println("fetchCreatedServiceSessions");
         String sql;
         Map m = new HashMap();
         List<ServiceSession> tmp = new ArrayList<>();
@@ -817,11 +819,13 @@ public class ChannelBean {
         m.put("td", td);
         m.put("staff", s);
         m.put("class", ServiceSession.class);
+        System.out.println("sql = " + sql);
+        System.out.println("m = " + m);
         try {
             tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-//            System.out.println("m = " + m);
-//            System.out.println("sql = " + sql);
-//            System.out.println("tmp.size() = " + tmp.size());
+            System.out.println("m = " + m);
+            System.out.println("sql = " + sql);
+            System.out.println("tmp.size() = " + tmp.size());
         } catch (Exception e) {
             e.printStackTrace();
         }

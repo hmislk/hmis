@@ -132,7 +132,7 @@
                                         </p:commandButton>
                                         <p:commandButton ajax="false" action="/pharmacy/pharmacy_bill_retail_sale" 
                                                          actionListener="#{pharmacySaleController.prepareNewPharmacyBillForMembers()}" 
-                                                         value="Phamacy" disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                                                         value="Phamacy" disabled="#{!webUserController.hasPrivilege('PharmacySale')}" >
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{pharmacySaleController.searchedPatient}" ></f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:commandButton ajax="false" action="#{admissionController.toAdmitAMember()}" 
