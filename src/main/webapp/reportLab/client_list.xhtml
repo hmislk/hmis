@@ -1,0 +1,102 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+
+
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="Client List"/>                          
+                        </f:facet>
+
+
+                        <h:panelGrid columns="2" styleClass="alignTop">
+                            <p:panel header="Search" >
+                                <h:panelGrid columns="2" styleClass="alignTop">
+                                    <h:outputLabel value="From"/>
+                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd/MMMM/yyyy hh:mm:ss a" >      
+                                    </p:calendar>
+
+                                    <h:outputLabel value="To"/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd/MMMM/yyyy hh:mm:ss a" >                                                                              
+                                    </p:calendar>
+
+                                    <h:outputLabel value="Billed From"/>
+                                    <p:autoComplete value="#{searchController.fromDepartment}"  
+                                                    completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" >
+                                    </p:autoComplete>
+
+                                    <h:outputLabel value="Billed To"/>
+                                    <p:autoComplete value="#{searchController.toDepartment}"  
+                                                    completeMethod="#{departmentController.completeDept}" var="dep" itemValue="#{dep}" itemLabel="#{dep.name}" forceSelection="true" >
+                                    </p:autoComplete>
+
+
+                                </h:panelGrid>
+
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.fillOpdClients()}"/>
+                                <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                                    <p:dataExporter fileName="Clients" type="xls" target="tblClients" ></p:dataExporter>
+                                </p:commandButton>
+                                <p:commandButton id="btnPrint" ajax="false" value="Print" >
+                                    <p:printer target="tblClients" ></p:printer>
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSearch" />
+                            </p:panel>
+
+
+                            <p:dataTable rowIndexVar="i" id="tblClients" value="#{searchController.patients}" 
+                                         var="bill"  
+                                         style="min-width: 100%;"  
+                                         paginator="true" rows="25"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,25,50"
+                                         >
+                                <p:column headerText="No" styleClass="alignTop" width="15">
+                                    <h:outputLabel value="#{i+1}"/>
+                                </p:column>
+                                <p:column headerText="Name" >                                
+                                    <p:outputLabel  
+                                                   value="#{bill.person.nameWithTitle}" >
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Age">
+                                    <p:outputLabel value="#{bill.person.age}" >
+                                    </p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Sex">                                
+                                    <h:outputLabel   value="#{bill.person.sex}"/>
+                                </p:column> 
+                                <p:column headerText="Phone"  >                                
+                                    <h:outputLabel id="ins" value="#{bill.person.phone}" />
+                                </p:column>
+                                <p:column headerText="Address"  >                                
+                                    <h:outputLabel value="#{bill.person.address}" />
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGrid>
+
+
+                    </p:panel>
+
+
+
+             
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
