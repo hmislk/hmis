@@ -22,7 +22,7 @@
             <h:panelGroup id="panelAddedBillPrint">
                 <div class="fiveinchbill" >
 
-                   
+
 
                     <div class="institutionContact">
                         <div>
@@ -64,7 +64,7 @@
 
 
                                 <table >
-                                    
+
                                     <tr>
                                         <td>
                                             <b>
@@ -87,8 +87,8 @@
                                         </td>
 
                                     </tr>
-                                    
-                                     <tr>
+
+                                    <tr>
                                         <td>
                                             <b>
                                                 <h:outputLabel value="Consultant" style="font-size: 15px!important"></h:outputLabel>
@@ -110,7 +110,7 @@
                                         </td>
 
                                     </tr>
-                                    
+
                                     <tr>
                                         <td>
                                             <h:outputLabel value="Name" style="font-size: 15px!important"></h:outputLabel>
@@ -142,7 +142,7 @@
                                         </td>
                                     </tr> 
 
-                                    
+
 
                                     <tr>
                                         <td>
@@ -185,26 +185,26 @@
                                         </td>
 
                                     </tr>
-<!--                                    <tr>
-                                        <td>
-                                            <b>
-                                                <h:outputLabel value="Invoice No" style="font-size: 15px!important"></h:outputLabel>
-                                            </b>
-                                        </td>
-                                        <td>
-                                            <p:spacer width="10" ></p:spacer>
-                                        </td>
-                                        <td>
-                                            <h:outputLabel value=":" style="font-size: 15px!important"></h:outputLabel>
-                                        </td>
-                                        <td>
-                                            <b>
-                                                <h:outputLabel value="#{cc.attrs.bill.paidBill.insId}" style="font-size: 15px!important">
-                                                </h:outputLabel>
-                                            </b>
-                                        </td>
-
-                                    </tr>-->
+                                    <!--                                    <tr>
+                                                                            <td>
+                                                                                <b>
+                                                                                    <h:outputLabel value="Invoice No" style="font-size: 15px!important"></h:outputLabel>
+                                                                                </b>
+                                                                            </td>
+                                                                            <td>
+                                                                                <p:spacer width="10" ></p:spacer>
+                                                                            </td>
+                                                                            <td>
+                                                                                <h:outputLabel value=":" style="font-size: 15px!important"></h:outputLabel>
+                                                                            </td>
+                                                                            <td>
+                                                                                <b>
+                                                                                    <h:outputLabel value="#{cc.attrs.bill.paidBill.insId}" style="font-size: 15px!important">
+                                                                                    </h:outputLabel>
+                                                                                </b>
+                                                                            </td>
+                                    
+                                                                        </tr>-->
 
                                     <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
 
@@ -272,7 +272,7 @@
 
                                     </tr>
 
-                                    
+
 
                                     <tr></tr>
                                     <tr></tr>    
@@ -305,7 +305,12 @@
                                             <h:outputLabel value=":" ></h:outputLabel>
                                         </td>
                                         <td>
-                                            <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}"></h:outputLabel>
+                                            <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" 
+                                                           rendered="#{cc.attrs.bill.paidBill.creater.webUserPerson.name ne null}"></h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" 
+                                                           rendered="#{cc.attrs.bill.creater.webUserPerson.name eq null}"></h:outputLabel>
+
                                         </td>
                                     </tr>
                                     <tr>
