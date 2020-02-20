@@ -79,9 +79,10 @@
                                         </td>
                                         <td>
                                             <b>
-                                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                                                <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serialNo}" style="font-size: 23px!important;height: 10px;"></h:outputLabel>
+<!--                                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
                                                     <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size: 23px!important;height: 10px;"></h:outputLabel>
-                                                </ui:repeat>
+                                                </ui:repeat>-->
                                             </b>
                                         </td>
 
@@ -101,9 +102,10 @@
                                         </td>
                                         <td>
                                             <b>
-                                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
+                                                <h:outputLabel value="#{cc.attrs.bill.singleBillSession.staff.person.nameWithTitle}" style="font-size: 18px!important;height: 10px;"></h:outputLabel>
+<!--                                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
                                                     <h:outputLabel value="#{cbi.billSession.staff.person.nameWithTitle}" style="font-size: 18px!important;height: 10px;"></h:outputLabel>
-                                                </ui:repeat>
+                                                </ui:repeat>-->
                                             </b>
                                         </td>
 

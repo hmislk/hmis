@@ -1312,8 +1312,8 @@ public class ChannelBillController implements Serializable {
         comment = "";
         commentR = "";
     }
-    
-    public void prepareForNewBill(){
+
+    public void prepareForNewBill() {
         clearForNewBill();
         clearForNewPatient();
         clearForNewSearch();
@@ -1591,9 +1591,6 @@ public class ChannelBillController implements Serializable {
 //        getBillSessionFacade().create(bs);
 //
 //    }
-    
-    
-    
     public void add() {
         errorText = "";
         if (errorCheck()) {
@@ -1666,7 +1663,7 @@ public class ChannelBillController implements Serializable {
             }
             return;
         }
-        
+
         if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
             checkAppoinmentNumberAlredyBooked(printingBill);
         }
@@ -1868,13 +1865,18 @@ public class ChannelBillController implements Serializable {
     }
 
     private List<BillFee> createBillFee(Bill bill, BillItem billItem) {
+        System.out.println("createBillFee");
         List<BillFee> billFeeList = new ArrayList<>();
         double tmpTotal = 0;
         double tmpTotalNet = 0;
         double tmpTotalVat = 0;
         double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
+        System.out.println("getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFeesActive() = " + getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFeesActive());
         for (ItemFee f : getbookingController().getSelectedServiceSession().getOriginatingSession().getItemFeesActive()) {
+            System.out.println("f = " + f);
+            System.out.println("paymentMethod = " + paymentMethod);
+            System.out.println("f.getFeeType() = " + f.getFeeType());
             if (paymentMethod != PaymentMethod.Agent) {
                 if (f.getFeeType() == FeeType.OtherInstitution) {
                     continue;
@@ -1890,20 +1892,26 @@ public class ChannelBillController implements Serializable {
             bf.setBillItem(billItem);
             bf.setCreatedAt(new Date());
             bf.setCreater(getSessionController().getLoggedUser());
-            if (null != f.getFeeType()) switch (f.getFeeType()) {
-                case OwnInstitution:
-                    bf.setInstitution(f.getInstitution());
-                    bf.setDepartment(f.getDepartment());
-                    break;
-                case OtherInstitution:
-                    bf.setInstitution(institution);
-                    break;
-                case Staff:
-                    bf.setSpeciality(f.getSpeciality());
-                    bf.setStaff(f.getStaff());
-                    break;
-                default:
-                    break;
+            System.out.println("f.getInstitution() = " + f.getInstitution());
+            System.out.println("f.getDepartment() = " + f.getDepartment());
+            System.out.println("f.getSpeciality() = " + f.getSpeciality());
+            System.out.println("f.getStaff() = " + f.getStaff());
+            if (null != f.getFeeType()) {
+                switch (f.getFeeType()) {
+                    case OwnInstitution:
+                        bf.setInstitution(f.getInstitution());
+                        bf.setDepartment(f.getDepartment());
+                        break;
+                    case OtherInstitution:
+                        bf.setInstitution(institution);
+                        break;
+                    case Staff:
+                        bf.setSpeciality(f.getSpeciality());
+                        bf.setStaff(f.getStaff());
+                        break;
+                    default:
+                        break;
+                }
             }
 
             bf.setFee(f);
@@ -1921,7 +1929,7 @@ public class ChannelBillController implements Serializable {
             MembershipScheme membershipScheme = bill.getPatient().getPerson().getMembershipScheme();
 
             PriceMatrix discountMatrix;
-            
+
             System.out.println("membershipScheme = " + membershipScheme);
 
             if (membershipScheme != null) {
@@ -1930,7 +1938,6 @@ public class ChannelBillController implements Serializable {
                 discountMatrix = priceMatrixController.fetchPaymentSchemeDiscount(paymentScheme, paymentMethod);
             }
             System.out.println("discountMatrix = " + discountMatrix);
-            
 
             double d = 0;
             if (foriegn) {
