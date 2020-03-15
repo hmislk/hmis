@@ -93,7 +93,6 @@ public class DealorPaymentBillSearch implements Serializable {
     WebUser user;
 
     public void approve() {
-        System.out.println("in approve");
         if (getBill().getReferenceBill() != null) {
             UtilityController.addErrorMessage("Already Approved");
             return;
@@ -125,7 +124,6 @@ public class DealorPaymentBillSearch implements Serializable {
             System.out.println("newBi = " + newBi);
             bi.setReferanceBillItem(newBi);
             billItemFacede.edit(bi);
-            System.out.println("bi = " + bi);
         }
 
         UtilityController.addSuccessMessage("Succesfully Approved");

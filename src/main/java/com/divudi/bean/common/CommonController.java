@@ -227,7 +227,6 @@ public class CommonController implements Serializable {
         try{
             d=Double.parseDouble(s);
         }catch(NumberFormatException e){
-            System.out.println("e = " + e);
             d=0.0;
         }
         return d;

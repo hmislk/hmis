@@ -1033,7 +1033,6 @@ public class BookingController implements Serializable {
                     + " and s.originatingSession is null "
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
-            System.out.println("m = " + m);
             List<ServiceSession> tmp = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
             tmp = getServiceSessionFacade().findBySQL(sql, m);
@@ -1070,7 +1069,6 @@ public class BookingController implements Serializable {
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
             System.out.println("Consultant = " + getStaff().getPerson().getName());
-            System.out.println("m = " + m);
             List<Long> tmp = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
             tmp = getServiceSessionFacade().findLongList(sql, m, TemporalType.DATE);
@@ -1082,12 +1080,18 @@ public class BookingController implements Serializable {
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
             System.err.println("Time stage 3.2 = " + new Date());
 
             System.err.println("Time stage 4.1 = " + new Date());
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, sessionStartingDate);
             System.err.println("Fetch Created Sessions " + serviceSessions.size());
             System.err.println("Time stage 4.2 = " + new Date());
+//            generateSessionEvents(serviceSessions);
+//            generateSessionEvents(serviceSessions);
 
             System.err.println("Time stage 5 = " + new Date());
 //            generateSessionEvents(serviceSessions);
@@ -1277,7 +1281,6 @@ public class BookingController implements Serializable {
         Calendar cal = Calendar.getInstance();
         cal.setTime(ss.getStartingTime());
         cal.add(Calendar.HOUR, 3);
-        System.out.println("cal.getTime() = " + cal.getTime());
 
         List<ServiceSession> list = fetchServiceSessionsForTimeRange(ss.getStaff(), ss.getSessionDate(), ss.getStartingTime(), cal.getTime());
         List<BillSession> bSessions = new ArrayList<>();
@@ -1569,10 +1572,13 @@ public class BookingController implements Serializable {
 //        getChannelBillController().setBillSession(bs);
 //        getChannelBillController().setBillSession(bs);
 //        getChannelBillController().setBillSession(bs);
+//        getChannelBillController().setBillSession(bs);
+//        getChannelBillController().setBillSession(bs);
+//        getChannelBillController().setBillSession(bs);
+//        getChannelBillController().setBillSession(bs);
         System.out.println("++++bs = " + bs);
         System.out.println("++++getSelectedBillSession() = " + getSelectedBillSession());
         System.out.println("++++channelBillController.getBillSession() = " + channelBillController.getBillSession());
-        System.out.println("++++channelBillController.getBillSessionTmp() = " + channelBillController.getBillSessionTmp());
         channelBillController.listnerSetBillSession(bs);
     }
 

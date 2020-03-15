@@ -303,7 +303,6 @@ public class SysMexAdf1 {
     }
 
     public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
-        System.out.println("inputStringBytesSpaceSeperated = " + inputStringBytesSpaceSeperated);
         this.inputStringBytesSpaceSeperated = inputStringBytesSpaceSeperated;
         textToByteArraySeperatedBySpace();
     }

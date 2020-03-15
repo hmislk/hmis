@@ -183,7 +183,6 @@ public class StoreAmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
-        System.out.println("getCurrent().getCategory().getCode() = " + getCurrent().getCategory().getCode());
         if (getCurrent().getCategory().getCode() == null || getCurrent().getCategory().getCode().equals("")) {
             JsfUtil.addErrorMessage("Please Select Category Code");
             getCurrent().setCode("");
@@ -211,7 +210,6 @@ public class StoreAmpController implements Serializable {
             System.out.println("s = " + s);
 
             int i = Integer.valueOf(s);
-            System.out.println("i = " + i);
             i++;
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());

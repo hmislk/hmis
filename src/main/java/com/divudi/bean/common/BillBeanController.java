@@ -3405,7 +3405,6 @@ public class BillBeanController implements Serializable {
                 f.setBillItem(billItem);
                 f.setCreatedAt(new Date());
                 if (billItem.getItem().getDepartment() != null) {
-                    System.out.println("i.getFeeType() = " + i.getFeeType());
                     if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
                         f.setDepartment(departmentController.getDefaultDepatrment(collectingCentreBillController.getCollectingCentre()));
                     } else {
@@ -3415,7 +3414,6 @@ public class BillBeanController implements Serializable {
                     //  f.setDepartment(billItem.getBill().getDepartment());
                 }
                 if (billItem.getItem().getInstitution() != null) {
-                    System.out.println("i.getFeeType() = " + i.getFeeType());
                     if (i.getFeeType() == FeeType.CollectingCentre && collectingCentreBillController.getCollectingCentre() != null) {
                         f.setInstitution(collectingCentreBillController.getCollectingCentre());
                     } else {

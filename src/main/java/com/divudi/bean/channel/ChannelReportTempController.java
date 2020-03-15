@@ -409,7 +409,6 @@ public class ChannelReportTempController implements Serializable {
         Date fd = commonFunctions.getStartOfMonth(fromDate);
         Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
         System.err.println("td = " + td);
-        System.err.println("fd = " + fd);
 
         String sql;
         Map m = new HashMap();
@@ -511,7 +510,6 @@ public class ChannelReportTempController implements Serializable {
         Date fd = commonFunctions.getStartOfMonth(fromDate);
         Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
         System.err.println("td = " + td);
-        System.err.println("fd = " + fd);
 
         String sql;
         Map m = new HashMap();
@@ -635,7 +633,6 @@ public class ChannelReportTempController implements Serializable {
         crbills.addAll(cbills);
         crbills.addAll(rbills);
         System.out.println("bbills.size() = " + bbills.size());
-        System.out.println("cbills.size() = " + cbills.size());
 
         Double[] d = new Double[3];
         d[0] = 0.0;
@@ -676,7 +673,6 @@ public class ChannelReportTempController implements Serializable {
         crbills.addAll(cbills);
         crbills.addAll(rbills);
         System.out.println("bbills.size() = " + bbills.size());
-        System.out.println("cbills.size() = " + cbills.size());
 
         Double[] d = new Double[3];
         d[0] = 0.0;
@@ -1274,7 +1270,6 @@ public class ChannelReportTempController implements Serializable {
             td = commonFunctions.getEndOfDay(nowDate);
             System.out.println("td = " + td);
             System.out.println("fd = " + fd);
-            System.out.println("nowDate = " + nowDate);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -1349,7 +1344,6 @@ public class ChannelReportTempController implements Serializable {
             td = commonFunctions.getEndOfDay(nowDate);
             System.out.println("td = " + td);
             System.out.println("fd = " + fd);
-            System.out.println("nowDate = " + nowDate);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -1443,7 +1437,6 @@ public class ChannelReportTempController implements Serializable {
             td = commonFunctions.getEndOfDay(nowDate);
             System.out.println("td = " + td);
             System.out.println("fd = " + fd);
-            System.out.println("nowDate = " + nowDate);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -1584,7 +1577,6 @@ public class ChannelReportTempController implements Serializable {
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
                 formatedDate = df.format(fd);
-                System.out.println("formatedDate = " + formatedDate);
                 row.setDate(formatedDate);
                 row.setUserRows(fetchUserRows(fd, td, bts));
                 if (row.getUserRows().size() > 1) {
@@ -1644,13 +1636,11 @@ public class ChannelReportTempController implements Serializable {
 
             m.put("fromDate", getFromDate());
             m.put("toDate", getToDate());
-            System.out.println("m = " + m);
             List<Bill> bills = new ArrayList<>();
             bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
             Date fd = getFromDate();
             for (Bill b : bills) {
                 System.out.println("1.b.getCreatedAt() = " + b.getCreatedAt());
-                System.out.println("1.fd = " + fd);
                 if (b.getCreatedAt().getTime() < fd.getTime()) {
                     fd = b.getCreatedAt();
                 }
@@ -1681,7 +1671,6 @@ public class ChannelReportTempController implements Serializable {
                 fd = commonFunctions.getStartOfDay(nowDate);
                 td = commonFunctions.getEndOfDay(nowDate);
                 System.out.println("td = " + td);
-                System.out.println("fd = " + fd);
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
                 formatedDate = df.format(fd);
@@ -1690,7 +1679,6 @@ public class ChannelReportTempController implements Serializable {
                 fd = commonFunctions.getStartOfMonth(nowDate);
                 td = commonFunctions.getEndOfMonth(nowDate);
                 System.out.println("td = " + td);
-                System.out.println("fd = " + fd);
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM");
                 formatedDate = df.format(fd);
@@ -1750,7 +1738,6 @@ public class ChannelReportTempController implements Serializable {
                 formatedDate = df.format(fd);
             }
             System.out.println("fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
-            System.out.println("fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null) = " + fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
             double tmpTot = fetchBillsTotal(bts, bt, null, null, new BilledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
                     - (fetchBillsTotal(bts, bt, null, null, new CancelledBill(), fd, td, null, i, withOutDoc, count, s, sp, null)
                     + fetchBillsTotal(bts, bt, null, null, new RefundBill(), fd, td, null, i, withOutDoc, count, s, sp, null));
@@ -2387,7 +2374,6 @@ public class ChannelReportTempController implements Serializable {
         ChannelReportSpecialityWiseSummeryRow row = new ChannelReportSpecialityWiseSummeryRow();;
         ColumnModel c = new ColumnModel();
         List<Staff> doctors = fetchBillsStaffs(null, Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelPaid}));
-        System.out.println("doctors.size() = " + doctors.size());
 
         for (Staff s : doctors) {
 
@@ -2431,7 +2417,6 @@ public class ChannelReportTempController implements Serializable {
         LocalDate start = LocalDate.parse(startDate);
         LocalDate end = LocalDate.parse(endDate);
 
-        System.out.println("start = " + start);
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
             dates.add(String.valueOf(date.getYear()) + " - " + String.valueOf(date.getMonthOfYear()) + " - " + String.valueOf(date.getDayOfMonth()));
         }
@@ -2461,7 +2446,6 @@ public class ChannelReportTempController implements Serializable {
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
-            System.out.println("formatedDate = " + formatedDate);
 
 //           
             double ctot1 = fetchBillsTotal(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent}, null, null, null, new CancelledBill(), fd, td, null, null, false, true, s, null, null);
@@ -2490,7 +2474,6 @@ public class ChannelReportTempController implements Serializable {
 
     public List<Double> totalsBetweenDates(PaymentMethod pm, Date fd, Date td) {
         ChannelVatReportPaymentSchemeWiseRow row = new ChannelVatReportPaymentSchemeWiseRow();
-        System.out.println("pm-betweendates = " + pm);
         List<Double> totsList = new ArrayList<>();
         Date nowDate = getFromDate();
 //        double btot = 0.0;
@@ -2510,7 +2493,6 @@ public class ChannelReportTempController implements Serializable {
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
-            System.out.println("formatedDate = " + formatedDate);
 
             netTot1 = (fetchBillsVatTotal(pm, fd, td)) * 45 / 100;
             totsList.add(netTot1);
@@ -2572,7 +2554,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         System.out.println("dept = " + dept);
-        System.out.println("billtype = " + billtype);
 
         return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -2590,7 +2571,6 @@ public class ChannelReportTempController implements Serializable {
         m.put("pm", pm);
         m.put("fromDate", fd);
         m.put("toDate", td);
-        System.out.println("sql = " + sql);
         total = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
         return total;
     }

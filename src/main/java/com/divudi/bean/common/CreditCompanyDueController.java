@@ -386,7 +386,6 @@ public class CreditCompanyDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
-            System.err.println("DayCount " + dayCount);
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -411,7 +410,6 @@ public class CreditCompanyDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
-            System.err.println("DayCount " + dayCount);
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -436,7 +434,6 @@ public class CreditCompanyDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
-            System.err.println("DayCount " + dayCount);
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -831,7 +828,6 @@ public class CreditCompanyDueController implements Serializable {
                 b.setTransPaid(com.divudi.java.CommonFunctions.round(b.getTransPaid()));
                 System.out.println("b.getTransPaid() = " + b.getTransPaid());
                 
-                System.out.println("b.getFinalBill().getNetTotal() = " + b.getFinalBill().getNetTotal());
                 
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));

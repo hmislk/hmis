@@ -432,7 +432,6 @@ public class ItemController implements Serializable {
             ni.setInstitution(instituion);
             ni.setDepartment(department);
             ni.setItemFee(null);
-            System.out.println("ni.getReportedAs() in master = " + i.getReportedAs());
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
             //System.out.println("ni = " + ni);

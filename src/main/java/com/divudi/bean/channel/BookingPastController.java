@@ -303,7 +303,6 @@ public class BookingPastController implements Serializable {
     public void listnerMarkAbsent() {
         Date td=getCommonFunctions().getEndOfDay();
         Date fd=getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
-        System.out.println("fd = " + fd);
         long lng = getCommonFunctions().getDayCount(fd, td);
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
@@ -399,7 +398,6 @@ public class BookingPastController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        System.out.println("hh = " + hh);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
 
     }

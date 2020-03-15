@@ -329,7 +329,6 @@ public class BillEjb implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("m = " + m);
         //System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
         //System.out.println("r = " + r);

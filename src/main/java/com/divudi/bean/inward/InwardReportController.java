@@ -227,7 +227,6 @@ public class InwardReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         patientEncounters = getPeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("sql = " + sql);
 //        calTtoal();
         calTtoal(patientEncounters);
     }

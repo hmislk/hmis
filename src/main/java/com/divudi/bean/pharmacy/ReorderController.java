@@ -563,7 +563,6 @@ public class ReorderController implements Serializable {
 
         System.out.println("m = " + m);
         System.out.println("sql = " + sql);
-        System.out.println("depst = " + depst);
 
         if (false) {
             Stock s = new Stock();

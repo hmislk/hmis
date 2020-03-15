@@ -267,12 +267,10 @@ public class StaffPaymentBillController implements Serializable {
                 BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
 
                 if (rbi != null) {
-                    System.out.println("rbi.getBill().isCancelled() = " + rbi.getBill().isCancelled());
                     removeingBillFees.add(bf);
                 }
 
             }
-            System.out.println("dueBillFees.size() = " + dueBillFees.size());
             dueBillFees.removeAll(removeingBillFees);
 
         }

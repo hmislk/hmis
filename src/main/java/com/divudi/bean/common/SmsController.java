@@ -147,7 +147,6 @@ public class SmsController implements Serializable {
         System.out.println("message = " + message);
         System.out.println("username = " + username);
         System.out.println("password = " + password);
-        System.out.println("sendingAlias = " + sendingAlias);
 
         Map m = new HashMap();
         m.put("userName", username);
@@ -173,7 +172,6 @@ public class SmsController implements Serializable {
         System.out.println("message = " + message);
         System.out.println("username = " + username);
         System.out.println("password = " + password);
-        System.out.println("sendingAlias = " + sendingAlias);
 
         Map m = new HashMap();
         m.put("userName", username);
@@ -260,7 +258,6 @@ public class SmsController implements Serializable {
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
 
-        System.out.println("m = " + m);
 
         if (getReportKeyWord().isAdditionalDetails()) {
             List<Object[]> objects = getSmsFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);

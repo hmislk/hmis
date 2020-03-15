@@ -312,10 +312,10 @@ public class CollectingCentreBillController implements Serializable {
         getFacade().create(temp);
         //create bill fee payments
         //create bill fee payments
+        //create bill fee payments
 
         //create bill fee payments
         System.out.println("reminingCashPaid = " + reminingCashPaid);
-        System.out.println("opdPaymentCredit = " + opdPaymentCredit);
         reminingCashPaid = opdPaymentCredit;
 
         Payment p = createPayment(temp, getPaymentMethod());
@@ -775,7 +775,6 @@ public class CollectingCentreBillController implements Serializable {
         System.out.println("b.getTotal() = " + b.getTotal());
         System.out.println("billFeeTotal = " + billFeeTotal);
         System.out.println("b.getDiscount() = " + b.getDiscount());
-        System.out.println("billFeeDiscount = " + billFeeDiscount);
 
         if (billFeeTotal != b.getTotal() || billFeeDiscount != b.getDiscount() || billFeeNetTotal != b.getNetTotal()) {
             return true;
@@ -1088,7 +1087,6 @@ public class CollectingCentreBillController implements Serializable {
     }
 
     public void addToBill() {
-        System.out.println("add to bill");
         if (getCurrentBillItem() == null) {
             UtilityController.addErrorMessage("Nothing to add");
             return;
@@ -1367,7 +1365,6 @@ public class CollectingCentreBillController implements Serializable {
         for (BillEntry be : billEntrys) {
 
             System.err.println("Bill For In");
-            System.out.println("dbl = " + dbl);
 
             if ((reminingCashPaid != 0.0) || !getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
 
@@ -1392,14 +1389,12 @@ public class CollectingCentreBillController implements Serializable {
                         double d = (bf.getFeeValue() - bf.getSettleValue());
                         System.out.println("d = " + d);
                         bf.setSettleValue(bf.getFeeValue());
-                        System.out.println("d = " + d);
                         setBillFeePaymentAndPayment(d, bf, p);
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                     } else {
                         System.err.println("IN");
                         System.out.println("In E reminingCashPaid = " + reminingCashPaid);
-                        System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
                         bf.setSettleValue(bf.getSettleValue() + reminingCashPaid);
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);

@@ -223,7 +223,6 @@ public class StoreGrnController implements Serializable {
         }
 
         for (BillItem bi : billItems) {
-            System.out.println("bi = " + bi.getSearialNo());
             //System.out.println("bi.getPharmaceuticalBillItem().getPurchaseRate() = " + bi.getPharmaceuticalBillItem().getPurchaseRate());
             //System.out.println("bi.getPharmaceuticalBillItem().getRetailRate() = " + bi.getPharmaceuticalBillItem().getRetailRate());
             bi.getPharmaceuticalBillItem().setRetailRate(bi.getPharmaceuticalBillItem().getPurchaseRate());
@@ -278,6 +277,10 @@ public class StoreGrnController implements Serializable {
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
             // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
+            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
+            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
+            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
+            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
             System.out.println("7");
             double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
@@ -293,7 +296,6 @@ public class StoreGrnController implements Serializable {
             getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
             System.out.println("11");
             storeCalculation.editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
-            System.out.println("12");
             for (BillItem bi : getBillItems()) {
                 if (bi.getParentBillItem() != null) {
                     if (bi.getParentBillItem().getItem().equals(i.getItem()) && bi.getParentBillItem().getSearialNo() == i.getSearialNo()) {
@@ -571,12 +573,13 @@ public class StoreGrnController implements Serializable {
         billItem.setSearialNo(getBillItems().size());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
         // billItem.setId(billItem.getSearialNoInteger().longValue());
+        // billItem.setId(billItem.getSearialNoInteger().longValue());
+        // billItem.setId(billItem.getSearialNoInteger().longValue());
 
 //        billItem.setSearialNo(getBillItems().size() + 1);        
         getBillItems().add(billItem);
 //
 //        getBillItemController().setItems(getBillItems());
-        System.out.println("billItem.getSearialNo() = " + billItem.getSearialNo());
 //      
 //        getBillItemController().setItems(getBillItems());
     }
@@ -999,7 +1002,6 @@ public class StoreGrnController implements Serializable {
     }
 
     public void addChildItemListener(BillItem bi) {
-        System.out.println("Add accessories = " + bi);
         parentBillItem = new BillItem();
         currentBillItem = new BillItem();
         currentBillItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
@@ -1017,7 +1019,6 @@ public class StoreGrnController implements Serializable {
         System.out.println("bi.getSearialNo() = " + bi.getSearialNo());
         System.out.println("currentBillItem.getSearialNo() = " + currentBillItem.getSearialNo());
         System.out.println("parentBillItem.getSearialNo() = " + parentBillItem.getSearialNo());
-        System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
     }
 
     public void updateItemDetail() {
@@ -1026,7 +1027,6 @@ public class StoreGrnController implements Serializable {
         System.out.println("currentBillItem.getTmpQty() = " + currentBillItem.getTmpQty());
         System.out.println("currentBillItem.getQty() = " + currentBillItem.getQty());
         System.out.println("parentBillItem.getSearialNo() = " + parentBillItem.getSearialNo());
-        System.out.println("currentBillItem.getTmpQty() = " + parentBillItem.getTmpQty());
         for (BillItem bi : getBillItems()) {
             if (bi.getSearialNo() == parentBillItem.getSearialNo()) {
 //                bi = getCurrentBillItem();
@@ -1055,10 +1055,8 @@ public class StoreGrnController implements Serializable {
     public void checkItemDetail() {
         for (BillItem bi : getBillItems()) {
             System.out.println("bi = " + bi.getSearialNo());
-            System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
             try {
                 System.out.println("bi.getPharmaceuticalBillItem() = " + bi.getPharmaceuticalBillItem());
-                System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
             } catch (Exception e) {
             }
         }

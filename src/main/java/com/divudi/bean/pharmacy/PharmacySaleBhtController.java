@@ -1022,7 +1022,6 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setDiscount(discount);
 
         System.out.println("getPreBill().getNetTotal() = " + getPreBill().getNetTotal());
-        System.out.println("getPreBill().getTotal() = " + getPreBill().getTotal());
 
     }
 
@@ -1083,7 +1082,6 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
-        System.out.println("billItem.getGrossValue() = " + billItem.getGrossValue());
 
     }
 
@@ -1099,7 +1097,6 @@ public class PharmacySaleBhtController implements Serializable {
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }
 
@@ -1138,7 +1135,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public List<Stock> completeAvailableStocksSelectedPharmacy(String qry) {
-        System.out.println("department = " + department);
         if (department == null) {
             JsfUtil.addErrorMessage("Please Select Depatment");
             return new ArrayList<>();
@@ -1187,7 +1183,6 @@ public class PharmacySaleBhtController implements Serializable {
             double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
             System.out.println("cancelledIssue = " + cancelledIssue);
             double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-            System.out.println("refundedIssue = " + refundedIssue);
 
             double issuableQty = Math.abs(i.getQtyInUnit()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
 
@@ -1307,7 +1302,6 @@ public class PharmacySaleBhtController implements Serializable {
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
-        System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);

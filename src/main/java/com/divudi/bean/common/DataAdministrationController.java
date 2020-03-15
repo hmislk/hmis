@@ -327,7 +327,6 @@ public class DataAdministrationController {
 //        bills = billFacade.findBySQL(s, m);
         bills = billFacade.findBySQL(s, m, 10);
         for (Bill cb : bills) {
-            System.out.println("cb = " + cb);
             for (BillItem bi : cb.getBillItems()) {
                 System.err.println("**************");
                 System.out.println("bi = " + bi);
@@ -343,7 +342,6 @@ public class DataAdministrationController {
                 }
                 if (bi.getReferenceBill() != null) {
                 }
-                System.out.println("bi.getReferenceBill().getDepartment().getName() = " + bi.getReferenceBill().getDepartment().getName());
                 String sql;
                 sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
                 List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
@@ -387,7 +385,6 @@ public class DataAdministrationController {
             itemFacade.edit(i);
             System.err.println("**** " + j + " ****");
             System.out.println("i.getName() = " + i.getName());
-            System.out.println("i.getVatPercentage() = " + i.getVatPercentage());
             j++;
         }
 
@@ -556,25 +553,21 @@ public class DataAdministrationController {
         for (Institution a : selectedInstitutions) {
             if (bool1) {
                 if (val1 != 0.0) {
-                    System.out.println("a.getStandardCreditLimit() = " + a.getStandardCreditLimit());
                     a.setStandardCreditLimit(val1);
                 }
             }
             if (bool2) {
                 if (val2 != 0.0) {
-                    System.out.println("a.getAllowedCredit() = " + a.getAllowedCredit());
                     a.setAllowedCredit(val2);
                 }
             }
             if (bool3) {
                 if (val3 != 0.0) {
-                    System.out.println("a.getMaxCreditLimit() = " + a.getMaxCreditLimit());
                     a.setMaxCreditLimit(val3);
                 }
             }
             if (bool4) {
                 if (val4 != 0.0) {
-                    System.out.println("a.getBallance() = " + a.getBallance());
                     a.setBallance(val4);
                 }
             }
@@ -625,7 +618,6 @@ public class DataAdministrationController {
         staffs = getStaffFacade().findBySQL(sql, m);
         for (Staff s : staffs) {
             s.getPerson().setZoneCode(reportKeyWord.getString());
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
             if (s.getPerson().getNic() != null && !s.getPerson().getNic().equals("")) {
                 if (s.getPerson().getNic().length() >= 9) {
                     String s1 = s.getPerson().getNic().substring(0, 9);
@@ -677,7 +669,6 @@ public class DataAdministrationController {
             }
         }
         sql += " order by i.name ";
-        System.out.println("m = " + m);
         items = itemFacade.findBySQL(sql, m);
 
     }
@@ -813,7 +804,6 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("class", ServiceSession.class);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
 
         sessions = serviceSessionFacade.findBySQL(sql, m);
 
@@ -849,7 +839,6 @@ public class DataAdministrationController {
         bills = new ArrayList<>();
         System.err.println("Time 1 = " + new Date());
         List<Object> objects = fetchAllBilledBillTypes();
-        System.err.println("Time 2 = " + new Date());
         for (Object ob : objects) {
             BillType bt = (BillType) ob;
             System.err.println("Time l1 = " + new Date());
@@ -858,7 +847,6 @@ public class DataAdministrationController {
             if (b != null) {
                 bills.add(b);
             }
-            System.err.println("Time l3 = " + new Date());
             b = fetchBill(bt, false);
             if (b != null) {
                 bills.add(b);
@@ -870,7 +858,6 @@ public class DataAdministrationController {
         bills = new ArrayList<>();
         System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
-        System.out.println("totals.getBills() = " + totals.getBills().size());
         System.err.println("Time 2 = " + new Date());
         for (Bill b : totals.getBills()) {
 //            System.err.println("Time For In = " + new Date());
@@ -878,7 +865,6 @@ public class DataAdministrationController {
                 try {
                     if (b.getInsId().equals(bb.getInsId()) && !b.getId().equals(bb.getId())) {
                         System.err.println("********");
-                        System.out.println("b.getInsId() = " + b.getInsId());
                         bills.add(b);
                     }
                 } catch (Exception e) {
@@ -893,7 +879,6 @@ public class DataAdministrationController {
         bills = new ArrayList<>();
         System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
-        System.out.println("totals.getBills() = " + totals.getBills().size());
         System.err.println("Time 2 = " + new Date());
         for (Bill b : totals.getBills()) {
             bills.add(b);
@@ -957,7 +942,6 @@ public class DataAdministrationController {
         int j = 1;
 
         for (Item i : items) {
-            System.out.println("i.getName() = " + i.getName());
             DecimalFormat df = new DecimalFormat("0000");
 //            df=new DecimalFormat("####");
 //            System.out.println("df = " + df.format(j));
@@ -1018,7 +1002,6 @@ public class DataAdministrationController {
         int j = 1;
 
         for (Item i : items) {
-            System.out.println("i.getName() = " + i.getName());
             DecimalFormat df = new DecimalFormat("0000");
 //            df=new DecimalFormat("####");
 //            System.out.println("df = " + df.format(j));

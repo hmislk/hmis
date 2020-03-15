@@ -843,8 +843,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 
@@ -1238,7 +1236,6 @@ public class BookKeepingSummery implements Serializable {
                 }
             }
 
-            System.out.println("sr.getCatTotal() = " + sr.getCatCount());
 
             calCountTotal(sr.getCatCount());
 //            //System.out.println("n = " + n);
@@ -1745,7 +1742,6 @@ public class BookKeepingSummery implements Serializable {
 
             Object[] obj = getBillFeeFacade().findAggregate(sql, hm, TemporalType.TIMESTAMP);
 
-            System.out.println("obj = " + obj);
 
 
             BookKeepingSummeryRow bkr = new BookKeepingSummeryRow();
@@ -1849,8 +1845,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 
@@ -2097,8 +2091,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 
@@ -2356,8 +2348,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 
@@ -2583,8 +2573,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0 || countCancelled < count) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 
@@ -2751,7 +2739,6 @@ public class BookKeepingSummery implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pms", paymentMethods);
         double d = getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("jpql = " + jpql);
 
         return d;
     }
@@ -2841,8 +2828,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 
@@ -3172,8 +3157,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } //System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
             if (r[4] != null) {
             }
 

@@ -3376,13 +3376,15 @@ public class CommonReport implements Serializable {
 //        d = getBillFacade().findDateByJpql(sql, m);
 //        d = getBillFacade().findDateByJpql(sql, m);
 //        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
+//        d = getBillFacade().findDateByJpql(sql, m);
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         if (b.isEmpty()) {
             sql = "select b from Bill b where b.deptId=:bn ";
 //            d = getBillFacade().findDateByJpql(sql, m);
             b = getBillFacade().findBySQL(sql, m);
-            System.err.println("m = " + m);
         }
         if (!b.isEmpty()) {
             d = b.get(0).getCreatedAt();
@@ -4238,7 +4240,6 @@ public class CommonReport implements Serializable {
         sql += " group by i.name,bf.fee.feeType "
                 + " order by i.name ";
 
-        System.out.println("m = " + m);
 
         items = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -4248,7 +4249,6 @@ public class CommonReport implements Serializable {
 
     public void createDirectPurchaseBillItemTable() {
         billItems=fetchDirectPurchaseBillItems(new BilledBill());
-        System.out.println("billItems.size() = " + billItems.size());
         canBillItems=fetchDirectPurchaseBillItems(new CancelledBill());
         refBillItems=fetchDirectPurchaseBillItems(new RefundBill());
     }
@@ -4739,7 +4739,6 @@ public class CommonReport implements Serializable {
         tmp1 = new String1Value1();
         tmp1.setString("Final Total");
         System.out.println("creditCard = " + creditCard);
-        System.out.println("cheque = " + cheque);
 //        tmp1.setValue(creditCard + cheque + cash + slip + credit);
         tmp1.setValue(creditCard + cheque + cash + credit);
 

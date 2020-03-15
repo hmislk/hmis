@@ -186,7 +186,6 @@ public class StoreBillSearch implements Serializable {
     private void calTotalAndUpdate2(Bill bill) {
         double tmp = 0;
         for (BillItem b : bill.getBillItems()) {
-            System.err.println("id " + b.getPharmaceuticalBillItem().getId());
             double tmp2 = (b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
             tmp += tmp2;
         }

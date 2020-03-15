@@ -482,7 +482,6 @@ public class AmpController implements Serializable {
             System.out.println("s = " + s);
 
             int i = Integer.valueOf(s);
-            System.out.println("i = " + i);
             i++;
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());

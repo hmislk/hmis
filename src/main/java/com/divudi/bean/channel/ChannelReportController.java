@@ -1956,7 +1956,6 @@ public class ChannelReportController implements Serializable {
 
         double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("sql = " + sql);
         return d;
     }
 
@@ -2028,7 +2027,6 @@ public class ChannelReportController implements Serializable {
 
         double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("sql = " + sql);
         return d;
     }
 
@@ -2102,7 +2100,6 @@ public class ChannelReportController implements Serializable {
             }
         }
         System.out.println("b.size() = " + b.size());
-        System.out.println("sql = " + sql);
         return d;
     }
 
@@ -2184,7 +2181,6 @@ public class ChannelReportController implements Serializable {
             }
         }
         System.out.println("b.size() = " + b.size());
-        System.out.println("sql = " + sql);
         return d;
     }
 
@@ -2300,7 +2296,6 @@ public class ChannelReportController implements Serializable {
 
         double d = getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("sql = " + sql);
         return d;
     }
 
@@ -2466,7 +2461,6 @@ public class ChannelReportController implements Serializable {
 
                 System.out.println("cashCount = " + cashCount);
                 System.out.println("agentCount = " + agentCount);
-                System.out.println("onCallCount = " + onCallCount);
 
                 dpsrs.setCashCount(cashCount);
                 dpsrs.setAgentCount(agentCount);
@@ -2477,7 +2471,6 @@ public class ChannelReportController implements Serializable {
             }
             System.out.println("dpsrs.getCashCount() = " + dpsrs.getCashCount());
             System.out.println("dpsrs.getOnCallCount() = " + dpsrs.getOnCallCount());
-            System.out.println("dpsrs.getAgentCount() = " + dpsrs.getAgentCount());
 
             dpsrs.setTotalCount(ptCount);
 
@@ -2541,7 +2534,6 @@ public class ChannelReportController implements Serializable {
                 }
 
                 System.out.println("cashCount = " + cashCount);
-                System.out.println("agentCount = " + agentCount);
 
                 doctorPaymentSummeryRowSub.setCashCount(cashCount);
                 doctorPaymentSummeryRowSub.setAgentCount(agentCount);
@@ -2551,7 +2543,6 @@ public class ChannelReportController implements Serializable {
             }
 
             System.out.println("doctorPaymentSummeryRowSub.getCashCount() = " + doctorPaymentSummeryRowSub.getCashCount());
-            System.out.println("doctorPaymentSummeryRowSub.getOnCallCount() = " + doctorPaymentSummeryRowSub.getOnCallCount());
 
             Calendar nc = Calendar.getInstance();
             nc.setTime(nowDate);
@@ -2582,7 +2573,6 @@ public class ChannelReportController implements Serializable {
         while (nowDate.before(toDate)) {
             DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
             String formattedDate = df.format(nowDate);
-            System.out.println("formattedDate = " + formattedDate);
 
             DoctorPaymentSummeryRow doctorPaymentSummeryRow = new DoctorPaymentSummeryRow();
 
@@ -2639,7 +2629,6 @@ public class ChannelReportController implements Serializable {
         Date td = commonFunctions.getEndOfDay(d);
 
         System.out.println("td = " + td);
-        System.out.println("fd = " + fd);
 
         String sql = "SELECT distinct(bf.bill) FROM BillFee bf "
                 + " WHERE bf.retired = false "
@@ -2671,7 +2660,6 @@ public class ChannelReportController implements Serializable {
         while (nowDate.before(td)) {
             DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
             String formattedDate = df.format(nowDate);
-            System.out.println("formattedDate = " + formattedDate);
 
             if (serviceSession != null) {
                 sessions.add(serviceSession);
@@ -2718,7 +2706,6 @@ public class ChannelReportController implements Serializable {
                     }
 
                     System.out.println("cashCount = " + cashCount);
-                    System.out.println("agentCount = " + agentCount);
 
                     doctorPaymentSummeryRowSub.setCashCount(cashCount);
                     doctorPaymentSummeryRowSub.setAgentCount(agentCount);
@@ -2728,7 +2715,6 @@ public class ChannelReportController implements Serializable {
                 }
 
                 System.out.println("doctorPaymentSummeryRowSub.getCashCount() = " + doctorPaymentSummeryRowSub.getCashCount());
-                System.out.println("doctorPaymentSummeryRowSub.getOnCallCount() = " + doctorPaymentSummeryRowSub.getOnCallCount());
 
                 Calendar nc = Calendar.getInstance();
                 nc.setTime(nowDate);
@@ -2799,7 +2785,6 @@ public class ChannelReportController implements Serializable {
         Date td = new Date();
 
         System.out.println("td = " + td);
-        System.out.println("fd = " + fd);
 
 //        String sql = "select bf from BillFee bf "
 //                + " where bf.bill.retired=false "
@@ -2881,7 +2866,6 @@ public class ChannelReportController implements Serializable {
         Date td = commonFunctions.getEndOfDay(d);
 
         System.out.println("td = " + td);
-        System.out.println("fd = " + fd);
 
         String sql = "SELECT count(bi.paidForBillFee.bill) FROM BillItem bi "
                 + " WHERE bi.retired = false "
@@ -3257,7 +3241,6 @@ public class ChannelReportController implements Serializable {
                 i++;
                 System.out.println("i" + i);
                 System.out.println("bilType" + bt);
-                System.out.println("billedCount" + billedCount);
             }
             row.setCashCount(arr[0]);
             row.setAgentCount(arr[1]);
@@ -4036,7 +4019,6 @@ public class ChannelReportController implements Serializable {
         hm.put("tDate", getToDate());
 
         List<Object[]> objects = getBillFacade().findAggregates(sql, hm, TemporalType.TIMESTAMP);
-        System.out.println("objects.size() = " + objects.size());
 
         if (summery) {
             AreaWithCount row = null;
@@ -4048,7 +4030,6 @@ public class ChannelReportController implements Serializable {
                 System.err.println("****************");
                 System.out.println("a.getName() = " + a.getName());
                 System.out.println("clas = " + classType);
-                System.out.println("count = " + count);
                 if (classType == BillClassType.BilledBill) {
                     total += count;
                 } else {
@@ -4098,7 +4079,6 @@ public class ChannelReportController implements Serializable {
                 System.err.println("****************");
                 System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 System.out.println("a.getName() = " + a.getName());
-                System.out.println("clas = " + classType);
                 if (classType == BillClassType.BilledBill) {
                     total += count;
                 } else {
@@ -4120,7 +4100,6 @@ public class ChannelReportController implements Serializable {
                 }
                 if (s.equals(beforeStaff)) {
                     if (a.equals(beforeArea)) {
-                        System.out.println("a.getName() = " + a.getName());
                         if (classType == BillClassType.BilledBill) {
                             awc.setCount(awc.getCount() + count);
                         } else {
@@ -4403,7 +4382,6 @@ public class ChannelReportController implements Serializable {
             hh.put("tbs", bts);
             hh.put("class", BilledBill.class);
             doctorViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
-            System.out.println("hh = " + hh);
             netTotal = 0.0;
             grantNetTotal = 0.0;
             //Totals
@@ -4424,7 +4402,6 @@ public class ChannelReportController implements Serializable {
 
             for (BillSession bs : list) {
                 System.out.println("bs.getBill().getDeptId() = " + bs.getBill().getDeptId());
-                System.out.println("bs.isAbsent() = " + bs.isAbsent());
                 if (bs.getBill().getBalance() == 0.0) {
                     if (!bs.getServiceSession().getOriginatingSession().isRefundable()) {
                         netTotal += bs.getBill().getStaffFee();
@@ -4988,7 +4965,6 @@ public class ChannelReportController implements Serializable {
             double cr = fetchBillCount(s, fromDate, toDate, new RefundBill(), Arrays.asList(types));
             System.out.println("cr = " + cr);
             int icb = (int) ((cb * reportKeyWord.getFrom()) / 100);
-            System.out.println("icb = " + icb);
             int icc = (int) ((cc * reportKeyWord.getFrom()) / 100);
             int icr = (int) ((cr * reportKeyWord.getFrom()) / 100);
             cd.setBillCount(icb);
@@ -5101,7 +5077,6 @@ public class ChannelReportController implements Serializable {
         m.put("s", s);
         m.put("class", b.getClass());
         m.put("bts", billTypes);
-        System.out.println("sql = " + sql);
         double d = getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 
         return d;
@@ -5126,7 +5101,6 @@ public class ChannelReportController implements Serializable {
         m.put("td", td);
         m.put("s", s);
         m.put("bts", billTypes);
-        System.out.println("sql = " + sql);
         double d = getBillFeeFacade().findDoubleByJpql(sql, m);
 
         return d;
@@ -5152,7 +5126,6 @@ public class ChannelReportController implements Serializable {
         m.put("s", s);
         m.put("bts", billTypes);
         System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
         bfs = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
         double d = 0.0;
         for (BillFee bf : bfs) {
@@ -5262,7 +5235,6 @@ public class ChannelReportController implements Serializable {
 
         agentHistorys = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("m = " + m);
     }
 
     public void createAgentBookings() {
@@ -5347,7 +5319,6 @@ public class ChannelReportController implements Serializable {
         while (nowDate.before(getToDate())) {
             Date fd = commonFunctions.getStartOfDay(nowDate);
             Date td = commonFunctions.getEndOfDay(nowDate);
-            System.out.println("td = " + td);
             AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
             if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
                 ahwd.setDate(nowDate);
@@ -5387,7 +5358,6 @@ public class ChannelReportController implements Serializable {
         while (nowDate.before(getToDate())) {
             Date fd = commonFunctions.getStartOfDay(nowDate);
             Date td = commonFunctions.getEndOfDay(nowDate);
-            System.out.println("td = " + td);
             AgentHistoryWithDate ahwd = new AgentHistoryWithDate();
             if (createAgentHistory(fd, td, institution, historyTypes).size() > 0) {
                 ahwd.setDate(nowDate);
@@ -5430,7 +5400,6 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by ah.createdAt ";
 
-        System.out.println("m = " + m);
 
         return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -5462,7 +5431,6 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by ah.bill.fromInstitution.name ,ah.createdAt ";
 
-        System.out.println("m = " + m);
 
         return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -5501,7 +5469,6 @@ public class ChannelReportController implements Serializable {
 
         ahs = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("ahs = " + ahs.size());
 
         return ahs;
 
@@ -5535,7 +5502,6 @@ public class ChannelReportController implements Serializable {
         sql += " order by ah.bill.billClassType, ah.createdAt ";
         d = getAgentHistoryFacade().findDoubleByJpql(sql, m);
 
-        System.out.println("d = " + d);
 
         return d;
 
@@ -5576,12 +5542,10 @@ public class ChannelReportController implements Serializable {
     //created a meathod which use above methods
     public void createDoctorsWithSessions() {
         List<Staff> staffs = fetchAllChannelDoctors();
-        System.out.println("staffs.size() = " + staffs.size());
         acdrs = new ArrayList<>();
         for (Staff s : staffs) {
 
             List<ServiceSession> serviceSessions = fetchCreatedServiceSessions(s);
-            System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
             if (!serviceSessions.isEmpty()) {
 //                ServiceSession temp = new ServiceSession();
                 ServiceSession last = null;
@@ -5732,7 +5696,6 @@ public class ChannelReportController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("sql = " + sql);
         channelBills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         for (Bill b : channelBills) {
@@ -5757,7 +5720,6 @@ public class ChannelReportController implements Serializable {
         m.put("pm", paymentMethod.Card);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("sql = " + sql);
         List<Object[]> objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         grantNetTotal = 0.0;
         for (Object[] o : objects) {
@@ -5797,7 +5759,6 @@ public class ChannelReportController implements Serializable {
         m.put("bank", i);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("sql = " + sql);
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         return bills;

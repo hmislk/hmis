@@ -740,7 +740,6 @@ public class StoreIssueController_ implements Serializable {
         }
         getBillItem();
         System.err.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate());
-        System.err.println("bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() = " + bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setRate(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getPurcahseRate() + calculateBillItemAdditionToPurchaseRate(bi));
         bi.setDiscount(0.0);
         bi.setNetRate(bi.getRate() - bi.getDiscount());

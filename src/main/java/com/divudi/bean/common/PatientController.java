@@ -146,12 +146,9 @@ public class PatientController implements Serializable {
     }
 
     public void changeMembershipOfSelectedPersons() {
-        System.out.println("changeMembershipOfSelectedPersons");
         for (Patient p : getSelectedItems()) {
-            System.out.println("p = " + p);
             if (p.getPerson() != null) {
                 System.out.println("p.getPerson() = " + p.getPerson());
-                System.out.println("membershipScheme = " + membershipScheme);
                 p.getPerson().setMembershipScheme(membershipScheme);
                 p.getPerson().setEditedAt(new Date());
                 p.getPerson().setEditer(sessionController.getLoggedUser());
@@ -580,7 +577,6 @@ public class PatientController implements Serializable {
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);
         System.out.println("getReportKeyWord().isAdditionalDetails() = " + getReportKeyWord().isAdditionalDetails());
-        System.out.println("query = " + query);
         commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
         return patientList;
     }
@@ -650,7 +646,6 @@ public class PatientController implements Serializable {
             getPersonFacade().edit(p.getPerson());
         }
         if (p.getId() == null) {
-            System.out.println("********p.getCode() = " + p.getCode());
             if (p.getPerson().getMembershipScheme() == null) {
 //                p.setCode(null);
 //                return;
@@ -740,7 +735,6 @@ public class PatientController implements Serializable {
             for (Patient p : patientList) {
                 if (p.getCreatedAt() != null) {
                     m = new HashMap();
-                    System.out.println("p.getCreatedAt() = " + p.getCreatedAt());
                     sql = "select b from Bill b where b.retired=false "
                             + " and b.billDate=:d "
                             + " and b.patient.id=:p "
@@ -915,7 +909,6 @@ public class PatientController implements Serializable {
 //        System.out.println("str.substring(3) = " + str.substring(3));
 //        System.out.println("str.substring(3,7) = " + str.substring(3, 7));
             long l = Long.parseLong(str.substring(2));
-            System.out.println("l = " + l);
             l++;
             st += s;
             st += df.format(l);

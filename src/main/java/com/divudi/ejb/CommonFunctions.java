@@ -448,7 +448,6 @@ public class CommonFunctions {
 
         Period period = new Period(dob, date, PeriodType.yearMonthDay());
         int ageYears = period.getYears();
-        System.out.println("ageYears = " + ageYears);
         int ageMonths = period.getMonths();
         int ageDays = period.getDays();
         

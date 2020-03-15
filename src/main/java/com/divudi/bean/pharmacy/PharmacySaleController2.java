@@ -1276,7 +1276,6 @@ public class PharmacySaleController2 implements Serializable {
 
     public void settleBillWithPay() {
         System.err.println("2.Pharmacy Bill Start - = " + new Date());
-        System.err.println("2.sessionController.getLoggedUser().getWebUserPerson().getName() = " + sessionController.getLoggedUser().getWebUserPerson().getName());
         
         editingQty = null;
 
@@ -1627,7 +1626,6 @@ public class PharmacySaleController2 implements Serializable {
                 tpm = PaymentMethod.Cash;
             }
             PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
-            System.out.println("priceMatrix = " + priceMatrix);
             if (priceMatrix == null) {
                 return 0;
             } else {

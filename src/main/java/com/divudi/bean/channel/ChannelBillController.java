@@ -337,7 +337,6 @@ public class ChannelBillController implements Serializable {
         Bill b = getBillFacade().find(getBillSession().getBill().getId());
         System.out.println("getSessionController().getLoggedUser().getWebUserPerson().getName() = " + getSessionController().getLoggedUser().getWebUserPerson().getName());
         System.out.println("b = " + b);
-        System.out.println("getBillSession().getBill() = " + getBillSession().getBill());
         if (b.getPaidBill() != null) {
             UtilityController.addErrorMessage("Please Refresh The channeling Interface,Because this Channel Already Paid.");
             errorText = "Please Refresh The channeling Interface,Because this Channel Already Paid.";
@@ -381,7 +380,6 @@ public class ChannelBillController implements Serializable {
             }
         }
         System.out.println("tmpTotal = " + tmpTotal);
-        System.out.println("tmpTotalVat = " + tmpTotalVat);
 
         getBillSession().getBillItem().setDiscount(tmpDiscount);
         getBillSession().getBillItem().setGrossValue(tmpTotal);
@@ -625,7 +623,6 @@ public class ChannelBillController implements Serializable {
         listBillFees = billFeeFacade.findBySQL(sql, hm);
         billSession = bs;
         System.out.println("bs = " + bs);
-        System.out.println("billSession = " + billSession);
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
             if (bf.getFee().getFeeType() == FeeType.Staff && (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna || getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative)) {
@@ -747,7 +744,6 @@ public class ChannelBillController implements Serializable {
         }
         System.out.println("getBillSession() = " + getBillSession());
         System.out.println("getBillSessionTmp() = " + getBillSessionTmp());
-        System.out.println("getCancelPaymentMethod() = " + getCancelPaymentMethod());
         if (getBillSession() == null) {
             UtilityController.addErrorMessage("No BillSession");
             return;
@@ -1255,7 +1251,6 @@ public class ChannelBillController implements Serializable {
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession, String refNo) {
         System.out.println("updating agency balance");
-        System.out.println("ins.getName() = " + ins.getName());
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());
@@ -1437,7 +1432,6 @@ public class ChannelBillController implements Serializable {
                 UtilityController.addErrorMessage("This Agency is Inactve. Please contact Channel Agency Cordinator.");
                 return true;
             }
-            System.out.println("amount = " + getAmount());
             if (institution.getBallance() - getAmount() < 0 - institution.getAllowedCredit()) {
                 errorText = "Agency Ballance is Not Enough";
                 UtilityController.addErrorMessage("Agency Ballance is Not Enough");
@@ -1757,7 +1751,6 @@ public class ChannelBillController implements Serializable {
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE, 5);
 
         for (BillSession bs : billSessions) {
-            System.out.println("bs.getBill().getCreditCompany() = " + bs.getBill().getCreditCompany());
             if (errorCheckAfterSaveBill(bs.getBill())) {
                 bs.getBill().setRetired(true);
                 bs.getBill().setRetireComments("Skip System Error");
@@ -1887,6 +1880,7 @@ public class ChannelBillController implements Serializable {
         bs.setItem(getbookingController().getSelectedServiceSession());
 //        bs.setPresent(true);
 //        bs.setPresent(true);
+//        bs.setPresent(true);
 //        bs.setItem(getbookingController().getSelectedServiceSession().getOriginatingSession());
 
 //        bs.setPresent(true);
@@ -1899,7 +1893,6 @@ public class ChannelBillController implements Serializable {
         bs.setStaff(getbookingController().getSelectedServiceSession().getStaff());
 
         int count = getServiceSessionBean().getSessionNumber(getbookingController().getSelectedServiceSession(), getbookingController().getSelectedServiceSession().getSessionDate(), bs);
-        System.out.println("getbookingController().getSelectedServiceSession().getStartingNo() = " + getbookingController().getSelectedServiceSession().getStartingNo());
 
         bs.setSerialNo(count);
 
@@ -2050,7 +2043,6 @@ public class ChannelBillController implements Serializable {
 
             System.out.println("discountMatrix = " + discountMatrix);
             if (discountMatrix != null) {
-                System.out.println("discountMatrix.getDiscountPercent() = " + discountMatrix.getDiscountPercent());
                 d = bf.getFeeValue() * (discountMatrix.getDiscountPercent() / 100);
                 bf.setFeeDiscount(d);
                 bf.setFeeGrossValue(bf.getFeeValue());
@@ -2060,7 +2052,6 @@ public class ChannelBillController implements Serializable {
             System.out.println("bf.getFeeVat() = " + bf.getFeeVat());
             System.out.println("bf.getFeeVatPlusValue() = " + bf.getFeeVatPlusValue());
             System.out.println("Math.round(bf.getFeeVat()) = " + Math.round(bf.getFeeVat()));
-            System.out.println("Math.round(bf.getFeeVatPlusValue()) = " + Math.round(bf.getFeeVatPlusValue()));
             //-------------runding Vat--------------
             bf.setFeeVat(Math.round(bf.getFeeVat()));
             bf.setFeeVatPlusValue(Math.round(bf.getFeeVatPlusValue()));
@@ -2087,7 +2078,6 @@ public class ChannelBillController implements Serializable {
         bill.setVatPlusNetTotal(tmpTotalVatPlusNet);
         System.out.println("tmpDiscount = " + tmpDiscount);
         System.out.println("tmpTotal = " + tmpTotal);
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         getBillFacade().edit(bill);
 
         billItem.setDiscount(tmpDiscount);
@@ -2120,7 +2110,6 @@ public class ChannelBillController implements Serializable {
         for (ItemFee ifl : itemFees) {
             if (ifl.getFeeType() == FeeType.OwnInstitution) {
 
-                System.out.println("1.agentFee = " + agentFee);
                 agentFee += ifl.getFee();
                 agentFfee += ifl.getFfee();
 

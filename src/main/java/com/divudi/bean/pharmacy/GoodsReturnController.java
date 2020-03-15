@@ -268,7 +268,6 @@ public class GoodsReturnController implements Serializable {
     }
 
     public void settle() {
-        System.err.println("1");
 
         if (getReturnBill().getToInstitution() == null) {
             UtilityController.addErrorMessage("Select Dealor");

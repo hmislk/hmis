@@ -860,7 +860,6 @@ public class PharmacyIssueController implements Serializable {
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
-        System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);

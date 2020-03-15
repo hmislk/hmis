@@ -210,7 +210,6 @@ public class PatientReportController implements Serializable {
             Date expiaryDate;
             try {
                 String ed = encryptedExpiary;
-                System.err.println("1 " + encryptedExpiary);
                 ed = securityController.decrypt(ed);
                 if (ed == null) {
                     return;
@@ -472,7 +471,6 @@ public class PatientReportController implements Serializable {
 
             Transport.send(message);
 
-            System.out.println("" + getCurrentPatientReport().getPatientInvestigation());
 
             JsfUtil.addSuccessMessage("Email Sent SUccessfully");
 
@@ -725,7 +723,6 @@ public class PatientReportController implements Serializable {
                 Map m = new HashMap();
                 m.put("iii", priv.getInvestigationItem());
                 System.out.println("m = " + m);
-                System.out.println("sql = " + sql);
                 List<IxCal> ixCals = getIxCalFacade().findBySQL(sql, m);
                 double result = 0;
                 calString = "";
@@ -1236,7 +1233,6 @@ public class PatientReportController implements Serializable {
         }
         System.out.println("stage = " + 1);
         for (PatientReportItemValue temIv : prForApproval.getPatientReportItemValues()) {
-            System.out.println("temIv = " + temIv);
             InvestigationItem temii = temIv.getInvestigationItem();
             if (temii.getIxItemType() == InvestigationItemType.Value || temii.getIxItemType() == InvestigationItemType.Calculation) {
                 System.out.println("stage = " + 2);
@@ -1244,31 +1240,24 @@ public class PatientReportController implements Serializable {
                     System.out.println("stage = " + 3);
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                         if (temIv.getStrValue() == null || temIv.getStrValue().trim().equals("")) {
-                            System.out.println("stage = " + 4);
                             flag = false;
                             appMgs += temii.getEmptyValueWarning() + "\n";
                         }
                     }
                     System.out.println("stage = " + 5);
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Double) {
-                        System.out.println("stage = " + 6);
                         if (temIv.getDoubleValue() == null) {
-                            System.out.println("stage = " + 7);
                             flag = false;
                             appMgs += temii.getEmptyValueWarning() + "\n";
                         }
                     }
-                    System.out.println("stage = " + 8);
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Memo) {
-                        System.out.println("stage = " + 9);
                         if (temIv.getLobValue() == null || temIv.getLobValue().trim().equals("")) {
-                            System.out.println("stage = " + 10);
                             flag = false;
                             appMgs += temii.getEmptyValueWarning() + "\n";
                         }
                     }
                 }
-                System.out.println("stage = " + 11);
                 if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue() || temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
                     System.out.println("stage = " + 12);
                     Double tv = null;
@@ -1281,18 +1270,13 @@ public class PatientReportController implements Serializable {
                     System.out.println("tv = " + tv);
                     System.out.println("stage = " + 13);
                     if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue()) {
-                        System.out.println("stage = " + 14);
                         if (tv > temii.getAbsoluteHighValue()) {
-                            System.out.println("stage = " + 15);
                             flag = false;
                             appMgs += temii.getAboveAbsoluteWarning() + "\n";
                         }
                     }
-                    System.out.println("stage = " + 17);
                     if (temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
-                        System.out.println("stage = " + 18);
                         if (tv < temii.getAbsoluteLowValue()) {
-                            System.out.println("stage = " + 19);
                             flag = false;
                             appMgs += temii.getBelowAbsoluteWarning() + "\n";
                         }
@@ -1304,7 +1288,6 @@ public class PatientReportController implements Serializable {
         }
         System.out.println("flag = " + flag);
         bm.setFlag(flag);
-        System.out.println("appMgs = " + appMgs);
         bm.setMessage(appMgs);
         return bm;
     }
@@ -1471,7 +1454,6 @@ public class PatientReportController implements Serializable {
             }
 
         } catch (Exception e) {
-            System.out.println("e = " + e);
         }
 
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
@@ -1503,6 +1485,7 @@ public class PatientReportController implements Serializable {
         System.out.println("enter 1");
 //        long serialVersionUID = 626953318628565053L;
         //        long serialVersionUID = 626953318628565053L;
+        //        long serialVersionUID = 626953318628565053L;
         FacesContext facesContext = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
         System.out.println("enter 2");
@@ -1519,7 +1502,6 @@ public class PatientReportController implements Serializable {
         System.out.println("enter 5");
         byte[] byteBuffer = new byte[2048];
         int byteRead;
-        System.out.println("enter 6");
         while ((byteRead = pdfInputStream.read(byteBuffer)) > 0) {
             outputStream.write(byteBuffer, 0, byteRead);
         }
@@ -1626,7 +1608,6 @@ public class PatientReportController implements Serializable {
             r = new PatientReport();
             r.setCreatedAt(Calendar.getInstance(TimeZone.getTimeZone("IST")).getTime());
             r.setCreater(getSessionController().getLoggedUser());
-            System.err.println("getSessionController().getLoggedUser() = " + getSessionController().getLoggedUser());
             r.setItem(ix);
             r.setDataEntryDepartment(sessionController.getLoggedUser().getDepartment());
             r.setDataEntryInstitution(sessionController.getLoggedUser().getInstitution());
@@ -1758,7 +1739,6 @@ public class PatientReportController implements Serializable {
         j = "select pr from PatientReport pr"
                 + " where pr.item=:ix "
                 + " order by pr.id desc";
-        System.err.println("j = " + j);
         pr = getFacade().findFirstBySQL(j, m);
         return pr;
     }
@@ -1778,7 +1758,6 @@ public class PatientReportController implements Serializable {
     public String enterNewReportFormat(PatientInvestigation pi, Investigation ix) {
         System.out.println("enterNewReportFormat");
         System.out.println("pi = " + pi);
-        System.out.println("ix = " + ix);
         currentReportInvestigation = ix;
         currentPtIx = pi;
         createNewPatientReport(pi, ix);

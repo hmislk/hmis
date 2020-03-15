@@ -712,7 +712,6 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("stf", getCurrentAdditionalForm().getStaff());
 
         staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
-        System.out.println("sql = " + sql);
 
     }
 
@@ -910,7 +909,6 @@ public class StaffAdditionalFormController implements Serializable {
             SalaryCycle s = fetchCurrentSalaryCycle(date);
             System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
             System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
-            System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
             Date nowDate = CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);
@@ -1086,7 +1084,6 @@ public class StaffAdditionalFormController implements Serializable {
 
         System.out.println("staffShift = " + staffShift);
 
-        System.out.println("staffShift.getDayType() = " + staffShift.getDayType());
 
 
         Shift shift = null;
@@ -1099,7 +1096,6 @@ public class StaffAdditionalFormController implements Serializable {
         if (currentAdditionalForm.getStaffShift().getDayType() != null || currentAdditionalForm.getStaffShift().getDayType() == DayType.DayOff
                 || currentAdditionalForm.getStaffShift().getShift().isHalfShift()) {
             dayType = currentAdditionalForm.getStaffShift().getDayType();
-            System.out.println("currentAdditionalForm.getStaffShift().getShift().isHalfShift() = " + currentAdditionalForm.getStaffShift().getShift().isHalfShift());
         } else {
             dayType = phDateController.getHolidayType(date);
         }

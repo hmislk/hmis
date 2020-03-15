@@ -612,7 +612,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     m.put("dep", department);
 
                     insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
-                    System.out.println("1");
 
                     if (insPre == null) {
 
@@ -620,12 +619,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                         m = new HashMap();
                         m.put("ins", institution);
                         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
-                        System.out.println("2");
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
                             insPre = getUserPreferenceFacade().findFirstBySQL(sql);
-                            System.out.println("3");
 
                         }
 
@@ -699,7 +696,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         System.out.println("temSQL = " + temSQL);
         System.out.println("m = " + m);
-        System.out.println("u = " + u);
 
         if (u == null) {
             return false;
@@ -878,7 +874,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggedUser.setWebUserPerson(p);
             webUserFacade.edit(loggedUser);
         }
-        System.out.println("loggedUser = " + loggedUser.getWebUserPerson().getName());
 
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());

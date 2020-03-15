@@ -157,7 +157,6 @@ public class TransferIssueController implements Serializable {
                     continue;
                 }
 
-                System.err.println("Stock " + sq.getStock());
                 BillItem bItem = new BillItem();
                 bItem.setSearialNo(getBillItems().size());
                 bItem.setItem(i.getBillItem().getItem());

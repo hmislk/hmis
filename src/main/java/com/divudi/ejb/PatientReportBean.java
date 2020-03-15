@@ -328,7 +328,6 @@ public class PatientReportBean {
         InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
         System.out.println("-------");
         System.out.println("ii = " + ii);
-        System.out.println("a.getName() = " + a.getName());
 
         if (ii == null) {
             ii = new InvestigationItem();

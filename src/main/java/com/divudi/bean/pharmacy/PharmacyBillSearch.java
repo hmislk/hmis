@@ -434,7 +434,6 @@ public class PharmacyBillSearch implements Serializable {
     private void calTotalAndUpdate2(Bill bill) {
         double tmp = 0;
         for (BillItem b : bill.getBillItems()) {
-            System.err.println("id " + b.getPharmaceuticalBillItem().getId());
             double tmp2 = (b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate());
             tmp += tmp2;
         }
@@ -1343,7 +1342,6 @@ public class PharmacyBillSearch implements Serializable {
 
     public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, Payment p) {
         for (BillFee bf : billFees) {
-            System.err.println("BillFee For In");
             setBillFeePaymentAndPayment(bf, p);
         }
     }
@@ -1968,7 +1966,6 @@ public class PharmacyBillSearch implements Serializable {
         double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
         System.err.println("Stock Qty" + stockQty);
         System.err.println("Ph Qty" + pharmaceuticalBillItem.getQtyInUnit());
-        System.err.println("Ph Qty" + pharmaceuticalBillItem.getQty());
         if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()+pharmaceuticalBillItem.getFreeQtyInUnit()) > stockQty) {
             return true;
         } else {

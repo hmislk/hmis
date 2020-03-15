@@ -270,37 +270,29 @@ public class PatientInvestigationController implements Serializable {
         apiResponse = "";
         if (username == null || username.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Username}";
-            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (password == null || password.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Password}";
-            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (machine == null || machine.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Machine Specified}";
-            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (msg == null || msg.trim().equals("")) {
             apiResponse += "#{success=false|msg=No Request From Analyzer}";
-            System.out.println("apiResponse = " + apiResponse);
             return;
         }
         if (!sessionController.loginForRequests(username, password)) {
             apiResponse += "#{success=false|msg=Wrong username/password}";
-            System.out.println("apiResponse = " + apiResponse);
             return;
         }
-        System.out.println("machine = " + machine);
         if (machine.trim().equals("SysMex")) {
             apiResponse = msgFromSysmex();
-            System.out.println("SYSMEX:apiResponse = " + apiResponse);
             return;
         } else if (machine.trim().equals("Dimension")) {
             apiResponse = msgFromDimension();
-            System.out.println("DIM:apiResponse = " + apiResponse);
             return;
         }
     }
@@ -309,7 +301,6 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("msgFromDimension");
         String temMsgs = "";
         Dimension dim = new Dimension();
-        System.out.println("msg = " + msg);
         dim.setInputStringBytesSpaceSeperated(msg);
         dim.analyzeReceivedMessage();
 
@@ -329,7 +320,6 @@ public class PatientInvestigationController implements Serializable {
             }
             dim.prepareResponseForPollMessages();
         } else if (dim.getAnalyzerMessageType() == com.divudi.data.lab.MessageType.QueryMessage) {
-            System.out.println("Query Message");
             PatientSample nps = patientSampleFromId(dim.getAnalyzerSampleId());
 
             dim.setLimsPatientSample(nps);
@@ -373,7 +363,6 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("sampleId = " + sampleId);
         System.out.println("testStr = " + testStr);
         System.out.println("result = " + result);
-        System.out.println("unit = " + unit);
         boolean temFlag = false;
         Long sid;
         try {
@@ -418,7 +407,6 @@ public class PatientInvestigationController implements Serializable {
 
                         if (test.toLowerCase().equals(testStr.toLowerCase())) {
                             if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
-                                System.out.println("Sample Components are same");
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
                                 try {
@@ -428,7 +416,6 @@ public class PatientInvestigationController implements Serializable {
                                 priv.setDoubleValue(dbl);
                                 temFlag = true;
                             } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
-                                System.out.println("Sample Components are same");
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
                                 try {
@@ -479,7 +466,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private String msgFromSysmex() {
-        System.out.println("msgFromSysmex");
         String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
@@ -1011,7 +997,6 @@ public class PatientInvestigationController implements Serializable {
         System.out.println("s.getReceipientNumber() = " + messageBody);
         System.out.println("messageBody = " + s.getReceipientNumber());
         System.out.println("s.getSendingMessage() = " + s.getSendingMessage());
-        System.out.println("  s.getInstitution().getSmsSendingPassword() = " + s.getInstitution().getSmsSendingPassword());
         getSmsController();
         boolean sent = getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
                 s.getInstitution().getSmsSendingUsername(),

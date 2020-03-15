@@ -97,6 +97,8 @@ public class SmsManagerEjb {
             System.out.println("targetURL = " + targetURL);
             //Create connection
             //Create connection
+            //Create connection
+            //Create connection
             System.out.println("1");
             URL url = new URL(targetURL);
             System.out.println("2");
@@ -120,7 +122,6 @@ public class SmsManagerEjb {
             //Get Response  
             InputStream is = connection.getInputStream();
             System.out.println("is = " + is);
-            System.out.println("9");
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));
             StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
             String line;
@@ -145,7 +146,6 @@ public class SmsManagerEjb {
         System.out.println("message = " + message);
         System.out.println("username = " + username);
         System.out.println("password = " + password);
-        System.out.println("sendingAlias = " + sendingAlias);
 
         Map<String, String> m = new HashMap();
         m.put("userName", username);

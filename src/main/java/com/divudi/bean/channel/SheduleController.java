@@ -477,7 +477,6 @@ public class SheduleController implements Serializable {
         m.put("ss", ss);
         m.put("nd", new Date());
         List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.DATE);
-        System.out.println("m = " + m);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         return sss.size() > 0;
     }
@@ -552,7 +551,6 @@ public class SheduleController implements Serializable {
     }
 
     public void saveSelected() {
-        System.err.println("1 " + getItemFees().size());
         //System.out.println("session name"+current.getName());
         if (checkError()) {
             return;
@@ -609,7 +607,6 @@ public class SheduleController implements Serializable {
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
             System.out.println("Consultant = " + staff.getPerson().getName());
-            System.out.println("m = " + m);
             List<Long> tmp = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
             tmp = serviceSessionFacade.findLongList(sql, m);
@@ -621,6 +618,10 @@ public class SheduleController implements Serializable {
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
+//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
             System.err.println("Time stage 3.2 = " + new Date());
             if (tmp.isEmpty()) {
                 return;
@@ -628,6 +629,8 @@ public class SheduleController implements Serializable {
             System.err.println("Time stage 4.1 = " + new Date());
             generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, null);
             System.err.println("Time stage 4.2 = " + new Date());
+//            generateSessionEvents(serviceSessions);
+//            generateSessionEvents(serviceSessions);
 
             System.err.println("Time stage 5 = " + new Date());
 //            generateSessionEvents(serviceSessions);
@@ -667,7 +670,6 @@ public class SheduleController implements Serializable {
                         sessionDate.setTime(ss.getSessionDate());
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
-                        System.out.println("ss.getId() = " + ss.getId());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
@@ -724,7 +726,6 @@ public class SheduleController implements Serializable {
                         sessionDate.setTime(ss.getSessionDate());
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
-                        System.out.println("ss.getId() = " + ss.getId());
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
                             ServiceSession newSs = new ServiceSession();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
@@ -787,14 +788,12 @@ public class SheduleController implements Serializable {
         System.out.println("ss.getName() = " + ss.getName());
         System.out.println("ss.getInstitution() = " + ss.getInstitution());
         System.out.println("ss.getDepartment() = " + ss.getDepartment());
-        System.out.println("ss.getStartingTime() = " + ss.getStartingTime());
         for (ServiceSession i : fetchCreatedServiceSessions(ss)) {
             System.out.println("i.getName() = " + i.getName());
             System.out.println("i.getInstitution() = " + i.getInstitution());
             System.out.println("i.getDepartment() = " + i.getDepartment());
             System.out.println("i.getStartingTime() = " + i.getStartingTime());
             System.out.println("i.getEndingTime() = " + i.getEndingTime());
-            System.out.println("i.getMaxNo() = " + i.getMaxNo());
 
             i.setName(ss.getName());
             i.setInstitution(ss.getInstitution());
@@ -900,7 +899,6 @@ public class SheduleController implements Serializable {
         list = serviceSessionFacade.findBySQL(sql, m);
         System.err.println("********");
         System.out.println("m = " + m);
-        System.out.println("sql = " + sql);
         return list;
 
     }
@@ -920,12 +918,10 @@ public class SheduleController implements Serializable {
                     itemFee.setStaff(ss.getStaff());
                 } else {
                     System.err.println("**** No Specility****");
-                    System.out.println("ss.getName() = " + ss.getName());
                     return;
                 }
             } catch (Exception e) {
                 System.err.println("**** No Specility****");
-                System.out.println("ss.getName() = " + ss.getName());
                 return;
             }
         }
@@ -935,7 +931,6 @@ public class SheduleController implements Serializable {
     public void createFeesForServiceSessionList(List<ServiceSession> serviceSessions, String name, FeeType ft) {
         for (ServiceSession ss : serviceSessions) {
             System.err.println("*********");
-            System.out.println("s.getName() = " + ss.getName());
             createFee(ss, name, ft);
         }
     }
@@ -972,7 +967,6 @@ public class SheduleController implements Serializable {
 
     public void saveFeeChanges() {
         Date nowDate = getCommonFunctions().getEndOfDay(new Date());
-        System.out.println("nowDate = " + nowDate);
         if (nowDate.before(effectiveDate)) {
             JsfUtil.addErrorMessage("Please Select Future Date");
             return;
@@ -1025,7 +1019,6 @@ public class SheduleController implements Serializable {
                         System.out.println("fc.getValidFrom() = " + fc.getValidFrom());
                         System.out.println("c.getValidFrom() = " + c.getValidFrom());
                         System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
-                        System.out.println("c.getFee().getFee() = " + c.getFee().getFee());
                         if ((fc.getFee().getFee() != 0 || fc.getFee().getFfee() != 0) && (fc.getFee().getFee() != c.getFee().getFee() || fc.getFee().getFfee() != fc.getFee().getFfee())) {
                             fc.setValidFrom(effectiveDate);
                             fc.setCreatedAt(new Date());

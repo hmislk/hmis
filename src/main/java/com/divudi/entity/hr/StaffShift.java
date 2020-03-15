@@ -609,7 +609,6 @@ public class StaffShift implements Serializable {
         Long inSecond = 0l;
         System.err.println("In");
         System.out.println("getShiftStartTime() = " + getShiftStartTime());
-        System.out.println("getShiftEndTime() = " + getShiftEndTime());
 
         //Over Time From Start Record Logged 
         extraTimeFromStartRecordLogged = 0;

@@ -197,7 +197,6 @@ public class PaymentSchemeController implements Serializable {
 
     public void saveSelectedAllowedPaymentMethod() {
         
-        System.out.println("getCurrentAllowedPaymentMethod().getPaymentMethod() = " + getCurrentAllowedPaymentMethod().getPaymentMethod());
         if (getCurrentAllowedPaymentMethod().getPaymentMethod()==null) {
             JsfUtil.addErrorMessage("Please Select Payment Methord");
             return;

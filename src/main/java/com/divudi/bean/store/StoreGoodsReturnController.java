@@ -196,7 +196,6 @@ public class StoreGoodsReturnController implements Serializable {
     }
 
     public void settle() {
-        System.err.println("1");
         if (checkGrnItems()) {
             UtilityController.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
             return;

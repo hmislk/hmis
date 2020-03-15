@@ -448,7 +448,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     public void fetchAndSetDayType(StaffShift ss) {
-        System.out.println("1.ss.getDayType() = " + ss.getDayType());
         if (ss.getDayType() == DayType.Extra || ss.getDayType() == DayType.DayOff) {
             return;
         }
@@ -691,7 +690,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         FingerPrintRecord fpr = null;
         System.out.println("ss.getStartRecord() = " + ss.getStartRecord());
-        System.out.println("ss.getPreviousStaffShift() = " + ss.getPreviousStaffShift());
         if (ss.getStartRecord() == null) {
             fpr = createFingerPrint(ss, FingerPrintRecordType.Varified, Times.inTime);
             list.add(fpr);

@@ -110,21 +110,17 @@ public class Lims {
             @PathParam("username") String username,
             @PathParam("password") String password) {
         System.out.println("password = " + password);
-        System.out.println("generateSamplesFromBill"
-                + "");
         boolean failed = false;
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         String errMsg = "";
         if (billId == null || billId.trim().equals("")) {
             failed = true;
-            System.out.println("bill number NOT entered");
             errMsg += "Bill Number not entered";
         }
         WebUser requestSendingUser = findRequestSendingUser(username, password);
         if (requestSendingUser == null) {
             errMsg += "Username / password mismatch.";
-            System.out.println("username password mismatch");
             failed = true;
         }
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
@@ -224,7 +220,6 @@ public class Lims {
         System.out.println("password = " + password);
         System.out.println("username = " + username);
         System.out.println("machine = " + machine);
-        System.out.println("message = " + message);
 
         boolean failed = false;
         JSONArray array = new JSONArray();
@@ -302,7 +297,6 @@ public class Lims {
                     + " and pi.billItem.bill=:bill";
             List<PatientInvestigation> pis = patientInvestigationFacade.findBySQL(j, m);
 
-            System.out.println("pis = " + pis);
 
             for (PatientInvestigation ptix : pis) {
 
@@ -321,11 +315,9 @@ public class Lims {
 
                 List<InvestigationItem> ixis = getItems(ix);
 
-                System.out.println("ixis = " + ixis);
 
                 for (InvestigationItem ixi : ixis) {
 
-                    System.out.println("ixis = " + ixis);
 
                     if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template) {
                         j = "select ps from PatientSample ps "
@@ -390,7 +382,6 @@ public class Lims {
                         System.out.println("j = " + j);
                         System.out.println("m = " + m);
                         ptsc = patientSampleComponantFacade.findFirstBySQL(j, m);
-                        System.out.println("ptsc = " + ptsc);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);
@@ -410,14 +401,12 @@ public class Lims {
 
         System.out.println("rPatientSamplesSet = " + rPatientSamplesSet);
         List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesSet);
-        System.out.println("rPatientSamples = " + rPatientSamples);
         return rPatientSamples;
     }
 
     public List<InvestigationItem> getItems(Investigation ix) {
         System.out.println("getItems");
         List<InvestigationItem> iis;
-        System.out.println("ix = " + ix);
         if (ix == null) {
             return new ArrayList<>();
         }
@@ -447,13 +436,10 @@ public class Lims {
         System.out.println("billId = " + billId);
         List<Bill> temBills;
         if (billId != null) {
-            System.out.println("to prepareSampleCollectionByBillId");
             temBills = prepareSampleCollectionByBillId(billId);
         } else {
-            System.out.println("to prepareSampleCollectionByBillNumber");
             temBills = prepareSampleCollectionByBillNumber(strBillId);
         }
-        System.out.println("temBills = " + temBills);
         return temBills;
     }
 
@@ -462,7 +448,6 @@ public class Lims {
         Bill b = billFacade.find(bill);
         System.out.println("b = " + b);
         List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
-        System.out.println("bs = " + bs);
         if (bs == null || bs.isEmpty()) {
             JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
             return null;
@@ -487,7 +472,6 @@ public class Lims {
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        System.out.println("validBillsOfBatchBill");
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
@@ -516,7 +500,6 @@ public class Lims {
 
         System.out.println("temSQL = " + temSQL);
         System.out.println("m = " + m);
-        System.out.println("u = " + u);
 
         if (u == null) {
             return null;

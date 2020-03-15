@@ -128,7 +128,6 @@ public class StockHistoryRecorder {
                 f.setFee(f.getFee() + fc.getFee().getFee());
                 System.out.println("2.f.getFee() = " + f.getFee());
                 System.out.println("fc.getFee().getFee() = " + fc.getFee().getFee());
-                System.out.println("1.f.getFfee() = " + f.getFfee());
                 f.setFfee(f.getFfee() + fc.getFee().getFfee());
                 getItemFeeFacade().edit(f);
             }
@@ -168,7 +167,6 @@ public class StockHistoryRecorder {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        System.out.println("m = " + m);
         consultants = staffFacade.findBySQL(sql, m);
 
         return consultants;
@@ -263,7 +261,6 @@ public class StockHistoryRecorder {
                 + " and fc.done!=true ";
         m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
         List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
-        System.out.println("m = " + m);
         return changes;
     }
 

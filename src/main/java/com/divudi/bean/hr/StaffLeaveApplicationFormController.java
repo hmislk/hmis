@@ -414,7 +414,6 @@ public class StaffLeaveApplicationFormController implements Serializable {
             SalaryCycle s = staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate());
             System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
             System.out.println("s.getWorkedToDate() = " + s.getWorkedToDate());
-            System.out.println("s.getDayOffPhFromDate() = " + s.getDayOffPhFromDate());
             Date nowDate = com.divudi.java.CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);

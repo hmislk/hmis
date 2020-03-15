@@ -97,7 +97,6 @@ public class AnalysisController implements Serializable {
                 createHelper.createDataFormat().getFormat("dd/MMMM/yyyy hh:mm"));
 
         String fileName = "Pharmacy Bill Items " + new Date() + ".xlsx";
-        System.out.println("fileName = " + fileName);
 
         message = "Creating Pharmacy Sale<br/>";
         String j;
@@ -167,7 +166,6 @@ public class AnalysisController implements Serializable {
         int billItemCount = billItems.size();
         for (BillItem bi : billItems) {
 
-            System.out.println("bi = " + bi);
             message = "Processing Row " + i + " of " + billItemCount + "rows.<br/>";
 
             Row row = sheet1.createRow(i);
@@ -279,11 +277,9 @@ public class AnalysisController implements Serializable {
 
         } catch (FileNotFoundException e) {
             Logger.getLogger(AnalysisController.class.getName()).log(Level.SEVERE, null, e);
-            System.out.println("e.getMessage = " + e.getMessage());
             message = "Error in Downloading. " + e.getMessage();
         } catch (IOException e) {
             Logger.getLogger(AnalysisController.class.getName()).log(Level.SEVERE, null, e);
-            System.out.println("e.getMessage = " + e.getMessage());
             message = "Error in Downloading. " + e.getMessage();
         }
 

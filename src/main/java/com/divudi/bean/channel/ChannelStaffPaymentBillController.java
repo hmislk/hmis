@@ -388,7 +388,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
         List<BillFee>nonRefundableBillFees=new ArrayList<>();
         nonRefundableBillFees=billFeeFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         System.out.println("nonRefundableBillFees.size() = " + nonRefundableBillFees.size());
-        System.out.println("m = " + m);
         dueBillFees.addAll(nonRefundableBillFees);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");

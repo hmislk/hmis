@@ -219,7 +219,6 @@ public class Dimension {
             responseFields.put(3, "A");
         }
         responseFields.put(4, limsPatientId);
-        System.out.println("limsPatientId = " + limsPatientId);
         responseFields.put(5, limsSampleId);
         responseFields.put(6, analyzerSampleType.getFiledValue());
         responseFields.put(7, "");
@@ -319,7 +318,6 @@ public class Dimension {
     }
 
     private void textToByteArraySeperatedBySpace() {
-        System.out.println("textToByteArraySeperatedBySpace" );
         bytes = new ArrayList<>();
         String strInput = inputStringBytesSpaceSeperated;
         String[] strByte = strInput.split("\\s+");
@@ -473,7 +471,6 @@ public class Dimension {
         if (temPs == null) {
             setLimsHasSamplesToSend(false);
         } else {
-            System.out.println("has samples");
             setLimsHasSamplesToSend(true);
             setLimsSampleId(analyzerSampleId);
             String temName = temPs.getPatient().getPerson().getName() + "                              ";

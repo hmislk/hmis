@@ -997,7 +997,6 @@ public class PharmacyAdjustmentController implements Serializable {
             JsfUtil.addErrorMessage("New Stock Equal To old Stock.");
         }
         double addQty = 0.0;
-        System.out.println("total = " + total);
 
         if (total < qty) {
             for (Stock s : stocks) {
@@ -1007,7 +1006,6 @@ public class PharmacyAdjustmentController implements Serializable {
         } else {
             boolean flag = false;
             for (Stock s : stocks) {
-                System.out.println("1.addQty = " + addQty);
                 addQty += s.getStock();
                 if (flag) {
                     s.setCalculated(0.0);

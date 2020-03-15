@@ -978,7 +978,6 @@ public class SalaryCycleController implements Serializable {
             }
             for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
                 System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
-                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue());
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
                     s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
                 }
@@ -1161,7 +1160,6 @@ public class SalaryCycleController implements Serializable {
             }
             for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
                 System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
-                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue());
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
                     s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
                 }
@@ -1246,7 +1244,6 @@ public class SalaryCycleController implements Serializable {
     }
 
     public void fillStaffPayRoll(boolean blocked, List<Staff> ses) {
-        System.out.println("staffs.size() = " + ses.size());
         if (ses.isEmpty()) {
             JsfUtil.addErrorMessage("Please select Staff");
             return;
@@ -2079,7 +2076,6 @@ public class SalaryCycleController implements Serializable {
 //#311
 //#311
 //#311
-        System.out.println("getCurrent().getSalaryFromDate() = " + getCurrent().getSalaryFromDate());
         if ((getCurrent().getSalaryFromDate().getTime() <= date.getTime()
                 && getCurrent().getSalaryToDate().getTime() >= date.getTime())) {
 
@@ -2098,7 +2094,6 @@ public class SalaryCycleController implements Serializable {
 //#311
 //#311
 //#311
-        System.out.println("getCurrent().getSalaryFromDate() = " + cycle.getSalaryFromDate());
         if ((cycle.getSalaryFromDate().getTime() <= date.getTime()
                 && cycle.getSalaryToDate().getTime() >= date.getTime())) {
 

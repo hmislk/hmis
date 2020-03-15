@@ -1324,7 +1324,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 System.out.println("m.getName() = " + m.getName());
                 System.out.println("bt = " + bt);
                 System.out.println("classType = " + classType);
-                System.out.println("count = " + count);
                 continue;
             }
             System.err.println("*****");
@@ -1332,7 +1331,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             System.out.println("bt = " + bt);
             System.out.println("lastMachine.getName() = " + lastMachine.getName());
             System.out.println("classType = " + classType);
-            System.out.println("count = " + count);
             if (lastMachine == m) {
                 row.setCountAndTotal(count, bt, classType, tot);
             } else {
@@ -1505,7 +1503,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             }
 
             System.err.println("***" + j + "***");
-            System.out.println("m.getName() = " + m.getName());
             j++;
         }
         listRowInv.add(rowInv);

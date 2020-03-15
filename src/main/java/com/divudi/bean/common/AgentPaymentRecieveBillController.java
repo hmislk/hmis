@@ -287,7 +287,6 @@ public class AgentPaymentRecieveBillController implements Serializable {
 
     public void createAgentHistory(Institution ins, double transactionValue, HistoryType historyType, Bill bill) {
         System.out.println("updating agency balance");
-        System.out.println("ins.getName() = " + ins.getName());
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
         agentHistory.setCreater(getSessionController().getLoggedUser());

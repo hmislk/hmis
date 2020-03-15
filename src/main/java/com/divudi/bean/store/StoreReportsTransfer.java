@@ -806,7 +806,6 @@ public class StoreReportsTransfer implements Serializable {
             BillClassType type = (BillClassType) ob[3];
             System.out.println("type = " + type);
             double count = (double) ob[4];
-            System.out.println("count = " + count);
             double unitValue = (double) ob[5];
             double total = (double) ob[6];
             if (lastDepartment == null) {
@@ -986,7 +985,6 @@ public class StoreReportsTransfer implements Serializable {
             Item i = (Item) ob[1];
             System.out.println("i.getName() = " + i.getName());
             BillClassType type = (BillClassType) ob[2];
-            System.out.println("type = " + type);
             double count = (double) ob[3];
 //            System.out.println("count = " + count);
             double unitValue = (double) ob[4];
@@ -1166,7 +1164,6 @@ public class StoreReportsTransfer implements Serializable {
         m.put("bt", bt);
 
         objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("m = " + m);
         return objects;
 
     }

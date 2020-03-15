@@ -180,7 +180,6 @@ public class InvestigationItemController implements Serializable {
                     System.out.println("tix.getSample() = " + tix.getSample());
                     System.out.println("tixi.getSample() = " + tixi.getSample());
                     tixi.setMachine(tix.getMachine());
-                    System.out.println("tix.getMachine() = " + tix.getMachine());
                     Item sc = itemController.getFirstInvestigationSampleComponents(tix);
                     tixi.setSampleComponent(sc);
                     getFacade().edit(tixi);
@@ -479,7 +478,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void makeThisCurrent(InvestigationItem ii) {
-        System.out.println("saving Ii on Ajax");
         setCurrent(ii);
     }
 
@@ -613,7 +611,6 @@ public class InvestigationItemController implements Serializable {
 
     public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
         System.out.println("completeIxItemForAnyIx");
-        System.out.println("qry = " + qry);
         List<InvestigationItem> iivs;
         if (qry.trim().equals("")) {
             return new ArrayList<>();
@@ -634,7 +631,6 @@ public class InvestigationItemController implements Serializable {
             System.out.println("m = " + m);
             System.out.println("sql = " + sql);
             iivs = getEjbFacade().findBySQL(sql, m);
-            System.out.println("iivs = " + iivs);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -815,7 +811,6 @@ public class InvestigationItemController implements Serializable {
 
             try {
 
-                System.out.println("ri = " + ri);
 
                 ri.setCssTop(ri.getCssTop().replace("%", ""));
                 ri.setCssLeft(ri.getCssLeft().replace("%", ""));
@@ -1812,7 +1807,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void setCurrent(InvestigationItem current) {
-        System.out.println("current = " + current);
         this.current = current;
     }
 

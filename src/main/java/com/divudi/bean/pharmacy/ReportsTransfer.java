@@ -1475,7 +1475,6 @@ public class ReportsTransfer implements Serializable {
             } catch (Exception e) {
                 totalValue = 0.0;
             }
-            System.out.println("totalValue = " + totalValue);
             count.setCountIssue(qty);
             count.setTotalIssue(totalValue);
             List<Object[]> objectBHT = fetchBHTIsssue(BillType.PharmacyBhtPre, i);

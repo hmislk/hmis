@@ -845,7 +845,6 @@ public class Api {
 
         sessions = getStaffFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("m = " + m);
 
         return sessions;
     }

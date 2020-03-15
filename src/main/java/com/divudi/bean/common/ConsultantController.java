@@ -119,7 +119,6 @@ public class ConsultantController implements Serializable {
 
         sql += " order by c.codeInterger , c.person.name ";
 
-        System.out.println("sql = " + sql);
         items = getFacade().findBySQL(sql, m);
         
     }

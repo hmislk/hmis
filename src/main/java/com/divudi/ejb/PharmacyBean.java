@@ -617,7 +617,6 @@ public class PharmacyBean {
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
-            System.out.println("s.getItemBatch().getItem().getName() = " + s.getItemBatch().getItem().getName());
             if (s.getStock() >= toAddQty) {
                 list.add(new StockQty(s, toAddQty));
                 break;
@@ -1201,7 +1200,6 @@ public class PharmacyBean {
             System.out.println("error = " + e.getMessage());
             System.out.println("name = " + name);
             System.out.println("j = " + j);
-            System.out.println("m = " + m);
             return null;
         }
 
@@ -1213,7 +1211,6 @@ public class PharmacyBean {
                 getPharmaceuticalItemCategoryFacade().create(cat);
             } catch (Exception e) {
                 System.out.println("error = " + e.getMessage());
-                System.out.println("name = " + name);
                 return null;
             }
         } else if (cat != null) {
@@ -1241,7 +1238,6 @@ public class PharmacyBean {
         
         }catch(Exception e){
             System.out.println("e = " + e.getMessage());
-            System.out.println("name = " + name);
             return null;
         }
         

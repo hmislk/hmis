@@ -368,7 +368,6 @@ public class StaffController implements Serializable {
 
         sql += " order by ss.codeInterger ";
         System.out.println(sql);
-        System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
@@ -424,7 +423,6 @@ public class StaffController implements Serializable {
 
         sql += " order by ss.codeInterger ";
         System.out.println(sql);
-        System.out.println("hm = " + hm);
         staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
@@ -1076,7 +1074,6 @@ public class StaffController implements Serializable {
         getCurrent().chageCodeToInteger();
 
         if (getCurrent().getPerson().getDob() != null && getCurrent().getPerson().getSex() != null) {
-            System.out.println("getCurrent().getPerson().getSex() = " + getCurrent().getPerson().getSex());
             Calendar dob = Calendar.getInstance();
             dob.setTime(getCurrent().getPerson().getDob());
             Calendar dor = Calendar.getInstance();
@@ -1089,7 +1086,6 @@ public class StaffController implements Serializable {
             }
             if (getCurrent().getPerson().getSex() == Sex.Male || getCurrent().getPerson().getSex() == Sex.Female) {
                 System.out.println("dor.get(Calendar.YEAR) = " + dor.get(Calendar.YEAR));
-                System.out.println("dor.getTime = " + dor.getTime());
                 if (getCurrent().getDateRetired() != null) {
 //                    if (dor.getTime().after(getCurrent().getDateRetired())) {
 //                        getCurrent().setDateRetired(dor.getTime());

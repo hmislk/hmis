@@ -1937,7 +1937,6 @@ public class SearchController implements Serializable {
                     bs.add(b);
                 }
             }
-            System.out.println("bs.size() = " + bs.size());
             if (bool) {
                 bills = bs;
             } else {
@@ -4294,7 +4293,6 @@ public class SearchController implements Serializable {
         m.put("bn", getSessionController().getBillNo());
 
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
-        System.out.println("m = " + m);
 
 //        return "/reports_list";
         if (userPatientInvestigations.size() > 0) {
@@ -4382,9 +4380,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         //System.err.println("Sql " + sql);
         //System.err.println("Sql " + sql);
-
         //System.err.println("Sql " + sql);
-        System.out.println("Time 1 = " + new Date());
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(patientInvestigations);
 
@@ -4731,7 +4727,6 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         pbs = getBillFacade().findBySQLWithoutCache(sql, temMap2, TemporalType.TIMESTAMP, 50);
 
-        System.out.println("pbs = " + pbs);
         abs.removeAll(pbs);
         aceptPaymentBills.addAll(abs);
 
@@ -5382,7 +5377,6 @@ public class SearchController implements Serializable {
 
         }
         sql += " order by b.insId ";
-        System.out.println("sql = " + sql);
 //        m.put("class", PreBill.class);
         bills = getBillFacade().findBySQL(sql, m);
     }
@@ -7175,7 +7169,6 @@ public class SearchController implements Serializable {
             FileOutputStream out = new FileOutputStream(f);
             int read = 0;
             byte[] bytes = new byte[1024];
-            System.err.println("in 4");
             while ((read = in.read(bytes)) != -1) {
                 out.write(bytes, 0, read);
             }
@@ -7286,7 +7279,6 @@ public class SearchController implements Serializable {
         System.out.println("afterPaid.size() = " + afterPaid.size());
         billFees.addAll(afterPaid);
         List<BillFee> removeingBillFees = new ArrayList<>();
-        System.out.println("billFees.size() = " + billFees.size());
 
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false "

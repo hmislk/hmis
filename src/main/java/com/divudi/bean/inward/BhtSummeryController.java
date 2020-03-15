@@ -633,7 +633,6 @@ public class BhtSummeryController implements Serializable {
 
         double value = total - (serviceValue + patientItemTotal + outSide);
 
-        System.err.println("Service Value " + serviceValue);
         return value;
     }
 
@@ -649,7 +648,6 @@ public class BhtSummeryController implements Serializable {
             double value = bf.getFeeGrossValue() + bf.getFeeMargin();
             double dis = (value * discountPercent) / 100;
             System.err.println("1 Fee Gross Value " + bf.getFeeGrossValue());
-            System.err.println("1 Fee Net Value " + bf.getFeeValue());
             disTot += dis;
             bf.setFeeDiscount(dis);
             bf.setFeeValue(value - dis);
@@ -670,7 +668,6 @@ public class BhtSummeryController implements Serializable {
 
         for (BillFee bf : list) {
             double value = bf.getFeeGrossValue() + bf.getFeeMargin();
-            System.err.println("1 Fee Gross Value " + bf.getFeeGrossValue());
             bf.setFeeDiscount(0.0);
             bf.setFeeValue(value);
             getBillFeeFacade().edit(bf);
@@ -698,7 +695,6 @@ public class BhtSummeryController implements Serializable {
             System.err.println("//////////////////");
             System.err.println("1 Fee Gross Value " + bf.getGrossValue());
             System.err.println("Issue Value " + bf.getNetValue());
-            System.err.println("Issue Margin " + bf.getMarginValue());
             disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -742,7 +738,6 @@ public class BhtSummeryController implements Serializable {
             System.err.println("//////////////////");
             System.err.println("Bill No" + bf.getBill().getDeptId());
             System.err.println("1 Fee Gross Value " + bf.getGrossValue());
-            System.err.println("Issue Margin " + bf.getMarginValue());
 //            disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -1398,7 +1393,6 @@ public class BhtSummeryController implements Serializable {
         getIntrimPrintController().getCurrentBill().setPaidAmount(paid);
         getIntrimPrintController().getCurrentBill().setAdjustedTotal(grantTotal);
 
-        System.err.println("1 " + patientEncounter);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             BillItem billItem = new BillItem();

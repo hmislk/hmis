@@ -921,7 +921,6 @@ public class BhtSummeryFinalizedController implements Serializable {
     BillBeanController billBeanController;
 
     public void changeDiscountListener(double discount, double total, PatientEncounter patientEncounter, BillType billType) {
-        System.err.println("BillItem Total " + total);
         double discountPercent = (discount * 100) / total;
         double disValue = 0;
 

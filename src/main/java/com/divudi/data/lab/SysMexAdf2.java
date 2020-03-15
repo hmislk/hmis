@@ -96,7 +96,6 @@ public class SysMexAdf2 {
         if (tpcv < 5 || tpcv > 60) {
             return false;
         }
-        System.out.println("HCT  checks ok");
 
         Double twbc = findValue(wbcStart, wbcEnd, 0);
         if (twbc < 1000 || twbc > 50000) {
@@ -517,7 +516,6 @@ public class SysMexAdf2 {
     public String getWbc() {
         double w = findValue(wbcStart, wbcEnd, 0);
         String ws = findStringValue(wbcStart, wbcEnd);
-        System.out.println("wbcStart = " + wbcStart);
         wbc = round(w, -2);
         wbc = addDecimalSeperator(wbc);
         return wbc;

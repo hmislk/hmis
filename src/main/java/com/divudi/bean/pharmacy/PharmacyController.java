@@ -1597,7 +1597,6 @@ public class PharmacyController implements Serializable {
         createInstitutionStock();
         System.out.println("Time 5 = " + new Date());
         createInstitutionTransferIssue();
-        System.out.println("Time 6 = " + new Date());
         createInstitutionIssue();
         createInstitutionTransferReceive();
     }

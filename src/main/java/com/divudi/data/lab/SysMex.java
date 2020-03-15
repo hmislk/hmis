@@ -129,7 +129,6 @@ public class SysMex {
         if (tpcv < 5 || tpcv > 60) {
             return false;
         }
-        System.out.println("HCT  checks ok");
 
         Double twbc = findValue(wbcStart, wbcEnd, 0);
         if (twbc < 1000 || twbc > 50000) {
@@ -660,7 +659,6 @@ public class SysMex {
 
     public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
         this.inputStringBytesSpaceSeperated = inputStringBytesSpaceSeperated;
-        System.out.println("inputStringBytesSpaceSeperated = " + inputStringBytesSpaceSeperated);
         textToByteArraySeperatedBySpace();
     }
 
@@ -692,7 +690,6 @@ public class SysMex {
     public String getWbc() {
         double w = findValue(wbcStart, wbcEnd, 0);
         String ws = findStringValue(wbcStart, wbcEnd);
-        System.out.println("wbcStart = " + wbcStart);
         wbc = round(w, -2);
         wbc = addDecimalSeperator(wbc);
         return wbc;

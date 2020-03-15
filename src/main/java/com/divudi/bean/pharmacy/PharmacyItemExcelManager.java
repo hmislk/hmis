@@ -607,7 +607,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 Bill refApproved = b.getReferenceBill().getReferenceBill();
                 System.err.println("Grn No" + b.getDeptId());
                 System.err.println("Po No " + b.getReferenceBill().getDeptId());
-                System.err.println("1 " + b.getBillType());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -704,14 +703,12 @@ public class PharmacyItemExcelManager implements Serializable {
         m.put("bt", BillType.StoreGrnBill);
 
         bills = getBillFacade().findBySQL(sql, m);
-        System.out.println("Bills = " + bills);
         for (Bill b : bills) {
             System.out.println("1. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             System.out.println("1. b.getNetTotal() = " + b.getNetTotal());
             b.setGrnNetTotal(0 - b.getBilledBill().getGrnNetTotal());
             getBillFacade().edit(b);
             System.out.println("2. b.getGrnNetTotal() = " + b.getGrnNetTotal());
-            System.out.println("2. b.getNetTotal() = " + b.getNetTotal());
         }
 
     }
@@ -972,7 +969,6 @@ public class PharmacyItemExcelManager implements Serializable {
         for (BillItem obj : list) {
             IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(obj.getBill().getDepartment(), obj.getBill().getToDepartment());
             if (issueRateMargins == null) {
-                System.out.println("ERRROR");
                 continue;
             }
 
@@ -983,7 +979,6 @@ public class PharmacyItemExcelManager implements Serializable {
             }
 
             double value = obj.getNetRate() * obj.getPharmaceuticalBillItem().getQty();
-            System.out.println("*************************************");
             System.out.println("*************************************");
             System.out.println("*************************************");
             System.out.println("*************************************");
@@ -1056,7 +1051,6 @@ public class PharmacyItemExcelManager implements Serializable {
         for (BillItem obj : list) {
             IssueRateMargins issueRateMargins = pharmacyBean.fetchIssueRateMargins(obj.getBill().getDepartment(), obj.getBill().getToDepartment());
             if (issueRateMargins == null) {
-                System.out.println("ERRROR");
                 continue;
             }
 
@@ -1163,7 +1157,6 @@ public class PharmacyItemExcelManager implements Serializable {
         List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap);
 
         for (PharmaceuticalBillItem b : list) {
-            System.err.println("Item Name " + b.getBillItem().getItem().getName());
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             PharmaceuticalBillItem phi = getPreviousPharmacuticalBillByBatch(b.getStock().getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
             if (sh != null) {
@@ -1184,7 +1177,6 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcelWithStock() {
-        System.out.println("importing to excel");
         String strCat;
         String strAmp;
         String strCode;
@@ -1331,14 +1323,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (!strGenericName.equals("")) {
                     vtm = getPharmacyBean().getVtmByName(strGenericName);
                 } else {
-                    System.out.println("vtm is null");
                     vtm = null;
                 }
 
                 //Vmp
                 vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
                 if (vmp == null) {
-                    System.out.println("vmp is null");
                     continue;
                 } else {
                     vmp.setCategory(phType);
@@ -1369,7 +1359,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (!strCat.equals("")) {
                     amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n "
                             + " AND c.vmp=:v", m);
-                    System.out.println("m = " + m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -1386,7 +1375,6 @@ public class PharmacyItemExcelManager implements Serializable {
                     }
                 } else {
                     amp = null;
-                    System.out.println("amp is null");
                 }
                 if (amp == null) {
                     continue;
@@ -1413,14 +1401,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 strDistributor = cell.getContents();
                 distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
                 if (distributor != null) {
-                    System.out.println("distributor = " + distributor.getName());
                     ItemsDistributors id = new ItemsDistributors();
                     id.setInstitution(distributor);
                     id.setItem(amp);
                     id.setOrderNo(0);
                     getItemsDistributorsFacade().create(id);
                 } else {
-                    System.out.println("distributor is null");
                 }
                 //Manufacture
                 cell = sheet.getCell(manufacturerCol, i);
@@ -1479,7 +1465,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
                 System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
-                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe) = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getDoe());
                 if (batch == null || batch.trim().equals("")) {
                     getPharmacyPurchaseController().setBatch();
                 } else {
@@ -1506,7 +1491,6 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importFromExcelByName() {
-        System.out.println("importing to excel");
         String strAmp;
         Amp amp;
         itemNamesFailedToImport = new ArrayList<>();
@@ -1612,7 +1596,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
                 System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
-                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe) = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getDoe());
                 if (batch == null || batch.trim().equals("")) {
                     getPharmacyPurchaseController().setBatch();
                 } else {
@@ -1629,7 +1612,6 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importFromExcelByBarcode() {
-        System.out.println("importing to excel");
         String strAmp;
         Amp amp;
 
@@ -1734,7 +1716,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp);
                 System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(sp); = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getRetailRate());
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe);
-                System.out.println("getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setDoe(doe) = " + getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().getDoe());
                 if (batch == null || batch.trim().equals("")) {
                     getPharmacyPurchaseController().setBatch();
                 } else {
@@ -1751,7 +1732,6 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcel() {
-        System.out.println("importing to excel");
         String strCat;
         String strAmp;
         String strCode;
@@ -1887,14 +1867,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (!strGenericName.equals("")) {
                     vtm = getPharmacyBean().getVtmByName(strGenericName);
                 } else {
-                    System.out.println("vtm is null");
                     vtm = null;
                 }
 
                 //Vmp
                 vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
                 if (vmp == null) {
-                    System.out.println("vmp is null");
                     continue;
                 } else {
                     vmp.setCategory(phtype);
@@ -1917,7 +1895,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (!strCat.equals("")) {
                     amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
-                        System.out.println("amp = " + amp);
                         amp = new Amp();
                         amp.setName(strAmp);
                         amp.setCode(strCode);
@@ -1932,12 +1909,10 @@ public class PharmacyItemExcelManager implements Serializable {
                         amp.setDepartmentType(DepartmentType.Pharmacy);
                         amp.setCode(strCode);
                         getAmpFacade().edit(amp);
-                        System.out.println("amp = " + amp);
                     }
                 } else {
                     System.out.println("amp is null");
                     amp = null;
-                    System.out.println("amp is null");
                 }
                 if (amp == null) {
                     continue;
@@ -1956,7 +1931,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Code
                 cell = sheet.getCell(barcodeCol, i);
                 strBarcode = cell.getContents();
-                System.out.println("strBarCode = " + strBarcode);
                 amp.setBarcode(strBarcode);
                 getAmpFacade().edit(amp);
                 //Distributor
@@ -1964,14 +1938,12 @@ public class PharmacyItemExcelManager implements Serializable {
                 strDistributor = cell.getContents();
                 distributor = getInstitutionController().getInstitutionByName(strDistributor, InstitutionType.Dealer);
                 if (distributor != null) {
-                    System.out.println("distributor = " + distributor.getName());
                     ItemsDistributors id = new ItemsDistributors();
                     id.setInstitution(distributor);
                     id.setItem(amp);
                     id.setOrderNo(0);
                     getItemsDistributorsFacade().create(id);
                 } else {
-                    System.out.println("distributor is null");
                 }
             }
 
@@ -2201,7 +2173,6 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcelBarcode() {
-        System.out.println("importing to excel");
 
         String strAmp;
         String strBarcode;
@@ -2242,7 +2213,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 //Amp
                 cell = sheet.getCell(ampCol, i);
                 strAmp = cell.getContents();
-                System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp);
 
@@ -2284,7 +2254,6 @@ public class PharmacyItemExcelManager implements Serializable {
     }
 
     public String importToExcelCategoriOnly() {
-        System.out.println("importing to excel");
         String strCat;
         String strAmp = null;
 
@@ -2329,7 +2298,6 @@ public class PharmacyItemExcelManager implements Serializable {
                 if (cat == null) {
                     continue;
                 }
-                System.out.println("cat = " + cat.getName());
                 if (!strCat.equals("")) {
                     amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
@@ -2344,7 +2312,6 @@ public class PharmacyItemExcelManager implements Serializable {
                     }
                 } else {
                     amp = null;
-                    System.out.println("amp is null");
                 }
                 if (amp == null) {
                     continue;

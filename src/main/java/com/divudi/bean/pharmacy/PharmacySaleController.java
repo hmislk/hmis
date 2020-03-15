@@ -1631,7 +1631,6 @@ public class PharmacySaleController implements Serializable {
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         System.out.println("membershipScheme = " + membershipScheme);
-        System.out.println("discountAllowed = " + discountAllowed);
         
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
@@ -1640,7 +1639,6 @@ public class PharmacySaleController implements Serializable {
                 tpm = PaymentMethod.Cash;
             }
             PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
-            System.out.println("priceMatrix = " + priceMatrix);
             if (priceMatrix == null) {
                 return 0;
             } else {
@@ -1786,7 +1784,6 @@ public class PharmacySaleController implements Serializable {
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
-        System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);

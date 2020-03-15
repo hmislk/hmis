@@ -174,7 +174,6 @@ public class StaffShiftController implements Serializable {
         for (StaffShift ss : lststaffShifts) {
             if (ss.getRoster() == null) {
                 if (ss.getStaff().getRoster() != null) {
-                    System.out.println("ss = " + ss);
                     ss.setRoster(ss.getStaff().getRoster());
                     ejbFacade.edit(ss);
                 } else {
