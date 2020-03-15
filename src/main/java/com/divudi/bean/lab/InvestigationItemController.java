@@ -507,7 +507,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveUpAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -521,7 +521,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveLeftAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -535,7 +535,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveDownAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -549,7 +549,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void fixWidthAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -563,7 +563,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void fixHeightAllReportItems() {
-        if (getItems().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -577,7 +577,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void moveRightAllReportItems() {
-        if (getAllReportItemList().isEmpty()) {
+        if (getSelectedItemsToChange().isEmpty()) {
             UtilityController.addErrorMessage("There is No items to move");
             return;
         }
@@ -591,7 +591,10 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void updateAllFontValues() {
-
+        if (getSelectedItemsToChange().isEmpty()) {
+            UtilityController.addErrorMessage("There is No items to update font");
+            return;
+        }
         for (ReportItem ri : getSelectedItemsToChange()) {
             if (fontFamily != null) {
                 ri.setCssFontFamily(fontFamily);
@@ -606,6 +609,37 @@ public class InvestigationItemController implements Serializable {
 
         UtilityController.addSuccessMessage("Update Success");
 
+    }
+
+    public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
+        System.out.println("completeIxItemForAnyIx");
+        System.out.println("qry = " + qry);
+        List<InvestigationItem> iivs;
+        if (qry.trim().equals("")) {
+            return new ArrayList<>();
+        } else {
+            String sql;
+            Map m = new HashMap();
+            sql = "select i from InvestigationItem i where i.retired<>true "
+                    + "and i.ixItemType = :t "
+                    + "and upper(i.name) like :n "
+                    + "order by i.name";
+
+            sql = "select i from InvestigationItem i where "
+                    + " upper(i.name) like :n "
+                    + "order by i.name";
+
+//            m.put("t", InvestigationItemType.Value);
+            m.put("n", "'%" + qry.toUpperCase() + "%'");
+            System.out.println("m = " + m);
+            System.out.println("sql = " + sql);
+            iivs = getEjbFacade().findBySQL(sql, m);
+            System.out.println("iivs = " + iivs);
+        }
+        if (iivs == null) {
+            iivs = new ArrayList<>();
+        }
+        return iivs;
     }
 
     public List<InvestigationItem> completeIxItem(String qry) {
@@ -814,7 +848,6 @@ public class InvestigationItemController implements Serializable {
                 } catch (Exception e) {
                     ri.setRiWidth(40);
                 }
-
 
                 if (ri.getHtmltext() == null || ri.getHtmltext().trim().equals("")) {
                     ri.setHtmltext(ri.getName());
@@ -1799,7 +1832,7 @@ public class InvestigationItemController implements Serializable {
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item=:item order by i.riTop, i.riLeft";
             Map m = new HashMap();
             m.put("item", ix);
-            iis = getFacade().findBySQL(temSql, m);
+            iis = ejbFacade.findBySQL(temSql, m);
         } else {
             iis = new ArrayList<>();
         }
@@ -2243,9 +2276,6 @@ public class InvestigationItemController implements Serializable {
         this.selectedItemsToChange = selectedItemsToChange;
     }
 
-    
-    
-    
     /**
      *
      */

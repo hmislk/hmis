@@ -108,8 +108,8 @@
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
                     <h:panelGroup id="gpBillPreview">
-                        <bill:payment bill="#{inwardPaymentController.current}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}"/>
-                        <bill:payment_coop bill="#{inwardPaymentController.current}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}"/>
+                        <bill:payment bill="#{inwardPaymentController.current}" rendered="#{sessionController.currentPreference.applicationInstitution ne 'Cooperative'}"/>
+                        <bill:payment_coop bill="#{inwardPaymentController.current}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Cooperative'}"/>
                     </h:panelGroup>
                 </h:panelGroup>
 

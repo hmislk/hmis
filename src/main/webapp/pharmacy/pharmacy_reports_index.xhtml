@@ -29,6 +29,7 @@
                             <p:tab title="Item Reports">
                                 <h:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" value="Items List" action="/pharmacy/list_amps" actionListener="#{ampController.createItemList()}" ajax="false" ></p:commandButton>                            
+                                    <p:commandButton styleClass="linkButton" value="Medicine List" action="/pharmacy/list_medicines" actionListener="#{ampController.createMedicineList()}" ajax="false" ></p:commandButton>                            
                                     <p:commandButton styleClass="linkButton" value="Items Summary" action="/pharmacy/pharmacy_report_amp_by_name" ajax="false" ></p:commandButton>           
                                     <p:commandButton styleClass="linkButton" value="Items With Out Distributor" action="/pharmacy/pharmacy_report_list_amps_with_out_distributor" actionListener="#{pharmacySaleReport.makeNull}" ajax="false" ></p:commandButton>
                                     <p:commandButton styleClass="linkButton" value="Items With Suppliers and Prices" action="/pharmacy/item_supplier_prices"  ajax="false" ></p:commandButton>

@@ -249,7 +249,7 @@
             <url>file:${project.basedir}/lib</url>
         </repository>
         <repository>
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
+            <url>https://download.eclipse.org/rt/eclipselink/maven.repo/</url>
             <id>eclipselink</id>
             <layout>default</layout>
             <name>Repository for library EclipseLink (JPA 2.1)</name>

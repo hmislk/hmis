@@ -105,6 +105,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUser loggedUser = null;
     private UserPreference loggedPreference;
     private UserPreference applicationPreference;
+    private UserPreference institutionPreference;
     UserPreference userPreference;
     boolean logged = false;
     boolean activated = false;
@@ -677,6 +678,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loginForRequestsForDoctors(userName, passord);
     }
 
+    
+
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
@@ -697,7 +700,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         System.out.println("temSQL = " + temSQL);
         System.out.println("m = " + m);
         System.out.println("u = " + u);
-        
+
         if (u == null) {
             return false;
         }
@@ -711,7 +714,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
             String sql;
 
-            
             loginRequestResponse += "Login=1|";
             loginRequestResponse += "User=" + u.getName() + "|";
             loginRequestResponse += "UserId=" + u.getId() + "|";
@@ -1478,6 +1480,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setLoginRequestResponse(String loginRequestResponse) {
         this.loginRequestResponse = loginRequestResponse;
     }
+    
+    
 
     public UserPreference getApplicationPreference() {
         if (applicationPreference == null) {
@@ -1497,4 +1501,16 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.applicationPreference = applicationPreference;
     }
 
+    public UserPreference getInstitutionPreference() {
+        institutionPreference = getApplicationPreference();
+        return institutionPreference;
+    }
+
+    public void setInstitutionPreference(UserPreference institutionPreference) {
+        this.institutionPreference = institutionPreference;
+        setApplicationPreference(institutionPreference);
+    }
+
+    
+    
 }

@@ -229,11 +229,11 @@ public class BillController implements Serializable {
         return "/lab/collecting_centre";
     }
 
-    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
+    public  List<Bill> validBillsOfBatchBill(Bill batchBill) {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return getFacade().findBySQL(j, m);
+        return billFacade.findBySQL(j, m);
     }
 
     public List<Bill> getSelectedBills() {
@@ -1457,17 +1457,18 @@ public class BillController implements Serializable {
             }
 
         }
-
-        if (!sessionController.getApplicationPreference().getCanSettleOpdBillWithoutReferringDoctor()) {
-            for (BillEntry be : getLstBillEntries()) {
-                if (be.getBillItem().getItem() instanceof Investigation) {
-                    if (referredBy == null && referredByInstitution == null) {
-                        UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
-                        return true;
-                    }
-                }
-            }
-        }
+        
+//
+//        if (!sessionController.getApplicationPreference().getCanSettleOpdBillWithoutReferringDoctor()) {
+//            for (BillEntry be : getLstBillEntries()) {
+//                if (be.getBillItem().getItem() instanceof Investigation) {
+//                    if (referredBy == null && referredByInstitution == null) {
+//                        UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+//                        return true;
+//                    }
+//                }
+//            }
+//        }
 
 //            if (getStrTenderedValue() == null) {
 //                UtilityController.addErrorMessage("Please Enter Tenderd Amount");

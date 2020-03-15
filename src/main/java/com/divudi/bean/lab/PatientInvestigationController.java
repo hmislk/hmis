@@ -9,6 +9,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.report.InstitutionLabSumeryController;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.InvestigationItemType;
+import com.divudi.data.InvestigationReportType;
 import com.divudi.data.ItemType;
 import com.divudi.data.MessageType;
 import com.divudi.data.lab.Dimension;
@@ -42,6 +43,7 @@ import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
+import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.PatientSampleComponantFacade;
 import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.ReportItemFacade;
@@ -128,6 +130,8 @@ public class PatientInvestigationController implements Serializable {
     private ItemFacade itemFacade;
     @EJB
     private SmsManagerEjb smsManagerEjb;
+    @EJB
+    private PatientReportItemValueFacade patientReportItemValueFacade;
     /*
      * Controllers
      */
@@ -147,6 +151,7 @@ public class PatientInvestigationController implements Serializable {
     private ItemForItemController itemForItemController;
     @Inject
     private SmsController smsController;
+
     /**
      * Class Variables
      */
@@ -194,6 +199,28 @@ public class PatientInvestigationController implements Serializable {
     private String shift2;
 
     private String apiResponse = "#{success=false|msg=No Requests}";
+
+    private List<PatientReportItemValue> patientReportItemValues;
+
+    public void fillPatientReportItemValues() {
+        String j = "select v from PatientReportItemValue v "
+                + "where v.patientReport.approved=:app "
+                + " and (v.investigationItem.ixItemType=:vtv or v.investigationItem.ixItemType=:vtc)"
+                + " and  v.patientReport.patientInvestigation.investigation.reportType=:rt";
+        Map m = new HashMap();
+        m.put("app", true);
+        m.put("vtv", InvestigationItemType.Value);
+        m.put("vtc", InvestigationItemType.Calculation);
+        m.put("rt", InvestigationReportType.General);
+        if (false) {
+            PatientReportItemValue v = new PatientReportItemValue();
+            if (v.getPatientReport().getPatientInvestigation().getInvestigation().getReportType() 
+                    == InvestigationReportType.General) {
+
+            }
+        }
+        patientReportItemValues = getPatientReportItemValueFacade().findBySQL(j, m, 10000000);
+    }
 
     public void sentRequestToAnalyzer() {
         if (currentPatientSample == null) {
@@ -1135,8 +1162,7 @@ public class PatientInvestigationController implements Serializable {
 
     }
 
- 
-   public void prepareSampleCollectionByRequest() {
+    public void prepareSampleCollectionByRequest() {
         samplingRequestResponse = "#{";
         if (inputBillId == null || inputBillId.trim().equals("")) {
             samplingRequestResponse += "Login=0|Message=Bill Number not entered.}#";
@@ -1205,8 +1231,6 @@ public class PatientInvestigationController implements Serializable {
         samplingRequestResponse += "}#";
     }
 
-    
-    
     public void prepareSampleCollection() {
         Long billId = stringToLong(inputBillId);
         List<Bill> temBills;
@@ -1849,6 +1873,18 @@ public class PatientInvestigationController implements Serializable {
 
     public SmsController getSmsController() {
         return smsController;
+    }
+
+    public List<PatientReportItemValue> getPatientReportItemValues() {
+        return patientReportItemValues;
+    }
+
+    public void setPatientReportItemValues(List<PatientReportItemValue> patientReportItemValues) {
+        this.patientReportItemValues = patientReportItemValues;
+    }
+
+    public PatientReportItemValueFacade getPatientReportItemValueFacade() {
+        return patientReportItemValueFacade;
     }
 
     /**

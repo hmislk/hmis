@@ -36,7 +36,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl,tbl3,tbl4" fileName="newly_added_report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Inward_report"  ></p:dataExporter>
                             </p:commandButton>  
                         </p:panelGrid>
 
@@ -55,6 +55,23 @@
                                 </f:facet>
                                 <h:outputLabel   value="#{bip.bill.patientEncounter.bhtNo}"/>
                             </p:column>
+                            
+                            <p:column headerText="Invoice No">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Invoice No"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bip.bill.insId}"/>
+                            </p:column>
+
+                            <p:column headerText="Discharge Date">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Discharge Date"/> 
+                                </f:facet>
+                                <h:outputLabel   value="#{bip.bill.patientEncounter.dateOfDischarge}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
+
                             <p:column headerText="Inward Charge Type">
                                 <f:facet name="header">
                                     <h:outputLabel value="Inward Charge Type"/> 
@@ -68,11 +85,6 @@
                                 <h:outputLabel  value="#{bip.grossValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.grantTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
                             </p:column>                            
                             <p:column headerText="Discount Value"  styleClass="averageNumericColumn">
                                 <f:facet name="header">
@@ -81,11 +93,6 @@
                                 <h:outputLabel  value="#{bip.discount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.discount}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Net Value"  styleClass="averageNumericColumn">
@@ -95,11 +102,6 @@
                                 <h:outputLabel  value="#{bip.netValue}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel  value="#{bhtSummeryFinalizedController.bill.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </f:facet>
                             </p:column>
 
                         </p:dataTable>

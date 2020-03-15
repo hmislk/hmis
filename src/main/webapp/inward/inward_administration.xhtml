@@ -10,59 +10,62 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-
                 <h:form>
-                    <p:panel header="Inward Administration">
-                        <p:tabView orientation="left">
-                            <p:tab title="Manage Admission Types">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Manage Admission Types" 
-                                                     action="inward_admission_type" onclick="onSubmitButton();" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Price Matrix">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Price Adjustment - Service " action="inward_price_adjustment_service" onclick="onSubmitButton();"></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Price Adjustment - Invesitaation " action="inward_price_adjustment_investigation" onclick="onSubmitButton();"></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Price Adjustment - Pharmacy " action="inward_price_adjustment_pharmacy" onclick="onSubmitButton();"></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Price Adjustment - Store " action="inward_price_adjustment_store" onclick="onSubmitButton();"></p:commandButton>
+                    <h:panelGrid columns="4"  styleClass="alignTop"  >
+                        <p:panel header="Manage Admission Types">
+                            <p:panelGrid columns="1">
+                                <p:commandButton ajax="false" value="Manage Admission Types" 
+                                                 action="inward_admission_type" onclick="onSubmitButton();" ></p:commandButton>
 
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Manage Rooms">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Manage Rooms" action="inward_room" onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Manage Room Facility Categories" action="inward_room_category" onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Manage Room Charge" action="inward_room_facility" onclick="onSubmitButton();" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Manage Time-based Services">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" value="Manage Timebased Service Categogries" action="inward_timed_item_category" onclick="onSubmitButton();"  style="alignment-adjust: auto"></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Manage Timebased Services" action="inward_timed_item" onclick="onSubmitButton();" actionListener="#{timedItemController.prepareAdd()}" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Manage Timebased Services (Theatre Only)" action="inward_timed_item_theatre_only" onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Manage Timebased Services (Inward Only)" action="inward_timed_item_inward_only" onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" value="Manage Timebased Services Charges" action="inward_timed_item_fee" onclick="onSubmitButton();" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Manage Clinical Data">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" value="Manage Surgeries" action="/clinical/clinical_procedures" onclick="onSubmitButton();" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Lists">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                     <p:commandButton styleClass="linkButton" ajax="false" value="Inward Prices" action="/inward/inward_fee_list" onclick="onSubmitButton();"></p:commandButton>
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Error Correction">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                     <p:commandButton styleClass="linkButton" value="Errors in admissions" ajax="false" action="inward_admission_edit" ></p:commandButton>
-                                </p:panelGrid>
-                            </p:tab>
+                            </p:panelGrid>
+                        </p:panel>
 
-                        </p:tabView>
-                    </p:panel>                   
+                        <p:panel header="Price Matrix">
+                            <h:panelGrid columns="1">
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Service " action="inward_price_adjustment_service" onclick="onSubmitButton();"></p:commandButton>
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Invesitaation " action="inward_price_adjustment_investigation" onclick="onSubmitButton();"></p:commandButton>
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Pharmacy " action="inward_price_adjustment_pharmacy" onclick="onSubmitButton();"></p:commandButton>
+                                <p:commandButton ajax="false" value="Inward Price Adjustment - Store " action="inward_price_adjustment_store" onclick="onSubmitButton();"></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Manage Rooms">
+                            <h:panelGrid columns="1" >
+                                <p:commandButton ajax="false" value="Manage Rooms" action="inward_room" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton ajax="false" value="Manage Room Facility Categories" action="inward_room_category" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton ajax="false" value="Manage Room Charge" action="inward_room_facility" onclick="onSubmitButton();" ></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Manage Time-based Services">
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Manage Timebased Service Categogries" action="inward_timed_item_category" onclick="onSubmitButton();"  style="alignment-adjust: auto"></p:commandButton>
+                                <p:commandButton value="Manage Timebased Services" action="inward_timed_item" onclick="onSubmitButton();" actionListener="#{timedItemController.prepareAdd()}" ></p:commandButton>
+                                <p:commandButton value="Manage Timebased Services (Theatre Only)" action="inward_timed_item_theatre_only" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton value="Manage Timebased Services (Inward Only)" action="inward_timed_item_inward_only" onclick="onSubmitButton();" ></p:commandButton>
+                                <p:commandButton value="Manage Timebased Services Charges" action="inward_timed_item_fee" onclick="onSubmitButton();" ></p:commandButton>
+                            </p:panelGrid>
+                        </p:panel>
+
+                        <p:panel header="Manage Clinical Data">
+                            <p:panelGrid columns="1">
+                                <p:commandButton value="Manage Surgeries" action="/clinical/clinical_procedures" onclick="onSubmitButton();" ></p:commandButton>
+                            </p:panelGrid>
+                        </p:panel>
+
+
+                        <p:panel header="Lists">
+                            <h:panelGrid columns="1">
+                                <p:commandButton ajax="false" value="Inward Prices" action="/inward/inward_fee_list" onclick="onSubmitButton();"></p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+
+                        
+                        <p:panel header="Error Correction" >
+                            <p:commandButton value="Errors in admissions" ajax="false" action="inward_admission_edit" ></p:commandButton>
+                        </p:panel>
+                        
+                    </h:panelGrid>                    
                 </h:form>
             </ui:define>
 
