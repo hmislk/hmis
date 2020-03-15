@@ -8,9 +8,11 @@ package com.divudi.bean.common;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.data.BillType;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.BillItemFacade;
 import java.io.File;
 import java.io.FileInputStream;
@@ -107,7 +109,7 @@ public class AnalysisController implements Serializable {
                 + " and bi.bill.retired=:ret "
                 + " and bi.bill.billType = :billType "
                 + " and bi.bill.billDate between :fd and :td "
-                + " order by bi.id";
+                + " order by bi.item";
         m = new HashMap();
         m.put("ret", false);
         m.put("billType", BillType.PharmacyPre);
@@ -117,6 +119,12 @@ public class AnalysisController implements Serializable {
         List<BillItem> billItems = getBillItemFacade().findBySQL(j, m);
 
         Row row1 = sheet1.createRow(0);
+
+        Item item = null;
+        Vtm vtm = null;
+        Amp amp = null;
+        Vmp vmp = null;
+        String vtms = "";
 
         for (int cn = 0; cn < 12; cn++) {
 
@@ -177,6 +185,26 @@ public class AnalysisController implements Serializable {
                 if (bi.getBill() == null) {
                     continue;
                 }
+
+                if (bi.getItem() == null) {
+                    continue;
+                }
+
+                if (item != null && bi.getItem().equals(item)) {
+
+                } else {
+
+                    item = bi.getItem();
+                    if (bi.getItem() instanceof Amp) {
+                        amp = (Amp) bi.getItem();
+                        vmp = amp.getVmp();
+                        if (vmp != null) {
+                            vtms = getVmpController().getVivsAsString(vmp);
+                        }
+                    }
+
+                }
+
                 Cell cell = row.createCell(cn);
                 switch (cn) {
                     case 0:
@@ -221,47 +249,26 @@ public class AnalysisController implements Serializable {
                         }
                         break;
                     case 8:
-                        if (bi.getItem() != null && bi.getItem().getName() != null) {
-                            cell.setCellValue(bi.getItem().getName());
+                        if (amp != null) {
+                            cell.setCellValue(amp.getName());
                         }
                         break;
                     case 9:
-                        if (bi.getItem() != null) {
-                            if (bi.getItem() instanceof Amp) {
-                                Amp amp = (Amp) bi.getItem();
-                                if (amp.getVmp().getName() != null) {
-                                    cell.setCellValue(amp.getVmp().getName());
-                                }
-                            }
-
+                        if (vmp != null) {
+                            cell.setCellValue(vmp.getName());
                         }
                         break;
                     case 10:
-                        if (bi.getItem() != null) {
-                            if (bi.getItem() instanceof Amp) {
-                                Amp amp = (Amp) bi.getItem();
-                                Vmp vmp = amp.getVmp();
-                                if (vmp != null) {
-                                    getVmpController().getVivsAsString(vmp);
-
-                                    cell.setCellValue(getVmpController().getVivsAsString(vmp));
-
-                                }
-                            }
-
+                        if (vtms != null) {
+                            cell.setCellValue(vtms);
                         }
                         break;
                     case 11:
-
                         cell.setCellValue(bi.getQty());
-
                         break;
                 }
-
             }
-
             i++;
-
         }
 
         message = "Writing File";
