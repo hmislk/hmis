@@ -43,6 +43,7 @@ import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
+import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
@@ -537,6 +538,26 @@ public class SearchController implements Serializable {
         this.creditCompany = creditCompany;
     }
 
+    public Department getFromDepartment() {
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
+    }
+
+    public PatientFacade getPatientFacade() {
+        return patientFacade;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -831,6 +852,8 @@ public class SearchController implements Serializable {
 
     List<Bill> prescreptionBills;
     Department department;
+    private Department fromDepartment;
+    private Department toDepartment;
 
     public Department getDepartment() {
         return department;
@@ -5203,6 +5226,44 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+
+    public void fillOpdClients() {
+        fillClients(BillType.OpdBill);
+    }
+
+    public void fillClients(BillType billType) {
+        patients = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select distinct(b.patient) from BilledBill b where b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate and b.retired=false ";
+
+        if (fromDepartment != null) {
+            sql += " and b.fromDepartment=:fdep ";
+            temMap.put("fdep", fromDepartment);
+        }
+         if (toDepartment != null) {
+            sql += " and b.toDepartment=:tdep ";
+            temMap.put("tdep", toDepartment);
+        }
+
+
+        sql += " order by b.createdAt desc  ";
+//    
+        temMap.put("billType", billType);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+        //System.err.println("Sql " + sql);
+        patients = getPatientFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    @EJB
+    private PatientFacade patientFacade;
+    
+    
 
     public void createTableByKeyword(BillType billType) {
         bills = null;

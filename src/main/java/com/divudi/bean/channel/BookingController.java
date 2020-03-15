@@ -1096,6 +1096,7 @@ public class BookingController implements Serializable {
     }
 
     public void generateSessionsOnlyIdNew() {
+        System.out.println("generateSessionsOnlyIdNew");
 //        System.err.println("Time in = " + new Date());
         serviceSessions = new ArrayList<>();
         String sql;
@@ -1106,10 +1107,12 @@ public class BookingController implements Serializable {
 //        System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
 //            System.err.println("Time stage 4.1 = " + new Date());
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate, sessionController.getInstitution());
+            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
+            System.err.println("Fetch Created Sessions " + serviceSessions.size());
 //            System.err.println("Time stage 4.2 = " + new Date());
         }
         if (getSessionController().getLoggedUser().getWebUserPerson() != null) {
+            System.err.println("User = " + getSessionController().getLoggedUser().getWebUserPerson().getName());
         }
     }
 
@@ -1499,6 +1502,7 @@ public class BookingController implements Serializable {
     }
 
     public void listnerServiceSessionListForRowSelectNew() {
+        System.out.println("listnerServiceSessionListForRowSelectNew");
         generateSessionsOnlyIdNew();
 //        generateSessionsOnlyId(); before Optimize
         listnerClearSelectedServiceSession();
