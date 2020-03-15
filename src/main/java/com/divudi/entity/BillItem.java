@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -102,7 +103,7 @@ public class BillItem implements Serializable {
     String itemId;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date fromTime;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(javax.persistence.TemporalType.DATE)
     Date toTime;
     @OneToOne
     BillItem referanceBillItem;

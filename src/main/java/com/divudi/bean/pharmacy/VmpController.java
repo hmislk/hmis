@@ -20,7 +20,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -88,6 +90,41 @@ public class VmpController implements Serializable {
             }
 
             return vivs;
+        }
+    }
+    
+    public String getVivsAsString(Vmp vmp) {
+        return getVivsAsString(getVivs(vmp));
+    }
+
+    public String getVivsAsString(List<VtmsVmps> gs) {
+        String str = "";
+        for (VtmsVmps g : gs) {
+            if (g.getVtm() == null || g.getVtm().getName() == null) {
+                continue;
+            }
+            if ("".equals(str)) {
+                str = g.getVtm().getName();
+            } else {
+                str = str + ", " + g.getVtm().getName();
+            }
+        }
+        return str;
+    }
+
+    public List<VtmsVmps> getVivs(Vmp vmp) {
+        List<VtmsVmps> gs;
+        if (vmp == null) {
+            return new ArrayList<>();
+        } else {
+            String j = "select v from VtmsVmps v where v.vmp=:vmp";
+            Map m = new HashMap();
+            m.put("vmp", vmp);
+            gs = getVivFacade().findBySQL(j, m);
+            if (gs == null) {
+                return new ArrayList<>();
+            }
+            return gs;
         }
     }
 
@@ -361,7 +398,7 @@ public class VmpController implements Serializable {
     public List<Vmp> getItems() {
         if (items == null) {
             String j;
-            j="select v "
+            j = "select v "
                     + " from Vmp v "
                     + " where v.retired=false "
                     + " order by v.name";

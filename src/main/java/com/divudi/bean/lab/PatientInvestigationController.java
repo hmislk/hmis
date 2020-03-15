@@ -201,17 +201,22 @@ public class PatientInvestigationController implements Serializable {
     private String apiResponse = "#{success=false|msg=No Requests}";
 
     private List<PatientReportItemValue> patientReportItemValues;
+    private Long fromId = 0l;
+    private Long toId = 10000l;
 
     public void fillPatientReportItemValues() {
         String j = "select v from PatientReportItemValue v "
                 + "where v.patientReport.approved=:app "
                 + " and (v.investigationItem.ixItemType=:vtv or v.investigationItem.ixItemType=:vtc)"
-                + " and  v.patientReport.patientInvestigation.investigation.reportType=:rt";
+                + " and  v.patientReport.patientInvestigation.investigation.reportType=:rt "
+                + " and v.id between :fid and :tid";
         Map m = new HashMap();
         m.put("app", true);
         m.put("vtv", InvestigationItemType.Value);
         m.put("vtc", InvestigationItemType.Calculation);
         m.put("rt", InvestigationReportType.General);
+        m.put("fid", fromId);
+        m.put("tid", toId);
         if (false) {
             PatientReportItemValue v = new PatientReportItemValue();
             if (v.getPatientReport().getPatientInvestigation().getInvestigation().getReportType() 
@@ -219,9 +224,14 @@ public class PatientInvestigationController implements Serializable {
 
             }
         }
-        patientReportItemValues = getPatientReportItemValueFacade().findBySQL(j, m, 10000000);
+        patientReportItemValues = getPatientReportItemValueFacade().findBySQL(j, m, 10000);
+        Long diff = toId - fromId;
+        fromId = toId;
+        toId = fromId + diff;
     }
 
+    
+    
     public void sentRequestToAnalyzer() {
         if (currentPatientSample == null) {
             JsfUtil.addErrorMessage("Nothing to Add");
@@ -1885,6 +1895,22 @@ public class PatientInvestigationController implements Serializable {
 
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
+    }
+
+    public Long getFromId() {
+        return fromId;
+    }
+
+    public void setFromId(Long fromId) {
+        this.fromId = fromId;
+    }
+
+    public Long getToId() {
+        return toId;
+    }
+
+    public void setToId(Long toId) {
+        this.toId = toId;
     }
 
     /**

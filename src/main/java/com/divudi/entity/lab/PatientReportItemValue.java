@@ -164,6 +164,9 @@ public class PatientReportItemValue implements Serializable {
     }
 
     public String getValue() {
+        if(this.investigationItem==null || this.investigationItem.ixItemValueType==null){
+            return "";
+        }
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:

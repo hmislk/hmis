@@ -36,6 +36,13 @@
                 <h:form >
                     <p:panelGrid columns="2" >
 
+                        <p:commandButton ajax="false" action="#{sessionController.decryptAllUsers()}"
+                                         value="Decrypt" ></p:commandButton>
+                        <p:spacer></p:spacer>
+
+                        <p:separator></p:separator>
+                        <p:separator></p:separator>
+
                         <p:outputLabel value="Message" ></p:outputLabel>
                         <p:inputText value="#{applicationController.subject}" ></p:inputText>
 
@@ -721,6 +728,7 @@
                                     <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access" value="Pharmacy Dues and Access"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/dataAdmin/report_entered_data" value="Check Entered Data"  ></p:menuitem>
                                     <p:menuitem  ajax="false"  action="/dataAdmin/update_entered_data" value="Update Entered Data"  ></p:menuitem>
+                                    <p:menuitem  ajax="false"  action="/analysis/index" value="Analysis"  ></p:menuitem>
 
                                 </p:submenu>
 

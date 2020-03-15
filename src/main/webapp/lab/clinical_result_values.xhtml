@@ -15,27 +15,44 @@
                 <h:form>
                     <p:panel header="Investigation Results" >
 
-                        <p:commandButton ajax="false" action="#{patientInvestigationController.fillPatientReportItemValues}"
-                                         value="Fill" ></p:commandButton>
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="ID From" >
+                            </p:outputLabel>
+                            <p:inputText value="#{patientInvestigationController.fromId}" >
+                            </p:inputText>
+                            <p:outputLabel value="ID To" >
+                            </p:outputLabel>
+                            <p:inputText value="#{patientInvestigationController.toId}" >
+                            </p:inputText>
+                            <p:spacer></p:spacer>
+                            <p:commandButton ajax="false" action="#{patientInvestigationController.fillPatientReportItemValues}"
+                                             value="Fill" ></p:commandButton>
+                            <p:spacer></p:spacer>
+                            <p:commandButton value="Export" ajax="false">
+                                <p:dataExporter target="tbl" type="xls" fileName="test_results" ></p:dataExporter>
+
+                            </p:commandButton>
+
+                            <p:outputLabel value="Passed Time" ></p:outputLabel>
+                            <h:outputText id="txt_count" value="#{commonController.number} - #{patientInvestigationController.patientReportItemValues eq null}" />
+
+                        </p:panelGrid>
 
 
-                        <h:outputText id="txt_count" value="#{commonController.number} - #{patientInvestigationController.patientReportItemValues eq null}" />
+
                         <p:poll interval="3" listener="#{commonController.increment}" update="txt_count" />
-                        
-                        
-                        <p:commandButton value="Export" ajax="false">
-                            <p:dataExporter target="tbl" type="xls" fileName="test_results" ></p:dataExporter>
-                            
-                        </p:commandButton>
+
+
+
 
                         <p:dataTable 
                             id="tbl"
                             var="v" value="#{patientInvestigationController.patientReportItemValues}" rows="10"
-                                     rowKey="#{v.id}"
-                                     rowIndexVar="n"
-                                     paginator="true"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15">
+                            rowKey="#{v.id}"
+                            rowIndexVar="n"
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15">
 
 
 
@@ -46,19 +63,19 @@
                             <p:column headerText="Sex">
                                 <h:outputText value="#{v.patient.person.sex}" />
                             </p:column>
-                            
-                             <p:column headerText="Age">
-                                 <h:outputText value="#{v.patient.person.age}" />
+
+                            <p:column headerText="Age">
+                                <h:outputText value="#{v.patient.person.age}" />
                             </p:column>
-                            
+
                             <p:column headerText="Date of Birth">
                                 <h:outputText value="#{v.patient.person.dob}" >
                                     <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
-                            
-                             <p:column headerText="Approved At">
-                                 <h:outputText value="#{v.patientReport.approveAt}" >
+
+                            <p:column headerText="Approved At">
+                                <h:outputText value="#{v.patientReport.approveAt}" >
                                     <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
@@ -75,7 +92,7 @@
                                 <h:outputText value="#{v.value}" />
                             </p:column>
 
-                           
+
 
                         </p:dataTable>
 
