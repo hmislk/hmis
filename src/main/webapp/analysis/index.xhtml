@@ -25,17 +25,34 @@
 
                             <p:outputLabel value="To" ></p:outputLabel>
                             <p:calendar value="#{analysisController.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
+
+                            <p:outputLabel value="Item" ></p:outputLabel>
+                            <p:autoComplete completeMethod="#{analysisController.completeBilledItems}"
+                                            value="#{analysisController.item}"
+                                            var="i"
+                                            itemLabel="#{i.name}"
+                                            itemValue="#{i}" >
+                            </p:autoComplete>
+
+
+
+
+                        </p:panelGrid>
+
+                        <p:panelGrid columns="2" >
+                            <p:commandButton value="Download Pharmacy Item Sale"
+                                             ajax="false"
+                                             action="#{analysisController.createPharmacyBillItemSale()}"
+                                             >
+                            </p:commandButton>
+                            
+                            
                         </p:panelGrid>
 
 
-                         <p:commandButton value="Download Pharmacy Item Sale"
-                                         ajax="false"
-                                         action="#{analysisController.createPharmacyBillItemSale()}"
-                                         >
-                        </p:commandButton>
 
-                        
-                       
+
+
 
                     </p:panelGrid>
 

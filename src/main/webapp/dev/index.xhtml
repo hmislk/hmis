@@ -19,6 +19,8 @@
 
             <h:panelGrid columns="2" styleClass="alignTop" >
                 <h:panelGrid id="actions" columns="1"  >
+                    <p:commandButton  styleClass="linkButton" value="Decrypt Usernames" action="#{sessionController.decryptAllUsers()}" ajax="false" />
+                    
                     <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage Password" action="password" ajax="false" />
                     <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Privileges" action="pri" ajax="false" />
                     <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Loggable Departments" action="depts" ajax="false" />
@@ -70,12 +72,7 @@
 
         </h:form>
 
-        <h:form >
-
-            <p:poll update="msg" ></p:poll>
-            <p:outputLabel value="#{analysisController}" id="msg" ></p:outputLabel>
-            <p:clock displayMode="analog" syncInterval="6000000"  />
-        </h:form>
+       
 
     </h:body>
 </html>

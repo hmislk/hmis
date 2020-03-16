@@ -675,8 +675,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loginForRequestsForDoctors(userName, passord);
     }
 
-    
-
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
@@ -1206,16 +1204,30 @@ public class SessionController implements Serializable, HttpSessionListener {
     private WebUserPrivilegeFacade webUserPrivilegeFacade;
 
     public List<WebUserPrivilege> getUserPrivileges() {
+
         if (userPrivilages == null) {
             String sql;
-            sql = "select w from WebUserPrivilege w where w.retired=false and w.webUser.id = " + getLoggedUser().getId();
-            ////System.out.println("5");
-            userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql);
+            Map m = new HashMap();
+            sql = "select w from WebUserPrivilege w "
+                    + " where w.retired=:ret "
+                    + " and w.webUser=:wu "
+                    + " and w.privilege in :ps ";
+            m.put("ret", false);
+            m.put("wu", getLoggedUser());
+
+            List<Privileges> ps = new ArrayList<>();
+            for (Privileges p : Privileges.values()) {
+                ps.add(p);
+            }
+
+            m.put("ps", ps);
+            userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql, m);
         }
         if (userPrivilages == null) {
             userPrivilages = new ArrayList<>();
         }
         return userPrivilages;
+
     }
 
     public String getBillNo() {
@@ -1475,8 +1487,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setLoginRequestResponse(String loginRequestResponse) {
         this.loginRequestResponse = loginRequestResponse;
     }
-    
-    
 
     public UserPreference getApplicationPreference() {
         if (applicationPreference == null) {
@@ -1506,6 +1516,4 @@ public class SessionController implements Serializable, HttpSessionListener {
         setApplicationPreference(institutionPreference);
     }
 
-    
-    
 }

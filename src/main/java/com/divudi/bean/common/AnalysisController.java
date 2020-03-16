@@ -10,17 +10,12 @@ import com.divudi.data.BillType;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.BillItemFacade;
-import java.io.File;
-import java.io.FileInputStream;
+import com.divudi.facade.ItemFacade;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -41,8 +36,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.primefaces.model.DefaultStreamedContent;
-import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -57,7 +50,8 @@ public class AnalysisController implements Serializable {
      */
     @EJB
     private BillItemFacade billItemFacade;
-
+    @EJB
+    private ItemFacade itemFacade;
     /**
      * Controllers
      */
@@ -70,6 +64,8 @@ public class AnalysisController implements Serializable {
     private String message;
     private Date fromDate;
     private Date toDate;
+    private Item item;
+    private List<Item> billedItems;
 
     /**
      * Constructors
@@ -83,6 +79,39 @@ public class AnalysisController implements Serializable {
     /**
      * Functional Methods
      */
+    public void clearPharmacyBillItemSale() {
+        fromDate = null;
+        toDate = null;
+        item = null;
+    }
+
+    public List<Item> createBilledItems() {
+        String j;
+        Map m;
+        m = new HashMap();
+        j = "select distinct(bi.item) from BillItem bi "
+                + " where bi.retired=:ret "
+                + " and bi.bill.retired=:ret "
+                + " order by bi.item.name";
+        m.put("ret", false);
+        return getItemFacade().findBySQL(j, m);
+    }
+    
+    
+    public List<Item> completeBilledItems(String qry) {
+        String j;
+        Map m;
+        m = new HashMap();
+        j = "select distinct(bi.item) from BillItem bi "
+                + " where bi.retired=:ret "
+                + " and bi.bill.retired=:ret "
+                + " and lower(bi.item.name) like :name "
+                + " order by bi.item.name";
+        m.put("ret", false);
+        m.put("name", "%" + qry.toLowerCase() + "%");
+        return getItemFacade().findBySQL(j, m);
+    }
+
     public void createPharmacyBillItemSale() {
         Workbook wb = new XSSFWorkbook();
         Sheet sheet1 = wb.createSheet("data");
@@ -103,18 +132,28 @@ public class AnalysisController implements Serializable {
         message = "Creating Pharmacy Sale<br/>";
         String j;
         Map m;
+        m = new HashMap();
 
         j = "select bi from BillItem bi "
                 + " where bi.retired=:ret "
                 + " and bi.bill.retired=:ret "
-                + " and bi.bill.billType = :billType "
-                + " and bi.bill.billDate between :fd and :td "
-                + " order by bi.item";
-        m = new HashMap();
+                + " and bi.bill.billType = :billType ";
+
         m.put("ret", false);
         m.put("billType", BillType.PharmacyPre);
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+
+        if (fromDate != null && toDate != null) {
+            j += " and bi.bill.billDate between :fd and :td ";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+
+        if (item != null) {
+            j += " and bi.item=:item ";
+            m.put("item", item);
+        }
+
+        j += " order by bi.item";
 
         List<BillItem> billItems = getBillItemFacade().findBySQL(j, m);
 
@@ -336,5 +375,34 @@ public class AnalysisController implements Serializable {
     public void setVmpController(VmpController vmpController) {
         this.vmpController = vmpController;
     }
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
+
+    public ItemFacade getItemFacade() {
+        return itemFacade;
+    }
+
+    public void setItemFacade(ItemFacade itemFacade) {
+        this.itemFacade = itemFacade;
+    }
+
+    public List<Item> getBilledItems() {
+        if(billedItems==null){
+            billedItems = createBilledItems();
+        }
+        return billedItems;
+    }
+
+    public void setBilledItems(List<Item> billedItems) {
+        this.billedItems = billedItems;
+    }
+    
+    
 
 }
