@@ -29,7 +29,7 @@
                             <p:outputLabel value="Item" ></p:outputLabel>
                             <p:autoComplete completeMethod="#{analysisController.completeBilledItems}"
                                             value="#{analysisController.item}"
-                                            var="i"
+                                            var="i" minQueryLength="4"
                                             itemLabel="#{i.name}"
                                             itemValue="#{i}" >
                             </p:autoComplete>
