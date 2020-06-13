@@ -69,28 +69,31 @@
             <div >
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" value="#{cc.attrs.bill.billItems}" var="bip"  >
 
-                    <p:column style="width: 50px!important; text-align: right!important; padding-right: 20px;">
+                    <p:column 
+                        style="width: 30px!important; text-align: right!important; padding-right: 5px;">
                         <f:facet name="header">
                             <h:outputLabel value="No"/>
                         </f:facet>
                         <h:outputLabel value="#{rowIndex+1}"/>
                     </p:column>
 
-                    <p:column style="text-align: left!important;">
+                    <p:column style="text-align: left!important; min-width: 400px;">
                         <f:facet name="header">
                             <h:outputLabel value="Item Name"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                     </p:column>
                     
-                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
+                    <p:column 
+                        style="width: 300px!important; text-align: right!important; padding-right: 50px;"
+                        rendered="false">
                         <f:facet name="header">
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
                     </p:column>
                     
-                    <p:column style="width: 300px!important; text-align: right!important; padding-right: 50px;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
+                    <p:column style="width: 100px!important; text-align: right!important; padding-right: 5px;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                         <f:facet name="header">
                             <h:outputLabel value="P.Rate"/>
                         </f:facet>
@@ -100,7 +103,7 @@
                     </p:column>
                     
 
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 10px;" rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
+                    <p:column  style="width: 100px!important; text-align: right!important; padding-right: 5px;" rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}">
                         <f:facet name="header">
                             <h:outputLabel value="Free QTY"/>
                         </f:facet>
@@ -109,7 +112,7 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column  style="width: 300px!important; text-align: right!important; padding-right: 50px;">
+                    <p:column  style="width: 100px!important; text-align: right!important; padding-right: 5px;">
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
