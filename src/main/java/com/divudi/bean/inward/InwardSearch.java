@@ -88,7 +88,7 @@ public class InwardSearch implements Serializable {
      */
     @Inject
     private BillBeanController billBean;
-    @Inject
+    @EJB
     private BillNumberGenerator billNumberBean;
     @Inject
     BhtSummeryFinalizedController bhtSummeryFinalizedController;

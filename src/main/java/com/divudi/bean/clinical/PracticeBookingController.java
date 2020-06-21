@@ -114,7 +114,7 @@ public class PracticeBookingController implements Serializable {
     private BillFeeFacade billFeeFacade;
     @EJB
     private ChannelBean channelBean;
-    @Inject
+    @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
     ServiceSessionBean serviceSessionBean;

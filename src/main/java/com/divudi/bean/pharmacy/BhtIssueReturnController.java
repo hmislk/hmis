@@ -56,7 +56,7 @@ public class BhtIssueReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
-    @Inject
+    @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
     private BillFacade billFacade;
