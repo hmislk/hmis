@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.persistence.TemporalType;
 import javax.swing.JOptionPane;
 
 /**
@@ -40,15 +41,17 @@ public class SmsManagerEjb {
     @EJB
     SmsFacade smsFacade;
 
-//    @SuppressWarnings("unused")
-//    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
+    @SuppressWarnings("unused")
+    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
     public void myTimer() {
         sendSmsAwaitingToSendInDatabase();
     }
 
     private void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
-        List<Sms> smses = getSmsFacade().findBySQL(j);
+        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false and e.createdAt=:d";
+        Map m = new HashMap();
+        m.put("d", new Date());
+        List<Sms> smses = getSmsFacade().findBySQL(j,m,TemporalType.DATE);
 //        if (false) {
 //            Sms e = new Sms();
 //            e.getSentSuccessfully();
