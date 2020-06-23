@@ -6470,11 +6470,11 @@ public class SearchController implements Serializable {
     }
 
     public void createInwardFinalBills() {
-        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
-        if (d > 32 && getReportKeyWord().isBool1()) {
-            JsfUtil.addErrorMessage("Date Range To Long");
-            return;
-        }
+//        double d = commonController.dateDifferenceInMinutes(fromDate, toDate) / (60 * 24);
+//        if (d > 32 && getReportKeyWord().isBool1()) {
+//            JsfUtil.addErrorMessage("Date Range To Long");
+//            return;
+//        }
         Date startTime = new Date();
 
         String sql;
@@ -6515,13 +6515,65 @@ public class SearchController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        if (getReportKeyWord().isBool1()) {
+//        if (getReportKeyWord().isBool1()) {
             bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        } else {
-            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
-        }
+//        } else {
+//            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+//        }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final bill search(/faces/inward/inward_search_final.xhtml)");
+    }
+    
+    
+    
+    public void createCancelledInwardFinalBills() {
+        Date startTime = new Date();
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from BilledBill b where"
+                + " b.billType = :billType and "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.cancelled=true ";
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  (upper(b.patientEncounter.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  (upper(b.patientEncounter.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  (upper(b.patientEncounter.bhtNo) like :bht )";
+            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (upper(b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  (upper(b.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.insId desc  ";
+
+        temMap.put("billType", BillType.InwardFinalBill);
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+
+//        if (getReportKeyWord().isBool1()) {
+            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        } else {
+//            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+//        }
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final Cancel bill search(/faces/inward/inward_search_final.xhtml)");
     }
 
     public void createInwardIntrimBills() {

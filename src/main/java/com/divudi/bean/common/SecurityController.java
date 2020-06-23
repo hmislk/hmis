@@ -48,7 +48,7 @@ public class SecurityController implements Serializable {
         }
     }
 
-    public boolean matchPassword(String planePassword, String encryptedPassword) {
+    public static boolean matchPassword(String planePassword, String encryptedPassword) {
         BasicPasswordEncryptor en = new BasicPasswordEncryptor();
         return en.checkPassword(planePassword, encryptedPassword);
     }

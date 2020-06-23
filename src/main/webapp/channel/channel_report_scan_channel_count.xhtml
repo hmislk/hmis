@@ -29,6 +29,10 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
                         </p:calendar>
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete value="#{channelReportTempController.institution}" completeMethod="#{institutionController.completeCompany}"
+                                        var="c" itemLabel="#{c.name}" itemValue="#{c}" forceSelection="true" >
+                        </p:autoComplete>
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pg1" >
                         <h:outputLabel value="Scan"/> 

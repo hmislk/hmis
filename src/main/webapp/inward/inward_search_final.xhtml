@@ -14,15 +14,19 @@
                     <p:panel header="Search Inpatient Bills by Bill Created Date" >
                         <f:facet name="header" >
                             <h:panelGroup>
-                                <h:panelGrid columns="6">
+                                <h:panelGrid columns="2">
                                     <h:outputLabel value="From"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                     </p:calendar>
                                     <h:outputLabel value="To"/>
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                     </p:calendar>
-                                    <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.bool1}" />
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardFinalBills()}" value="Search" onclick="onSubmitButton();" />
+                                    <p:commandButton ajax="false" action="#{searchController.createInwardFinalBills()}" value="Search Bills"  />
+                                    <p:commandButton ajax="false" action="#{searchController.createCancelledInwardFinalBills()}" value="Search Cancelled Bills"  />
+                                    <p:spacer ></p:spacer>
+                                    <p:commandButton ajax="false" value="Export"  >
+                                        <p:dataExporter target="tblBills" type="xls" fileName="Inward Final Bills" ></p:dataExporter>
+                                    </p:commandButton>
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="6">
@@ -51,51 +55,51 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >
-                            <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" 
-                                                 actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" 
-                                                 onclick="onSubmitButton();" >
-                                    <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
-                                </p:commandButton>
-                            </p:column>
 
-                            <p:column headerText="Bill No"  >
+
+                            <p:column headerText="Bill No" sortBy="#{bb.insId}" filterBy="#{bb.insId}" filterMatchMode="contains"  >
                                 <h:outputLabel value="#{bb.insId}" ></h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Bht No" >
+                            <p:column headerText="Bht No"  sortBy="#{bb.patientEncounter.bhtNo}" filterBy="#{bb.patientEncounter.bhtNo}" filterMatchMode="contains"  >
                                 <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Billed At" >   
-                                <h:outputLabel value="#{bb.createdAt}" />
-                                <br/>
+                            <p:column headerText="Billed At"  sortBy="#{bb.createdAt}" filterBy="#{bb.createdAt}" filterMatchMode="contains"  >   
+                                <h:outputLabel value="#{bb.createdAt}" >
+                                    <f:convertDateTime pattern="dd MMM yy" ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Billed By"  sortBy="#{bb.creater.webUserPerson.name}" filterBy="#{bb.creater.webUserPerson.name}" filterMatchMode="contains"  >  
+                                <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>                                  
+                            </p:column>
+
+                            <p:column headerText="Cancelled At"  sortBy="#{bb.cancelledBill.createdAt}" filterBy="#{bb.cancelledBill.createdAt}" filterMatchMode="contains"  >   
                                 <h:panelGroup rendered="#{bb.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="dd MMM yy"/>
                                     </h:outputLabel>
                                 </h:panelGroup>                             
                             </p:column>
 
-                            <p:column headerText="Billed By">  
-                                <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
-                                </h:outputLabel>                                  
-                                <br/>
+
+
+                            <p:column headerText="Cancelled By"  sortBy="#{bb.creater.webUserPerson.name}" filterBy="#{bb.creater.webUserPerson.name}" filterMatchMode="contains"  >  
                                 <h:panelGroup rendered="#{bb.cancelled}" >
-                                    <h:outputLabel style="color: red;" value="Cancelled By " />
                                     <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Client" >
+                            <p:column headerText="Client"  sortBy="#{bb.patientEncounter.patient.person.nameWithTitle}" filterBy="#{bb.patientEncounter.patient.person.nameWithTitle}" filterMatchMode="contains"  >
                                 <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>         
-                            <p:column headerText="PaymentMethod">                            
+                            <p:column headerText="PaymentMethod"  sortBy="#{bb.patientEncounter.paymentMethod}" filterBy="#{bb.patientEncounter.paymentMethod}" filterMatchMode="contains"  >                            
                                 <h:outputLabel value="#{bb.patientEncounter.paymentMethod}" ></h:outputLabel>                                   
                             </p:column>
-                            <p:column headerText="Value" >                              
+                            <p:column headerText="Value"  sortBy="" filterBy="" filterMatchMode="contains"  >                              
                                 <h:outputLabel value="#{bb.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>                                  
@@ -106,6 +110,16 @@
                                 <h:outputLabel  rendered="#{bb.cancelledBill ne null}" value="#{bb.cancelledBill.comments}" >
                                 </h:outputLabel>
                             </p:column>
+
+                            <p:column>
+                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_final" 
+                                                 actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" 
+                                                 >
+                                    <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                </p:commandButton>
+                            </p:column>
+
+
                         </p:dataTable>
 
                     </p:panel>

@@ -139,7 +139,7 @@ public class Item implements Serializable, Comparable<Item> {
     boolean chargesVisibleForInward;
     boolean requestForQuentity;
     boolean marginNotAllowed;
-    @Column(name = "active")
+    @Column
     boolean inactive = false;
     @ManyToOne
     Institution manufacturer;
@@ -202,25 +202,15 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Transient
     String transName;
-    
-    
-     @Transient
-     private String snapShotName;
-     
-     @Transient
-     private String snapShotCode;
-     
-     @Transient
-     private String snapShotBarcode;
-     
-     
-     
 
+    
+       @Transient
+    private String transCodeFromName;
+    
+      
+       
     public double getVatPercentage() {
-        if (vatable && vatPercentage == 0.0) {
-            vatPercentage = 15;
-        }
-        return vatPercentage;
+        return 0;
     }
 
     public void setVatPercentage(double vatPercentage) {
@@ -1136,28 +1126,13 @@ public class Item implements Serializable, Comparable<Item> {
         return itemFeesActive;
     }
 
-    public String getSnapShotName() {
-        return snapShotName;
+    public String getTransCodeFromName() {
+        transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
+        return transCodeFromName;
     }
 
-    public void setSnapShotName(String snapShotName) {
-        this.snapShotName = snapShotName;
-    }
-
-    public String getSnapShotCode() {
-        return snapShotCode;
-    }
-
-    public void setSnapShotCode(String snapShotCode) {
-        this.snapShotCode = snapShotCode;
-    }
-
-    public String getSnapShotBarcode() {
-        return snapShotBarcode;
-    }
-
-    public void setSnapShotBarcode(String snapShotBarcode) {
-        this.snapShotBarcode = snapShotBarcode;
+    public void setTransCodeFromName(String transCodeFromName) {
+        this.transCodeFromName = transCodeFromName;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

@@ -88,8 +88,19 @@
                             </p:panelGrid>
 
                             <p:panelGrid columns="1"                         >
+                                
+                                <p:commandLink ajax="false" action="#{itemController.toggleItemIctiveInactiveState()}" 
+                                               value="Toggle Active Inactive Status of Items"  rendered="false"
+                                               onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
+                                
+                                <p:commandLink ajax="false" action="#{itemController.makeItemsAsActiveOrInactiveByRetiredStatus() }" 
+                                               value="Make Items as Active or Inactive by Retired Status"  
+                                               onclick="if (!confirm('Really want to do that?'))
+                                                           return false"/>
+                                
                                 <p:commandLink ajax="false" action="#{agencyController.randomlySetAgencyBalances}" 
-                                               value="1. Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
+                                               value="Randomly Reset Agent Balances to Rs. 50,000.00 and Rs. 30,000.00"  
                                                onclick="if (!confirm('Really want to do that?'))
                                                            return false"/>
                                 <h:panelGroup >
@@ -103,7 +114,7 @@
                                     <p:inputText value="#{billController.startIdForVat}" ></p:inputText>
                                     <br/>
                                     <p:commandLink ajax="false" action="#{billController.addVatToOldBills()}" 
-                                                   value="2. Add VAT For Previous Bills"  
+                                                   value="Add VAT For Previous Bills"  
                                                    onclick="if (!confirm('Really want to do that?'))
                                                                return false"/>
                                     

@@ -2235,8 +2235,8 @@ public class BillBeanController implements Serializable {
         if (discountAllowed == false) {
             bf.setFeeValue(foreign);
         } else if (discountAllowed == true
-                && paymentMethod == PaymentMethod.Credit
-                && institution != null) {
+                && institution != null
+                && institution.getLabBillDiscount() > 0.0) {
             bf.setFeeValueForCreditCompany(foreign, institution.getLabBillDiscount());
         } else {
             bf.setFeeValue(foreign, discount);

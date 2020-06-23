@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Medicine List" >
+                        <p:commandButton ajax="false" value="Excel">
+                            <p:dataExporter  type="xls" target="tblItem" fileName="item_list"  />
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Refresh"
+                                         action="#{ampController.createMedicineList()}"/>
+
+
+                        <p:panel id="paItems">
+
+                            <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
+                                         rowIndexVar="n"
+                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rows="10"
+                                         paginator="true"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20,50,100,1000,5000"
+                                         >
+                                <p:column id="colSelect"  >
+                                    <f:facet name="header" >
+                                        <h:outputText value="No" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{n+1}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Parent">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Parent" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{i['class'].simpleName}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Name" 
+                                          sortBy="#{i.name}"
+                                          filterBy="#{i.name}" filterMatchMode="contains">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Name" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{i.name}"></p:outputLabel>
+                                </p:column>
+                                <p:column headerText="Code" 
+                                          sortBy="#{i.transCodeFromName}"
+                                          filterBy="#{i.transCodeFromName}" filterMatchMode="contains">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Code" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{i.transCodeFromName}"></p:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+
+
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

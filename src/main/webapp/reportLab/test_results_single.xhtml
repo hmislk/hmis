@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+
+            <ui:define name="content">
+
+                <h:form>
+
+                    <p:panel header="Patient Results - Single Test" >
+                        <p:panelGrid columns="2" styleClass="alignTop" style="width: 100%;">
+                            <p:panel header="Filters" >
+
+                                <p:panelGrid columns="2" >
+                                    <p:commandButton ajax="false" value="Process" action="#{patientInvestigationController.listPatientReportItemValuesForASingleSelectedTest()}" >
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" value="Excel" 
+                                                      >
+                                        <p:dataExporter target="tbl" type="xls" fileName="Results" ></p:dataExporter>
+                                    </p:commandButton>
+
+                                    <h:outputLabel value="From" ></h:outputLabel>
+                                    <p:calendar value="#{patientInvestigationController.fromDate}" pattern="dd MMMM yyyy" ></p:calendar>
+
+                                    <h:outputLabel value="To" ></h:outputLabel>
+                                    <p:calendar value="#{patientInvestigationController.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
+
+                                    <h:outputLabel value="Report" ></h:outputLabel>
+                                    <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                                    value="#{investigationItemController.currentInvestigation}" 
+                                                    completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
+                                                    var="apt" itemLabel="#{apt.name}" 
+                                                    itemValue="#{apt}" size="30" maxResults="10"  style="width: 400px;">
+                                        <p:column headerText="Name" >
+                                            <h:outputLabel value="#{apt.name}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" >
+                                            <h:outputLabel value="#{apt.code}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Printing Name" >
+                                            <h:outputLabel value="#{apt.printName}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Fill Name" >
+                                            <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:ajax event="itemSelect" process="acPt" 
+                                                update=":#{p:component('dtbItem')}"/>
+                                    </p:autoComplete> 
+
+                                    <h:outputLabel value="Test" ></h:outputLabel>
+                                    <p:selectOneMenu  id="dtbItem" value="#{patientInvestigationController.currentInvestigationItem}" style="width: 270px;" >
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
+                                    </p:selectOneMenu>
+
+                                </p:panelGrid>
+                            </p:panel>
+                            <p:panel header="Results" >
+                                <p:dataTable id="tbl" value="#{patientInvestigationController.patientReportItemValues}" var="v" >
+                                    <p:column headerText="Age">
+                                        <p:outputLabel value="#{v.patient.ageOnBilledDate(v.patientReport.patientInvestigation.billItem.bill.billDate)}" ></p:outputLabel>
+                                      
+                                    </p:column>
+                                    <p:column headerText="Age in days">
+                                        <p:outputLabel value="#{v.patient.ageInDaysOnBilledDate}" ></p:outputLabel>
+                                    </p:column>
+                                    
+                                    <p:column headerText="Sex">
+                                        <p:outputLabel value="#{v.patient.person.sex}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value">
+                                        <p:outputLabel value="#{v.value}" ></p:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+
+
+                            </p:panel>
+
+
+                        </p:panelGrid>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
