@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,13 +46,19 @@ public class SmsManagerEjb {
     @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
     public void myTimer() {
         sendSmsAwaitingToSendInDatabase();
+        System.out.println("myTimer() in SMS Manager = " + new Date());
     }
 
     private void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false and e.createdAt=:d";
+        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false and e.createdAt>:d";
         Map m = new HashMap();
-        m.put("d", new Date());
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.HOUR_OF_DAY, 0);
+        m.put("d", c.getTime());
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
         List<Sms> smses = getSmsFacade().findBySQL(j,m,TemporalType.DATE);
+        System.out.println("smses = " + smses.size());
 //        if (false) {
 //            Sms e = new Sms();
 //            e.getSentSuccessfully();
