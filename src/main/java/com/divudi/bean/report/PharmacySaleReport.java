@@ -500,8 +500,9 @@ public class PharmacySaleReport implements Serializable {
             m.put("cat", category);
         }
 
-        sql += " group by FUNC('Date',i.createdAt),i.bill.billClassType"
-                + " order by i.createdAt,i.bill.billClassType ";
+//        sql += " group by FUNC('Date',i.createdAt),i.bill.billClassType"
+//                + " order by i.createdAt,i.bill.billClassType ";
+        sql += " group by FUNC('Date',i.createdAt),i.bill.billClassType";
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
