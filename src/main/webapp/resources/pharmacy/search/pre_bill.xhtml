@@ -87,7 +87,7 @@
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
             </p:column>                               
-            <p:column headerText="Net Value" style="text-align: right;"  >
+            <p:column headerText="Net Value" style="text-align: right;" sortBy="#{bill.netTotal}" >
                 <h:commandLink action="pharmacy_reprint_bill_pre" >
                     <h:outputLabel value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>

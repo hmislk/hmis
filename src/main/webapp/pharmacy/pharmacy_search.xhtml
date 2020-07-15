@@ -14,24 +14,36 @@
                     <p:panel id="gpBillPreview">
                         <f:facet name="header" >
                             <h:outputLabel value="PHARMACY BILL SEARCH "/>                                 
-                            <h:panelGrid columns="4" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
-                                </p:calendar>
-                                <p:selectOneMenu value="#{searchController.billType}">
-                                    <f:selectItem itemLabel="Select Bill Type"/>
-                                    <f:selectItems value="#{enumController.pharmacyBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
-                                    <f:ajax  event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
-                                </p:selectOneMenu>
-                                <p:inputText autocomplete="off" value="#{searchController.maxResult}" />
-                                <p:commandButton id="btnSearch" ajax="false" value="Search Current" action="#{searchController.createTableByBillType}"/>
-                                <p:commandButton ajax="false" value="Search in All Department" action="#{searchController.createTableByBillTypeAllDepartment}" rendered="false"/>                                
-                            </h:panelGrid>
-                            <p:defaultCommand target="btnSearch"/>
+
                         </f:facet>
+                        <h:panelGrid columns="18" >
+                            <h:outputLabel value="From"/>
+                            <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
+                            </p:calendar>
+                            <p:spacer width="5" height="1" ></p:spacer>
+
+                            <h:outputLabel value="To"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                            </p:calendar>
+                            <p:spacer width="5" height="1" ></p:spacer>
+
+                            <h:outputLabel value="Bill Type"/>
+                            <p:selectOneMenu value="#{searchController.billType}">
+                                <f:selectItem itemLabel="Select Bill Type"/>
+                                <f:selectItems value="#{enumController.pharmacyBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
+                                <f:ajax  event="change" execute="@this" render="detail" listener="#{searchController.makeNull}"/>
+                            </p:selectOneMenu>
+                            <p:spacer width="5" height="1" ></p:spacer>
+
+                            <h:outputLabel value="List Count"/>
+                            <p:inputText autocomplete="off" value="#{searchController.maxResult}" />
+                            <p:spacer width="5" height="1" ></p:spacer>
+
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createTableByBillType}"/>
+                            <p:commandButton ajax="false" value="Search All" action="#{searchController.createTableByBillTypeAllDepartment}" rendered="false"/>                                
+                        </h:panelGrid>
+
+                        <p:defaultCommand target="btnSearch"/>
                         <h:panelGroup id="detail">
                             <h:panelGroup rendered="#{searchController.billType eq 'PharmacyGrnBill'}" >
                                 <se:grn/>
