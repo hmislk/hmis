@@ -1298,6 +1298,7 @@ public class PharmacySaleController implements Serializable {
         }
 
         if (getPreBill().getBillItems().isEmpty()) {
+            UtilityController.addErrorMessage("Please add items to the bill.");
             return;
         }
 

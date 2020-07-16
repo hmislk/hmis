@@ -330,16 +330,20 @@
                                         </h:panelGroup>
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
-                                                         onclick="onSubmitButton();"
                                                          action="#{pharmacySaleController.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                 <h:outputLabel value="ettle"  ></h:outputLabel>
                                             </f:facet>
                                         </p:commandButton>
+                                        
+                                        <p:dialog widgetVar="panelwv" modal="true">
+                                            <h1>Please wait</h1>
+                                        </p:dialog>
+                                        
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                                          ajax="false" action="pharmacy_bill_retail_sale"
-                                                         onclick="onSubmitButton();"
+                                                         
                                                          actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
 
 
@@ -540,7 +544,7 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                              ajax="false" action="pharmacy_bill_retail_sale" 
-                                             onclick="onSubmitButton();"
+                                             
                                              actionListener="#{pharmacySaleController.resetAll()}" ></p:commandButton>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />

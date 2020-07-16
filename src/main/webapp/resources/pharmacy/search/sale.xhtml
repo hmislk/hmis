@@ -33,7 +33,7 @@
                 </p:commandButton>
             </p:column>
             
-            <p:column headerText="BILL NO" >
+            <p:column headerText="BILL NO" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains" >
                 <h:commandLink action="pharmacy_reprint_bill_sale" value="#{bill.deptId}">
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>

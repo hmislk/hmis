@@ -1,1 +1,1 @@
-select * from item where name like '%ezumi 40mg%';
+select `ID`,`NAME` from department where `ID`=1425520;
