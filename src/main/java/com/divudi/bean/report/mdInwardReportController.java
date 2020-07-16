@@ -116,6 +116,8 @@ public class mdInwardReportController implements Serializable {
     boolean showDepartment = false;
     boolean showCategory = false;
 
+    private double purchaseValue;
+
     public PaymentMethod[] getPaymentMethods() {
 
         return PaymentMethod.values();
@@ -598,11 +600,12 @@ public class mdInwardReportController implements Serializable {
 
     public void listInBhtBillItems() {
         Date startTime = new Date();
-
+        purchaseValue = 0.0;
         listInBhtBillItems(BillType.PharmacyBhtPre);
-
+        for (BillItem bi : billItem) {
+            purchaseValue += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getPharmaceuticalBillItem().getQty();
+        }
         commonController.printReportDetails(fromDate, toDate, startTime, " BHT intrim error correction(/faces/inward/report_bht_issue_by_bill_item.xhtml)");
-
     }
 
     public void listInBhtBillItemsStore() {
@@ -2919,6 +2922,14 @@ public class mdInwardReportController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public double getPurchaseValue() {
+        return purchaseValue;
+    }
+
+    public void setPurchaseValue(double purchaseValue) {
+        this.purchaseValue = purchaseValue;
     }
 
     //619

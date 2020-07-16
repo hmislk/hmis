@@ -1775,6 +1775,12 @@ public class BhtSummeryController implements Serializable {
         patientEncounter = null;
         makeNull();
     }
+    
+    public String toIntrimBillclear() {
+        patientEncounter = null;
+        makeNull();
+        return "/inward/inward_bill_intrim";
+    }
 
     public void updateAdmissionFee(AdmissionType at) {
         getAdmissionTypeFacade().edit(at);
