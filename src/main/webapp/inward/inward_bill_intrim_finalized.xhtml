@@ -31,10 +31,6 @@
                                             var="myItem" itemValue="#{myItem}" 
                                             itemLabel="#{myItem.bhtNo}" 
                                             size="30"  >
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="@all" 
-                                        listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
@@ -54,9 +50,13 @@
                                     <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
                                 </p:column>
                             </p:autoComplete>   
+
+                            <p:commandButton ajax="false" value="Display" action="#{bhtSummeryFinalizedController.createTablesFinalized()}" >
+                            </p:commandButton>
+
                             <h:panelGroup id="panSearch2">
                                 <in:bhtDetail admission="#{bhtSummeryFinalizedController.patientEncounter}"/>
-                            </h:panelGroup>                           
+                            </h:panelGroup> 
                         </p:panel>
 
 
@@ -520,8 +520,8 @@
 
                                 <p:column headerText="Billed By" exportable="false" >
                                     <f:facet name="header">
-                                    <h:outputLabel value="Billed By"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Billed By"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{bi.bill.cancelled}" >
@@ -533,8 +533,8 @@
                                 </p:column>   
                                 <p:column headerText="Edited" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Edited"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Edited"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{bi.bill.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
                                         <h:outputLabel style="color: #008000;" 
@@ -551,8 +551,8 @@
                                 </p:column>
                                 <p:column headerText="Checked" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Checked"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Checked"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{bi.bill.checkedBy ne null}" >
 
                                         <h:outputLabel style="color: #008000;" 
@@ -771,7 +771,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
-                            
+
                             <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                          sortBy="#{iss.bill.deptId}"
                                          rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
@@ -847,8 +847,8 @@
 
                                 <p:column headerText="Created At" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Created At"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Created At"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{iss.bill.createdAt}">
                                         <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
@@ -864,8 +864,8 @@
 
                                 <p:column headerText="Billed By" exportable="false" >
                                     <f:facet name="header">
-                                    <h:outputLabel value="Billed By"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Billed By"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{iss.bill.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
@@ -877,8 +877,8 @@
                                 </p:column>   
                                 <p:column headerText="Edited" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Edited"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Edited"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{iss.bill.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
                                         <h:outputLabel style="color: #008000;" 
@@ -895,8 +895,8 @@
                                 </p:column>
                                 <p:column headerText="Checked" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Checked"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Checked"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{iss.bill.checkedBy ne null}" >
 
                                         <h:outputLabel style="color: #008000;" 
