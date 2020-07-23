@@ -108,6 +108,8 @@ public class CommonReport implements Serializable {
     List<Bill> pharmacyUnitIssueCancelBills;
     List<Bill> pharmacyUnitIssueReturnbill;
 
+    private List<Bill> blankBills;
+    
     double pharmacyCashBilledBillTotals;
     double pharmacyCashCancelBillTotals;
     double pharmacyCashReturnbillTotals;
@@ -6274,6 +6276,17 @@ public class CommonReport implements Serializable {
 
     public void setInvoceNo(String invoceNo) {
         this.invoceNo = invoceNo;
+    }
+    
+    public List<Bill> getBlankBills() {
+        if(blankBills==null){
+            blankBills = new ArrayList<>();
+        }
+        return blankBills;
+    }
+
+    public void setBlankBills(List<Bill> blankBills) {
+        this.blankBills = blankBills;
     }
 
 }
