@@ -1907,7 +1907,14 @@ public class CommonReport implements Serializable {
             temMap.put("td", td);
         }
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        
+        List<Bill> tbs = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        
+        System.out.println("tbs.size() = " + tbs.size());
+        
+        return tbs;
 
     }
 
@@ -1918,7 +1925,7 @@ public class CommonReport implements Serializable {
                 + " WHERE type(b)=:bill "
                 + " and b.retired=false "
                 + " and b.billType=:btp "
-                + " and (b.paymentMethod=:pm or b.paymentMethod=:pm) "
+                + " and b.paymentMethod=:pm "
                 + " and b.createdAt between :fromDate and :toDate ";
         Map temMap = new HashMap();
         temMap.put("fromDate", getFromDate());
@@ -1931,11 +1938,14 @@ public class CommonReport implements Serializable {
             temMap.put("fd", fd);
         }
         if (td != null) {
-            sql += "  and b.fromDepartment=:td ";
+            sql += "  and b.toDepartment=:td ";
             temMap.put("td", td);
         }
-
-        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
+        Double val = getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        System.out.println("val = " + val);
+        return val;
 
     }
 
@@ -2496,7 +2506,6 @@ public class CommonReport implements Serializable {
         billedBills = null;
         cancellededBills = null;
         refundedBills = null;
-        List<Bill> list = null;
         getBilledBills().setBills(billsOwn(new BilledBill(), billType, fromDepartment, toDepartment));
         getBilledBills().setCard(calValue(new BilledBill(), billType, PaymentMethod.Card, fromDepartment, toDepartment));
         getBilledBills().setCash(calValue(new BilledBill(), billType, PaymentMethod.Cash, fromDepartment, toDepartment));

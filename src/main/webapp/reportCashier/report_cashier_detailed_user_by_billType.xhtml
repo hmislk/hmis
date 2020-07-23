@@ -43,7 +43,9 @@
 
 
                                 <h:outputLabel value="Select Bill Type" for="cmdBillType"/>
-                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}" required="true">
+                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}"
+                                                 required="true"
+                                                 requiredMessage="Please select a bill type">
                                     <f:selectItem itemLabel="Select Bill Type"/>
                                     <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
                                 </p:selectOneMenu>
@@ -62,7 +64,10 @@
                                                  style="width: 90%; margin: auto;"
                                                  value="Excel"  styleClass="noPrintButton" >
                                     <pe:exporter type="xlsx" 
-                                                 target="billed cancelled refunded Summary"  
+                                                 target="#{commonReport.billType}billed,
+                                                 #{commonReport.billType}cancelled,
+                                                 #{commonReport.billType}refunded,
+                                                 sum"  
                                                  fileName="Day_END_By_Bill_Type" />
 
 
@@ -81,7 +86,7 @@
                         <p:panel  id="reportPrint" styleClass="noBorder">
                             <h:panelGroup rendered="#{commonReport.billType eq 'OpdBill'}" >  
 
-                                <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" 
+                                <p:dataTable id="OpdBillbilled"  value="#{commonReport.billedBills.bills}" var="b" 
                                              sortBy="#{b.billType}"  >
 
                                     <f:facet name="header">  
@@ -104,6 +109,7 @@
                                             <h:outputLabel value="Id"/>
                                         </f:facet> 
                                         <h:outputLabel value="#{b.insId}"/>
+                                        <!--<h:outputLabel value="#{b.paymentMethod}"/>-->
                                     </p:column>
 
                                     <p:column headerText="Time"  > 
@@ -124,7 +130,8 @@
                                     </p:column>
 
 
-                                    <p:column headerText="From Department"  >
+                                    <p:column headerText="From Department" 
+                                              rendered="#{commonReport.fromDepartment eq null}" >
                                         <f:facet name="header">  
                                             <h:outputLabel value="From Department"/>
                                         </f:facet> 
@@ -133,7 +140,7 @@
                                     </p:column>
 
 
-                                    <p:column headerText="To Department"  >
+                                    <p:column headerText="To Department" rendered="#{commonReport.toDepartment eq null}" >
                                         <f:facet name="header">  
                                             <h:outputLabel value="To Department"/>
                                         </f:facet> 
@@ -221,6 +228,7 @@
 
                                             <p:column footerText="#{commonReport.billedBills.cash}">
                                                 <f:facet name="footer">
+                                                    Rs. 
                                                     <h:outputLabel value="#{commonReport.billedBills.cash}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputLabel>
@@ -265,7 +273,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="cancelled"  value="#{commonReport.cancellededBills.bills}" var="b1" >
+                                <p:dataTable id="OpdBillcancelled"  value="#{commonReport.cancellededBills.bills}" var="b1" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cancelled"/>
                                     </f:facet> 
@@ -422,7 +430,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="refunded" value="#{commonReport.refundedBills.bills}" var="b"
+                                <p:dataTable id="OpdBillrefunded" value="#{commonReport.refundedBills.bills}" var="b"
                                              sortBy="#{b.billType}"   >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Refunded" />
@@ -583,7 +591,7 @@
                             <p:spacer height="30"/>
 
                             <h:panelGroup rendered="#{commonReport.billType eq 'PharmacySale'}" >      
-                                <p:dataTable id="billed"  value="#{commonReport.billedBills.bills}" var="b" 
+                                <p:dataTable id="PharmacySalebilled"  value="#{commonReport.billedBills.bills}" var="b" 
                                              sortBy="#{b.billType}"  >
 
                                     <f:facet name="header">  
@@ -746,7 +754,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="cancelled"  value="#{commonReport.cancellededBills.bills}" var="b1"  
+                                <p:dataTable id="PharmacySalecancelled"  value="#{commonReport.cancellededBills.bills}" var="b1"  
                                              >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cancelled"/>
@@ -897,7 +905,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="refunded" value="#{commonReport.refundedBills.bills}" var="b" sortBy="#{b.billType}"  >
+                                <p:dataTable id="PharmacySalerefunded" value="#{commonReport.refundedBills.bills}" var="b" sortBy="#{b.billType}"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Refunded" />
                                     </f:facet> 
@@ -1050,7 +1058,7 @@
                             <p:spacer height="30"/>
 
                             <h:panelGroup rendered="#{commonReport.billType eq 'PaymentBill'}">
-                                <p:dataTable id="billed" value="#{commonReport.billedBills.bills}" var="b" 
+                                <p:dataTable id="PaymentBillbilled" value="#{commonReport.billedBills.bills}" var="b" 
                                              sortBy="#{b.billType}"  >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Payments"/>
@@ -1117,7 +1125,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="cancelled"
+                                <p:dataTable id="PaymentBillcancelled"
                                              value="#{commonReport.cancellededBills.bills}"
                                              var="b"   sortBy="#{b.billType}"  >
                                     <f:facet name="header">  
@@ -1183,7 +1191,7 @@
                                     </p:columnGroup> 
                                 </p:dataTable>
 
-                                <p:dataTable id="refunded"
+                                <p:dataTable id="PaymentBillrefunded"
                                              value="#{commonReport.blankBills}"
                                              var="b"    >
                                 </p:dataTable>
@@ -1193,7 +1201,7 @@
                             <p:spacer height="30"/>
 
                             <h:panelGroup rendered="#{commonReport.billType eq 'PettyCash'}">
-                                <p:dataTable id="billed" value="#{commonReport.billedBills.bills}"
+                                <p:dataTable id="PettyCashbilled" value="#{commonReport.billedBills.bills}"
                                              var="b4"   sortBy="#{b4.billType}">
                                     <f:facet name="header">  
                                         <h:outputLabel value="Petty Cash Payment"/>
@@ -1295,7 +1303,7 @@
                                 <p:spacer height="30"/>
 
 
-                                <p:dataTable id="cancelled" value="#{commonReport.cancellededBills.bills}" 
+                                <p:dataTable id="PettyCashcancelled" value="#{commonReport.cancellededBills.bills}" 
                                              var="b4"   sortBy="#{b4.billType}" >
                                     <f:facet name="header">  
                                         <h:outputLabel  value="Petty Cash Payment Cancel"/>
@@ -1392,7 +1400,7 @@
 
                                 </p:dataTable>
 
-                                <p:dataTable id="refunded"
+                                <p:dataTable id="PettyCashrefunded"
                                              value="#{commonReport.blankBills}"
                                              var="b"    >
                                 </p:dataTable>
@@ -1404,7 +1412,7 @@
 
 
                             <h:panelGroup rendered="#{commonReport.billType eq 'CashRecieveBill'}">
-                                <p:dataTable id="billed" value="#{commonReport.billedBills.bills}"
+                                <p:dataTable id="CashRecieveBillbilled" value="#{commonReport.billedBills.bills}"
                                              var="b7"   sortBy="#{b7.billType}" >
                                     <f:facet name="header">  
                                         <h:outputLabel value="Credit Company Payment Recieve"/>
@@ -1510,7 +1518,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="cancelled" value="#{commonReport.cancellededBills.bills}"
+                                <p:dataTable id="CashRecieveBillcancelled" value="#{commonReport.cancellededBills.bills}"
                                              var="b7"   sortBy="#{b7.billType}" 
                                              rendered="#{commonReport.cancellededBills.bills.size()>0}">
                                     <f:facet name="header">  
@@ -1635,7 +1643,7 @@
                                 </p:dataTable>
 
 
-                                <p:dataTable id="refunded"
+                                <p:dataTable id="CashRecieveBillrefunded"
                                              value="#{commonReport.blankBills}"
                                              var="b"    >
                                 </p:dataTable>
@@ -1645,7 +1653,7 @@
 
                             <h:panelGroup rendered="#{commonReport.billType eq 'AgentPaymentReceiveBill'}">
 
-                                <p:dataTable id="billed" value="#{commonReport.billedBills.bills}" 
+                                <p:dataTable id="AgentPaymentReceiveBillbilled" value="#{commonReport.billedBills.bills}" 
                                              var="b7"   sortBy="#{b7.billType}">
                                     <f:facet name="header">  
                                         <h:outputLabel value="Cashier Agent Payment Detail Report"/>
@@ -1753,7 +1761,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="cancelled"  value="#{commonReport.cancellededBills.bills}"
+                                <p:dataTable id="AgentPaymentReceiveBillcancelled"  value="#{commonReport.cancellededBills.bills}"
                                              var="b7"   sortBy="#{b7.billType}">
                                     <f:facet name="header">  
                                         <h:outputLabel value="Agent Payment Cancel"/>
@@ -1879,7 +1887,7 @@
                                     </p:columnGroup> 
                                 </p:dataTable>
 
-                                <p:dataTable id="refunded"
+                                <p:dataTable id="AgentPaymentReceiveBillrefunded"
                                              value="#{commonReport.blankBills}"
                                              var="b"    >
                                 </p:dataTable>
@@ -1890,7 +1898,7 @@
 
                             <h:panelGroup rendered="#{commonReport.billType eq 'InwardPaymentBill'}">
 
-                                <p:dataTable id="billed" value="#{commonReport.billedBills.bills}" 
+                                <p:dataTable id="InwardPaymentBillbilled" value="#{commonReport.billedBills.bills}" 
                                              var="b"   sortBy="#{b.billType}"
                                              rendered="#{commonReport.billedBills.bills.size()>0}" >
                                     <f:facet name="header">  
@@ -1954,7 +1962,7 @@
 
                                 <p:spacer height="30"/>
 
-                                <p:dataTable id="cancelled" value="#{commonReport.cancellededBills.bills}" 
+                                <p:dataTable id="InwardPaymentBillcancelled" value="#{commonReport.cancellededBills.bills}" 
                                              var="b"   sortBy="#{b.billType}">
                                     <f:facet name="header">  
                                         <h:outputLabel value="Inward Payments Cancel"/>
@@ -2030,7 +2038,7 @@
                                     </p:columnGroup> 
                                 </p:dataTable>
 
-                                <p:dataTable id="refunded"
+                                <p:dataTable id="InwardPaymentBillrefunded"
                                              value="#{commonReport.blankBills}"
                                              var="b"    >
                                 </p:dataTable>

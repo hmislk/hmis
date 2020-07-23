@@ -42,18 +42,27 @@ public class BillsTotals {
     private void calTot() {
         cash = credit = card = cheque = slip = agent = 0.0;
         for (Bill b : bills) {
-            if (b.getPaymentMethod() == PaymentMethod.Cash) {
-                setCash(getCash() + b.getNetTotal());
-            } else if (b.getPaymentMethod() == PaymentMethod.Credit) {
-                setCredit(getCredit() + b.getNetTotal());
-            } else if (b.getPaymentMethod() == PaymentMethod.Card) {
-                setCard(getCard() + b.getNetTotal());
-            } else if (b.getPaymentMethod() == PaymentMethod.Cheque) {
-                setCheque(getCheque() + b.getNetTotal());
-            } else if (b.getPaymentMethod() == PaymentMethod.Slip) {
-                setSlip(getSlip() + b.getNetTotal());
-            } else if (b.getPaymentMethod() == PaymentMethod.Agent) {
-                setSlip(getAgent() + b.getNetTotal());
+            if (null != b.getPaymentMethod()) switch (b.getPaymentMethod()) {
+                case Cash:
+                    setCash(getCash() + b.getNetTotal());
+                    break;
+                case Credit:
+                    setCredit(getCredit() + b.getNetTotal());
+                    break;
+                case Card:
+                    setCard(getCard() + b.getNetTotal());
+                    break;
+                case Cheque:
+                    setCheque(getCheque() + b.getNetTotal());
+                    break;
+                case Slip:
+                    setSlip(getSlip() + b.getNetTotal());
+                    break;
+                case Agent:
+                    setSlip(getAgent() + b.getNetTotal());
+                    break;
+                default:
+                    break;
             }
 
         }
