@@ -42,8 +42,8 @@
                                                 value="#{commonReport.toDepartment}" />
 
 
-                                <h:outputLabel value="Select Bill Type"/>
-                                <p:selectOneMenu value="#{commonReport.billType}">
+                                <h:outputLabel value="Select Bill Type" for="cmdBillType"/>
+                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}" required="true">
                                     <f:selectItem itemLabel="Select Bill Type"/>
                                     <f:selectItems value="#{enumController.cashFlowBillTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
                                 </p:selectOneMenu>

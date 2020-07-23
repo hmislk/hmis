@@ -8,8 +8,6 @@ import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
@@ -533,7 +531,7 @@ public class CommonReport implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -545,7 +543,7 @@ public class CommonReport implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -855,7 +853,7 @@ public class CommonReport implements Serializable {
 
         tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
-            tmp = new ArrayList<Bill>();
+            tmp = new ArrayList<>();
         }
 
         return tmp;
@@ -880,7 +878,7 @@ public class CommonReport implements Serializable {
 
         tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
-            tmp = new ArrayList<Bill>();
+            tmp = new ArrayList<>();
         }
 
         return tmp;
@@ -1011,8 +1009,8 @@ public class CommonReport implements Serializable {
 
         Map temMap = new HashMap();
         List<Bill> tmp;
-        BillType billType[] = {BillType.LabBill, BillType.CollectingCentreBill};
-        List<BillType> bts = Arrays.asList(billType);
+        BillType tbts[] = {BillType.LabBill, BillType.CollectingCentreBill};
+        List<BillType> bts = Arrays.asList(tbts);
         temMap.put("fromDate", fromDate);
         temMap.put("toDate", toDate);
         temMap.put("bType", bts);
@@ -1026,7 +1024,7 @@ public class CommonReport implements Serializable {
         }
         tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
-            tmp = new ArrayList<Bill>();
+            tmp = new ArrayList<>();
         }
 
         total = 0.0;
@@ -1522,7 +1520,7 @@ public class CommonReport implements Serializable {
     public List<BillItem> createStoreGRNBillItem(DepartmentType dt) {
         String sql;
         Map m = new HashMap();
-        List<BillItem> bs = new ArrayList<>();
+        List<BillItem> bs;
 
         sql = " SELECT bi FROM BillItem bi WHERE "
                 + " type(bi.bill)=:bill "
@@ -3556,7 +3554,7 @@ public class CommonReport implements Serializable {
         bills = null;
         String sql;
         Map m = new HashMap();
-        List<Bill> b = new ArrayList<>();
+        List<Bill> b ;
         sql = "select b from Bill b where b.insId=:bn ";
         m.put("bn", s);
         b = getBillFacade().findBySQLWithoutCache(sql, m);
@@ -4289,7 +4287,7 @@ public class CommonReport implements Serializable {
 //        }
         Date startTime = new Date();
 
-        List<Object[]> objects = new ArrayList<>();
+        List<Object[]> objects ;
         billTotal = 0.0;
         billTotalCancel = 0.0;
         billTotalRefund = 0.0;
@@ -4300,7 +4298,7 @@ public class CommonReport implements Serializable {
         billTotalCancelStaff = 0.0;
         billTotalRefundStaff = 0.0;
         itemCountRows = new ArrayList<>();
-        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
+        objects = fetchItems(new Class[]{BilledBill.class}, new Class[]{Service.class}, new BillType[]{BillType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
                 if (itemCountRows.size() > 0) {
@@ -4338,7 +4336,7 @@ public class CommonReport implements Serializable {
             }
         }
         itemCountRowsCancel = new ArrayList<>();
-        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
+        objects = fetchItems(new Class[]{CancelledBill.class}, new Class[]{Service.class}, new BillType[]{BillType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
                 if (itemCountRowsCancel.size() > 0) {
@@ -4376,7 +4374,7 @@ public class CommonReport implements Serializable {
             }
         }
         itemCountRowsRefund = new ArrayList<>();
-        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{billType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
+        objects = fetchItems(new Class[]{RefundBill.class}, new Class[]{Service.class}, new BillType[]{BillType.OpdBill}, null, department, webUser, fromDate, toDate, onlyHosFee, onlyStaffFee);
         if (objects != null) {
             for (Object[] obj : objects) {
                 if (itemCountRowsRefund.size() > 0) {
@@ -4426,7 +4424,7 @@ public class CommonReport implements Serializable {
             WebUser webUser,
             Date fd, Date td, boolean hf, boolean sf) {
 
-        List<Object[]> items = new ArrayList<>();
+        List<Object[]> titems ;
         String sql;
         Map m = new HashMap();
 
@@ -4486,9 +4484,9 @@ public class CommonReport implements Serializable {
 
         System.out.println("m = " + m);
 
-        items = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+        titems = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
-        return items;
+        return titems;
     }
 
     public void createDirectPurchaseBillItemTable() {
@@ -5375,7 +5373,7 @@ public class CommonReport implements Serializable {
         for (Institution i : fetchCollectingCenters(billTypes)) {
             CollectingCenteRow row = new CollectingCenteRow();
             row.setI(i);
-            List<Bill> bs = new ArrayList<>();
+            List<Bill> bs ;
             bs = getBillList(billTypes, i);
             double tot = 0.0;
             double totVat = 0.0;
