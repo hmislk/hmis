@@ -42,8 +42,8 @@ public class EmailManagerEjb {
     @EJB
     private EmailFacade emailFacade;
 
-//    @SuppressWarnings("unused")
-//    @Schedule(second = "59", minute = "*/5", hour = "*", persistent = false)
+    @SuppressWarnings("unused")
+    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
     public void myTimer() {
         sendReportApprovalEmails();
 

@@ -556,7 +556,7 @@ public class PharmacySaleController3 implements Serializable {
             sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
 
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findBySQL(sql, m, 40);
 
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);

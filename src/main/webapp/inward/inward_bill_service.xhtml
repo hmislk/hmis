@@ -33,12 +33,13 @@
                             <h:panelGroup id="panelPatient" >
                                 <p:panel header="Patient Details">
                                     <h:outputLabel value="Type Patient Name or BHT : "/>
-                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
+                                                    converter="admis"
                                                     value="#{billBhtController.patientEncounter}" 
                                                     completeMethod="#{admissionController.completePatient}"
-                                                    var="apt2" itemLabel="#{amp2.bhtNo}"
+                                                    var="apt2" itemLabel="#{apt2.bhtNo}"
                                                     itemValue="#{apt2}" size="30"  style="width: 400px;" >
-                                        <p:ajax event="itemSelect" process="acPt2" update="panSearch2"/>
+                                        <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
                                         <p:column >
                                             <h:outputLabel value="#{apt2.bhtNo}"/> 
                                         </p:column>
@@ -49,7 +50,9 @@
                                             <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                         </p:column>
                                     </p:autoComplete>  
-
+                                    <p:commandButton value="Select" ajax="false"  >
+                                        
+                                    </p:commandButton>
                                     <br/><br/>
                                     <h:panelGroup id="panSearch2">
                                         <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
@@ -114,7 +117,7 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>  
-                                            <p:ajax event="itemSelect" process="acIx ct" update="@all" />
+                                            <p:ajax event="itemSelect" process="acIx ct" />
                                             <p:ajax event="focus" process="ct"/>
                                         </p:autoComplete>
 
