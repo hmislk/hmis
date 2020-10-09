@@ -1676,10 +1676,10 @@ public class BillBeanController implements Serializable {
                 //                + " and b.cancelled=false "
                 //                + " and b.refunded=false "
                 + " and  b.billType in :bType"
-                + " and b.department.institution=:ins "
+                + " and b.toDepartment.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " group by b.department"
-                + " order by b.department.name";
+                + " group by b.toDepartment"
+                + " order by b.toDepartment.name";
 
         HashMap hm = new HashMap();
         hm.put("bType", bts);
