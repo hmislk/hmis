@@ -229,7 +229,7 @@ public class BillController implements Serializable {
         return "/lab/collecting_centre";
     }
 
-    public  List<Bill> validBillsOfBatchBill(Bill batchBill) {
+    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
@@ -1044,8 +1044,20 @@ public class BillController implements Serializable {
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
-                getPersonFacade().create(getNewPatient().getPerson());
-                getPatientFacade().create(getNewPatient());
+                try {
+                    getPersonFacade().create(getNewPatient().getPerson());
+                } catch (Exception e) {
+                    System.out.println("CHanneling Error 3");
+                    System.out.println("e = " + e);
+                    getPersonFacade().edit(getNewPatient().getPerson());
+                }
+                try {
+                    getPatientFacade().create(getNewPatient());
+                } catch (Exception e) {
+                    System.out.println("CHanneling Error 4");
+                    System.out.println("e = " + e);
+                    getPatientFacade().edit(getNewPatient());
+                }
                 tmpPatient = getNewPatient();
                 break;
             case "tabSearchPt":
@@ -1457,7 +1469,7 @@ public class BillController implements Serializable {
             }
 
         }
-        
+
 //
 //        if (!sessionController.getApplicationPreference().getCanSettleOpdBillWithoutReferringDoctor()) {
 //            for (BillEntry be : getLstBillEntries()) {
@@ -1469,7 +1481,6 @@ public class BillController implements Serializable {
 //                }
 //            }
 //        }
-
 //            if (getStrTenderedValue() == null) {
 //                UtilityController.addErrorMessage("Please Enter Tenderd Amount");
 //                return true;
@@ -1489,7 +1500,6 @@ public class BillController implements Serializable {
 //            }
 //
 //        }
-
         boolean checkAge = false;
         for (BillEntry be : getLstBillEntries()) {
             if (be.getBillItem().getItem().getDepartment().getDepartmentType() == DepartmentType.Lab) {
@@ -1719,9 +1729,6 @@ public class BillController implements Serializable {
         patientSearchTab = 0;
     }
 
-    
-    
-    
     private void clearBillValuesForMember() {
         setNewPatient(null);
         setReferredBy(null);
@@ -1760,8 +1767,6 @@ public class BillController implements Serializable {
         patientSearchTab = 1;
     }
 
-    
-    
     private void recreateBillItems() {
         //Only remove Total and BillComponenbts,Fee and Sessions. NOT bill Entries
         lstBillComponents = null;
@@ -1804,8 +1809,7 @@ public class BillController implements Serializable {
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
         System.out.println("membershipScheme = " + membershipScheme);
-        
-        
+
         for (BillEntry be : getLstBillEntries()) {
             ////System.out.println("bill item entry");
             double entryGross = 0.0;
@@ -1979,8 +1983,6 @@ public class BillController implements Serializable {
         collectingCentreBillController.setCollectingCentre(null);
     }
 
-    
-    
     public void prepareNewBillForMember() {
         clearBillItemValues();
         clearBillValuesForMember();
@@ -1992,10 +1994,6 @@ public class BillController implements Serializable {
         collectingCentreBillController.setCollectingCentre(null);
     }
 
-    
-    
-    
-    
     public void makeNull() {
         clearBillItemValues();
         clearBillValues();
