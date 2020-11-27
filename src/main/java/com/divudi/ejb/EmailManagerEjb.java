@@ -45,7 +45,7 @@ public class EmailManagerEjb {
     @SuppressWarnings("unused")
     @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
     public void myTimer() {
-        sendReportApprovalEmails();
+//        sendReportApprovalEmails();
 
     }
 

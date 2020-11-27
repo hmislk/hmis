@@ -4426,13 +4426,15 @@ public class SearchController implements Serializable {
                 + " join pi.billItem.bill b "
                 + " where "
                 + " b.createdAt between :fromDate and :toDate "
-                + " and (b.cancelled=:c or b.refunded=:r) "
+                + " and b.cancelled=:c "
                 + " and pr.approved=:a "
                 + " order by b.id";
 
         Map temMap = new HashMap();
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
+        temMap.put("c", true);
+        temMap.put("a", true);
         patientReports = getPatientReportFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -7814,8 +7816,6 @@ public class SearchController implements Serializable {
     public double getTotalPaying() {
         return totalPaying;
     }
-    
-    
 
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;
