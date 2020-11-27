@@ -133,6 +133,7 @@ public class SearchController implements Serializable {
     private List<BillFee> billFeesDone;
     private List<BillItem> billItems;
     private List<PatientInvestigation> patientInvestigations;
+    private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
     Bill cancellingIssueBill;
     Bill bill;
@@ -556,6 +557,14 @@ public class SearchController implements Serializable {
 
     public PatientFacade getPatientFacade() {
         return patientFacade;
+    }
+
+    public List<PatientReport> getPatientReports() {
+        return patientReports;
+    }
+
+    public void setPatientReports(List<PatientReport> patientReports) {
+        this.patientReports = patientReports;
     }
 
     public class billsWithbill {
@@ -4410,6 +4419,23 @@ public class SearchController implements Serializable {
 
     }
 
+    public void searchApprovedReportsWithCancelledOrReturnedBills() {
+        String sql = "select pr "
+                + " from PatientReport pr"
+                + " join pr.patientInvestigation pi "
+                + " join pi.billItem.bill b "
+                + " where "
+                + " b.createdAt between :fromDate and :toDate "
+                + " and (b.cancelled=:c or b.refunded=:r) "
+                + " and pr.approved=:a "
+                + " order by b.id";
+
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        patientReports = getPatientReportFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
     public void checkRefundBillItems(List<PatientInvestigation> pis) {
         for (PatientInvestigation pi : pis) {
             for (PatientReport pr : pi.getPatientReports()) {
@@ -5237,11 +5263,10 @@ public class SearchController implements Serializable {
             sql += " and b.fromDepartment=:fdep ";
             temMap.put("fdep", fromDepartment);
         }
-         if (toDepartment != null) {
+        if (toDepartment != null) {
             sql += " and b.toDepartment=:tdep ";
             temMap.put("tdep", toDepartment);
         }
-
 
         sql += " order by b.createdAt desc  ";
 //    
@@ -5253,11 +5278,9 @@ public class SearchController implements Serializable {
         patients = getPatientFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     @EJB
     private PatientFacade patientFacade;
-    
-    
 
     public void createTableByKeyword(BillType billType) {
         bills = null;
@@ -6508,16 +6531,14 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
 //        if (getReportKeyWord().isBool1()) {
-            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 //        } else {
 //            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 //        }
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Search/Final bill search(/faces/inward/inward_search_final.xhtml)");
     }
-    
-    
-    
+
     public void createCancelledInwardFinalBills() {
         Date startTime = new Date();
         String sql;
@@ -6560,7 +6581,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", fromDate);
 
 //        if (getReportKeyWord().isBool1()) {
-            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 //        } else {
 //            bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
 //        }
@@ -7793,6 +7814,8 @@ public class SearchController implements Serializable {
     public double getTotalPaying() {
         return totalPaying;
     }
+    
+    
 
     public void setTotalPaying(double totalPaying) {
         this.totalPaying = totalPaying;

@@ -50,15 +50,11 @@ public class EmailManagerEjb {
     }
 
     private void sendReportApprovalEmails() {
+        System.out.println("sendReportApprovalEmails");
         String j = "Select e from AppEmail e where e.sentSuccessfully=:ret and e.retired=false";
         Map m = new HashMap();
         m.put("ret", false);
         List<AppEmail> emails = getEmailFacade().findBySQL(j,m);
-//        if (false) {
-//            AppEmail e = new AppEmail();
-//            e.getSentSuccessfully();
-//            e.getInstitution();
-//        }
         for (AppEmail e : emails) {
             e.setSentSuccessfully(Boolean.TRUE);
             getEmailFacade().edit(e);
@@ -82,6 +78,7 @@ public class EmailManagerEjb {
             String subject,
             String messageHtml,
             String attachmentFile1Path) {
+        System.out.println("sendEmail" );
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
@@ -126,8 +123,10 @@ public class EmailManagerEjb {
             return true;
 
         } catch (MessagingException e) {
+            System.out.println("e = " + e);
             return false;
         } catch (Exception e) {
+            System.out.println("e = " + e);
             return false;
         }
 
