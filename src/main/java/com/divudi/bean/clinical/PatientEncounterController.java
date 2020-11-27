@@ -135,11 +135,11 @@ public class PatientEncounterController implements Serializable {
         int intRx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForTreatments());
         int intMx = c.lastIndexOf(getSessionController().getUserPreference().getAbbreviationForManagement());
 
-        //   //System.out.println("intHx = " + intHx);
-        //   //System.out.println("intEx = " + intEx);
-        //   //System.out.println("intIx = " + intIx);
-        //   //System.out.println("intRx = " + intRx);
-        //   //System.out.println("intMx = " + intMx);
+        //   ////System.out.println("intHx = " + intHx);
+        //   ////System.out.println("intEx = " + intEx);
+        //   ////System.out.println("intIx = " + intIx);
+        //   ////System.out.println("intRx = " + intRx);
+        //   ////System.out.println("intMx = " + intMx);
         ClinicalField lastField = ClinicalField.History;
         int lastValue = intHx;
 
@@ -184,7 +184,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<String> completeItem(String qry) {
-        //   //System.out.println("complete item");
+        //   ////System.out.println("complete item");
         if (qry == null) {
             qry = "";
         }
@@ -198,7 +198,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void completeHx(String qry) {
-        //   //System.out.println("complete hx");
+        //   ////System.out.println("complete hx");
         if (qry == null) {
             qry = "";
         }
@@ -217,7 +217,7 @@ public class PatientEncounterController implements Serializable {
 
     public void completeEx(String qry) {
 
-        //   //System.out.println("complete ex");
+        //   ////System.out.println("complete ex");
         if (qry == null) {
             qry = "";
         }
@@ -235,7 +235,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void completeIx(String qry) {
-        //   //System.out.println("complete Ix");
+        //   ////System.out.println("complete Ix");
         if (qry == null) {
             qry = "";
         }
@@ -249,8 +249,8 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void completeRx(String qry) {
-        //   //System.out.println("complete rx");
-        //   //System.out.println("qry = " + qry);
+        //   ////System.out.println("complete rx");
+        //   ////System.out.println("qry = " + qry);
         if (qry == null) {
             qry = "";
         }
@@ -261,7 +261,7 @@ public class PatientEncounterController implements Serializable {
                 + "(type(c)= :ce and c.symanticType=:st)) "
                 + "and upper(c.name) like :q "
                 + "order by c.name";
-        ////System.out.println(sql);
+        //////System.out.println(sql);
         Map tmpMap = new HashMap();
         tmpMap.put("amp", Amp.class);
         tmpMap.put("vmp", Vmp.class);
@@ -292,10 +292,10 @@ public class PatientEncounterController implements Serializable {
             jpql = jpql + " and pe.opdDoctor=:doc ";
             m.put("doc", doctor);
         }
-        //System.out.println("1. m = " + m);
-        //System.out.println("2. sql = " + jpql);
+        ////System.out.println("1. m = " + m);
+        ////System.out.println("2. sql = " + jpql);
         items = getFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
-        //System.out.println("3. items = " + items);
+        ////System.out.println("3. items = " + items);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
     }
@@ -318,8 +318,8 @@ public class PatientEncounterController implements Serializable {
             jpql = jpql + " and pe.opdDoctor=:doc ";
             m.put("doc", doctor);
         }
-        //   //System.out.println("m = " + m);
-        //   //System.out.println("sql = " + jpql);
+        //   ////System.out.println("m = " + m);
+        //   ////System.out.println("sql = " + jpql);
         items = getFacade().findBySQL(jpql, m);
 
     }
@@ -419,7 +419,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<PatientEncounter> fillPatientEncounters(Patient patient) {
-        //   //System.out.println("fill current patient encounters");
+        //   ////System.out.println("fill current patient encounters");
         Map m = new HashMap();
         m.put("p", patient);
         String sql;
@@ -490,8 +490,8 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void updateComments() {
-        //   //System.out.println("updating comments");
-        //   //System.out.println("current.getComments() = " + current.getComments());
+        //   ////System.out.println("updating comments");
+        //   ////System.out.println("current.getComments() = " + current.getComments());
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
         } else {
@@ -502,17 +502,17 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void updatePerson() {
-        //   //System.out.println("updating person");
+        //   ////System.out.println("updating person");
         if (current == null) {
-            //   //System.out.println("current = " + current);
+            //   ////System.out.println("current = " + current);
             return;
         }
         if (current.getPatient() == null) {
-            //   //System.out.println("current.getPatient()  = " + current.getPatient());
+            //   ////System.out.println("current.getPatient()  = " + current.getPatient());
             return;
         }
         if (current.getPatient().getPerson() == null) {
-            //   //System.out.println("current.getPatient().getPerson() = " + current.getPatient().getPerson());
+            //   ////System.out.println("current.getPatient().getPerson() = " + current.getPatient().getPerson());
             return;
         }
         getPersonFacade().edit(current.getPatient().getPerson());

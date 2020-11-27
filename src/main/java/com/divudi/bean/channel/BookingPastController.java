@@ -241,7 +241,7 @@ public class BookingPastController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
         }
-//        //System.out.println("consultants = " + consultants);
+//        ////System.out.println("consultants = " + consultants);
         setStaff(null);
     }
 
@@ -256,7 +256,7 @@ public class BookingPastController implements Serializable {
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            //System.out.println("billSessions" + bs.getId());
+            ////System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
 
@@ -303,7 +303,6 @@ public class BookingPastController implements Serializable {
     public void listnerMarkAbsent() {
         Date td=getCommonFunctions().getEndOfDay();
         Date fd=getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
-        System.out.println("fd = " + fd);
         long lng = getCommonFunctions().getDayCount(fd, td);
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
@@ -318,7 +317,7 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        ////System.out.println(getSelectedBillSession().getBill().getPatient());
         if (getSelectedBillSession().isAbsent()) {
             UtilityController.addSuccessMessage("Mark As Absent");
             if (getSelectedBillSession().getBill().getPaidBill()!=null) {
@@ -348,7 +347,7 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        ////System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
 
@@ -399,7 +398,6 @@ public class BookingPastController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        System.out.println("hh = " + hh);
         billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
 
     }
@@ -546,7 +544,7 @@ public class BookingPastController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-//        //System.out.println("consultants = " + consultants);
+//        ////System.out.println("consultants = " + consultants);
         if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {

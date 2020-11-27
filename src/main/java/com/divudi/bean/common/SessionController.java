@@ -612,7 +612,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     m.put("dep", department);
 
                     insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
-                    System.out.println("1");
 
                     if (insPre == null) {
 
@@ -620,12 +619,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                         m = new HashMap();
                         m.put("ins", institution);
                         insPre = getUserPreferenceFacade().findFirstBySQL(sql, m);
-                        System.out.println("2");
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
                             insPre = getUserPreferenceFacade().findFirstBySQL(sql);
-                            System.out.println("3");
 
                         }
 
@@ -697,9 +694,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("n", temUserName.trim().toLowerCase());
         WebUser u = getFacede().findFirstBySQL(temSQL, m);
 
-        System.out.println("temSQL = " + temSQL);
-        System.out.println("m = " + m);
-        System.out.println("u = " + u);
+        //System.out.println("temSQL = " + temSQL);
 
         if (u == null) {
             return false;
@@ -878,7 +873,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggedUser.setWebUserPerson(p);
             webUserFacade.edit(loggedUser);
         }
-        System.out.println("loggedUser = " + loggedUser.getWebUserPerson().getName());
 
         loggedUser.setDepartment(department);
         loggedUser.setInstitution(department.getInstitution());
@@ -1147,7 +1141,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * Creates a new instance of SessionController
      */
     public SessionController() {
-        ////System.out.println("session started");
+        //////System.out.println("session started");
     }
 
     public String getDefLocale() {
@@ -1214,7 +1208,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (userPrivilages == null) {
             String sql;
             sql = "select w from WebUserPrivilege w where w.retired=false and w.webUser.id = " + getLoggedUser().getId();
-            ////System.out.println("5");
+            //////System.out.println("5");
             userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql);
         }
         if (userPrivilages == null) {
@@ -1314,7 +1308,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @PreDestroy
     private void recordLogout() {
-        ////System.out.println("session distroyed " + thisLogin);
+        //////System.out.println("session distroyed " + thisLogin);
         if (thisLogin == null) {
             return;
         }
@@ -1325,12 +1319,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        ////System.out.println("starting session");
+        //////System.out.println("starting session");
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        ////System.out.println("recording logout as session is distroid");
+        //////System.out.println("recording logout as session is distroid");
         recordLogout();
     }
 

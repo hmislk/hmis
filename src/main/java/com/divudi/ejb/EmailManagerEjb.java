@@ -50,7 +50,6 @@ public class EmailManagerEjb {
     }
 
     private void sendReportApprovalEmails() {
-        System.out.println("sendReportApprovalEmails = " + this);
         String j = "Select e from AppEmail e where e.sentSuccessfully=:ret and e.retired=false";
         Map m = new HashMap();
         m.put("ret", false);
@@ -108,10 +107,8 @@ public class EmailManagerEjb {
 
             BodyPart msbp1 = new MimeBodyPart();
             msbp1.setContent(messageHtml, "text/html; charset=utf-8");
-            System.err.println("Starting 2 " + messageHtml);
             multipart.addBodyPart(msbp1);
 
-            System.err.println("Starting 3" + attachmentFile1Path);
             if (attachmentFile1Path != null) {
                 File f = new File(attachmentFile1Path);
                 if (f.exists() && !f.isDirectory()) {
@@ -129,10 +126,8 @@ public class EmailManagerEjb {
             return true;
 
         } catch (MessagingException e) {
-            System.out.println("e = " + e);
             return false;
         } catch (Exception e) {
-            System.out.println("e = " + e);
             return false;
         }
 

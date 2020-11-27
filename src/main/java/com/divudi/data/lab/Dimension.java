@@ -144,9 +144,9 @@ public class Dimension {
     }
 
     private void determineMessageSubtype() {
-//        System.out.println("determineMessageSubtype");
-//        System.out.println("analyzerMessageType = " + analyzerMessageType);
-//        System.out.println("requestValue = " + requestValue);
+//        //System.out.println("determineMessageSubtype");
+//        //System.out.println("analyzerMessageType = " + analyzerMessageType);
+//        //System.out.println("requestValue = " + requestValue);
 
         if (analyzerMessageType == MessageType.Poll) {
             if (firstPollValue == 1) {
@@ -203,7 +203,6 @@ public class Dimension {
     }
 
     private void createSampleRequestMessage() {
-        System.out.println("createSampleRequestMessage");
         if (limsTests == null || limsTests.isEmpty()) {
             createNoSampleRequestMessage();
             return;
@@ -219,7 +218,6 @@ public class Dimension {
             responseFields.put(3, "A");
         }
         responseFields.put(4, limsPatientId);
-        System.out.println("limsPatientId = " + limsPatientId);
         responseFields.put(5, limsSampleId);
         responseFields.put(6, analyzerSampleType.getFiledValue());
         responseFields.put(7, "");
@@ -312,14 +310,13 @@ public class Dimension {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
     }
 
     private void textToByteArraySeperatedBySpace() {
-        System.out.println("textToByteArraySeperatedBySpace" );
         bytes = new ArrayList<>();
         String strInput = inputStringBytesSpaceSeperated;
         String[] strByte = strInput.split("\\s+");
@@ -369,7 +366,7 @@ public class Dimension {
                 Byte b = (byte) s;
                 bytes.add(b);
             } catch (Exception e) {
-//                System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -381,7 +378,7 @@ public class Dimension {
         for (Byte b : bytes) {
             if (b != 2 && b != 3 && b != 5) {
                 temBytes.add(b);
-//                System.out.println("b = " + b);
+//                //System.out.println("b = " + b);
             }
         }
         String temStr = "";
@@ -389,7 +386,7 @@ public class Dimension {
         for (byte b : temBytes) {
             if (b == 28) {
                 requestFields.put(i, temStr);
-//                System.out.println("temStr = " + temStr);
+//                //System.out.println("temStr = " + temStr);
                 i++;
                 temStr = new String();
             } else {
@@ -398,8 +395,8 @@ public class Dimension {
             }
         }
         fieldCount = i;
-//        System.out.println("fieldCount = " + fieldCount);
-//        System.out.println("requestFields.size() = " + requestFields.size());
+//        //System.out.println("fieldCount = " + fieldCount);
+//        //System.out.println("requestFields.size() = " + requestFields.size());
     }
 
     public String addDecimalSeperator(String val) {
@@ -473,7 +470,6 @@ public class Dimension {
         if (temPs == null) {
             setLimsHasSamplesToSend(false);
         } else {
-            System.out.println("has samples");
             setLimsHasSamplesToSend(true);
             setLimsSampleId(analyzerSampleId);
             String temName = temPs.getPatient().getPerson().getName() + "                              ";

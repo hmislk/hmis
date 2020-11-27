@@ -128,12 +128,10 @@ public class PettyCashBillController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
         Date fd = c.getTime();
-        System.out.println("d = " + fd);
+        //System.out.println("d = " + fd);
         DecimalFormat df = new DecimalFormat("00000");
         String s=df.format(getCurrent().getIntInvoiceNumber());
-        System.out.println("df = " + s);
         String inv = createInvoiceNumberSuffix() + s;
-        System.out.println("inv = " + inv);
         String sql = "Select b From BilledBill b where "
                 + " b.retired=false "
                 + " and b.cancelled=false "
@@ -160,9 +158,7 @@ public class PettyCashBillController implements Serializable {
     private String createInvoiceNumberSuffix() {
 
         Calendar c = Calendar.getInstance();
-        System.out.println("c.getTime() = " + c.getTime());
         int y = c.get(Calendar.YEAR);
-        System.out.println("y = " + y);
         int m = c.get(Calendar.MONTH);
         String s1;
         String s2;

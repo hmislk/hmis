@@ -376,7 +376,7 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "(upper(c.name) like :n ) order by c.name", m, 30);
-            ////System.out.println("a size is " + a.size());
+            //////System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -396,7 +396,7 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "(upper(c.name) like :n ) order by c.name", m, 30);
-            ////System.out.println("a size is " + a.size());
+            //////System.out.println("a size is " + a.size());
         }
         return vmps;
     }
@@ -414,7 +414,7 @@ public class AmpController implements Serializable {
             ampList = getFacade().findBySQL("select c from Amp c where "
                     + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
                     + "(upper(c.code) like :n ) order by c.code", m, 30);
-            ////System.out.println("a size is " + a.size());
+            //////System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -430,13 +430,13 @@ public class AmpController implements Serializable {
         String sql = "select c from Amp c where "
                 + " c.retired=false and c.departmentType!=:dep and "
                 + "(upper(c.barcode) like :n ) order by c.barcode";
-        //   //System.out.println("sql = " + sql);
-        //   //System.out.println("m = " + m);
+        //   ////System.out.println("sql = " + sql);
+        //   ////System.out.println("m = " + m);
 
         if (qry != null) {
             ampList = getFacade().findBySQL(sql, m, 30);
-            //   //System.out.println("a = " + a);
-            ////System.out.println("a size is " + a.size());
+            //   ////System.out.println("a = " + a);
+            //////System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -474,13 +474,11 @@ public class AmpController implements Serializable {
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().equals("")) {
-            System.out.println("amp.getCode() = " + amp.getCode());
+            //System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(2);
-            System.out.println("s = " + s);
 
             int i = Integer.valueOf(s);
-            System.out.println("i = " + i);
             i++;
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());

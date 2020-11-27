@@ -73,7 +73,7 @@ public class SysMexAdf2 {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
-        System.out.println("Checking wether the report is Correct");
+        //System.out.println("Checking wether the report is Correct");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
@@ -82,21 +82,19 @@ public class SysMexAdf2 {
             return false;
         }
         Double id1 = findValue(sampleIdStart, sampleIdEnd, 0);
-        System.out.println("id1 = " + id1);
+        //System.out.println("id1 = " + id1);
 
         Double thb = findValue(hgbStart, hgbEnd, 2);
-        System.out.println("Hb Check = " + thb);
+        //System.out.println("Hb Check = " + thb);
         if (thb < 2 || thb > 20) {
             return false;
         }
-        System.out.println("Hb  checks ok");
+        //System.out.println("Hb  checks ok");
 
         Double tpcv = findValue(hctStart, hctEnd, 2);
-        System.out.println("HCT Check = " + tpcv);
         if (tpcv < 5 || tpcv > 60) {
             return false;
         }
-        System.out.println("HCT  checks ok");
 
         Double twbc = findValue(wbcStart, wbcEnd, 0);
         if (twbc < 1000 || twbc > 50000) {
@@ -115,7 +113,7 @@ public class SysMexAdf2 {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -130,7 +128,7 @@ public class SysMexAdf2 {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -145,7 +143,7 @@ public class SysMexAdf2 {
                 Byte b = (byte) s;
                 bytes.add(b);
             } catch (Exception e) {
-//                System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -177,12 +175,12 @@ public class SysMexAdf2 {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
-//        System.out.println("from = " + from);
-//        System.out.println("to = " + to);
+//        //System.out.println("from = " + from);
+//        //System.out.println("to = " + to);
 
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
             int temN;
             try {
                 temN = bytes.get(i);
@@ -224,7 +222,7 @@ public class SysMexAdf2 {
     private String findStringValue(int from, int to) {
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
             int temN = bytes.get(i);
             display += (char) temN + "";
         }
@@ -517,7 +515,6 @@ public class SysMexAdf2 {
     public String getWbc() {
         double w = findValue(wbcStart, wbcEnd, 0);
         String ws = findStringValue(wbcStart, wbcEnd);
-        System.out.println("wbcStart = " + wbcStart);
         wbc = round(w, -2);
         wbc = addDecimalSeperator(wbc);
         return wbc;

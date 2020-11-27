@@ -426,8 +426,8 @@ public class CommonReport1 implements Serializable {
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        //System.out.println("sql = " + sql);
-        //System.out.println("temMap = " + temMap);
+        ////System.out.println("sql = " + sql);
+        ////System.out.println("temMap = " + temMap);
         referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
@@ -478,8 +478,8 @@ public class CommonReport1 implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("bt", BillType.OpdBill);
-        //System.out.println("sql = " + sql);
-        //System.out.println("temMap = " + temMap);
+        ////System.out.println("sql = " + sql);
+        ////System.out.println("temMap = " + temMap);
 //        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -587,10 +587,8 @@ public class CommonReport1 implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("inv", Investigation.class);
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
+        //System.out.println("sql = " + sql);
         List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
-        System.out.println("objects.size() = " + objects.size());
         List<Object[]> obj = fetchReferingDoctoerNull();
         if (objects == null) {
             objects = new ArrayList<>();
@@ -618,11 +616,9 @@ public class CommonReport1 implements Serializable {
                     continue;
                 }
             }
-            System.out.println("d.getName() = " + d.getPerson().getName());
+            //System.out.println("d.getName() = " + d.getPerson().getName());
             BillClassType billClassType = (BillClassType) o[1];
-            System.out.println("billClassType = " + billClassType);
             long l = (long) o[2];
-            System.out.println("l = " + l);
             if (billClassType == BillClassType.CancelledBill || billClassType == BillClassType.RefundBill) {
                 if (l > 0) {
                     l *= -1;
@@ -710,8 +706,6 @@ public class CommonReport1 implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("inv", Investigation.class);
-        System.out.println("sql = " + sql);
-        System.out.println("m = " + m);
         List<Object[]> obj = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
         List<Object[]> objects = new ArrayList<>();
         if (!obj.isEmpty()) {
@@ -2101,18 +2095,15 @@ public class CommonReport1 implements Serializable {
         tm.put("toDate", toDate);
         tm.put("billType", billTypes);
         tm.put("dep", getDepartment());
-        System.out.println("tm = " + tm);
 
         Object[] ob = (Object[]) getBillFacade().findAggregates(sql, tm, TemporalType.TIMESTAMP).get(0);
 
         if (ob != null) {
             try {
                 total = (double) ob[0];
-                System.out.println("total = " + total);
+                //System.out.println("total = " + total);
                 discount = (double) ob[1];
-                System.out.println("discount = " + discount);
                 staffTotal = (double) ob[2];
-                System.out.println("staffTotal = " + staffTotal);
                 vat = (double) ob[3];
                 netTotal = (double) ob[4];
             } catch (Exception e) {

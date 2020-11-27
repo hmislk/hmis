@@ -74,7 +74,6 @@ public class AgencyController implements Serializable {
             agentHistory.setTransactionValue(b1);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
-            System.out.println("Agency = " + i.getName());
             i.setBallance(b1);
             ejbFacade.edit(i);
         }
@@ -89,7 +88,6 @@ public class AgencyController implements Serializable {
             agentHistory.setTransactionValue(b2);
             agentHistory.setHistoryType(HistoryType.ChannelBalanceReset);
             agentHistoryFacade.create(agentHistory);
-            System.out.println("Agency = " + i.getName());
             i.setBallance(b2);
             ejbFacade.edit(i);
         }
@@ -111,7 +109,7 @@ public class AgencyController implements Serializable {
                     + " and ((upper(p.name) like '%" + query.toUpperCase() + "%') "
                     + " or (upper(p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
                     + " order by p.name";
-            ////System.out.println(sql);
+            //////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, m, 20);
         }
         return suggestions;

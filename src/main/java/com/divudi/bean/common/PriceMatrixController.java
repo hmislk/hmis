@@ -285,31 +285,23 @@ public class PriceMatrixController implements Serializable {
     }
 
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
-        System.out.println("getOpdMemberDisCount");
         OpdMemberShipDiscount opdMemberShipDiscount = null;
 
         System.err.println(paymentMethod);
         //Get Discount From Parent Category    
         if (opdMemberShipDiscount == null && category != null && category.getParentCategory() != null) {
-            System.out.println("Get Discount From Parent Category");
             opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category.getParentCategory());
-            System.out.println("1 opdMemberShipDiscount = " + opdMemberShipDiscount);
         }
         //Get Discount From Parent Category
         if (opdMemberShipDiscount == null && category != null) {
-            System.out.println("Get Discount From Category");
             opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, category);
-            System.out.println("2 opdMemberShipDiscount = " + opdMemberShipDiscount);
         }
 
         //Get Discount From Department
         if (opdMemberShipDiscount == null) {
-            System.out.println("Get Discount From Department");
             opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, department);
-            System.out.println("3 opdMemberShipDiscount = " + opdMemberShipDiscount);
         }
 
-        System.out.println("4 opdMemberShipDiscount = " + opdMemberShipDiscount);
 
         return opdMemberShipDiscount;
     }
@@ -317,7 +309,7 @@ public class PriceMatrixController implements Serializable {
     
     
     public PharmacyMemberShipDiscount getPharmacyMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
-        System.out.println("getPharmacyMemberDisCount");
+        //System.out.println("getPharmacyMemberDisCount");
         PharmacyMemberShipDiscount opdMemberShipDiscount = null;
 
         String jpql;
@@ -332,14 +324,13 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat "
                 + " and i.department=:dep ";
-        System.out.println("hm = " + hm);
-        System.out.println("sql = " + jpql);
         return (PharmacyMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(jpql, hm);
     }
     
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department) {
-        System.out.println("getOpdMemberDisCount");
         OpdMemberShipDiscount opdMemberShipDiscount = null;
+        //Get Discount From Parent Category
+        //Get Discount From Parent Category
 
         System.err.println(paymentMethod);
         //Get Discount From Parent Category    
@@ -347,12 +338,9 @@ public class PriceMatrixController implements Serializable {
 
         //Get Discount From Department
         if (opdMemberShipDiscount == null) {
-            System.out.println("Get Discount From Department");
             opdMemberShipDiscount = fetchOpdMemberShipDiscount(membershipScheme, paymentMethod, department);
-            System.out.println("3 opdMemberShipDiscount = " + opdMemberShipDiscount);
         }
 
-        System.out.println("4 opdMemberShipDiscount = " + opdMemberShipDiscount);
 
         return opdMemberShipDiscount;
     }
@@ -399,10 +387,9 @@ public class PriceMatrixController implements Serializable {
         if (item != null) {
             category = item.getCategory();
         }
+        // System.err.println(paymentScheme);
+        // System.err.println(paymentScheme);
 
-        System.err.println(paymentMethod);
-        // System.err.println(paymentScheme);
-        // System.err.println(paymentScheme);
 
         //Get Discount From Item        
         paymentSchemeDiscount = fetchPaymentSchemeDiscount(paymentMethod, item);
@@ -519,8 +506,6 @@ public class PriceMatrixController implements Serializable {
                 + " and i.membershipScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
-        System.out.println("hm = " + hm);
-        System.out.println("sql = " + sql);
         return (OpdMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
 
     }
@@ -537,8 +522,6 @@ public class PriceMatrixController implements Serializable {
                 + " and i.membershipScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
-        System.out.println("sql = " + sql);
-        System.out.println("hm = " + hm);
         return (ChannellingMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
     }
 

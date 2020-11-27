@@ -179,7 +179,7 @@ public class AntibioticController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             if (billedAs == false) {
-                ////System.out.println("2");
+                //////System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }

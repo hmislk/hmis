@@ -244,7 +244,7 @@ public class BillEjb implements Serializable {
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude,
             boolean isInward, AdmissionType admissionType) {
-        //System.out.println("findBillBills");
+        ////System.out.println("findBillBills");
         String sql;
         Map m = new HashMap();
 
@@ -329,16 +329,15 @@ public class BillEjb implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("m = " + m);
-        //System.out.println("before r");
+        ////System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
-        //System.out.println("r = " + r);
+        ////System.out.println("r = " + r);
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        //System.out.println("r = " + r);
+        ////System.out.println("r = " + r);
         r.setBills(bills);
 
         if (r.getBills() != null) {
-            //System.out.println("bills not null");
+            ////System.out.println("bills not null");
             for (Bill b : r.getBills()) {
                 r.setDiscount(r.getDiscount() + b.getDiscount());
                 r.setVat(r.getVat() + b.getVat());
@@ -361,7 +360,7 @@ public class BillEjb implements Serializable {
 
     public BillListWithTotals calculateBillTotals(List<Bill> bills) {
         BillListWithTotals bt = new BillListWithTotals();
-        //System.out.println("bills = " + bills);
+        ////System.out.println("bills = " + bills);
         if (bills == null) {
             return bt;
         }
@@ -383,7 +382,7 @@ public class BillEjb implements Serializable {
             Category category, PaymentMethod[] paymentMethods,
             BillType[] billTypesToExculde,
             Class[] billCLassesToExclude) {
-        //System.out.println("findBillItemRevenue");
+        ////System.out.println("findBillItemRevenue");
         double answer = 0.0;
         String sql;
         Map m = new HashMap();
@@ -443,8 +442,8 @@ public class BillEjb implements Serializable {
                     + "bf.item.category.parentCategory=:cat)";
             m.put("cat", category);
         }
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
+        ////System.out.println("sql = " + sql);
+        ////System.out.println("m = " + m);
         answer = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
         return answer;
     }

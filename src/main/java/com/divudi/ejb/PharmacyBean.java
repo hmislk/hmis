@@ -617,7 +617,6 @@ public class PharmacyBean {
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
-            System.out.println("s.getItemBatch().getItem().getName() = " + s.getItemBatch().getItem().getName());
             if (s.getStock() >= toAddQty) {
                 list.add(new StockQty(s, toAddQty));
                 break;
@@ -928,7 +927,7 @@ public class PharmacyBean {
 //    }
 //    public double getRetailRate(Item item, Department department) {
 //
-//        ////System.out.println("getting Retail rate");
+//        //////System.out.println("getting Retail rate");
 //        double rate = getLastRetailRate(item, department);
 //        if (item instanceof Ampp) {
 //            return rate * item.getDblValue();
@@ -979,7 +978,7 @@ public class PharmacyBean {
     }
 
 //    public double getPurchaseRate(Item item, Department department) {
-//        ////System.out.println("getting purchase rate");
+//        //////System.out.println("getting purchase rate");
 //        double rate = getLastPurchaseRate(item, department);
 //        if (item instanceof Ampp) {
 //            return rate * item.getDblValue();
@@ -1198,10 +1197,8 @@ public class PharmacyBean {
         try {
             cat = getPharmaceuticalItemCategoryFacade().findFirstBySQL(j, m);
         } catch (Exception e) {
-            System.out.println("error = " + e.getMessage());
-            System.out.println("name = " + name);
-            System.out.println("j = " + j);
-            System.out.println("m = " + m);
+            //System.out.println("error = " + e.getMessage());
+            //System.out.println("name = " + name);
             return null;
         }
 
@@ -1212,8 +1209,6 @@ public class PharmacyBean {
             try {
                 getPharmaceuticalItemCategoryFacade().create(cat);
             } catch (Exception e) {
-                System.out.println("error = " + e.getMessage());
-                System.out.println("name = " + name);
                 return null;
             }
         } else if (cat != null) {
@@ -1240,8 +1235,6 @@ public class PharmacyBean {
              cat = pharmaceuticalItemTypeFacade.findFirstBySQL(j,m);
         
         }catch(Exception e){
-            System.out.println("e = " + e.getMessage());
-            System.out.println("name = " + name);
             return null;
         }
         
@@ -1351,11 +1344,11 @@ public class PharmacyBean {
 
     public Vmpp getVmpp(Vmp vmp, double issueUnitsPerPack, MeasurementUnit packUnit) {
         if (vmp == null || packUnit == null || vmp.getCategory() == null) {
-            ////System.out.println("vmp is " + vmp);
-            ////System.out.println("pack unit is " + packUnit);
-            ////System.out.println("vmp is " + vmp);
+            //////System.out.println("vmp is " + vmp);
+            //////System.out.println("pack unit is " + packUnit);
+            //////System.out.println("vmp is " + vmp);
             if (vmp != null) {
-                ////System.out.println("cat is " + vmp.getCategory());
+                //////System.out.println("cat is " + vmp.getCategory());
             }
             return null;
         }
@@ -1411,7 +1404,6 @@ public class PharmacyBean {
     }
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
-        System.out.println("getVmp");
         String sql;
         if (strength == 0 || strengthUnit == null || cat == null) {
             return null;
@@ -1423,10 +1415,10 @@ public class PharmacyBean {
         m.put("c", cat);
         sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
         VtmsVmps v = getVtmsVmpsFacade().findFirstBySQL(sql, m);
-        //System.out.println("m = " + m);
+        ////System.out.println("m = " + m);
         Vmp vmp;
         if (v == null) {
-            //System.out.println("new created");
+            ////System.out.println("new created");
             vmp = new Vmp();
 
             vmp.setName(vtm.getName() + " " + strength + " " + strengthUnit.getName() + " " + cat.getName());
@@ -1502,7 +1494,7 @@ public class PharmacyBean {
 //        return getBillItemFacade().findDoubleByJpql(sql, m);
 //    }
     public double getLastPurchaseRate(Item item, Department dept) {
-        ////System.out.println("getting last purchase rate");
+        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1530,7 +1522,7 @@ public class PharmacyBean {
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
-        ////System.out.println("getting last purchase rate");
+        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1569,7 +1561,7 @@ public class PharmacyBean {
     }
 
     public double getLastPurchaseRate(Item item) {
-        ////System.out.println("getting last purchase rate");
+        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1595,7 +1587,7 @@ public class PharmacyBean {
     }
 
     public double getLastRetailRate(Item item, Institution ins) {
-        ////System.out.println("getting last purchase rate");
+        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1621,7 +1613,7 @@ public class PharmacyBean {
     }
 
     public double getLastRetailRate(Item item) {
-        ////System.out.println("getting last purchase rate");
+        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1646,7 +1638,7 @@ public class PharmacyBean {
     }
 
     public double getLastRetailRate(Item item, Department dept) {
-        ////System.out.println("getting last purchase rate");
+        //////System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }

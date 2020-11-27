@@ -172,15 +172,13 @@ public class InvestigationItemController implements Serializable {
 
                 Investigation tix = investigationController.getInvestigationByIdAndSetAsCurrent(tixi.getItem().getId());
                 if (tix.equals(currentInvestigation)) {
-                    System.out.println("Is current ix");
+                    //System.out.println("Is current ix");
                     tixi.setTube(tix.getInvestigationTube());
-                    System.out.println("tix.getInvestigationTube() = " + tix.getInvestigationTube());
-                    System.out.println("tixi.getTube() = " + tixi.getTube());
+                    //System.out.println("tix.getInvestigationTube() = " + tix.getInvestigationTube());
+                    //System.out.println("tixi.getTube() = " + tixi.getTube());
                     tixi.setSample(tix.getSample());
-                    System.out.println("tix.getSample() = " + tix.getSample());
-                    System.out.println("tixi.getSample() = " + tixi.getSample());
+                    //System.out.println("tix.getSample() = " + tix.getSample());
                     tixi.setMachine(tix.getMachine());
-                    System.out.println("tix.getMachine() = " + tix.getMachine());
                     Item sc = itemController.getFirstInvestigationSampleComponents(tix);
                     tixi.setSampleComponent(sc);
                     getFacade().edit(tixi);
@@ -263,11 +261,11 @@ public class InvestigationItemController implements Serializable {
             return "";
         }
 
-        //System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
-        //System.out.println("copyingToInvestigation = " + copyingToInvestigation);
+        ////System.out.println("copyingFromInvestigation = " + copyingFromInvestigation);
+        ////System.out.println("copyingToInvestigation = " + copyingToInvestigation);
         for (InvestigationItem ii : copyingFromInvestigation.getReportItems()) {
 
-            //System.out.println("ii = " + ii);
+            ////System.out.println("ii = " + ii);
             if (!ii.isRetired()) {
 
                 InvestigationItem nii = new InvestigationItem();
@@ -308,7 +306,7 @@ public class InvestigationItemController implements Serializable {
                 List<InvestigationItemValue> niivs = new ArrayList<>();
                 for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
 
-                    //System.out.println("iiv = " + iiv);
+                    ////System.out.println("iiv = " + iiv);
                     InvestigationItemValue niiv = new InvestigationItemValue();
                     niiv.setCode(iiv.getCode());
                     niiv.setCreatedAt(new Date());
@@ -479,7 +477,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void makeThisCurrent(InvestigationItem ii) {
-        System.out.println("saving Ii on Ajax");
         setCurrent(ii);
     }
 
@@ -612,8 +609,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
-        System.out.println("completeIxItemForAnyIx");
-        System.out.println("qry = " + qry);
         List<InvestigationItem> iivs;
         if (qry.trim().equals("")) {
             return new ArrayList<>();
@@ -631,10 +626,8 @@ public class InvestigationItemController implements Serializable {
 
 //            m.put("t", InvestigationItemType.Value);
             m.put("n", "'%" + qry.toUpperCase() + "%'");
-            System.out.println("m = " + m);
-            System.out.println("sql = " + sql);
+            //System.out.println("m = " + m);
             iivs = getEjbFacade().findBySQL(sql, m);
-            System.out.println("iivs = " + iivs);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -815,7 +808,6 @@ public class InvestigationItemController implements Serializable {
 
             try {
 
-                System.out.println("ri = " + ri);
 
                 ri.setCssTop(ri.getCssTop().replace("%", ""));
                 ri.setCssLeft(ri.getCssLeft().replace("%", ""));
@@ -1650,23 +1642,23 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void removeInvestigationItemValue() {
-        //System.out.println("1");
+        ////System.out.println("1");
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to Remove");
             return;
         }
-        //System.out.println("1");
+        ////System.out.println("1");
         if (removingItem == null) {
             UtilityController.addErrorMessage("Nothing to Remove");
             return;
         }
-        //System.out.println("3");
+        ////System.out.println("3");
         getIivFacade().remove(removingItem);
-        //System.out.println("4");
+        ////System.out.println("4");
         current.getInvestigationItemValues().remove(removingItem);
-        //System.out.println("5");
+        ////System.out.println("5");
         getEjbFacade().edit(current);
-        //System.out.println("6");
+        ////System.out.println("6");
 
         UtilityController.addSuccessMessage("Removed");
     }
@@ -1812,7 +1804,6 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void setCurrent(InvestigationItem current) {
-        System.out.println("current = " + current);
         this.current = current;
     }
 

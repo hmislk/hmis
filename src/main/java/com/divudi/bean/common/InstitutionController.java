@@ -388,10 +388,8 @@ public class InstitutionController implements Serializable {
 
         Institution i = getFacade().find(current.getId());
         double mcl = i.getMaxCreditLimit();
-        System.out.println("mcl = " + mcl);
-        System.out.println("current.getMaxCreditLimit() = " + current.getMaxCreditLimit());
+        //System.out.println("mcl = " + mcl);
         double acl = i.getAllowedCredit();
-        System.out.println("acl = " + acl);
         double scl = i.getStandardCreditLimit();
 
         if (current.getStandardCreditLimit() > current.getAllowedCredit()) {
@@ -410,19 +408,16 @@ public class InstitutionController implements Serializable {
         }
 
         if (current.getStandardCreditLimit() != scl) {
-            System.err.println("Update Standard Credit Limit");
             createAgentCreditLimitUpdateHistory(current, scl, current.getStandardCreditLimit(), historyType, "Standard Credit Limit");
             UtilityController.addSuccessMessage("Standard Credit Limit Updated");
         }
 
         if (current.getAllowedCredit() != acl) {
-            System.err.println("Update Allowed Credit Limit");
             createAgentCreditLimitUpdateHistory(current, acl, current.getAllowedCredit(), historyType, "Allowed Credit Limit");
             UtilityController.addSuccessMessage("Allowed Credit Limit Updated");
         }
 
         if (current.getMaxCreditLimit() != mcl) {
-            System.err.println("Update Max Credit Limit");
             createAgentCreditLimitUpdateHistory(current, mcl, current.getMaxCreditLimit(), historyType, "Max Credit Limit");
             UtilityController.addSuccessMessage("Max Credit Limit Updated");
         }
@@ -528,12 +523,12 @@ public class InstitutionController implements Serializable {
         InstitutionType[] types = {InstitutionType.Agency};
         selectedAgencies = completeInstitution(null, types);
         for (Institution a : selectedAgencies) {
-//            System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
             DecimalFormat df=new DecimalFormat("000");
             double d=Double.parseDouble(a.getInstitutionCode());
-//            System.out.println("d = " + d);
+//            //System.out.println("d = " + d);
             a.setInstitutionCode(df.format(d));
-//            System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
             getFacade().edit(a);
         }
     }

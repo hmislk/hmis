@@ -365,11 +365,11 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void makeStockAsBillItemStock() {
-        //System.out.println("replacableStock = " + replacableStock);
+        ////System.out.println("replacableStock = " + replacableStock);
         setStock(replacableStock);
         getBillItem().getPharmaceuticalBillItem().setStock(getStock());
         calculateRates(billItem);
-        //System.out.println("getStock() = " + getStock());
+        ////System.out.println("getStock() = " + getStock());
     }
 
     public void fillReplaceableStocksForAmp(Amp ampIn) {
@@ -467,7 +467,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
         items = getStockFacade().findBySQL(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
-        ////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -500,7 +500,7 @@ public class PharmacySaleBhtController implements Serializable {
         }
         items = getStockFacade().findBySQL(sql, m, 20);
         //  itemsWithoutStocks = completeRetailSaleItems(qry);
-        ////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
     }
 
@@ -1021,8 +1021,6 @@ public class PharmacySaleBhtController implements Serializable {
         getPreBill().setGrantTotal(grossTot);
         getPreBill().setDiscount(discount);
 
-        System.out.println("getPreBill().getNetTotal() = " + getPreBill().getNetTotal());
-        System.out.println("getPreBill().getTotal() = " + getPreBill().getTotal());
 
     }
 
@@ -1083,23 +1081,21 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
-        System.out.println("billItem.getGrossValue() = " + billItem.getGrossValue());
 
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        ////System.out.println("calculateBillItemForEditing");
-        ////System.out.println("bi = " + bi);
+        //////System.out.println("calculateBillItemForEditing");
+        //////System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            ////System.out.println("calculateItemForEditingFailedBecause of null");
+            //////System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
-        ////System.out.println("bi.getQty() = " + bi.getQty());
-        ////System.out.println("bi.getRate() = " + bi.getRate());
+        //////System.out.println("bi.getQty() = " + bi.getQty());
+        //////System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        System.out.println("bi.getNetValue() = " + bi.getNetValue());
 
     }
 
@@ -1125,9 +1121,9 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        ////System.out.println("calculating rates");
+        //////System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            ////System.out.println("stock is null");
+            //////System.out.println("stock is null");
             return;
         }
         getBillItem();
@@ -1138,7 +1134,6 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     public List<Stock> completeAvailableStocksSelectedPharmacy(String qry) {
-        System.out.println("department = " + department);
         if (department == null) {
             JsfUtil.addErrorMessage("Please Select Depatment");
             return new ArrayList<>();
@@ -1180,14 +1175,12 @@ public class PharmacySaleBhtController implements Serializable {
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
-            System.out.println("i.getQtyInUnit() = " + i.getItemBatch().getItem().getName());
-            System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
+            //System.out.println("i.getQtyInUnit() = " + i.getItemBatch().getItem().getName());
+            //System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
             double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-            System.out.println("billedIssue = " + billedIssue);
+            //System.out.println("billedIssue = " + billedIssue);
             double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-            System.out.println("cancelledIssue = " + cancelledIssue);
             double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-            System.out.println("refundedIssue = " + refundedIssue);
 
             double issuableQty = Math.abs(i.getQtyInUnit()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
 
@@ -1256,13 +1249,13 @@ public class PharmacySaleBhtController implements Serializable {
 
         boolean flag = false;
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(b)) {
-//            System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
+//            //System.out.println("i.getQtyInUnit() = " + i.getQtyInUnit());
             double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-//            System.out.println("billedIssue = " + billedIssue);
+//            //System.out.println("billedIssue = " + billedIssue);
             double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-//            System.out.println("cancelledIssue = " + cancelledIssue);
+//            //System.out.println("cancelledIssue = " + cancelledIssue);
             double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i.getBillItem(), BillType.PharmacyBhtPre);
-//            System.out.println("refundedIssue = " + refundedIssue);
+//            //System.out.println("refundedIssue = " + refundedIssue);
 
             double issuableQty = Math.abs(i.getQtyInUnit()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
             if (issuableQty > 0) {
@@ -1277,10 +1270,10 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void handleSelectAction() {
         if (stock == null) {
-            ////System.out.println("Stock NOT selected.");
+            //////System.out.println("Stock NOT selected.");
         }
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
-            ////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
+            //////System.out.println("Internal Error at PharmacySaleController.java > handleSelectAction");
         }
 
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
@@ -1307,7 +1300,6 @@ public class PharmacySaleBhtController implements Serializable {
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
-        System.out.println("calDateOfExpiry.getTime() = " + calDateOfExpiry.getTime());
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);
