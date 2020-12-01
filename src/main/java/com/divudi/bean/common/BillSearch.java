@@ -1250,10 +1250,17 @@ public class BillSearch implements Serializable {
             return true;
         }
 
-//        if (getBill().getBillType() == BillType.LabBill && patientInvestigation.getCollected()== true) {
-//            UtilityController.addErrorMessage("You can't cancell mark as collected");
-//            return true;
-//        }
+        if (getBill().getBillType() == BillType.LabBill) {
+            if (patientInvestigation.getCollected()) {
+                UtilityController.addErrorMessage("You can't cancell this bill. Sample is already taken");
+                return true;
+            }
+             if (patientInvestigation.getPrinted()) {
+                UtilityController.addErrorMessage("You can't cancell this bill. Report is already printed");
+                return true;
+            }
+
+        }
         if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 
             ////System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
