@@ -87,7 +87,7 @@
                                         <h:outputLabel value="#{bf.bill.insId}">
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Appoinment No">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serialNo}">
                                         </h:outputLabel>
@@ -109,15 +109,15 @@
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
-                                    
-                                    
-                                    
+
+
+
                                     <p:column headerText="Refundable" rendered="#{webUserController.hasPrivilege('Developers')}">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.serviceSession.originatingSession.refundable}">
                                         </h:outputLabel>
                                     </p:column>
-                                    
-                                    
+
+
                                     <p:column headerText="Absent" rendered="#{webUserController.hasPrivilege('Developers')}">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.absent}">
                                         </h:outputLabel>
@@ -126,12 +126,12 @@
                                         <h:outputLabel value="#{bf.bill.cancelled}">
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Refund" rendered="#{webUserController.hasPrivilege('Developers')}">
                                         <h:outputLabel value="#{bf.bill.refunded}">
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <p:column headerText="Appoinment Date">
                                         <h:outputLabel value="#{bf.bill.appointmentAt}">
                                             <f:convertDateTime pattern="dd MMMM yyyy" />
@@ -178,33 +178,11 @@
                         </p:panel>
                     </h:panelGroup>
 
-<!--                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
 
-                        <bi:staffBill  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
-                    </h:panelGroup>-->
 
                     <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-                        <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
                         <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
-
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                            <h:panelGroup rendered="#{!sessionController.loggedPreference.pharmacyBillPrabodha}">
-                                <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
-                            </h:panelGroup>
-                        </h:panelGroup>
-
-
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha}" > 
-                                <bi:paymentReciptPosDouble controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
-                            </h:panelGroup>
-                        </h:panelGroup>
+                        <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
                     </h:panelGroup>
                 </h:form>
 

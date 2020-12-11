@@ -306,10 +306,33 @@
                                         </td>
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" 
-                                                           rendered="#{cc.attrs.bill.paidBill.creater.webUserPerson.name ne null}"></h:outputLabel>
+                                                           ></h:outputLabel>
 
-                                            <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" 
-                                                           rendered="#{cc.attrs.bill.creater.webUserPerson.name eq null}"></h:outputLabel>
+                                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" 
+                                                           ></h:outputLabel>
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <h:outputLabel value="Billed at" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <p:spacer width="10" ></p:spacer>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value=":" ></h:outputLabel>
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}" 
+                                                           >
+                                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.bill.billTime}" 
+                                                           >
+                                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                            </h:outputLabel>
 
                                         </td>
                                     </tr>
