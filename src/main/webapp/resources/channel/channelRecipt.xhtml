@@ -53,7 +53,7 @@
                     <div class="billline">
                         <h:outputLabel value="--------------------------" style="font-size: 15px!important"></h:outputLabel>
                     </div>
-                    <p:spacer height="40"/>
+                    <p:spacer height="10"/>
 
 
                     <table >
@@ -72,14 +72,14 @@
                                             </b>
                                         </td>
                                         <td>
-                                            <p:spacer width="100" ></p:spacer>
+                                            <p:spacer width="100" height="2" ></p:spacer>
                                         </td>
                                         <td>
                                             <h:outputLabel value=":" style="font-size: 15px!important;width: 30px!important;"></h:outputLabel>
                                         </td>
                                         <td>
                                             <b>
-                                                <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serialNo}" style="font-size: 23px!important;height: 10px;"></h:outputLabel>
+                                                <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serialNo}" style="font-size: 23px!important;"></h:outputLabel>
 <!--                                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="cbi" >
                                                     <h:outputLabel value="#{cbi.billSession.serialNo}" style="font-size: 23px!important;height: 10px;"></h:outputLabel>
                                                 </ui:repeat>-->
@@ -185,26 +185,7 @@
                                         </td>
 
                                     </tr>
-                                    <!--                                    <tr>
-                                                                            <td>
-                                                                                <b>
-                                                                                    <h:outputLabel value="Invoice No" style="font-size: 15px!important"></h:outputLabel>
-                                                                                </b>
-                                                                            </td>
-                                                                            <td>
-                                                                                <p:spacer width="10" ></p:spacer>
-                                                                            </td>
-                                                                            <td>
-                                                                                <h:outputLabel value=":" style="font-size: 15px!important"></h:outputLabel>
-                                                                            </td>
-                                                                            <td>
-                                                                                <b>
-                                                                                    <h:outputLabel value="#{cc.attrs.bill.paidBill.insId}" style="font-size: 15px!important">
-                                                                                    </h:outputLabel>
-                                                                                </b>
-                                                                            </td>
-                                    
-                                                                        </tr>-->
+
 
                                     <ui:repeat value="#{cc.attrs.bill.billFees}" var="cbif" >
 
@@ -274,7 +255,7 @@
 
 
 
-                                    <tr></tr>
+
                                     <tr></tr>    
                                     <tr>
                                         <td>
@@ -291,9 +272,6 @@
                                         </td>
 
                                     </tr>
-                                    <tr> </tr>
-                                    <tr> </tr>
-                                    <tr> </tr>
                                     <tr>
                                         <td>
                                             <h:outputLabel value="Issued By" ></h:outputLabel>
@@ -307,7 +285,7 @@
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.paidBill.creater.webUserPerson.name}" 
                                                            ></h:outputLabel>
-
+                                            <p:spacer height="1" width="20" ></p:spacer>
                                             <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" 
                                                            ></h:outputLabel>
 
@@ -326,28 +304,17 @@
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.paidBill.billTime}" 
                                                            >
-                                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime pattern="dd MMM yy hh:mm a" ></f:convertDateTime>
                                             </h:outputLabel>
-
+                                            <p:spacer height="1" width="20" ></p:spacer>
                                             <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                                            >
-                                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime pattern="dd MMM yy hh:mm a" ></f:convertDateTime>
                                             </h:outputLabel>
 
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                        </td>
-                                        <td>
-                                            <p:spacer width="10" ></p:spacer>
-                                        </td>
-                                        <td>
-                                        </td>
-                                        <td>
-                                            <h:outputLabel value=""></h:outputLabel>
-                                        </td>
-                                    </tr>
+
 
                                 </table>
                             </td>

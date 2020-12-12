@@ -190,6 +190,7 @@ public class ChannelBillController implements Serializable {
     }
 
     public void settleCredit() {
+        System.out.println("settleCredit");
         errorText = "";
         if (errorCheckForSettle()) {
             settleSucessFully = false;
@@ -223,6 +224,9 @@ public class ChannelBillController implements Serializable {
         getBillFacade().edit(b);
         settleSucessFully = true;
         printingBill = getBillFacade().find(b.getId());
+        for(BillFee tbf:printingBill.getBillFees()){
+            System.out.println("tbf = " + tbf.getFeeValue());
+        }
 //        System.err.println("*** Channel Credit Bill Settled ***");
 //        //System.out.println("bs = " + bs);
 //        //System.out.println("getBillSession() = " + getBillSession().getName());
@@ -282,7 +286,8 @@ public class ChannelBillController implements Serializable {
     }
 
     private void savePaidBillFee(Bill b, BillItem bi) {
-
+        System.out.println("savePaidBillFee");
+        System.out.println("bi = " + bi);
         for (BillFee f : billSession.getBill().getBillFees()) {
 
             BillFee bf = new BillFee();
@@ -292,7 +297,9 @@ public class ChannelBillController implements Serializable {
             bf.setBill(b);
             bf.setBillItem(bi);
             getBillFeeFacade().create(bf);
+            System.out.println("bf = " + bf);
         }
+        
     }
 
     private void editBillSession(Bill b, BillItem bi) {
