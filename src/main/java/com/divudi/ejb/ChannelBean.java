@@ -809,7 +809,7 @@ public class ChannelBean {
         m.put("staff", s);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 14);
             //System.out.println("m = " + m);
         } catch (Exception e) {
             e.printStackTrace();

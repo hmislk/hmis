@@ -669,6 +669,7 @@ public class SheduleController implements Serializable {
         int rowIndex = 0;
         List<ServiceSession> sessions = new ArrayList<>();
         int finalSessionDayCount = finalVariables.getSessionSessionDayCounterLargestById(inputSessions);
+        finalSessionDayCount=10;
         while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
             if (sessions.isEmpty()) {
                 for (Long s : inputSessions) {
