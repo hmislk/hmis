@@ -27,9 +27,8 @@
                     <p:commandButton value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
 
 
-                    <h:panelGrid columns="2" >
+                    <h:panelGrid columns="2" styleClass="alignTop" >
                         <h:panelGrid columns="1" >
-
                             <h:panelGroup id="panelPatient" >
                                 <p:panel header="Patient Details">
                                     <h:outputLabel value="Type Patient Name or BHT : "/>
@@ -51,7 +50,7 @@
                                         </p:column>
                                     </p:autoComplete>  
                                     <p:commandButton value="Select" ajax="false"  >
-                                        
+
                                     </p:commandButton>
                                     <br/><br/>
                                     <h:panelGroup id="panSearch2">
@@ -59,15 +58,9 @@
                                     </h:panelGroup>
                                 </p:panel>
                             </h:panelGroup>
-
-
-
-
                             <h:panelGroup id="panelIx" >
-
-
-                                <p:panel id='pIxAdd' header="Items Requests"   >
-                                    <f:facet name="header">
+                                <p:panel id='pIxAdd' header="Item Requests"   >
+                                    <p:panelGrid columns="2" >
                                         <h:outputLabel value="Category"/>
                                         <p:autoComplete value="#{itemController.category}" id="ct" 
                                                         forceSelection="true"
@@ -86,20 +79,18 @@
                                                                rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
                                                 <h:outputLabel value="Child Category" 
                                                                rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-
                                             </p:column> 
-
                                         </p:autoComplete>
-                                    </f:facet>
-                                    <h:panelGrid columns="1">
+
+                                        <h:outputLabel value="Department"/>
                                         <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
                                             <f:selectItem itemLabel="Select Department"/>
                                             <f:selectItems value="#{departmentController.labs}" 
                                                            var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                             <p:ajax process="@this" update="acIx" event="change"/>
                                         </p:selectOneMenu>
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="4">
+
+                                        <h:outputLabel value="Investigation"/>
                                         <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
                                                          value="#{billBhtController.currentBillItem.item}"
                                                          completeMethod="#{itemController.completeInwardItemsCategoryNew}"
@@ -117,33 +108,44 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>  
-                                            <p:ajax event="itemSelect" process="acIx ct" />
+                                            <p:ajax event="itemSelect" process="acIx ct" update="gpQtyLbl gpQtyTxt" />
                                             <p:ajax event="focus" process="ct"/>
                                         </p:autoComplete>
 
-                                        <h:inputText autocomplete="off" id="txtQty"
-                                                     rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
-                                                     value="#{billBhtController.currentBillItem.qty}" >
-                                        </h:inputText>
 
+                                        <h:panelGroup id="gpQtyLbl">
+                                            <h:outputLabel id="lblQty" value="Quentity" rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"/>
+                                        </h:panelGroup>
 
+                                        <h:panelGroup id="gpQtyTxt">
+                                            <h:inputText autocomplete="off" id="txtQty"
+                                                         rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
+                                                         value="#{billBhtController.currentBillItem.qty}" >
+                                            </h:inputText> </h:panelGroup>
+
+                                        <h:outputLabel value="Details"/>
                                         <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" ></p:inputTextarea>
-                                        <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" onclick="onSubmitButton();"/>
+
 
                                         <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
                                                     id="billedTimeStamp"
                                                     pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
                                         </p:calendar>
+                                        <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" onclick="onSubmitButton();"/>
 
-                                        <p:watermark for="acIx" value="Item"/>
-                                        <p:watermark for="billedTimeStamp" value="Time"/>
-                                        <p:watermark for="txtDesc" value="Description"/>
-                                        <p:watermark for="txtQty" value="QTY"/>
-                                        <p:watermark for="ct" value="Category"/>
-                                    </h:panelGrid>
+
+                                    </p:panelGrid>
+
+
+
+
+
+
+
                                 </p:panel>
-                            </h:panelGroup>
 
+
+                            </h:panelGroup>
                         </h:panelGrid>
 
                         <h:panelGrid columns="1">
@@ -271,7 +273,7 @@
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >
 
 
-                    <h:panelGroup rendered="#{sessionController.currentPreference.opdBillPaperType eq 'FiveFivePaper'}">
+                    <h:panelGroup >
 
                         <div class="nonPrintBlock">
                             <p:commandButton value="Print" ajax="false" action="#"  >
@@ -285,25 +287,11 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false and sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}">
-                                <ui:repeat value="#{billBhtController.bills}" var="bill">
-                                    <bi:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false and sessionController.currentPreference.applicationInstitution ne 'Ruhuna'}">
-                                <ui:repeat value="#{billBhtController.bills}" var="bill">
-                                    <bi:inwardBillPrintRuhunu bill="#{bill}" dup="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq true}">
-                                <ui:repeat value="#{billBhtController.bills}" var="b">
-                                    <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
-                                </ui:repeat>  
-                            </h:panelGroup>
+                            <ui:repeat value="#{billBhtController.bills}" var="b" >
+                                <bi:inwardBillPrintFiveFive bill="#{b}" dup="false"/>   
+                            </ui:repeat>
                         </h:panelGroup>
+
                     </h:panelGroup>
 
                 </h:panelGroup>
