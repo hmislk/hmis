@@ -153,6 +153,17 @@
                     </div>
                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" styleClass="ptnamePrinting" />
 
+                    
+                    
+                    <div class="ptnamePrintingLabel">
+                        <h:outputLabel value="Referred By"/>
+                    </div>
+                    <div class="ptnamePrintingLabelCol">
+                        <h:outputLabel value=":"/>
+                    </div>
+                    <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" styleClass="ptnamePrinting" />
+
+                    
                     <div class="disLabel">
                         <h:outputLabel value="Discription"/>
                     </div>

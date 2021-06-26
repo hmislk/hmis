@@ -31,6 +31,18 @@
                         <h:panelGrid columns="1" >
                             <h:panelGroup id="panelPatient" >
                                 <p:panel header="Patient Details">
+                                    <h:outputLabel value="Referring Doctor : "/>
+                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billBhtController.referredBy}" 
+                                                    completeMethod="#{doctorController.completeDoctor}" var="ix" 
+                                                    itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
+                                        <p:column headerText="Name" >
+                                            <h:outputLabel value="#{ix.person.nameWithTitle}" ></h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Code" >
+                                            <h:outputLabel value="#{ix.code}" ></h:outputLabel>
+                                        </p:column>
+                                    </p:autoComplete>
+
                                     <h:outputLabel value="Type Patient Name or BHT : "/>
                                     <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                                     converter="admis"

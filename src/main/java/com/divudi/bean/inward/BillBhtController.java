@@ -29,6 +29,7 @@ import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Fee;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
@@ -129,6 +130,7 @@ public class BillBhtController implements Serializable {
     private List<BillEntry> lstBillEntries;
     private boolean printPreview;
     private List<Bill> bills;
+    private Doctor referredBy;
     Date date;
 
     public InwardBeanController getInwardBean() {
@@ -175,6 +177,7 @@ public class BillBhtController implements Serializable {
         printPreview = false;
         batchBill = null;
         bills = null;
+        referredBy=null;
     }
 
     public CommonFunctions getCommonFunctions() {
@@ -408,6 +411,7 @@ public class BillBhtController implements Serializable {
         temp.setPatientEncounter(patientEncounter);
         temp.setPaymentScheme(getPaymentScheme());
         temp.setPaymentMethod(paymentMethod);
+        temp.setReferredBy(referredBy);
         temp.setCreatedAt(new Date());
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
@@ -1058,6 +1062,8 @@ public class BillBhtController implements Serializable {
     public BatchBillFacade getBatchBillFacade() {
         return batchBillFacade;
     }
+    
+    
 
     public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
         this.batchBillFacade = batchBillFacade;
@@ -1085,6 +1091,14 @@ public class BillBhtController implements Serializable {
 
     public void setEncounterComponentFacade(EncounterComponentFacade encounterComponentFacade) {
         this.encounterComponentFacade = encounterComponentFacade;
+    }
+
+    public Doctor getReferredBy() {
+        return referredBy;
+    }
+
+    public void setReferredBy(Doctor referredBy) {
+        this.referredBy = referredBy;
     }
 
     /**
