@@ -49,7 +49,7 @@ public class SmsManagerEjb {
     }
 
     private void sendSmsAwaitingToSendInDatabase() {
-        String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false and e.createdAt>:d";
+        String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
         Map m = new HashMap();
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, 0);
@@ -63,6 +63,7 @@ public class SmsManagerEjb {
 //        }
         for (Sms e : smses) {
             e.setSentSuccessfully(Boolean.TRUE);
+            e.setPending(false);
             getSmsFacade().edit(e);
 
             sendSms(e.getReceipientNumber(), e.getSendingMessage(),

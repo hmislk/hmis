@@ -1356,6 +1356,7 @@ public class PatientReportController implements Serializable {
         if (pf != null && pf.getSentSmsWithInvestigationRequestApproval()) {
             if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
                 Sms e = new Sms();
+                e.setPending(true);
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
                 e.setBill(currentPtIx.getBillItem().getBill());
