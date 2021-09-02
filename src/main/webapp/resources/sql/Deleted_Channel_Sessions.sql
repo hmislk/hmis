@@ -1,0 +1,1 @@
+select id,`DTYPE`,`NAME`,`RETIRED`,`RETIREDAT` from Item order by `RETIREDAT` desc limit 10;
