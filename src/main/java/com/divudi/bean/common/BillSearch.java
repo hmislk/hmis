@@ -49,6 +49,7 @@ import com.divudi.facade.ItemBatchFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.WebUserFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -172,6 +173,7 @@ public class BillSearch implements Serializable {
     private LazyDataModel<BillItem> searchBillItems;
     private LazyDataModel<Bill> lazyBills;
     List<BillSummery> billSummeries;
+    private BillSummery billSummery;
     ////////////////////
     ///////////////////
     private SearchKeyword searchKeyword;
@@ -289,6 +291,66 @@ public class BillSearch implements Serializable {
             i++;
         }
     }
+    
+    
+    
+    public String listBillsFromBillTypeSummery() {
+        if(billSummery==null){
+            JsfUtil.addErrorMessage("No Summary Selected");
+            return "";
+        }
+        String directTo;
+        Map m = new HashMap();
+        String j;
+        
+        BillClassType tmpBillClassType = billSummery.getBillClassType();
+        BillType tmpBllType = billSummery.getBillType();
+        
+        
+        if (tmpBillClassType == null) {
+            j = "select b "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        } else {
+            j = "select b "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        }
+
+        if (department == null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", sessionController.getLoggedUser().getInstitution());
+        } else {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        if (user != null) {
+            j += " and b.creater=:wu ";
+            m.put("wu", user);
+        }
+        if (tmpBllType != null) {
+            j += " and b.billType=:bt ";
+            m.put("bt", tmpBllType);
+        }
+        if (tmpBillClassType != null) {
+            j += " and b.billClassType=:bct ";
+            m.put("bct", tmpBillClassType);
+        }
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+        
+        if(tmpBillClassType==BillClassType.CancelledBill || tmpBillClassType==BillClassType.RefundBill){
+            directTo = "/reportIncome/bill_list_cancelled";
+        }else{
+            directTo = "/reportIncome/bill_list";
+        }
+        
+        return directTo;
+    }
+    
 
     public void fillBillFeeTypeSummery() {
         Map m = new HashMap();
@@ -358,6 +420,10 @@ public class BillSearch implements Serializable {
         }
     }
 
+    
+    
+    
+    
     public void clearSearchFIelds() {
         department = null;
         fromDate = null;
@@ -2607,5 +2673,15 @@ public class BillSearch implements Serializable {
     public SecurityController getSecurityController() {
         return securityController;
     }
+
+    public BillSummery getBillSummery() {
+        return billSummery;
+    }
+
+    public void setBillSummery(BillSummery billSummery) {
+        this.billSummery = billSummery;
+    }
+    
+    
 
 }

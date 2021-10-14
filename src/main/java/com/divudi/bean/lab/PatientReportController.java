@@ -172,6 +172,8 @@ public class PatientReportController implements Serializable {
     private String encryptedPatientReportId;
     private String encryptedExpiary;
     private List<PatientReport> recentReportsOrderedByDoctor;
+    private String smsNumber;
+    private String smsMessage;
 
     public String searchRecentReportsOrderedByMyself() {
         Doctor doctor;
@@ -470,7 +472,6 @@ public class PatientReportController implements Serializable {
             message.setContent(multipart);
 
             Transport.send(message);
-
 
             JsfUtil.addSuccessMessage("Email Sent SUccessfully");
 
@@ -1287,6 +1288,24 @@ public class PatientReportController implements Serializable {
         return bm;
     }
 
+    public void sendSms() {
+        Sms e = new Sms();
+        e.setPending(true);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+    
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        
+        e.setReceipientNumber(smsNumber);
+        e.setSendingMessage(smsMessage);
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+        e.setSentSuccessfully(false);
+        getSmsFacade().create(e);
+
+    }
+
     public void approvePatientReport() {
         Date startTime = new Date();
         if (currentPatientReport == null) {
@@ -1890,6 +1909,27 @@ public class PatientReportController implements Serializable {
     public void setRecentReportsOrderedByDoctor(List<PatientReport> recentReportsOrderedByDoctor) {
         this.recentReportsOrderedByDoctor = recentReportsOrderedByDoctor;
     }
+
+    public String getSmsNumber() {
+        return smsNumber;
+    }
+
+    public void setSmsNumber(String smsNumber) {
+        this.smsNumber = smsNumber;
+    }
+
+    public String getSmsMessage() {
+        return smsMessage;
+    }
+
+    public void setSmsMessage(String smsMessage) {
+        this.smsMessage = smsMessage;
+    }
+    
+    
+    
+    
+    
 
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {

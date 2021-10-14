@@ -1824,6 +1824,9 @@ public class BhtSummeryController implements Serializable {
     private void setPatientRoomData() {
 
         for (PatientRoom p : patientRooms) {
+            if(p.getAdmittedAt()==null){
+                p.setAdmittedAt(new Date());
+            }
             calculateRoomCharge(p);
             calculateMaintananceCharge(p);
             calculateLinenCharge(p);
