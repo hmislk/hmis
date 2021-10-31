@@ -1293,10 +1293,10 @@ public class PatientReportController implements Serializable {
         e.setPending(true);
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
-    
+
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
-        
+
         e.setReceipientNumber(smsNumber);
         e.setSendingMessage(smsMessage);
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -1372,10 +1372,29 @@ public class PatientReportController implements Serializable {
                 getEmailFacade().create(e);
             }
         }
-        if (pf != null && pf.getSentSmsWithInvestigationRequestApproval()) {
-            if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+
+        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+            Sms e = new Sms();
+            e.setPending(true);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setBill(currentPtIx.getBillItem().getBill());
+            e.setPatientReport(currentPatientReport);
+            e.setPatientInvestigation(currentPtIx);
+            e.setCreatedAt(new Date());
+            e.setCreater(sessionController.getLoggedUser());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setSendingMessage(smsBody(currentPatientReport));
+            e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+            e.setInstitution(getSessionController().getLoggedUser().getInstitution());
+            e.setSentSuccessfully(false);
+            getSmsFacade().create(e);
+        }
+
+        if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
+
+            if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
                 Sms e = new Sms();
-                e.setPending(true);
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
                 e.setBill(currentPtIx.getBillItem().getBill());
@@ -1383,35 +1402,15 @@ public class PatientReportController implements Serializable {
                 e.setPatientInvestigation(currentPtIx);
                 e.setCreatedAt(new Date());
                 e.setCreater(sessionController.getLoggedUser());
-                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+                e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
                 e.setSendingMessage(smsBody(currentPatientReport));
                 e.setDepartment(getSessionController().getLoggedUser().getDepartment());
                 e.setInstitution(getSessionController().getLoggedUser().getInstitution());
                 e.setSentSuccessfully(false);
                 getSmsFacade().create(e);
             }
-
-            if (currentPtIx.getBillItem().getBill().getCollectingCentre() != null) {
-
-                if (!currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone().trim().equals("")) {
-                    Sms e = new Sms();
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
-                    e.setBill(currentPtIx.getBillItem().getBill());
-                    e.setPatientReport(currentPatientReport);
-                    e.setPatientInvestigation(currentPtIx);
-                    e.setCreatedAt(new Date());
-                    e.setCreater(sessionController.getLoggedUser());
-                    e.setReceipientNumber(currentPtIx.getBillItem().getBill().getCollectingCentre().getPhone());
-                    e.setSendingMessage(smsBody(currentPatientReport));
-                    e.setDepartment(getSessionController().getLoggedUser().getDepartment());
-                    e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-                    e.setSentSuccessfully(false);
-                    getSmsFacade().create(e);
-                }
-            }
-
         }
+
         UtilityController.addSuccessMessage("Approved");
         commonController.printReportDetails(null, null, startTime, "Lab Report Aprove.");
     }
@@ -1925,11 +1924,6 @@ public class PatientReportController implements Serializable {
     public void setSmsMessage(String smsMessage) {
         this.smsMessage = smsMessage;
     }
-    
-    
-    
-    
-    
 
     @FacesConverter(forClass = PatientReport.class)
     public static class PatientReportControllerConverter implements Converter {
