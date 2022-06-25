@@ -107,7 +107,7 @@
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
                             <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
                             <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
@@ -159,7 +159,7 @@
                         </p:column>
                         <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:outputText value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
@@ -241,13 +241,13 @@
                                         <p:outputLabel value="Appointment Date">
                                         </p:outputLabel>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.sessionDate}"> 
-                                            <f:convertDateTime pattern="dd MMM yyyy" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" >
                                             </f:convertDateTime>
                                         </p:outputLabel>
                                         <p:outputLabel value="Appointment Time">
                                         </p:outputLabel>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.serviceSession.startingTime}"> 
-                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                         </p:outputLabel>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
@@ -299,13 +299,13 @@
                                         <p:outputLabel value="Appointment Date">
                                         </p:outputLabel>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.sessionDate}"> 
-                                            <f:convertDateTime pattern="dd MMM yyyy" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" >
                                             </f:convertDateTime>
                                         </p:outputLabel>
                                         <p:outputLabel value="Appointment Time">
                                         </p:outputLabel>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.serviceSession.startingTime}"> 
-                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                         </p:outputLabel>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>
@@ -356,13 +356,13 @@
                                         <p:outputLabel value="Appointment Date">
                                         </p:outputLabel>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.sessionDate}"> 
-                                            <f:convertDateTime pattern="dd MMM yyyy" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" >
                                             </f:convertDateTime>
                                         </p:outputLabel>
                                         <p:outputLabel value="Appointment Time">
                                         </p:outputLabel>
                                         <p:outputLabel value="#{bookingPastController.selectedBillSession.serviceSession.startingTime}"> 
-                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                         </p:outputLabel>
                                         <p:separator ></p:separator>
                                         <p:separator ></p:separator>

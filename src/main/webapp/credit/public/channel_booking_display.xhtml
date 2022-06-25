@@ -61,7 +61,7 @@
                         </p:column>
                         <p:column headerText="Time">
                             <p:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Fee">

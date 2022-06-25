@@ -49,13 +49,13 @@
                     <h:panelGroup>
                         <h:outputLabel value="Purchase Date : "/>
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                         </h:outputLabel>
                     </h:panelGroup>
                     <h:panelGroup>
                         <h:outputLabel value="Purchase Time : "/>
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                         </h:outputLabel>
                     </h:panelGroup>                  
                     <h:outputLabel value="Supplier : #{cc.attrs.bill.fromInstitution.name}"/>                  
@@ -78,7 +78,7 @@
                     <p:column>
                         <f:facet name="header">Expiry</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                         </h:outputLabel>
                     </p:column>                                 
 

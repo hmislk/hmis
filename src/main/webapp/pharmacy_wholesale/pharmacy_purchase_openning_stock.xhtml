@@ -159,7 +159,7 @@
 
                     <p:column headerText="DoE" >
                         <h:outputText   value="#{ph.pharmaceuticalBillItem.doe}" >
-                            <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
                         </h:outputText>
                     </p:column>
 

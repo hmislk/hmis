@@ -94,7 +94,7 @@
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="BHT No">
@@ -139,7 +139,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

@@ -98,7 +98,7 @@
                         	<td >
                             	<h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime}" >
                                 	<f:convertDateTime pattern="dd MM yyyy h:mm a" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
-                                	<f:convertDateTime pattern="dd MM yyyy" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
+                                	<f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
                             	</h:outputLabel>
                         	</td>
                     	</tr>
@@ -125,7 +125,7 @@
                         	<td >
                             	<h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" >
                                 	<f:convertDateTime pattern="dd MM yyyy h:mm a" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}"/>
-                                	<f:convertDateTime pattern="dd MM yyyy" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
+                                	<f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"/>
                             	</h:outputLabel>
                         	</td>
                     	</tr>                  	 

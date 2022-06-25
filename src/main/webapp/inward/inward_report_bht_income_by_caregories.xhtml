@@ -63,11 +63,11 @@
                                     <h:outputLabel value="Income by Categories Report"/><br></br>
                                     <h:outputLabel value="From - "/>
                                     <p:outputLabel value="#{inwardReportController1.fromDate}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </p:outputLabel>
                                     <h:outputLabel value=" - To - "/>
                                     <h:outputLabel value="#{inwardReportController1.toDate}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel><br></br>
                                     <h:panelGrid rendered="#{inwardReportController1.admissionType ne null}">
                                         <h:outputLabel value="#{inwardReportController1.admissionType.name}"/>

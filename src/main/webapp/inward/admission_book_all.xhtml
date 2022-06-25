@@ -107,7 +107,7 @@
                                         <h:outputLabel value="Admited By"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.creater.webUserPerson.name}"  >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -116,7 +116,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -189,7 +189,7 @@
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

@@ -47,7 +47,7 @@
                             <p:column headerText="Date" >
                                 <h:commandLink action="pharmacy_reprint_grn" >
                                     <h:outputLabel value="#{bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSeaphBillbill}"/>
                                 </h:commandLink>
@@ -55,7 +55,7 @@
                             <p:column headerText="Time" >
                                 <h:commandLink action="pharmacy_reprint_grn" >
                                     <h:outputLabel value="#{bill.createdAt}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSphBillh.bill}"/>
                                 </h:commandLink>

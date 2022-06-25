@@ -180,7 +180,7 @@
                                     <td>
                                         <b>
                                             <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" rendered="#{cc.attrs.hos eq true}">
-                                                <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                             </h:outputLabel>
                                         </b>
                                     </td>

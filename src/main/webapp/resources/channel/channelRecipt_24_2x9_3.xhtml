@@ -64,7 +64,7 @@
                     
                     <div style="position: absolute!important; font-size: 15px!important; left: 30%!important; top: 72%!important;">                        
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionTime}" style="font-size: 14px!important;">
-                            <f:convertDateTime pattern="HH:mm a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                         </h:outputLabel>                        
                     </div>
                     
@@ -129,7 +129,7 @@
                     
                     <div style="position: absolute!important; font-size: 15px!important; left: 85%!important; top: 72%!important;">                        
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionTime}" style="font-size: 14px!important;">
-                            <f:convertDateTime pattern="HH:mm a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                         </h:outputLabel>                        
                     </div>
                     

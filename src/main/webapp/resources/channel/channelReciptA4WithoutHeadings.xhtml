@@ -166,7 +166,7 @@
                         <td style="text-align: right;">
                             <b>
                                 <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" >
-                                    <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                 </h:outputLabel>
                             </b>
                         </td>
@@ -285,7 +285,7 @@
                         </td>
                         <td style="text-align: right;">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                     </tr>

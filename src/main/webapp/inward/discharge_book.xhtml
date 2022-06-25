@@ -141,7 +141,7 @@
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discharge Date" sortBy="#{i.dateOfDischarge}" rendered="#{inwardReportController.dischargeDate}">
@@ -149,7 +149,7 @@
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime pattern="hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Discharge By" sortBy="#{i.finalBill.creater.webUserPerson.name}" rendered="#{inwardReportController.billedBy}">
@@ -165,7 +165,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Admitted By" sortBy="#{i.creater.webUserPerson.name}" rendered="#{inwardReportController.addmitDetails}">

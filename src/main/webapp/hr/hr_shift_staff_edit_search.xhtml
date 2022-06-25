@@ -101,7 +101,7 @@
                                     <h:outputLabel value="Starting Date"/>
                                 </f:facet>
                                 <p:outputLabel value="#{l.shiftStartTime}" >
-                                    <f:convertDateTime pattern="hh:mm:ss" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
                                 </p:outputLabel>
                             </p:column>
 
@@ -110,7 +110,7 @@
                                     <h:outputLabel value="Ending Date"/>
                                 </f:facet>
                                 <p:outputLabel value="#{l.shiftEndTime}" >
-                                    <f:convertDateTime pattern="hh:mm:ss" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
                                 </p:outputLabel>
                             </p:column>
 

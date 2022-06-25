@@ -127,7 +127,7 @@
                                             </h:outputText>
                                             <h:outputText value=" &nbsp;&nbsp;" rendered="#{!ses.deactivated}" />
                                             <h:outputText value="#{ses.startingTime}" rendered="#{!ses.deactivated}">
-                                                <f:convertDateTime pattern="hh:mm a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                                             </h:outputText>
                                             <h:outputText value=" &nbsp;&nbsp;Rs." rendered="#{!ses.deactivated}" />
                                             <h:outputText value="#{ses.totalFee}" rendered="#{!ses.deactivated}">
@@ -194,7 +194,7 @@
                                             <p:cellEditor>
                                                 <f:facet name="output" >
                                                     <h:outputText value="#{ses.startingTime}">
-                                                        <f:convertDateTime pattern="hh:mm"/>
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
                                                     </h:outputText>
                                                 </f:facet>
                                                 <f:facet name="input" >

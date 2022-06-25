@@ -61,11 +61,11 @@
 
                                     <h:outputLabel value="From" />
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <h:outputLabel value="To" />
                                     <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
 
                                 </h:panelGroup >

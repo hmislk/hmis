@@ -110,10 +110,10 @@
                              top: 11%;
                              font-size:12px!important;" >
                             <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelled eq false}">
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelled eq true}">
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </div>
                         

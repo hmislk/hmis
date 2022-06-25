@@ -136,7 +136,7 @@
                                     <h:outputLabel value="Receive Sample" rendered="#{!pi.received}" ></h:outputLabel>
                                     <h:outputLabel value="Sample received at " rendered="#{pi.received}" ></h:outputLabel>
                                     <h:outputLabel value="#{pi.receivedAt}" rendered="#{pi.received}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </p:tooltip>
 
@@ -144,7 +144,7 @@
                                     <h:outputLabel value="Collect Sample" rendered="#{!pi.collected }" ></h:outputLabel>
                                     <h:outputLabel value="Sampled at " rendered="#{pi.collected}" ></h:outputLabel>
                                     <h:outputLabel value="#{pi.sampledAt}" rendered="#{pi.collected}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </p:tooltip>
 
@@ -227,17 +227,17 @@
                                             <br/>
                                             <h:outputLabel value="Data enterd at " ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.dataEntryAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Approved at " rendered="#{dpr.approved}" ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.approveAt}"  rendered="#{dpr.approved}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Printed at "  rendered="#{dpr.printed}" ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.printingAt}"  rendered="#{dpr.printed}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                             </h:outputLabel>
                                         </p:tooltip>
                                         <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>

@@ -46,7 +46,7 @@
                             </p:column> 
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bfp.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column> 
                             <p:column headerText="Bill netTotal" >                                

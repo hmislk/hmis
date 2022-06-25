@@ -56,7 +56,7 @@
 
                                 <p:column headerText="Billed Date">
                                     <h:outputLabel value="#{bc.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                 </p:column>
 

@@ -78,13 +78,13 @@
                 <h:outputLabel value="Invoice Date "/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.invoiceDate}">
-                    <f:convertDateTime pattern="dd MM yyyy"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                 </h:outputLabel>
                 <h:outputLabel/>                
                 <h:outputLabel value="GRN Date  "/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                 </h:outputLabel >
 
             </h:panelGrid>

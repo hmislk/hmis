@@ -52,7 +52,7 @@
                             </td>
                             <td style="text-align: left;  width: 35%; ">
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.dateOfAdmission}" >
-                                    <f:convertDateTime pattern="HH:mm" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm"  />
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -84,7 +84,7 @@
                             </td>
                             <td style="text-align: left;  width: 35%;">
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.dateOfDischarge}" >
-                                    <f:convertDateTime pattern="HH:mm" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm"  />
                                 </h:outputLabel>
                             </td>
                         </tr>      

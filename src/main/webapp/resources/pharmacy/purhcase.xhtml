@@ -34,7 +34,7 @@
                 <h:panelGrid columns="4" class="poDetail" >    
                     <h:outputLabel value="Purchase Date"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                        <f:convertDateTime pattern="dd MM yyyy"/>
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                     </h:outputLabel>
 
                     <h:outputLabel value="Direct GRN No"/>
@@ -42,7 +42,7 @@
 
                     <h:outputLabel value="Invoice Date"/>
                     <h:outputLabel value="#{cc.attrs.bill.invoiceDate}">
-                        <f:convertDateTime pattern="dd MM yyyy"/>
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                     </h:outputLabel>
 
                     <h:outputLabel value="Invoice No"/>  
@@ -53,7 +53,7 @@
 
                     <h:outputLabel value="Purchase Date"/>
                     <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                        <f:convertDateTime pattern="dd MM yyyy"/>
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                     </h:outputLabel>
                 </h:panelGrid>
             </div>
@@ -71,7 +71,7 @@
                     <p:column >
                         <f:facet name="header">Expiry</f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                         </h:outputLabel>
                     </p:column>                                 
 

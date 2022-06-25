@@ -157,7 +157,7 @@
                                                         <p:calendar value="#{staffController.tempRetireDate}" pattern="dd MM yyyy" >
                                                         </p:calendar>
                                                         <p:outputLabel value="#{staffController.current.dateLeft}" >
-                                                            <f:convertDateTime pattern="dd MM yyyy" />
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                                         </p:outputLabel>
                                                     </h:panelGroup>
                                                     <p:outputLabel value="Remove Resign " style="color: red"/>
@@ -403,7 +403,7 @@
 
                                 <p:outputLabel value="Birthday "/>
                                 <p:outputLabel value="#{staffController.current.person.dob}" >
-                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel  value="Gender" ></p:outputLabel>
@@ -427,17 +427,17 @@
 
                                 <p:outputLabel value="Date Joined "/>
                                 <p:outputLabel value="#{staffController.current.dateJoined}" >
-                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Date Resigned "/>
                                 <p:outputLabel value="#{staffController.current.dateLeft}"  >
-                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Date Retired "/>
                                 <p:outputLabel value="#{staffController.current.dateRetired}"  >
-                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Speciality" />

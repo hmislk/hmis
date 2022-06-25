@@ -60,7 +60,7 @@
                         </p:column>
                         <p:column headerText="Time">
                             <p:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Fee">
@@ -258,7 +258,7 @@
                                 <p:outputLabel value="Appointment Time">
                                 </p:outputLabel>
                                 <p:outputLabel value="#{bookingController.selectedBillSession.serviceSession.sessionTime}"> 
-                                    <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                 </p:outputLabel>
                             </h:panelGrid>                            
                         </p:tab>

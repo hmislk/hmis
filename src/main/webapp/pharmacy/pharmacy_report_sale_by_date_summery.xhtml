@@ -49,11 +49,11 @@
                         
                         <h:outputLabel value="From  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                         </h:outputLabel>&#13;&nbsp;
                         <h:outputLabel value="To  "/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                            <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                         </h:outputLabel>&#13;&nbsp;
                         <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
                             &#13;&nbsp;
