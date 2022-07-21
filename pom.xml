@@ -54,7 +54,7 @@
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
-            <version>5.5.10</version>
+            <version>5.5.12</version>
             <type>jar</type>
         </dependency>
       
