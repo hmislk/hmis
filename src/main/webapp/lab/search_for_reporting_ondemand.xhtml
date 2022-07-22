@@ -26,7 +26,7 @@
                                     <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                                 </h:panelGrid>
                                 <h:panelGrid columns="4" >
-                                    <h:outputLabel value="Bill No"/>
+                                    <h:outputLabel value="Order No"/>
                                     <h:outputLabel value="Patient Name"/>
                                     <h:outputLabel value="Patient Phone"/>                               
                                     <h:outputLabel value="Investigation Name"/>
@@ -35,7 +35,7 @@
                                     <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
                                     <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
                                     <h:outputLabel value="Report Department"/>
-                                    <h:outputLabel value="Bill Department"/>
+                                    <h:outputLabel value="Ordered Department"/>
                                     <h:outputLabel value="BHT"/>
                                     <h:outputLabel/>
                                     <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
@@ -79,7 +79,7 @@
 
 
                         <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi" rowIndexVar="i" >
-                            <p:column  headerText="Bill" styleClass="alignTop" >
+                            <p:column  headerText="Order No" styleClass="alignTop" >
                                 <h:outputLabel id="lblBillNo" 
                                                value="#{pi.billItem.bill.insId}" 
                                                styleClass="#{pi.billItem.bill.cancelled or pi.billItem.transRefund ? 'redtext':''}"></h:outputLabel>
@@ -189,7 +189,7 @@
 
                             </p:column>
 
-                            <p:column headerText="Billed for"  styleClass="alignTop">
+                            <p:column headerText="Reporting Department"  styleClass="alignTop">
                                 <h:outputLabel value="#{pi.billItem.bill.toDepartment.name}" >
                                 </h:outputLabel>
                             </p:column>

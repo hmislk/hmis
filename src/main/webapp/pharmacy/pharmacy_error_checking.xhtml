@@ -125,6 +125,18 @@
                                 <h:outputLabel value="#{pb.pharmaceuticalBillItem.freeQtyInUnit}" >
                                 </h:outputLabel>
                             </p:column>
+                            
+                             <p:column headerText="Pharse Rate"  sortBy="#{pb.pharmaceuticalBillItem.purchaseRate}" 
+                                       filterBy="#{pb.pharmaceuticalBillItem.purchaseRate}" filterMatchMode="contains" >
+                                 <h:outputLabel value="#{pb.pharmaceuticalBillItem.purchaseRate}" >
+                                </h:outputLabel>
+                            </p:column>
+                            
+                             <p:column headerText="Sale Rate"  sortBy="#{pb.pharmaceuticalBillItem.retailRate}"
+                                       filterBy="#{pb.pharmaceuticalBillItem.retailRate}" filterMatchMode="contains" >
+                                 <h:outputLabel value="#{pb.pharmaceuticalBillItem.retailRate}" >
+                                </h:outputLabel>
+                            </p:column>
 
 
                             <p:column headerText="Bill Type" sortBy="#{pb.bill.billType}" filterBy="#{pb.bill.billType}" filterMatchMode="contains" >

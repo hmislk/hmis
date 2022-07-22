@@ -108,8 +108,32 @@
                                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{ampController.current.vmp}" ></p:autoComplete>
                                         
                                         <h:outputLabel/>
+                                        
                                         <h:outputText  value="Discount Allowed" ></h:outputText>
                                         <h:selectBooleanCheckbox value="#{ampController.current.discountAllowed}" />
+                                        <h:outputLabel/>
+                                        
+                                        <h:outputText  value="Created By" ></h:outputText>
+                                        <h:outputText  value="#{ampController.current.creater.webUserPerson.name}" ></h:outputText>
+                                        <h:outputLabel/>
+                                        
+                                        <h:outputText  value="Created at" ></h:outputText>
+                                        <h:outputText  value="#{ampController.current.createdAt}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputText>
+                                        <h:outputLabel/>
+                                        
+                                        
+                                        <h:outputText  value="Last Edited By" ></h:outputText>
+                                        <h:outputText  value="#{ampController.current.editer.webUserPerson.name}" ></h:outputText>
+                                        <h:outputLabel/>
+                                        
+                                        
+                                        <h:outputText  value="Last Edited at" ></h:outputText>
+                                        <h:outputText  value="#{ampController.current.editedAt}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                        </h:outputText>
+                                        <h:outputLabel/>
                                         
                                         <p:commandLink id="btnAddVmp" 
                                                          value="Create New Product" 
