@@ -49,6 +49,8 @@
 
                 </p:submenu>
                 <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
+                <p:menuitem ajax="false" action="/opd_search_bill_change_payment" actionListener="#{searchController.makeListNull}"  value="Change Payment Method" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
+                
                 <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
                 <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" rendered="true" />
                 <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration" rendered="false" />

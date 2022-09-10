@@ -42,7 +42,6 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Table(name = "bill")
 @NamedQueries({
     @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b")
     ,
