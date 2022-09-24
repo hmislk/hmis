@@ -122,11 +122,10 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        System.out.println("getFromDate() = " + getFromDate());
-        System.out.println("getToDate() = " + getToDate());
-        System.out.println("txtSearch = " + txtSearch);
-        System.out.println("txtSearchRef = " + txtSearchRef);
-        System.out.println("txtSearchPhone = " + txtSearchPhone);
+        //System.out.println("getFromDate() = " + getFromDate());
+        //System.out.println("getToDate() = " + getToDate());
+        //System.out.println("txtSearch = " + txtSearch);
+        //System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null 
                 && (txtSearch == null || txtSearch.trim().equals("")) 
                 && (txtSearchRef == null || txtSearchRef.trim().equals("")) 
@@ -261,7 +260,7 @@ public class ChannelSearchController implements Serializable {
 //        }
 //        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 //
-//            //System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+//            ////System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
 //            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
 //                UtilityController.addErrorMessage("Sample Already collected can't cancel");
 //                return true;

@@ -10,7 +10,9 @@ import com.divudi.facade.EmailFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.File;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -40,21 +42,19 @@ public class EmailManagerEjb {
     @EJB
     private EmailFacade emailFacade;
 
-//    @SuppressWarnings("unused")
-//    @Schedule(second = "59", minute = "*/5", hour = "*", persistent = false)
+    @SuppressWarnings("unused")
+    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
     public void myTimer() {
-        sendReportApprovalEmails();
+//        sendReportApprovalEmails();
 
     }
 
     private void sendReportApprovalEmails() {
-        String j = "Select e from AppEmail e where e.sentSuccessfully=false and e.retired=false";
-        List<AppEmail> emails = getEmailFacade().findBySQL(j);
-//        if (false) {
-//            AppEmail e = new AppEmail();
-//            e.getSentSuccessfully();
-//            e.getInstitution();
-//        }
+        System.out.println("sendReportApprovalEmails");
+        String j = "Select e from AppEmail e where e.sentSuccessfully=:ret and e.retired=false";
+        Map m = new HashMap();
+        m.put("ret", false);
+        List<AppEmail> emails = getEmailFacade().findBySQL(j,m);
         for (AppEmail e : emails) {
             e.setSentSuccessfully(Boolean.TRUE);
             getEmailFacade().edit(e);
@@ -78,6 +78,7 @@ public class EmailManagerEjb {
             String subject,
             String messageHtml,
             String attachmentFile1Path) {
+        System.out.println("sendEmail" );
         Properties props = new Properties();
         props.put("mail.smtp.starttls.enable", "true");
         props.put("mail.smtp.auth", "true");
@@ -103,7 +104,6 @@ public class EmailManagerEjb {
 
             BodyPart msbp1 = new MimeBodyPart();
             msbp1.setContent(messageHtml, "text/html; charset=utf-8");
-            System.err.println("Starting 2 " + messageHtml);
             multipart.addBodyPart(msbp1);
 
             if (attachmentFile1Path != null) {

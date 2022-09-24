@@ -73,7 +73,12 @@
                                                      value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
 
-                                    <p:commandButton styleClass="nonPrintBlock"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
+                                    <p:commandButton styleClass="nonPrintBlock" rendered="true"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Sent SMS" 
+                                                     action="#{patientReportController.sendSmsForPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton styleClass="nonPrintBlock"  id="btnSendSms"  
+                                                     disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
                                                      action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
 

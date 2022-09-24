@@ -41,9 +41,9 @@ public class FinalVariables {
 
     public Integer getSessionSessionDayCounter() {
         int maxRowNumber = 0;
-        //System.out.println("maxRowNumber = " + maxRowNumber);
+        ////System.out.println("maxRowNumber = " + maxRowNumber);
         maxRowNumber = getSheduleController().getCurrent().getMaxTableRows();
-        //System.out.println("maxRowNumber = " + maxRowNumber);
+        ////System.out.println("maxRowNumber = " + maxRowNumber);
         if (maxRowNumber == 0) {
             return 14;
         }
@@ -52,10 +52,10 @@ public class FinalVariables {
 
     public Integer getSessionSessionDayCounter(List<ServiceSession> inputSessions) {
         int maxRowNumber = 0;
-        //System.out.println("maxRowNumber = " + maxRowNumber);
+        ////System.out.println("maxRowNumber = " + maxRowNumber);
         for (ServiceSession ss : inputSessions) {
             maxRowNumber = ss.getMaxTableRows();
-            //System.out.println("maxRowNumber = " + maxRowNumber);
+            ////System.out.println("maxRowNumber = " + maxRowNumber);
             if (maxRowNumber == 0) {
                 return 14;
             }
@@ -68,11 +68,11 @@ public class FinalVariables {
     public Integer getSessionSessionDayCounterLargest(List<ServiceSession> inputSessions) {
         int maxRowNumber = 0;
         for (ServiceSession ss : inputSessions) {
-//            System.out.println("maxRowNumber = " + maxRowNumber);
-//            System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
+//            //System.out.println("maxRowNumber = " + maxRowNumber);
+//            //System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
             if (maxRowNumber < ss.getMaxTableRows()) {
                 maxRowNumber = ss.getMaxTableRows();
-//                System.out.println("maxRowNumber = " + maxRowNumber);
+//                //System.out.println("maxRowNumber = " + maxRowNumber);
             }
         }
         if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
@@ -92,11 +92,11 @@ public class FinalVariables {
         int maxRowNumber = 0;
         for (Long s : inputSessions) {
             ServiceSession ss = serviceSessionFacade.find(s);
-//            System.out.println("maxRowNumber = " + maxRowNumber);
-//            System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
+//            //System.out.println("maxRowNumber = " + maxRowNumber);
+//            //System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
             if (maxRowNumber < ss.getMaxTableRows()) {
                 maxRowNumber = ss.getMaxTableRows();
-//                System.out.println("maxRowNumber = " + maxRowNumber);
+//                //System.out.println("maxRowNumber = " + maxRowNumber);
             }
         }
         if (maxRowNumber != 0) {

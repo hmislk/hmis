@@ -15,23 +15,23 @@
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Investigation List" action="investigation_counts"/>
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Bill List" action="/reportLab/bill_list"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Patient List" action="turn_over_time_bills"/> 
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Client List" action="/reportLab/client_list"/> 
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Sample List" action="/lab/patient_sample_list"/> 
-                                    
+
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Average Turn Around Time" action="turn_over_time"/> 
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills"/> 
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution"/>
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Department" action="report_lab_by_billed_department"/>
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution"/>
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Department" action="report_lab_by_reported_department"/>
-                                    
+
                                     <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
                                 </p:panelGrid>
                             </p:tab>
                             <p:tab title="Institutions" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution"/>
-                                    
+
                                 </p:panelGrid>
                             </p:tab>
                             <p:tab title="Collecting Centres" >
@@ -48,7 +48,7 @@
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor(Summery)" action="report_lab_by_refering_doctor_summery.xhtml"/>
                                 </p:panelGrid>
                             </p:tab>
-                            
+
                             <p:tab title="Inward" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
@@ -85,11 +85,19 @@
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
                                 </p:panelGrid>
                             </p:tab>
-                             <p:tab title="Clinical" >
+
+                            <p:tab title="Auditing" >
+                                <p:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bills Cancelled after Approving Reports"
+                                                     action="/lab/report_cancelled_bill_search"/> 
+                                </p:panelGrid>
+                            </p:tab>
+
+                            <p:tab title="Clinical" >
                                 <p:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Test Results - Single" action="test_results_single"/> 
-                                 <p:commandButton styleClass="linkButton" ajax="false" value="Test Results" action="/lab/clinical_result_values"/> 
-                                
+                                    <p:commandButton styleClass="linkButton" ajax="false" value="Test Results" action="/lab/clinical_result_values"/> 
+
                                 </p:panelGrid>
                             </p:tab>
                         </p:tabView>

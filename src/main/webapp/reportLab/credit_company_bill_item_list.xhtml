@@ -49,14 +49,14 @@
                                     <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{pi.bill.cancelled}" value="#{pi.bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{pi.refunded}" >
                                     <br/>
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{pi.refunded}" value="#{pi.referanceBillItem.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>

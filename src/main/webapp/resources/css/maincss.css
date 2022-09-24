@@ -574,6 +574,17 @@ body {
     text-align: left!important;
 }
 
+.linkButton600
+{
+    margin: 2px;
+    padding: 2px;
+    width: 600px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    font-size: 12px;
+    text-align: left!important;
+}
+
 .grid1 {
     padding: 5px;
     margin: 5px;

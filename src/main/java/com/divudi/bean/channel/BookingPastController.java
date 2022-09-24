@@ -241,7 +241,7 @@ public class BookingPastController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
         }
-//        //System.out.println("consultants = " + consultants);
+//        ////System.out.println("consultants = " + consultants);
         setStaff(null);
     }
 
@@ -256,7 +256,7 @@ public class BookingPastController implements Serializable {
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            //System.out.println("billSessions" + bs.getId());
+            ////System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
 
@@ -317,7 +317,7 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        ////System.out.println(getSelectedBillSession().getBill().getPatient());
         if (getSelectedBillSession().isAbsent()) {
             UtilityController.addSuccessMessage("Mark As Absent");
             if (getSelectedBillSession().getBill().getPaidBill()!=null) {
@@ -347,7 +347,7 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        //System.out.println(getSelectedBillSession().getBill().getPatient());
+        ////System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
 
@@ -544,7 +544,7 @@ public class BookingPastController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-//        //System.out.println("consultants = " + consultants);
+//        ////System.out.println("consultants = " + consultants);
         if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {

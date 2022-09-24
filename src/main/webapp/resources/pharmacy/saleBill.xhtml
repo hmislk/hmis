@@ -70,7 +70,7 @@
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetails">
-                                <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
 
@@ -247,14 +247,8 @@
 
                         <tr>
                             <td colspan="4" style="overflow: visible;">
-                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize;" >
-                                </h:outputLabel>
-                                -
-                                &nbsp;
                                 <h:outputLabel value="#{bip.searialNo+1} - #{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
                                 </h:outputLabel>
-
-
                             </td>
                         </tr>
                         <tr>
@@ -355,6 +349,18 @@
                         </td>
                         <td  class="totalsItemBlock">
                             <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    
+                    
+                    <tr>
+                        <td  class="totalsItemBlock" style="text-align: left;">
+                            <h:outputLabel   value="Cashier" />
+                        </td>
+                        <td  class="totalsItemBlock">
+                            <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>

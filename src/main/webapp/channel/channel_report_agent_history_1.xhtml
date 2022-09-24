@@ -96,7 +96,7 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy " />
                                 </p:outputLabel>
                                 <p:outputLabel value="#{a.bill.singleBillSession.serviceSession.startingTime}" >
-                                    <f:convertDateTime pattern="HH:mm:ss" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss"  />
                                 </p:outputLabel>
                             </p:column>
                             <p:column rendered="false">

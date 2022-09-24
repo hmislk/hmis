@@ -138,13 +138,13 @@
                         <p:outputLabel value="Starting Time"/>
                         <h:outputLabel value=":"/>
                         <h:outputLabel value="#{shiftController.current.startingTime}">
-                            <f:convertDateTime pattern="hh:mm:ss a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                         </h:outputLabel>  
 
                         <p:outputLabel value="End Time"/>
                         <h:outputLabel value=":"/>
                         <h:outputLabel value="#{shiftController.current.endingTime}">
-                            <f:convertDateTime pattern="hh:mm:ss a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                         </h:outputLabel>  
 
                         <p:outputLabel value="Previous Shift"/>
@@ -203,7 +203,7 @@
                         <p:outputLabel value="Created At"/>
                         <h:outputLabel value=":"/>
                         <p:outputLabel value="#{shiftController.current.createdAt}">
-                            <f:convertDateTime pattern="hh:mm:ss a"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                         </p:outputLabel>
 
                     </h:panelGrid>

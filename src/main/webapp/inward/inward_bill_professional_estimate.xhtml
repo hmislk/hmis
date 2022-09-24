@@ -117,7 +117,7 @@
                                     <p:column >
                                         <f:facet name="header">Fee At</f:facet>
                                         <h:outputLabel value="#{bif.feeAt}" >
-                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column>

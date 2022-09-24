@@ -53,7 +53,7 @@
                 <br></br>
                 <h:outputLabel value="Req Date : "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                 </h:outputLabel>
                 <br></br>
                 <h:outputLabel value="Req Time : "/>

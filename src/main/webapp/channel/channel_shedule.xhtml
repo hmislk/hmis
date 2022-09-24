@@ -67,15 +67,15 @@
                                                 </f:ajax>
                                             </p:commandButton>
                                             <p:commandButton ajax="false" id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                        return false;" action="#{sheduleController.delete()}"  value="Delete Selected Session" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove')}" >
+                                                        return false;" action="#{sheduleController.delete()}"  value="Delete Selected Session" disabled="#{!webUserController.hasPrivilege('ChannellingChannelShedulRemove') and false}" >
                                             </p:commandButton>
                                         </h:panelGrid>
                                         <p:panelGrid columns="1" >
                                             <f:facet name="header" >
                                                 Links
                                             </f:facet>
-                                            <p:commandLink value="Create Default Fee Set for Selected Sessions" action="#{sheduleController.createOnCallFeeOldSession()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
-                                            <p:commandLink value="Manually Create Channelling Seesions For Selected Doctor" action="#{sheduleController.createFutureSessionsManually()}" rendered="#{webUserController.hasPrivilege('Developers')}"  ajax="false" />
+                                            <p:commandLink value="Create Default Fee Set for Selected Sessions" action="#{sheduleController.createOnCallFeeOldSession()}"   ajax="false" />
+                                            <p:commandLink value="Manually Create Channelling Seesions For Selected Doctor" action="#{sheduleController.createFutureSessionsManually()}"   ajax="false" />
                                         </p:panelGrid>
 
                                     </p:panel>
@@ -222,7 +222,7 @@
                                                 </h:panelGrid>
                                             </p:tab>
                                             <p:tab title="Fee Details">
-                                                <p:outputLabel value="Session Value = "/>
+                                                <p:outputLabel value="Session Value - "/>
                                                 <p:outputLabel value="#{sheduleController.current.total}"/>
                                                 <h:panelGrid columns="1">
                                                     <p:dataTable value="#{sheduleController.itemFees}" var="i" >

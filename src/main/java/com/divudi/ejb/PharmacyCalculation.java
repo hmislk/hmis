@@ -530,7 +530,7 @@ public class PharmacyCalculation implements Serializable {
         double purchase = tmp.getPharmaceuticalBillItem().getPurchaseRateInUnit();
         double retail = tmp.getPharmaceuticalBillItem().getRetailRateInUnit();
         double wholesale = tmp.getPharmaceuticalBillItem().getWholesaleRate();
-        //System.out.println("wholesale = " + wholesale);
+        ////System.out.println("wholesale = " + wholesale);
         itemBatch.setDateOfExpire(tmp.getPharmaceuticalBillItem().getDoe());
         itemBatch.setBatchNo(tmp.getPharmaceuticalBillItem().getStringValue());
         itemBatch.setPurcahseRate(purchase);
@@ -712,12 +712,10 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public void calculateRetailSaleValueAndFreeValueAtPurchaseRate(Bill b) {
-        System.out.println("calculateRetailSaleValueAndFreeValueAtPurchaseRate");
         double sale = 0.0;
         double free = 0.0;
 
         for (BillItem i : b.getBillItems()) {
-            System.out.println("i = " + i);
             sale += (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty()) * i.getPharmaceuticalBillItem().getRetailRate();
             free += i.getPharmaceuticalBillItem().getFreeQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
         }
@@ -757,7 +755,7 @@ public class PharmacyCalculation implements Serializable {
 //
 //        } else {
 //            qty = (ph.getPharmaceuticalBillItem().getQty() + ph.getPharmaceuticalBillItem().getFreeQty()) * item.getDblValue();
-//            //      ////System.out.println("sssssss " + qty);
+//            //      //////System.out.println("sssssss " + qty);
 //        }
 //
 //        if (itb.getId() != null) {

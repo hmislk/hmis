@@ -675,6 +675,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         return loginForRequestsForDoctors(userName, passord);
     }
 
+    
+
     public boolean loginForRequests(String temUserName, String temPassword) {
         logged = false;
         loggedUser = null;
@@ -692,8 +694,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         m.put("n", temUserName.trim().toLowerCase());
         WebUser u = getFacede().findFirstBySQL(temSQL, m);
 
-        System.out.println("temSQL = " + temSQL);
-        System.out.println("m = " + m);
+        //System.out.println("temSQL = " + temSQL);
 
         if (u == null) {
             return false;
@@ -1140,7 +1141,7 @@ public class SessionController implements Serializable, HttpSessionListener {
      * Creates a new instance of SessionController
      */
     public SessionController() {
-        ////System.out.println("session started");
+        //////System.out.println("session started");
     }
 
     public String getDefLocale() {
@@ -1204,30 +1205,16 @@ public class SessionController implements Serializable, HttpSessionListener {
     private WebUserPrivilegeFacade webUserPrivilegeFacade;
 
     public List<WebUserPrivilege> getUserPrivileges() {
-
         if (userPrivilages == null) {
             String sql;
-            Map m = new HashMap();
-            sql = "select w from WebUserPrivilege w "
-                    + " where w.retired=:ret "
-                    + " and w.webUser=:wu "
-                    + " and w.privilege in :ps ";
-            m.put("ret", false);
-            m.put("wu", getLoggedUser());
-
-            List<Privileges> ps = new ArrayList<>();
-            for (Privileges p : Privileges.values()) {
-                ps.add(p);
-            }
-
-            m.put("ps", ps);
-            userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql, m);
+            sql = "select w from WebUserPrivilege w where w.retired=false and w.webUser.id = " + getLoggedUser().getId();
+            //////System.out.println("5");
+            userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql);
         }
         if (userPrivilages == null) {
             userPrivilages = new ArrayList<>();
         }
         return userPrivilages;
-
     }
 
     public String getBillNo() {
@@ -1321,7 +1308,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @PreDestroy
     private void recordLogout() {
-        ////System.out.println("session distroyed " + thisLogin);
+        //////System.out.println("session distroyed " + thisLogin);
         if (thisLogin == null) {
             return;
         }
@@ -1332,12 +1319,12 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     @Override
     public void sessionCreated(HttpSessionEvent se) {
-        ////System.out.println("starting session");
+        //////System.out.println("starting session");
     }
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        ////System.out.println("recording logout as session is distroid");
+        //////System.out.println("recording logout as session is distroid");
         recordLogout();
     }
 
@@ -1487,6 +1474,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setLoginRequestResponse(String loginRequestResponse) {
         this.loginRequestResponse = loginRequestResponse;
     }
+    
+    
 
     public UserPreference getApplicationPreference() {
         if (applicationPreference == null) {
@@ -1516,4 +1505,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         setApplicationPreference(institutionPreference);
     }
 
+    
+    
 }

@@ -31,10 +31,6 @@
                                             var="myItem" itemValue="#{myItem}" 
                                             itemLabel="#{myItem.bhtNo}" 
                                             size="30"  >
-                                <p:ajax event="itemSelect" 
-                                        process="@this" 
-                                        update="@all" 
-                                        listener="#{bhtSummeryFinalizedController.createTablesFinalized()}"/>
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
@@ -54,9 +50,13 @@
                                     <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
                                 </p:column>
                             </p:autoComplete>   
+
+                            <p:commandButton ajax="false" value="Display" action="#{bhtSummeryFinalizedController.createTablesFinalized()}" >
+                            </p:commandButton>
+
                             <h:panelGroup id="panSearch2">
                                 <in:bhtDetail admission="#{bhtSummeryFinalizedController.patientEncounter}"/>
-                            </h:panelGroup>                           
+                            </h:panelGroup> 
                         </p:panel>
 
 
@@ -506,22 +506,22 @@
                                         <h:outputLabel value="Created At"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{bi.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{bi.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" 
                                                        value="#{bi.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
 
                                 <p:column headerText="Billed By" exportable="false" >
                                     <f:facet name="header">
-                                    <h:outputLabel value="Billed By"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Billed By"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{bi.bill.cancelled}" >
@@ -533,8 +533,8 @@
                                 </p:column>   
                                 <p:column headerText="Edited" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Edited"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Edited"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{bi.bill.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
                                         <h:outputLabel style="color: #008000;" 
@@ -545,14 +545,14 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bi.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Checked" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Checked"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Checked"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{bi.bill.checkedBy ne null}" >
 
                                         <h:outputLabel style="color: #008000;" 
@@ -563,7 +563,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bi.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -619,14 +619,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{bf.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{bf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{bi.bill.cancelled}" 
                                                        value="#{bf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -705,14 +705,14 @@
 
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{iss.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
                                                        value="#{iss.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -738,7 +738,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -753,7 +753,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -771,7 +771,7 @@
                                              cellFontStyle="NORMAL"  
                                              fontName="Courier New"  />
                             </p:commandButton>
-                            
+
                             <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                          sortBy="#{iss.bill.deptId}"
                                          rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
@@ -847,25 +847,25 @@
 
                                 <p:column headerText="Created At" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Created At"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Created At"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{iss.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
                                                        value="#{iss.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
 
                                 <p:column headerText="Billed By" exportable="false" >
                                     <f:facet name="header">
-                                    <h:outputLabel value="Billed By"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Billed By"/> 
+                                    </f:facet>
                                     <h:outputLabel value="#{iss.bill.creater.webUserPerson.name}"/>     
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >
@@ -877,8 +877,8 @@
                                 </p:column>   
                                 <p:column headerText="Edited" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Edited"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Edited"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{iss.bill.editor ne null}" >
                                         <h:outputLabel style="color: #008000;" value="Edited By " />
                                         <h:outputLabel style="color: #008000;" 
@@ -889,14 +889,14 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
                                 <p:column headerText="Checked" exportable="false">
                                     <f:facet name="header">
-                                    <h:outputLabel value="Checked"/> 
-                                </f:facet>
+                                        <h:outputLabel value="Checked"/> 
+                                    </f:facet>
                                     <h:panelGroup  rendered="#{iss.bill.checkedBy ne null}" >
 
                                         <h:outputLabel style="color: #008000;" 
@@ -907,7 +907,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{iss.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -955,14 +955,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{bil.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{bil.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{bil.cancelled}" 
                                                        value="#{bil.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -988,7 +988,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bil.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1003,7 +1003,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{bil.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -1048,14 +1048,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{pf.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                        value="#{pf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1081,7 +1081,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1096,7 +1096,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -1145,14 +1145,14 @@
                                 </p:column>
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{pf.bill.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                        value="#{pf.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1178,7 +1178,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1193,7 +1193,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{pf.bill.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>
@@ -1240,14 +1240,14 @@
                                 </p:column>     
                                 <p:column style="text-align: center;" headerText="Created At" exportable="false">
                                     <h:outputLabel  value="#{p.createdAt}">
-                                        <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                        value="#{p.cancelledBill.createdAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1273,7 +1273,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.editedAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -1288,7 +1288,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.checkeAt}" >
-                                            <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>

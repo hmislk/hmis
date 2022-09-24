@@ -75,7 +75,7 @@
                                     <h:outputText  value="#{doctorController.current.creater.webUserPerson.name}" />
                                     <h:outputText  value="Created At" />
                                     <h:outputText  value="#{doctorController.current.createdAt}" >
-                                        <f:convertDateTime  pattern="yyyy MM dd hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="yyyy MM dd hh:mm:ss a" ></f:convertDateTime>
                                     </h:outputText>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">

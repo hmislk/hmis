@@ -121,7 +121,7 @@
 
                             <p:column headerText="Discharged At" >
                                 <h:outputLabel value="#{bf.bill.patientEncounter.dateOfDischarge}" >
-                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
                             </p:column>
 

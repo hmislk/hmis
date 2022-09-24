@@ -73,11 +73,11 @@
                                     <br/>
                                     <p:outputLabel value="Salary Date - From : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryFromDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <p:outputLabel value="To : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryToDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <br/>
                                     <p:outputLabel value="OT Date - From : " />

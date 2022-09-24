@@ -125,7 +125,7 @@
                                             <p:outputLabel value="Date of Birth" />
                                         </f:facet>
                                         <h:outputLabel value="#{p.person.dob}" >
-                                            <f:convertDateTime pattern="dd MM yyyy"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column sortBy="#{p.createdAt}" style="min-width: 160px">

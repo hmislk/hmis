@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div style="position: fixed; bottom: 10px; right: 10px; " class="nonPrintBlock" >
+            <p:clock pattern="hh:mm:ss a - EEEE - dd MMMM yyyy" mode="server" timeZone="Asia/Colombo"  />  
+            <p:outputLabel rendered="false" value="#{sessionController.loggedPreference.id}" ></p:outputLabel>
+            <p:spacer width="10" height="1" rendered="true" ></p:spacer>
+            <p:outputLabel rendered="false" value="#{sessionController.userPreference.id}" ></p:outputLabel>
+        </div>
+
+    </cc:implementation>
+</html>

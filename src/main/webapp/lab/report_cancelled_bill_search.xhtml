@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel header="Search Cancelled Bills of Approved Reports" >
+
+                        <h:panelGrid columns="2" >
+
+                            <h:outputLabel value="From Date"/>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                            </p:calendar>
+
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                            </p:calendar>
+
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Search"
+                                action="#{searchController.searchApprovedReportsWithCancelledOrReturnedBills()}" 
+                                />
+                            <p:commandButton ajax="false" value="Download" >
+                                <p:dataExporter target="tbl" type="xls" fileName="Cancelled Bills for Approved Reports" >
+                                </p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+                        <p:dataTable  id="tbl" 
+                                      value="#{searchController.patientReports}" 
+                                      var="pi" 
+                                      rowIndexVar="i" 
+
+                                      rows="10"
+                                      paginator="true"
+                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                      rowsPerPageTemplate="10, 20, 50, 100"
+
+                                      >
+
+
+                            <p:column  headerText="Bill No" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.insId}"  >
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="Client" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.patient.person.nameWithTitle}" >
+                                </h:outputLabel>
+                            </p:column>
+
+
+                            <p:column  headerText="Bill Date" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.billDate}"  >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy"/>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column  headerText="Billed By" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.creater.webUserPerson.name}"  >
+                                </h:outputLabel>
+                            </p:column>
+                            
+                            <p:column  headerText="Approved at" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.approveAt}"  >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy hh:mm"/>
+                                </h:outputLabel>
+                            </p:column>
+                            
+                            <p:column  headerText="Cancelled" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.cancelled?'Yes':'No'}"  >
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column  headerText="Cancelled By" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.cancelledBill.creater.webUserPerson.name}"  >
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column  headerText="Cancelled at" styleClass="alignTop" >
+                                <h:outputLabel value="#{pi.patientInvestigation.billItem.bill.cancelledBill.billTime}"  >
+                                    <f:convertDateTime pattern="dd/MMM/yyyy hh:mm"/>
+                                </h:outputLabel>
+                            </p:column>
+
+
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

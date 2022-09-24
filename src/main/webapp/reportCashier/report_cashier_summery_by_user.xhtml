@@ -687,11 +687,11 @@
 
                             <h:outputLabel value="From Time " />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                             </h:outputLabel>
                             <h:outputLabel value="To Time " />
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="HH:mm:ss a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                             </h:outputLabel>
                         </h:panelGrid>
 

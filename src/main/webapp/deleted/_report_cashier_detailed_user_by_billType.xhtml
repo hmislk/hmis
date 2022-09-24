@@ -82,13 +82,13 @@
 
                         <h:outputLabel value="From"  />
                         <h:outputLabel  value="#{commonReport.fromDate}" >
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                         </h:outputLabel>
                         <p:spacer width="50" height="0"/>
                         <h:outputLabel value="To" />
                         <h:outputLabel  value="#{commonReport.toDate}" >
 
-                            <f:convertDateTime pattern="dd MM yyyy"/>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                         </h:outputLabel>
 
                     </h:panelGrid>
@@ -100,12 +100,12 @@
 
                             <h:outputLabel value="Cashier Session Detailed Report From " class="noPrintButton"/>                            
                             <h:outputLabel value="#{commonReport.fromDate}" class="noPrintButton">
-                                <f:convertDateTime pattern="dd MM yyyy"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                             </h:outputLabel>
 
                             <h:outputLabel value=" To" class="noPrintButton" />
                             <h:outputLabel value="#{commonReport.toDate}" class="noPrintButton">
-                                <f:convertDateTime pattern="dd MM yyyy"/>  
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />  
                             </h:outputLabel>
 
                             <br/>
@@ -261,7 +261,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Cancelled Id" >
@@ -395,7 +395,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -534,7 +534,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>                        
                         <p:column headerText="Id" >
@@ -589,7 +589,7 @@
                                 <h:outputLabel value="PaymentsCancel" />
                             </f:facet>
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -648,7 +648,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b4.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -731,7 +731,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b4.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
 
                         </p:column>
@@ -821,7 +821,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -908,7 +908,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1014,7 +1014,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1100,7 +1100,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b7.createdAt}" >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 
@@ -1206,7 +1206,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>                        
                         <p:column headerText="Id" >
@@ -1262,7 +1262,7 @@
                                 <h:outputLabel value="Time"/>
                             </f:facet>
                             <h:outputLabel value="#{b.createdAt}"  >
-                                <f:convertDateTime pattern="hh:mm a"/>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                             </h:outputLabel>
                         </p:column>
 

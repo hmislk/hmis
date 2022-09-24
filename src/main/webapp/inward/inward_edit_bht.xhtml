@@ -45,16 +45,38 @@
                         <h:panelGrid id="panSearch2" columns="2" style="min-width: 100%;" >
                             <p:panel>                                
                                 <p:panel header="Admission">
+                                    <p:panelGrid columns="7" >
+                                        <p:outputLabel  value="Date of Admission"  />
+                                        <p:spacer height="1" width="10"></p:spacer>
+                                        <p:outputLabel  value="BHT No(full)"  />
+                                        <p:spacer height="1" width="10"></p:spacer>
+                                        <p:outputLabel  value="Local/Foreigner"  />
+                                        <p:spacer height="1" width="10"></p:spacer>
+                                        <p:outputLabel  value="Claimable/Non-Claimable"  />
 
-                                    <p:outputLabel  value="Date of Admission"  />
-                                    <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
-                                        <f:ajax event="dateSelect" execute="@this" />
-                                    </p:calendar>
-                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
-                                                             itemLabel="Mark as Foreigner"/>
 
-                                    <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
+                                        
+                                        <p:calendar  value="#{bhtEditController.current.dateOfAdmission}" navigator="true" pattern="dd/MM/yyyy hh mm ss a" >
+                                            <f:ajax event="dateSelect" execute="@this" />
+                                        </p:calendar>
+
+
+                                        <p:spacer height="1" width="10"></p:spacer>
+                                        <p:inputText value="#{bhtEditController.current.bhtNo}" ></p:inputText>
+                                        
+                                        <p:spacer height="1" width="10"></p:spacer>
+                                        <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
+                                                                 itemLabel="Foreigner"/>
+
+                                        <p:spacer height="1" width="10"></p:spacer>
+                                        <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
                                                              itemLabel="Claimable"/>
+                                    </p:panelGrid>
+
+
+
+
+                                    
                                 </p:panel>
 
                                 <p:panel header="Patient Detail">  

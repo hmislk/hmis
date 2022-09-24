@@ -67,7 +67,7 @@ public class SmsController implements Serializable {
     public SmsController() {
     }
 
-    private void sendSmsAwaitingToSendInDatabase() {
+    public void sendSmsAwaitingToSendInDatabase() {
         String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
         List<Sms> smses = getSmsFacade().findBySQL(j);
 //        if (false) {
@@ -79,11 +79,11 @@ public class SmsController implements Serializable {
             e.setSentSuccessfully(Boolean.TRUE);
             getSmsFacade().edit(e);
 
-            sendSms(e.getReceipientNumber(), e.getSendingMessage(),
+            boolean sentSuccessfully = sendSms(e.getReceipientNumber(), e.getSendingMessage(),
                     e.getInstitution().getSmsSendingUsername(),
                     e.getInstitution().getSmsSendingPassword(),
                     e.getInstitution().getSmsSendingAlias());
-            e.setSentSuccessfully(true);
+            e.setSentSuccessfully(sentSuccessfully);
             e.setSentAt(new Date());
             getSmsFacade().edit(e);
         }
@@ -143,10 +143,9 @@ public class SmsController implements Serializable {
 
     public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
-        System.out.println("number = " + number);
-        System.out.println("message = " + message);
-        System.out.println("username = " + username);
-        System.out.println("password = " + password);
+        //System.out.println("number = " + number);
+        //System.out.println("message = " + message);
+        //System.out.println("username = " + username);
 
         Map m = new HashMap();
         m.put("userName", username);
@@ -155,7 +154,7 @@ public class SmsController implements Serializable {
         m.put("number", number);
         m.put("message", message);
 
-        String res = executePost("http://localhost:7070/sms/faces/index.xhtml", m);
+        String res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
         if (res == null) {
             return false;
         } else if (res.toUpperCase().contains("200")) {
@@ -168,10 +167,9 @@ public class SmsController implements Serializable {
 
     public boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
 
-        System.out.println("number = " + number);
-        System.out.println("message = " + message);
-        System.out.println("username = " + username);
-        System.out.println("password = " + password);
+        //System.out.println("number = " + number);
+        //System.out.println("message = " + message);
+        //System.out.println("username = " + username);
 
         Map m = new HashMap();
         m.put("userName", username);
@@ -225,7 +223,6 @@ public class SmsController implements Serializable {
 
     public void createSmsTable() {
         long lng = getCommonFunctions().getDayCount(getReportKeyWord().getFromDate(), getReportKeyWord().getToDate());
-        System.out.println("lng = " + lng);
 
         if (Math.abs(lng) > 2 && !getReportKeyWord().isAdditionalDetails()) {
             UtilityController.addErrorMessage("Date Range is too Long");

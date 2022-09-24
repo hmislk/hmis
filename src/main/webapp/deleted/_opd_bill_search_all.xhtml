@@ -55,7 +55,7 @@
                             <p:column headerText="Bill Date" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{bill.billDate}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -63,7 +63,7 @@
                             <p:column headerText="Bill Time" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{bill.billTime}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>

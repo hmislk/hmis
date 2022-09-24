@@ -295,7 +295,7 @@
                                     <h:outputLabel value="Compleated At"/>
                                 </f:facet>
                                 <p:outputLabel value="#{i.completedAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                 </p:outputLabel>
                                 <!--<p:calendar value="#{i.completedAt}" pattern="dd MM yyyy" />-->
                             </p:column>

@@ -19,7 +19,7 @@
             </f:facet> 
             <p:column headerText="Time"   >
                 <h:outputLabel value="#{b1.createdAt}" >
-                    <f:convertDateTime pattern="hh:mm a"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Cancelled Id" >

@@ -101,7 +101,6 @@ public class DealorDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount() + b.getTmpReturnTotal());
 
-            System.err.println("DayCount " + dayCount);
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);

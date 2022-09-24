@@ -96,8 +96,9 @@
                                     </p:column>
 
                                     <p:column headerText="Count" sortBy="#{bs.count}" style="text-align: right; padding-right: 20px;">
-                                        <p:outputLabel value="#{bs.count}" >
-                                        </p:outputLabel>
+                                        <p:commandLink target="_blank" value="#{bs.count}" action="#{billSearch.listBillsFromBillTypeSummery()}">
+                                            <f:setPropertyActionListener value="#{bs}" target="#{billSearch.billSummery}" ></f:setPropertyActionListener>
+                                        </p:commandLink>
                                     </p:column>
 
                                     <p:column headerText="Total" sortBy="#{bs.total}" style="text-align: right; padding-right: 20px;">

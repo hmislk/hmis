@@ -67,7 +67,7 @@
 
                             <p:column headerText="Billed At"  sortBy="#{bb.createdAt}" filterBy="#{bb.createdAt}" filterMatchMode="contains"  >   
                                 <h:outputLabel value="#{bb.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yy" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="dd MMM yy hh:mm" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 

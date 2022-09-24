@@ -90,12 +90,12 @@
                                 </p:column>
                                 <p:column headerText="DOB" >
                                     <p:outputLabel value="#{s.person.dob}" >
-                                        <f:convertDateTime pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DO Join" >
                                     <p:outputLabel value="#{s.dateJoined}" >
-                                        <f:convertDateTime pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="DEPARTMENT" >

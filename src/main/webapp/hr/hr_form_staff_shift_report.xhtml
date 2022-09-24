@@ -76,7 +76,7 @@
                                                       or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
                             <f:facet name="header">
                                 <h:outputLabel value="#{data.date}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column headerText="Shift Name" styleClass="singleLine">
@@ -88,12 +88,12 @@
 
                             <p:column headerText="Shift Start">
                                 <h:outputLabel value="#{sts.shiftStartTime}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Shift End Time">
                                 <h:outputLabel value="#{sts.shiftEndTime}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
 
                             </p:column>

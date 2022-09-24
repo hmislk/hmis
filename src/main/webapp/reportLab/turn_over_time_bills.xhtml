@@ -89,17 +89,17 @@
                             </p:column>
                             <p:column headerText="Colleted At" >
                                 <p:outputLabel value="#{pi.sampledAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Approved At" >
                                 <p:outputLabel value="#{pi.approveAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Printed At" >
                                                             <p:outputLabel value="#{pi.printingAt}" >
-                                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                                             </p:outputLabel>
                                                         </p:column>-->
                             <p:column headerText="Turn Around time" >

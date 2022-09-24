@@ -204,10 +204,9 @@ public class StoreAmpController implements Serializable {
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().equals("")) {
-            System.out.println("amp.getCode() = " + amp.getCode());
+            //System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(getCurrent().getCategory().getCode().length());
-            System.out.println("s = " + s);
 
             int i = Integer.valueOf(s);
             i++;

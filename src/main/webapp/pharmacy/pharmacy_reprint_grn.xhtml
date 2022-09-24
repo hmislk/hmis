@@ -7,14 +7,14 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ph="http://java.sun.com/jsf/composite/pharmacy">
 
-    <h:body>
+    <h:body style="width: 100%; " >
 
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
                 <h:form>
 
-                    <p:panel  >
+                    <p:panelGrid columns="1" style="width: 100%;" >
                         <f:facet name="header" >
                             <h:outputLabel value="GRN Reprint" ></h:outputLabel>
                             <hr/>
@@ -28,39 +28,45 @@
                         </f:facet>
 
 
-                    </p:panel>
 
+                        <div style="width: 100%;">
 
+                            <h:panelGroup id="gpBillPreview" >
 
+                                <h:panelGroup  >
+                                    <ph:grn bill="#{pharmacyBillSearch.bill}"/>
+                                </h:panelGroup>
 
-                    <h:panelGroup >
+<!--                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                                    <ph:grn_detail bill="#{pharmacyBillSearch.bill}"/>
+                                </h:panelGroup>
 
-                        <h:panelGroup id="gpBillPreview" >
-<!--                            <ph:grn bill="#{pharmacyBillSearch.bill}" />-->
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                                    <ph:grn_wh bill="#{pharmacyBillSearch.bill}"/>
+                                </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <ph:grn bill="#{pharmacyBillSearch.bill}"/>
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                                    <ph:grn_detail_wh bill="#{pharmacyBillSearch.bill}"/>
+                                </h:panelGroup>-->
+
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                                <ph:grn_detail bill="#{pharmacyBillSearch.bill}"/>
+                            <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
+
+                                <ph:grn_edit bill="#{pharmacyBillSearch.bill}" rendered="false" />
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                <ph:grn_wh bill="#{pharmacyBillSearch.bill}"/>
-                            </h:panelGroup>
+                        </div>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                                <ph:grn_detail_wh bill="#{pharmacyBillSearch.bill}"/>
-                            </h:panelGroup>
 
-                        </h:panelGroup>
 
-                        <h:panelGroup  rendered="#{webUserController.hasPrivilege('PharmacyGoodReceiveEdit')}" >
 
-                            <ph:grn_edit bill="#{pharmacyBillSearch.bill}" rendered="false" />
-                        </h:panelGroup>
-                    </h:panelGroup>
+                    </p:panelGrid>
+
+
+
+
+
 
 
                 </h:form>

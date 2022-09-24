@@ -566,7 +566,6 @@ public class LabReportSearchByDepartmentController implements Serializable {
     }
 
     public List<Bill> getLabBillsOwn() {
-        System.out.println("inside = ");
         labBills = new ArrayList<>();
 
         BillType billType[] = {BillType.OpdBill, BillType.ChannelCash, BillType.ChannelPaid};

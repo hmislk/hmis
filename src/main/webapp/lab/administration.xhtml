@@ -48,6 +48,20 @@
                                      <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List by Category" action="/lab/investigation_list_by_category"  />
                                 </h:panelGrid>
                             </p:tab>
+                            <p:tab title="SMS">
+                                <h:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
+                                    <p:outputLabel value="Number" ></p:outputLabel>
+                                    <p:inputText value="#{patientReportController.smsNumber}" ></p:inputText>
+                                    
+                                    <p:outputLabel value="Message" ></p:outputLabel>
+                                    <p:inputText value="#{patientReportController.smsMessage}" ></p:inputText>
+                                    
+                                    
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Send" 
+                                                      action="#{patientReportController.sendSms()}" />
+                                
+                                </h:panelGrid>
+                            </p:tab>
 
                             <p:tab title="Setup">
                                 <h:panelGrid columns="1" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">

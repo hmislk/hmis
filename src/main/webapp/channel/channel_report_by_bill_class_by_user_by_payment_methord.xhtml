@@ -79,7 +79,7 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" >
@@ -202,7 +202,7 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}">
@@ -325,7 +325,7 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}">

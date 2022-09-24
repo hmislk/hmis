@@ -977,7 +977,6 @@ public class SalaryCycleController implements Serializable {
                 }
             }
             for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
-                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
                     s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
                 }
@@ -1159,7 +1158,6 @@ public class SalaryCycleController implements Serializable {
                 }
             }
             for (StaffSalaryComponant p : s.getStaffSalaryComponants()) {
-                System.out.println("p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
                 if (p.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() == PaysheetComponentType.BasicSalary) {
                     s.setBasicVal(p.getStaffPaysheetComponent().getStaffPaySheetComponentValue());
                 }

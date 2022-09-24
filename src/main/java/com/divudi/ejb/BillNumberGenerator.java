@@ -67,7 +67,7 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(ins, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-//        System.out.println("b = " + b);
+//        //System.out.println("b = " + b);
 
         result.append(ins.getInstitutionCode());
         result.append(billNumberSuffix.getSuffix());
@@ -207,7 +207,7 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(dep, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-//        System.out.println("b = " + b);
+//        //System.out.println("b = " + b);
         result.append(dep.getDepartmentCode());
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
@@ -688,8 +688,8 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("dep", department);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
-//        System.out.println("billNumber = " + billNumber);
-//        System.out.println("billType = " + billType);
+//        //System.out.println("billNumber = " + billNumber);
+//        //System.out.println("billType = " + billType);
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
                     + " Bill b "
@@ -705,8 +705,7 @@ public class BillNumberGenerator {
             Bill bill = billFacade.findFirstBySQL(sql, hm);
 
             if (bill != null) {
-                System.out.println("bill.getInsId() = " + bill.getInsId());
-                System.out.println("bill.getDeptId() = " + bill.getDeptId());
+                //System.out.println("bill.getInsId() = " + bill.getInsId());
                 String[] parts = bill.getDeptId().split("/");
                 billNumber = new BillNumber();
                 billNumber.setBillType(billType);
@@ -838,7 +837,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
-//        System.out.println("billNumber = " + billNumber);
+//        //System.out.println("billNumber = " + billNumber);
 
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
@@ -1210,7 +1209,7 @@ public class BillNumberGenerator {
 //        }
 //        String sql = "SELECT count(b) FROM CancelledBill b where "
 //                + " b.retired=false AND b.department=:dp AND b.billType= :btp";
-//        ////System.out.println("sql");
+//        //////System.out.println("sql");
 //        String result;
 //        HashMap h = new HashMap();
 //        h.put("btp", type);
@@ -1232,7 +1231,7 @@ public class BillNumberGenerator {
 //        }
 //        String sql = "SELECT count(b) FROM CancelledBill b where b.retired=false "
 //                + " AND b.department=:dep AND b.toDepartment=:tDep";
-//        ////System.out.println("sql");
+//        //////System.out.println("sql");
 //        String result;
 //        HashMap hm = new HashMap();
 //        hm.put("dep", dep);
@@ -1270,7 +1269,7 @@ public class BillNumberGenerator {
 //
 //        String sql = "SELECT count(b) FROM RefundBill b where b.retired=false "
 //                + " AND b.department=:dep AND b.toDepartment=:tDep";
-//        ////System.out.println("sql");
+//        //////System.out.println("sql");
 //        String result;
 //        HashMap hm = new HashMap();
 //        hm.put("dep", dep);
@@ -1311,9 +1310,9 @@ public class BillNumberGenerator {
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
         dd = dd + 1;
-        //System.out.println("dd = " + dd);
+        ////System.out.println("dd = " + dd);
         result = "MS" + dd.toString();
-        //System.out.println("result = " + result);
+        ////System.out.println("result = " + result);
         return result;
 
     }
@@ -1325,9 +1324,9 @@ public class BillNumberGenerator {
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
         dd = dd + 1;
-        //System.out.println("dd = " + dd);
+        ////System.out.println("dd = " + dd);
         result = "ASS" + dd.toString();
-        //System.out.println("result = " + result);
+        ////System.out.println("result = " + result);
         return result;
 
     }
@@ -1346,7 +1345,7 @@ public class BillNumberGenerator {
 //    }
     public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
         if (ins == null) {
-            //System.out.println("Ins null");
+            ////System.out.println("Ins null");
             return "";
         }
 
@@ -1371,25 +1370,25 @@ public class BillNumberGenerator {
 //            result = ins.getInstitutionCode() + "/" + 1;
 //        }
 //        return result;
-        //System.out.println("In Bill Num Gen");
+        ////System.out.println("In Bill Num Gen");
         String result;
         if (b != null && b != 0) {
             b = b + 1;
             if (toDept != null) {
                 result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
-                //System.out.println("result = " + result);
+                ////System.out.println("result = " + result);
             } else {
                 result = ins.getInstitutionCode() + "/" + b;
-                //System.out.println("result = " + result);
+                ////System.out.println("result = " + result);
             }
             return result;
         } else {
             if (toDept != null) {
                 result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
-                //System.out.println("result = " + result);
+                ////System.out.println("result = " + result);
             } else {
                 result = ins.getInstitutionCode() + "/" + 1;
-                //System.out.println("result = " + result);
+                ////System.out.println("result = " + result);
             }
             return result;
         }
@@ -1430,7 +1429,7 @@ public class BillNumberGenerator {
 
     public Long inventoryItemSerialNumberGenerater(Institution ins, Item item) {
         if (ins == null) {
-            //System.out.println("Ins null");
+            ////System.out.println("Ins null");
             return 0l;
         }
         String sql = "SELECT count(b) FROM BillItem b where "
@@ -1444,13 +1443,13 @@ public class BillNumberGenerator {
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        //System.out.println("In Bill Num Gen" + b);
+        ////System.out.println("In Bill Num Gen" + b);
         return b;
     }
 
     public Long inventoryItemSerialNumberGeneraterForYear(Institution ins, Item item) {
         if (ins == null) {
-            //System.out.println("Ins null");
+            ////System.out.println("Ins null");
             return 0l;
         }
         Calendar c = Calendar.getInstance();
@@ -1475,7 +1474,7 @@ public class BillNumberGenerator {
         hm.put("td", td);
 
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        //System.out.println("In Bill Num Gen" + b);
+        ////System.out.println("In Bill Num Gen" + b);
         return b;
     }
 

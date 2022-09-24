@@ -55,12 +55,12 @@
 
                 <h:outputLabel value="Cancel Date  " />
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                 </h:outputLabel>
 
                 <h:outputLabel value="G.R.N.Date  "/>
                 <h:outputLabel value="#{cc.attrs.bill.billedBill.createdAt}">
-                    <f:convertDateTime pattern="dd MM yyyy"/>
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                 </h:outputLabel >
 
                 <h:outputLabel value="Cancel Time  " />

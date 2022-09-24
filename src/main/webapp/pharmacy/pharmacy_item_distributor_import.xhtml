@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core">
+
+    <ui:define name="content">
+        <h:form enctype="multipart/form-data">
+            <h:outputLabel value="Import Item Distributors" ></h:outputLabel>
+            <p>Please make sure the following order of Columns.</p>
+            <p>Leave First Row for Row Headings.</p>
+            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+            <p:panelGrid columns="14" style="border: 1px solid blue;" >
+                <h:outputLabel value ="0. Item Name" ></h:outputLabel>
+                <h:outputLabel value ="1. Distributor"></h:outputLabel>
+            </p:panelGrid>
+
+            <p:fileUpload value="#{pharmacyItemExcelManager.file}" mode="simple"/>
+            <h:commandButton value="Submit" action="#{pharmacyItemExcelManager.importItemDistributors()}"/>
+            
+            
+        </h:form>
+
+       
+
+    </ui:define>
+
+
+</ui:composition>

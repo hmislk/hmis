@@ -42,7 +42,6 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Table(name = "bill")
 @NamedQueries({
     @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b")
     ,
@@ -600,11 +599,11 @@ public class Bill implements Serializable {
     }
 
     public double getDiscountPercentPharmacy() {
-        //System.out.println("getting discount percent");
-//        //System.out.println("bill item"+getBillItems());
-//        //System.out.println(getBillItems().get(0).getPriceMatrix());
+        ////System.out.println("getting discount percent");
+//        ////System.out.println("bill item"+getBillItems());
+//        ////System.out.println(getBillItems().get(0).getPriceMatrix());
         if (!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() != null) {
-            //System.out.println("sys inside");
+            ////System.out.println("sys inside");
             discountPercent = getBillItems().get(0).getPriceMatrix().getDiscountPercent();
         }
 

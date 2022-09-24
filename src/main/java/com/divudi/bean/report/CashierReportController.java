@@ -152,15 +152,15 @@ public class CashierReportController implements Serializable {
     private BillsTotals createRow(BillType billType, String suffix, Bill bill, WebUser webUser) {
         BillsTotals newB = new BillsTotals();
         newB.setName(billType.getLabel() + " " + suffix);
-        newB.setCard(calTotalValueOwn(webUser, bill, PaymentMethod.Card, billType));
+        newB.setCard(calTotalValueForLoggedDepartment(webUser, bill, PaymentMethod.Card, billType));
         finalCardTot += newB.getCard();
-        newB.setCash(calTotalValueOwn(webUser, bill, PaymentMethod.Cash, billType));
+        newB.setCash(calTotalValueForLoggedDepartment(webUser, bill, PaymentMethod.Cash, billType));
         finalCashTot += newB.getCash();
-        newB.setCheque(calTotalValueOwn(webUser, bill, PaymentMethod.Cheque, billType));
+        newB.setCheque(calTotalValueForLoggedDepartment(webUser, bill, PaymentMethod.Cheque, billType));
         finalChequeTot += newB.getCheque();
-        newB.setCredit(calTotalValueOwn(webUser, bill, PaymentMethod.Credit, billType));
+        newB.setCredit(calTotalValueForLoggedDepartment(webUser, bill, PaymentMethod.Credit, billType));
         finalCreditTot += newB.getCredit();
-        newB.setSlip(calTotalValueOwn(webUser, bill, PaymentMethod.Slip, billType));
+        newB.setSlip(calTotalValueForLoggedDepartment(webUser, bill, PaymentMethod.Slip, billType));
         finalSlipTot += newB.getSlip();
 
         return newB;
@@ -226,6 +226,7 @@ public class CashierReportController implements Serializable {
             double uCredit = 0;
             double uSlip = 0;
             for (BillType btp : getEnumController().getCashFlowBillTypes()) {
+                
                 BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
 
                 if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
@@ -1144,6 +1145,39 @@ public class CashierReportController implements Serializable {
         temMap.put("bill", billClass.getClass());
         temMap.put("cret", w);
         temMap.put("ins", getSessionController().getInstitution());
+
+        return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+    
+    
+   
+    private double calTotalValueForLoggedDepartment(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
+////        int day= Calendar.HOUR_OF_DAY(getToDate())- Calendar.DATE(getFromDate()) ;
+//        Date a;
+//        a = Calendar.Date.getToDate()-Date.getFromDate();
+//        int day2;
+//        day2 = Calendar.DAY_OF_YEAR(getToDate());
+//        if(day2>=2){
+//                    
+//            JsfUtil.addErrorMessage("Please Enter Blow 2 Days");
+//            return 0;
+//        }
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select sum(b.netTotal+b.vat) from Bill b where type(b)=:bill and b.creater=:cret and "
+                + " b.paymentMethod= :payMethod  and b.department=:dep"
+                + " and b.retired=false "
+                + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate ";
+
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("billTp", billType);
+        temMap.put("payMethod", pM);
+        temMap.put("bill", billClass.getClass());
+        temMap.put("cret", w);
+        temMap.put("dep", getSessionController().getDepartment());
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 

@@ -91,7 +91,7 @@
                                 </p:column>
                                 <p:column >
                                     <h:outputLabel value="#{c.billFee.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{c.billFee.retired}" >
@@ -133,7 +133,7 @@
                                 </p:column>
                                 <p:column >
                                     <h:outputLabel value="#{ti.billFee.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{ti.billFee.retired}" >
@@ -207,7 +207,7 @@
                                 </p:column> 
                                 <p:column headerText="Bill At">
                                     <h:outputLabel value="#{iss.createdAt}">
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{iss.bill.cancelled}" >

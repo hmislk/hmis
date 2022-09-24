@@ -50,6 +50,7 @@ public class Sms implements Serializable {
     private MessageType smsType;
     //Sending Properties
     private Boolean sentSuccessfully;
+    private boolean pending;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date sentAt;
     //Created Properties
@@ -266,6 +267,14 @@ public class Sms implements Serializable {
 
     public void setReceipientNumber(String receipientNumber) {
         this.receipientNumber = receipientNumber;
+    }
+
+    public boolean isPending() {
+        return pending;
+    }
+
+    public void setPending(boolean pending) {
+        this.pending = pending;
     }
 
 }

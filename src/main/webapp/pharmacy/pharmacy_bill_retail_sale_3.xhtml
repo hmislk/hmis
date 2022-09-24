@@ -167,7 +167,7 @@
                                             </p:column>
                                             <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime pattern="dd MM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                                                 </h:outputLabel>
 
                                             </p:column>
@@ -321,7 +321,7 @@
                                         </h:panelGroup>
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
-                                                         onclick="onSubmitButton();"
+                                                         
                                                          action="#{pharmacySaleController3.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
@@ -330,7 +330,7 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                                          ajax="false" action="pharmacy_bill_retail_sale_3"
-                                                         onclick="onSubmitButton();"
+                                                         
                                                          actionListener="#{pharmacySaleController3.resetAll()}"  ></p:commandButton>
 
 
@@ -527,7 +527,7 @@
 
                         <p:commandButton id="nullButton3" value="No Action"
                                          action="#" style="display: none;" ></p:commandButton>
-                        <p:defaultCommand  target="btnPrint" />  
+                        <!--<p:defaultCommand  target="btnPrint" />-->  
 
                         <div class="nonPrintBlock" >
                             <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
@@ -535,7 +535,7 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                              ajax="false" action="pharmacy_bill_retail_sale_3" 
-                                             onclick="onSubmitButton();"
+                                             
                                              actionListener="#{pharmacySaleController3.resetAll()}" ></p:commandButton>
 
                             <p:commandButton value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />

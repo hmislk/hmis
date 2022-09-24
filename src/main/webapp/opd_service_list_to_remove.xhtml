@@ -90,13 +90,13 @@
                                       sortBy="#{sv.createdAt}">
                                 
                                 <h:outputLabel value="#{sv.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Fee Date Created" sortBy="#{sv.createdAt}">
                                 <h:outputLabel value="#{sv.itemFee.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 

@@ -277,7 +277,7 @@ public class ApiInward {
                 + " order by pe.id desc";
         m.put("class", Admission.class);
         suggestions = getPatientEncounterFacade().findBySQL(sql, m, 20);
-//        System.out.println("1.suggestions.size() = " + suggestions.size());
+//        //System.out.println("1.suggestions.size() = " + suggestions.size());
 
         sql = "select pe from PatientEncounter pe where pe.retired=false "
                 + " and type(pe)=:class "
@@ -289,25 +289,25 @@ public class ApiInward {
 
         m.put("d", 0.1);
         List<PatientEncounter> temps = getPatientEncounterFacade().findBySQL(sql, m, 20);
-//        System.out.println("temps.size() = " + temps.size());
+//        //System.out.println("temps.size() = " + temps.size());
         List<PatientEncounter> removeTemps = new ArrayList<>();
         for (PatientEncounter p : temps) {
-//            System.out.println("p.getFinalBill().getNetTotal() = " + p.getFinalBill().getNetTotal());
-//            System.out.println("p.getFinalBill().getPaidAmount() = " + p.getFinalBill().getPaidAmount());
+//            //System.out.println("p.getFinalBill().getNetTotal() = " + p.getFinalBill().getNetTotal());
+//            //System.out.println("p.getFinalBill().getPaidAmount() = " + p.getFinalBill().getPaidAmount());
             double d = fetchCreditPaymentTotal(p);
             if (p.getFinalBill().getNetTotal() - (p.getFinalBill().getPaidAmount() + d) < 0.1) {
                 removeTemps.add(p);
             }
             p.getFinalBill().setPaidAmount(d + p.getFinalBill().getPaidAmount());
         }
-//        System.out.println("removeTemps.size() = " + removeTemps.size());
+//        //System.out.println("removeTemps.size() = " + removeTemps.size());
         temps.removeAll(removeTemps);
-//        System.out.println("temps.size() = " + temps.size());
+//        //System.out.println("temps.size() = " + temps.size());
 
         suggestions.addAll(temps);
-//        System.out.println("2.suggestions.size() = " + suggestions.size());
+//        //System.out.println("2.suggestions.size() = " + suggestions.size());
 //        for (PatientEncounter pe : suggestions) {
-//            System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
+//            //System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
 //        }
 
         return suggestions;
@@ -333,7 +333,7 @@ public class ApiInward {
         m.put("class", Admission.class);
         m.put("bht", bhtNo);
         List<PatientEncounter> temps = getPatientEncounterFacade().findBySQL(sql, m);
-//        System.out.println("1.temps.size() = " + temps.size());
+//        //System.out.println("1.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
         }
@@ -347,7 +347,7 @@ public class ApiInward {
 
         m.put("d", 0.1);
         temps = getPatientEncounterFacade().findBySQL(sql, m);
-//        System.out.println("2.temps.size() = " + temps.size());
+//        //System.out.println("2.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
         }
@@ -388,7 +388,7 @@ public class ApiInward {
     private BilledBill saveBill(BilledBill b, PaymentMethodData pmd) {
         getBillBeanController().setPaymentMethodData(b, b.getPaymentMethod(), pmd);
         Bill temp = findLastPaymentBill();
-//        System.out.println("temp = " + temp);
+//        //System.out.println("temp = " + temp);
         if (temp == null) {
             return null;
         }
@@ -461,18 +461,18 @@ public class ApiInward {
         m.put("class", Admission.class);
         m.put("bht", bht_no);
         PatientEncounter temp = getPatientEncounterFacade().findFirstBySQL(sql, m);
-//        System.out.println("temp = " + temp);
+//        //System.out.println("temp = " + temp);
         return temp;
     }
 
     private Institution fetchBank(Long id) {
-//        System.out.println("id = " + id);
+//        //System.out.println("id = " + id);
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
                 + " and i.id=" + id;
         Institution bank = getInstitutionFacade().findFirstBySQL(sql);
-//        System.out.println("bank = " + bank);
+//        //System.out.println("bank = " + bank);
         return bank;
     }
 
@@ -489,7 +489,7 @@ public class ApiInward {
 
         Bill b = getBillFacade().findFirstBySQL(sql, m);
 
-//        System.out.println("b = " + b);
+//        //System.out.println("b = " + b);
 
         return b;
     }
@@ -508,7 +508,7 @@ public class ApiInward {
 
         double d = getBillItemFacade().findDoubleByJpql(sql, m);
 
-//        System.out.println("d = " + d);
+//        //System.out.println("d = " + d);
 
         return d;
 

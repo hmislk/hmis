@@ -47,14 +47,14 @@
                               
                                 <p:column headerText="Starting Time">
                                     <h:outputLabel value="#{ss.startingTime}" rendered="#{ss.startingTime ne null}">
-                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                                     </h:outputLabel>
                                     
                                 </p:column>
                                 
                                 <p:column headerText="Ending Time">
                                     <h:outputLabel value="#{ss.endingTime}" rendered="#{ss.endingTime ne null}">
-                                        <f:convertDateTime pattern="hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
                                     </h:outputLabel>
                                     
                                 </p:column>

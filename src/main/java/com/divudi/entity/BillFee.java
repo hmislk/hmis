@@ -226,7 +226,7 @@ public class BillFee implements Serializable {
             this.feeValue = getFee().getFee();
 //            this.feeVatPlusValue = this.feeVat + this.feeValue;
         }
-        //    ////System.out.println("Setting fee value as " + feeValue);
+        //    //////System.out.println("Setting fee value as " + feeValue);
     }
 
     public void setFeeValueForDiscountAllowedAndUserChangable(boolean foriegn, double discountPercent) {

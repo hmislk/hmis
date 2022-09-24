@@ -282,7 +282,7 @@
 
                                                 <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
                                                                 value="#{billController.currentBillItem.item}" 
-                                                                completeMethod="#{itemController.completeOpdItemsByNamesAndCode}"
+                                                                completeMethod="#{itemController.completeOpdItems}"
                                                                 var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"
                                                                 size="10"  style="width: 400px;" maxResults="10" >
                                                     <p:column style="max-width: 200px;" headerText="Name">
@@ -336,7 +336,7 @@
                                                             <h:outputLabel value="#{billController.lastBillItem.item.name}" />
 
                                                             <h:outputLabel id="lblTemS" value="#{billController.sessionDate}" >
-                                                                <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
                                                             </h:outputLabel>
 
 

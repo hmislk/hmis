@@ -52,11 +52,11 @@
                                 <br/>
                                 <h:outputLabel value="From "/>
                                 <h:outputLabel value="#{billSearch.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - "/>
                                 <h:outputLabel value="#{billSearch.toDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                 </h:outputLabel>                                
                             </f:facet>
                             
@@ -91,7 +91,7 @@
                             <p:column headerText="Bill Date" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{bill.billDate}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -100,7 +100,7 @@
                             <p:column headerText="Bill Time" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{bill.billTime}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -164,7 +164,7 @@
                             <p:column headerText="Cancelled Time" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -173,7 +173,7 @@
                             <p:column headerText="Cancelled Date" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -189,7 +189,7 @@
                             <p:column headerText="Refunded Time" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="hh:mm a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -198,7 +198,7 @@
                             <p:column headerText="Refunded Date" >
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MM yyyy"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>

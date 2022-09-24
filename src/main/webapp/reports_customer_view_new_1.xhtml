@@ -59,18 +59,18 @@
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.collectingCentre}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                                            <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                             <f:convertDateTime pattern="hh mm ss a"/>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                                            <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                                            <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                             <f:convertDateTime pattern="hh mm ss a"/>
@@ -154,18 +154,18 @@
                                                             <f:convertDateTime pattern="hh mm ss a"/>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                                            <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.createdAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                             <f:convertDateTime pattern="hh mm ss a"/>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.sampledAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                                            <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.insId}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
 
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" style="color: #{myCli.cssColor}" escape="false" >
-                                                            <f:convertDateTime pattern="dd MM yyyy"></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                                                         </h:outputText>
                                                         <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.dataEntryAt}" style="color: #{myCli.cssColor}" escape="false" >
                                                             <f:convertDateTime pattern="hh mm ss a"/>
