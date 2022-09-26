@@ -331,6 +331,10 @@ public class PharmacyDealorBill implements Serializable {
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getCurrent(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
+        
+        if(getCurrent().getPaymentMethod()==PaymentMethod.Cheque){
+            
+        }
 
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;

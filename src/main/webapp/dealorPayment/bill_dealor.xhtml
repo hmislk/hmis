@@ -1,4 +1,4 @@
-d<?xml version='1.0' encoding='UTF-8' ?>
+<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -7,7 +7,8 @@ d<?xml version='1.0' encoding='UTF-8' ?>
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"                    
                 xmlns:bi="http://java.sun.com/jsf/composite/bill"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:bit="http://xmlns.jcp.org/jsf/composite/bill">
     <ui:define name="content">
         <h:panelGroup >
             <h:form  >
@@ -79,10 +80,10 @@ d<?xml version='1.0' encoding='UTF-8' ?>
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                <f:ajax event="itemSelect" execute="@this" 
-                                        render="netValue" 
-                                        listener="#{pharmacyDealorBill.selectListener()}"/>
+
                             </p:autoComplete>
+                            <p:commandButton ajax="false" value="Load"
+                                             action="#{pharmacyDealorBill.selectListener()}"/>
                             <p:inputText autocomplete="off" id="netValue" value="#{pharmacyDealorBill.currentBillItem.netValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
@@ -154,7 +155,7 @@ d<?xml version='1.0' encoding='UTF-8' ?>
                 <p:panel rendered="#{pharmacyDealorBill.printPreview}" >
                     <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
                     </p:commandButton>
-                    <bi:insRecieve billController ="#{pharmacyDealorBill}"  bill="#{pharmacyDealorBill.current}" dup="false" rendered="false"/>                       
+                    <bit:dealerPayment bill="#{pharmacyDealorBill.current}" billController ="#{pharmacyDealorBill}" dup="false" />
                 </p:panel>
 
             </h:form>
