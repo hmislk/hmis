@@ -169,19 +169,31 @@ public class Finance {
             jSONObject.put("type", bill.getBillClassType().name());
             jSONObject.put("categoty", bill.getBillType().name());
 
-            jSONObject.put("gross_total", bill.getCreatedAt());
-            jSONObject.put("discount", bill.getCreater().getWebUserPerson().getName());
-            jSONObject.put("net_total", bill.getBillClassType().name());
-            jSONObject.put("payment_method", bill.getBillType().name());
-            jSONObject.put("discount_scheme", bill.getCreatedAt());
+            jSONObject.put("gross_total", bill.getTotal());
+            jSONObject.put("discount", bill.getDiscount());
+            jSONObject.put("net_total", bill.getNetTotal());
+            jSONObject.put("payment_method", bill.getPaymentMethod().name());
+            jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
 
-            jSONObject.put("institution", bill.getInstitution().getName());
-            jSONObject.put("department", bill.getCreater().getWebUserPerson().getName());
-            jSONObject.put("from_institution", bill.getBillClassType().name());
-            jSONObject.put("from_department", bill.getBillClassType().name());
+            if (bill.getInstitution() != null) {
+                jSONObject.put("institution", bill.getInstitution().getName());
+            }
+            if (bill.getDepartment() != null) {
+                jSONObject.put("department", bill.getDepartment().getName());
+            }
+            if (bill.getFromInstitution() != null) {
+                jSONObject.put("from_institution", bill.getFromInstitution().getName());
+            }
+            if (bill.getFromDepartment() != null) {
+                jSONObject.put("from_department", bill.getFromDepartment().getName());
+            }
 
-            jSONObject.put("to_institution", bill.getBillType().name());
-            jSONObject.put("to_department", bill.getBillClassType().name());
+            if (bill.getToInstitution() != null) {
+                jSONObject.put("to_institution", bill.getToInstitution().getName());
+            }
+            if (bill.getToDepartment() != null) {
+                jSONObject.put("to_department", bill.getToDepartment().getName());
+            }
 
             jSONObject.put("created_at", bill.getCreatedAt());
             jSONObject.put("created_user", bill.getCreater().getWebUserPerson().getName());
@@ -214,14 +226,15 @@ public class Finance {
     @Path("/bill/{date}")
     @Produces("application/json")
     public String getBill(@PathParam("date") String dateString) {
-        Date date = CommonFunctions.parseDate(dateString, null);
+        String fromat = "dd-MM-yyyy";
+        Date date = CommonFunctions.parseDate(dateString, fromat);
         Date fromDate = CommonFunctions.getStartOfDay(date);
         Date toDate = CommonFunctions.getEndOfDay(date);
         List<Bill> bills = billList(0, fromDate, toDate);
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
-        if (!bills.isEmpty()) {
+        if (bills != null && !bills.isEmpty()) {
             array = billToJSONArray(bills);
             jSONObjectOut.put("data", array);
             jSONObjectOut.put("status", successMessage());
