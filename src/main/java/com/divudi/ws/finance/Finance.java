@@ -128,640 +128,166 @@ public class Finance {
     public Finance() {
     }
 
-    @GET
-    @Path("/doctors")
-    @Produces("application/json")
-    public String getDoctors() {
-        List<Object[]> consultants = doctorsListAll();
-        JSONArray array = new JSONArray();
+    private JSONObject errorMessage() {
         JSONObject jSONObjectOut = new JSONObject();
-        if (!consultants.isEmpty()) {
-            for (Object[] con : consultants) {
-                JSONObject jSONObject = new JSONObject();
-                jSONObject.put("doc_id", con[0]);
-                jSONObject.put("doc_name", con[1]);
-                jSONObject.put("doc_specility", con[2]);
-                jSONObject.put("doc_code", con[3]);
-                array.put(jSONObject);
-            }
-            jSONObjectOut.put("doctors", array);
-            jSONObjectOut.put("error", "0");
-            jSONObjectOut.put("error_description", "");
+        jSONObjectOut.put("code", 400);
+        jSONObjectOut.put("type", "error");
+        String e = "Parameter name is not recognized.";
+        jSONObjectOut.put("message", "Parameter name is not recognized.");
+        return jSONObjectOut;
+    }
+
+    private JSONObject errorMessageNoData() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 400);
+        jSONObjectOut.put("type", "error");
+        String e = "No Data.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
+    private JSONObject successMessage() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 200);
+        jSONObjectOut.put("type", "success");
+        return jSONObjectOut;
+    }
+
+    private JSONArray billToJSONArray(List<Bill> bills) {
+        JSONArray array = new JSONArray();
+        for (Bill bill : bills) {
+            JSONObject jSONObject = new JSONObject();
+            jSONObject.put("id", bill.getId());
+            jSONObject.put("bill_id_1", bill.getInsId());
+            jSONObject.put("bill_id_2", bill.getDeptId());
+
+            jSONObject.put("bill_date", bill.getBillDate());
+            jSONObject.put("bill_time", bill.getBillTime());
+
+            jSONObject.put("categoty", bill.getBillType().name());
+
+            jSONObject.put("type", bill.getBillClassType().name());
+            jSONObject.put("categoty", bill.getBillType().name());
+
+            jSONObject.put("gross_total", bill.getCreatedAt());
+            jSONObject.put("discount", bill.getCreater().getWebUserPerson().getName());
+            jSONObject.put("net_total", bill.getBillClassType().name());
+            jSONObject.put("payment_method", bill.getBillType().name());
+            jSONObject.put("discount_scheme", bill.getCreatedAt());
+
+            jSONObject.put("institution", bill.getInstitution().getName());
+            jSONObject.put("department", bill.getCreater().getWebUserPerson().getName());
+            jSONObject.put("from_institution", bill.getBillClassType().name());
+            jSONObject.put("from_department", bill.getBillClassType().name());
+
+            jSONObject.put("to_institution", bill.getBillType().name());
+            jSONObject.put("to_department", bill.getBillClassType().name());
+
+            jSONObject.put("created_at", bill.getCreatedAt());
+            jSONObject.put("created_user", bill.getCreater().getWebUserPerson().getName());
+
+            array.put(jSONObject);
+        }
+        return array;
+    }
+
+    @GET
+    @Path("/bill")
+    @Produces("application/json")
+    public String getBill() {
+        List<Bill> bills = billList(0, null, null);
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+        if (!bills.isEmpty()) {
+            array = billToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
         } else {
-            jSONObjectOut.put("doctors", array);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "No Data.");
+            jSONObjectOut = errorMessageNoData();
         }
 
         String json = jSONObjectOut.toString();
         return json;
     }
 
-//    /sessions/DR0001
     @GET
-    @Path("/doctors/{doc_code}")
+    @Path("/bill/{date}")
     @Produces("application/json")
-    public String getDoctor(@PathParam("doc_code") String doc_code) {
-        JSONArray array = new JSONArray();
+    public String getBill(@PathParam("date") String dateString) {
+        Date date = CommonFunctions.parseDate(dateString, null);
+        Date fromDate = CommonFunctions.getStartOfDay(date);
+        Date toDate = CommonFunctions.getEndOfDay(date);
+        List<Bill> bills = billList(0, fromDate, toDate);
+
+        JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
-        try {
-//            Long d_id = Long.parseLong(doc_id);
-            List<Object[]> consultants = doctorsList(doc_code, null);
-            if (!consultants.isEmpty()) {
-                for (Object[] con : consultants) {
-                    JSONObject jSONObject = new JSONObject();
-                    jSONObject.put("doc_id", con[0]);
-                    jSONObject.put("doc_name", con[1].toString().toUpperCase());
-                    jSONObject.put("doc_specility", con[2].toString().toUpperCase());
-                    jSONObject.put("doc_code", con[3]);
-                    array.put(jSONObject);
-                }
-                jSONObjectOut.put("doctors", array);
-                jSONObjectOut.put("error", "0");
-                jSONObjectOut.put("error_description", "");
-            } else {
-                jSONObjectOut.put("doctors", array);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-            }
-
-        } catch (Exception e) {
-            jSONObjectOut.put("doctors", array);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-//    @GET
-//    @Path("/users/{userid}")
-//    @Produces(MediaType.APPLICATION_XML)
-//    public User getUser(@PathParam("userid") int userid) {
-//        return userDao.getUser(userid);
-//    }
-//    /sessions/DR0001
-    @GET
-    @Path("/sessions/{doc_code}")
-    @Produces("application/json")
-    public String getSessions(@PathParam("doc_code") String doc_code) {
-        JSONObject object = new JSONObject();
-        JSONArray array = new JSONArray();
-        JSONArray array1 = new JSONArray();
-        JSONObject jSONObjectOut = new JSONObject();
-
-        try {
-            List<ServiceSession> sessions = sessionsList(doc_code, null, null);
-            if (!sessions.isEmpty()) {
-                for (ServiceSession s : sessions) {
-                    object = new JSONObject();
-                    object.put("session_id", s.getId());
-                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
-                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
-                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
-                    object.put("session_max_no", s.getMaxNo());
-                    object.put("session_is_refundable", s.isRefundable());
-                    object.put("session_duration", s.getDuration());
-                    object.put("session_room_no", s.getRoomNo());
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
-                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_forign_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, true)));
-                    object.put("session_forign_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, true)));
-                    object.put("session_is_leaved", s.isDeactivated());
-                    array.put(object);
-//            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
-                }
-                jSONObjectOut.put("session", array);
-                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
-                jSONObjectOut.put("error", "0");
-                jSONObjectOut.put("error_description", "");
-            } else {
-                jSONObjectOut.put("session", sessions);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-            }
-        } catch (Exception e) {
-            jSONObjectOut.put("session", object);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-//        try {
-//            List<Object[]> sessions = sessionsList(doc_code, null, null);
-//            if (!sessions.isEmpty()) {
-//                for (Object[] s : sessions) {
-//                    object.put("session_id", s[0]);
-//                    object.put("session_date", getCommonController().getDateFormat((Date) s[1]));
-//                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s[2]));
-//                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s[3]));
-//                    object.put("session_max_no", s[4]);
-//                    object.put("session_is_refundable", s[5]);
-//                    object.put("session_duration", s[6]);
-//                    object.put("session_room_no", s[7]);
-//                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
-//                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
-//                    object.put("session_is_leaved", s[10]);
-//                    //System.out.println("s.length = " + s.length);
-//                    array.put(object);
-////            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
-//                }
-//                jSONObjectOut.put("session", array);
-//                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
-//                jSONObjectOut.put("error", "0");
-//                jSONObjectOut.put("error_description", "");
-//            } else {
-//                jSONObjectOut.put("session", sessions);
-//                jSONObjectOut.put("error", "1");
-//                jSONObjectOut.put("error_description", "No Data.");
-//            }
-//        } catch (Exception e) {
-//            jSONObjectOut.put("session", object);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "Invalid Argument.");
-//        }
-//        try {
-//            List<Object[]> sessions = sessionsList(doc_code, null, null);
-//            if (!sessions.isEmpty()) {
-//                for (Object[] s : sessions) {
-//                    object.put("session_id", s[0]);
-//                    object.put("session_date", getCommonController().getDateFormat((Date) s[1]));
-//                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s[2]));
-//                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s[3]));
-//                    object.put("session_max_no", s[4]);
-//                    object.put("session_is_refundable", s[5]);
-//                    object.put("session_duration", s[6]);
-//                    object.put("session_room_no", s[7]);
-//                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
-//                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
-//                    object.put("session_is_leaved", s[10]);
-//                    //System.out.println("s.length = " + s.length);
-//                    array.put(object);
-////            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
-//                }
-//                jSONObjectOut.put("session", array);
-//                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
-//                jSONObjectOut.put("error", "0");
-//                jSONObjectOut.put("error_description", "");
-//            } else {
-//                jSONObjectOut.put("session", sessions);
-//                jSONObjectOut.put("error", "1");
-//                jSONObjectOut.put("error_description", "No Data.");
-//            }
-//        } catch (Exception e) {
-//            jSONObjectOut.put("session", object);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "Invalid Argument.");
-//        }
-
-        String json = jSONObjectOut.toString();
-//        String json = new Gson().toJson(sessions);
-        return json;
-    }
-
-//    /makeBooking/Dushan/0788044212/1/******/DR0001/20385287/451
-    @GET
-    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}")
-    @Produces("application/json")
-    public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
-            @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
-            @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no) {
-        JSONArray bill = new JSONArray();
-        String json = new String();
-        List<Object[]> list = new ArrayList<>();
-        JSONObject jSONObjectOut = new JSONObject();
-        Long h_id = Long.parseLong(hospital_id);
-        Long ss_id = Long.parseLong(session_id);
-        Long a_id = Long.parseLong(agent_id);
-//        Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder = new URLDecoder();
-        try {
-
-            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
-//            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
-//            //System.out.println("s = " + s);
-            if (!"".equals(s)) {
-                jSONObjectOut.put("make_booking", s);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-                json = jSONObjectOut.toString();
-                return json;
-            }
-            ServiceSession ss = serviceSessionFacade.find(ss_id);
-            if (ss != null) {
-                //For Settle bill
-                ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.setItemFees(fetchFee(ss.getOriginatingSession()));
-                //For Settle bill
-                ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
-            } else {
-                jSONObjectOut.put("make_booking", "Invalid Session Id");
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-                return jSONObjectOut.toString();
-            }
-//            //System.out.println("ss = " + ss);
-            Bill b;
-            b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
-
-//            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
-//            //System.out.println("b = " + b);
-            bill = billDetails(b.getId());
-            jSONObjectOut.put("make_booking", bill);
-            jSONObjectOut.put("error", "0");
-            jSONObjectOut.put("error_description", "");
-        } catch (Exception e) {
-            e.printStackTrace();
-            jSONObjectOut.put("make_booking", bill);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-
-        json = jSONObjectOut.toString();
-        return json;
-    }
-
-//    /makeBooking/Dushan/0788044212/1/******/DR0001/20385287/451/1
-    @GET
-    @Path("/makeBooking/{name}/{phone}/{hospital_id}/{session_id}/{doc_code}/{agent_id}/{agent_reference_no}/{foriegn}")
-    @Produces("application/json")
-    public String makeBooking(@PathParam("name") String name, @PathParam("phone") String phone,
-            @PathParam("hospital_id") String hospital_id, @PathParam("session_id") String session_id, @PathParam("doc_code") String doc_code,
-            @PathParam("agent_id") String agent_id, @PathParam("agent_reference_no") String agent_reference_no,
-            @PathParam("foriegn") String st_foriegn) {
-        JSONArray bill = new JSONArray();
-        String json = new String();
-        List<Object[]> list = new ArrayList<>();
-        JSONObject jSONObjectOut = new JSONObject();
-        Long h_id = Long.parseLong(hospital_id);
-        Long ss_id = Long.parseLong(session_id);
-        Long a_id = Long.parseLong(agent_id);
-//        Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder = new URLDecoder();
-        try {
-
-            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, st_foriegn);
-//            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
-//            //System.out.println("s = " + s);
-            if (!"".equals(s)) {
-                jSONObjectOut.put("make_booking", s);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-                json = jSONObjectOut.toString();
-                return json;
-            }
-            ServiceSession ss = serviceSessionFacade.find(ss_id);
-            if (ss != null) {
-                //For Settle bill
-                ss.setTotalFee(fetchLocalFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.setItemFees(fetchFee(ss.getOriginatingSession()));
-                //For Settle bill
-                ss.getOriginatingSession().setTotalFee(fetchLocalFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.getOriginatingSession().setTotalFfee(fetchForiegnFee(ss.getOriginatingSession(), PaymentMethod.Agent));
-                ss.getOriginatingSession().setItemFees(fetchFee(ss.getOriginatingSession()));
-            } else {
-                jSONObjectOut.put("make_booking", "Invalid Session Id");
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-                return jSONObjectOut.toString();
-            }
-//            //System.out.println("ss = " + ss);
-            Bill b;
-            if ("0".equals(st_foriegn)) {
-                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
-            } else {
-                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, true);
-            }
-//            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
-//            //System.out.println("b = " + b);
-
-            bill = billDetails(b.getId());
-            jSONObjectOut.put("make_booking", bill);
-            jSONObjectOut.put("error", "0");
-            jSONObjectOut.put("error_description", "");
-        } catch (Exception e) {
-            e.printStackTrace();
-            jSONObjectOut.put("make_booking", bill);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-
-        json = jSONObjectOut.toString();
-        return json;
-    }
-
-//    @POST
-//    @Path("/makeBooking2/")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    public void makeBooking2(JSONObject inputJsonObj) {
-//        String input = (String) inputJsonObj.get("input");
-//        String output = "The input you sent is :" + input;
-//        JSONObject outputJsonObj = new JSONObject();
-//        outputJsonObj.put("output", output);
-//    }
-    @GET
-    @Path("/bookings/{bill_id}")
-    @Produces("application/json")
-    public String getBookings(@PathParam("bill_id") String bill_id) {
-//        /bookings/20058204
-        //        /bookings/20058204
-                JSONObject jSONObjectOut = new JSONObject();
-        JSONArray bill = new JSONArray();
-        try {
-            long b_id = Long.parseLong(bill_id);
-            bill = billDetails(b_id);
-            if (bill != null) {
-                jSONObjectOut.put("bookings", bill);
-                jSONObjectOut.put("error", "0");
-                jSONObjectOut.put("error_description", "");
-            } else {
-                jSONObjectOut.put("bookings", bill);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-            }
-        } catch (Exception e) {
-            jSONObjectOut.put("bookings", bill);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-//        String json = new Gson().toJson(bill);
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-//    /bookings/20385287/2017-11-22/2017-11-22
-    @GET
-    @Path("/bookings/{agent_id}/{from_date}/{to_date}")
-    @Produces("application/json")
-    public String getAllBookings(@PathParam("agent_id") String agent_id, @PathParam("from_date") String from_date, @PathParam("to_date") String to_date) {
-//        /bookings/20058554/2016-08-01/2016-08-15
-        //        /bookings/20058554/2016-08-01/2016-08-15
-                JSONObject jSONObjectOut = new JSONObject();
-        JSONArray bill = new JSONArray();
-        try {
-            long b_id = Long.parseLong(agent_id);
-            Date fromDate = getCommonController().getConvertDateTimeFormat24(from_date);
-            Date toDate = getCommonController().getConvertDateTimeFormat24(to_date);
-            bill = billsDetails(b_id, fromDate, toDate, true);
-            if (bill != null) {
-                jSONObjectOut.put("bookings", bill);
-                jSONObjectOut.put("error", "0");
-                jSONObjectOut.put("error_description", "");
-            } else {
-                jSONObjectOut.put("bookings", bill);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-            }
-        } catch (Exception e) {
-            jSONObjectOut.put("bookings", bill);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-//        String json = new Gson().toJson(bill);
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/specility/")
-    @Produces("application/json")
-    public String getAllSpecilities() {
-        List<Object[]> specilities = specilityList();
-        JSONArray array = new JSONArray();
-        JSONObject jSONObjectOut = new JSONObject();
-        if (!specilities.isEmpty()) {
-            for (Object[] con : specilities) {
-                JSONObject jSONObject = new JSONObject();
-                jSONObject.put("Spec_id", con[0]);
-                jSONObject.put("Spec_name", con[1]);
-                array.put(jSONObject);
-            }
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "0");
-//            jSONObjectOut.put("error_description", "");
-
+        if (!bills.isEmpty()) {
+            array = billToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
         } else {
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "No Data.");
+            jSONObjectOut = errorMessageNoData();
         }
 
-        String json = array.toString();
-//        String json = jSONObjectOut.toString();
+        String json = jSONObjectOut.toString();
         return json;
     }
 
     @GET
-    @Path("/docs/")
+    @Path("/bill/{from}/{to}")
     @Produces("application/json")
-    public String getAllDoctors() {
-        List<Object[]> consultants = doctorsList(null, null);
-        JSONArray array = new JSONArray();
-        if (!consultants.isEmpty()) {
-            for (Object[] con : consultants) {
-                JSONObject jSONObject = new JSONObject();
-                jSONObject.put("doc_id", con[0]);
-                jSONObject.put("doc_name", con[1]);
-                jSONObject.put("doc_specility", con[2]);
-                jSONObject.put("doc_code", con[3]);
-                array.put(jSONObject);
-            }
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "0");
-//            jSONObjectOut.put("error_description", "");
+    public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString) {
+        String format = "dd MM yyyy hh:mm:ss";
+        Date fromDate = CommonFunctions.getStartOfDay(CommonFunctions.parseDate(fromString, format));
+        Date toDate = CommonFunctions.getEndOfDay(CommonFunctions.parseDate(toString, format));
+        List<Bill> bills = billList(0, fromDate, toDate);
 
-        } else {
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "No Data.");
-        }
-
-        String json = array.toString();
-//        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-//    /doc/1745
-    @GET
-    @Path("/doc/{spec_id}/")
-    @Produces("application/json")
-    public String getDoctorsSelectedSpecility(@PathParam("spec_id") String spec_id) {
-        long sp_id = Long.parseLong(spec_id);
-        List<Object[]> consultants = doctorsList(null, sp_id);
-        JSONArray array = new JSONArray();
+        JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
-        if (!consultants.isEmpty()) {
-            for (Object[] con : consultants) {
-                JSONObject jSONObject = new JSONObject();
-                jSONObject.put("doc_id", con[0]);
-                jSONObject.put("doc_name", con[1]);
-                jSONObject.put("doc_specility", con[2]);
-                jSONObject.put("doc_code", con[3]);
-                array.put(jSONObject);
-            }
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "0");
-//            jSONObjectOut.put("error_description", "");
-
+        if (!bills.isEmpty()) {
+            array = billToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
         } else {
-//            jSONObjectOut.put("specilities", array);
-//            jSONObjectOut.put("error", "1");
-//            jSONObjectOut.put("error_description", "No Data.");
+            jSONObjectOut = errorMessageNoData();
         }
 
-        String json = array.toString();
-//        String json = jSONObjectOut.toString();
+        String json = jSONObjectOut.toString();
         return json;
     }
 
-    @GET
-    @Path("/ses/{doc_code}")
-    @Produces("application/json")
-    public String getDocSessions(@PathParam("doc_code") String doc_code) {
-        JSONObject object = new JSONObject();
-        JSONArray array = new JSONArray();
-        JSONArray array1 = new JSONArray();
-        JSONObject jSONObjectOut = new JSONObject();
+    public List<Bill> billList(Integer recordCount, Date fromDate, Date toDate) {
 
-        try {
-            List<ServiceSession> sessions = sessionsList(doc_code, null, null);
-            if (!sessions.isEmpty()) {
-                for (ServiceSession s : sessions) {
-                    object = new JSONObject();
-                    object.put("session_id", s.getId());
-                    object.put("session_date", getCommonController().getDateFormat((Date) s.getSessionDate()));
-                    object.put("session_starting_time", getCommonController().getTimeFormat24((Date) s.getStartingTime()));
-                    object.put("session_ending_time", getCommonController().getTimeFormat24((Date) s.getEndingTime()));
-                    object.put("session_max_no", s.getMaxNo());
-                    object.put("session_is_refundable", s.isRefundable());
-                    object.put("session_duration", s.getDuration());
-                    object.put("session_room_no", s.getRoomNo());
-                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s.getId(), (Date) s.getSessionDate()) + 1);
-                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_fee_vat", getCommonController().getDouble((double) fetchLocalFeeVat((long) s.getId(), PaymentMethod.Agent, false)));
-                    object.put("session_is_leaved", s.isDeactivated());
-                    array.put(object);
-//            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
-                }
-                jSONObjectOut.put("session", array);
-                jSONObjectOut.put("session_dates", sessionsDatesList(doc_code, null, null));
-                jSONObjectOut.put("error", "0");
-                jSONObjectOut.put("error_description", "");
-            } else {
-                jSONObjectOut.put("session", sessions);
-                jSONObjectOut.put("error", "1");
-                jSONObjectOut.put("error_description", "No Data.");
-            }
-        } catch (Exception e) {
-            jSONObjectOut.put("session", object);
-            jSONObjectOut.put("error", "1");
-            jSONObjectOut.put("error_description", "Invalid Argument.");
-        }
-
-        String json = array.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/apps/{ses_id}/")
-    @Produces("application/json")
-    public String getBillSessions(@PathParam("ses_id") String ses_id) {
-        long sp_id = Long.parseLong(ses_id);
-        List<BillSession> billSessions = fillBillSessions(sp_id);
-        JSONArray array = new JSONArray();
-        if (!billSessions.isEmpty()) {
-            for (BillSession bs : billSessions) {
-                JSONObject jSONObject = new JSONObject();
-                jSONObject.put("app_no", bs.getSerialNo());
-                jSONObject.put("patient_name", bs.getBill().getPatient().getPerson().getNameWithTitle());
-                if (bs.getBill().getPaidAmount() == 0) {
-                    jSONObject.put("app_type", "Credit - " + bs.getBill().getPaymentMethod());
-                } else {
-                    jSONObject.put("app_type", "Paid - " + bs.getBill().getPaymentMethod());
-                }
-                if (bs.getBill().isCancelled()) {
-                    jSONObject.put("app_status", "Canceled");
-                } else if (bs.getBill().isRefunded()) {
-                    jSONObject.put("app_status", "Refunded");
-                } else {
-                    jSONObject.put("app_status", "");
-                }
-                if (bs.getBill().getPaymentMethod() == PaymentMethod.Staff) {
-                    jSONObject.put("staff_agent_status", bs.getBill().getToStaff().getCode());
-                } else if (bs.getBill().getPaymentMethod() == PaymentMethod.Agent) {
-                    jSONObject.put("staff_agent_status", bs.getBill().getCreditCompany().getInstitutionCode());
-                } else {
-                    jSONObject.put("staff_agent_status", "");
-                }
-
-                array.put(jSONObject);
-            }
-        }
-        String json = array.toString();
-
-        return json;
-    }
-
-    //----------------------------------------------------
-    public List<Object[]> doctorsList(String doc_code, Long spec_id) {
-
-        List<Object[]> consultants = new ArrayList<>();
-        String sql;
+        List<Bill> bills;
+        String j;
         Map m = new HashMap();
 
-        sql = " select pi.staff.id,"
-                + " pi.staff.person.name, "
-                + " pi.staff.speciality.name,"
-                + " pi.staff.code from PersonInstitution pi where pi.retired=false "
-                + " and pi.type=:typ "
-                + " and pi.staff.retired=false "
-                + " and pi.institution is not null "
-                + " and pi.staff.speciality is not null ";
+        j = " select b "
+                + " from Bill b "
+                + " where b.retired<>:ret "
+                + " and b.createdAt between :fd and :td "
+                + " order by b.id ";
 
-        if (doc_code != null) {
-            sql += " and pi.staff.code=:doc_code ";
-            m.put("doc_code", doc_code);
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
         }
-//        if (doc_id != null) {
-//            sql += " and pi.staff.id=:doc_id ";
-//            m.put("doc_id", doc_id);
-//        }
-        if (spec_id != null) {
-            sql += " and pi.staff.speciality.id=:spec_id ";
-            m.put("spec_id", spec_id);
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
         }
 
-        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("ret", true);
+        if (recordCount == null || recordCount == 0) {
+            bills = getBillFacade().findBySQL(j, m, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+        }
 
-        m.put("typ", PersonInstitutionType.Channelling);
-        consultants = getStaffFacade().findAggregates(sql, m);
-
-//        //System.out.println("m = " + m);
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("consultants.size() = " + consultants.size());
-        return consultants;
-    }
-    
-    
-    public List<Object[]> doctorsListAll() {
-
-        List<Object[]> consultants = new ArrayList<>();
-        String sql;
-        Map m = new HashMap();
-
-        sql = " select pi.staff.id,"
-                + " pi.staff.person.name, "
-                + " pi.staff.speciality.name,"
-                + " pi.staff.code from PersonInstitution pi ";
-
-        sql += " order by pi.staff.speciality.name,pi.staff.person.name ";
-        
-        consultants = getStaffFacade().findAggregates(sql);
-        return consultants;
+        if (bills == null) {
+            bills = new ArrayList<>();
+        }
+        return bills;
     }
 
     public List<BillSession> fillBillSessions(long ses_id) {
@@ -823,7 +349,6 @@ public class Finance {
         m.put("class", ServiceSession.class);
 
         sessions = getStaffFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-
 
         return sessions;
     }

@@ -2,9 +2,14 @@ package com.divudi.ejb;
 
 import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.Singleton;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
@@ -245,6 +250,20 @@ public class CommonFunctions {
         return getStartOfDay(new Date());
     }
 
+    public static Date parseDate(String dateInString, String format) {
+        if (format == null || format.trim().equals("")) {
+            format = "dd MM yyyy";
+        }
+        SimpleDateFormat formatter = new SimpleDateFormat(format, Locale.ENGLISH);
+        Date date;
+        try {
+            date = formatter.parse(dateInString);
+        } catch (ParseException ex) {
+            date = null;
+        }
+        return date;
+    }
+
     public static Date getStartOfDay(Date date) {
         if (date == null) {
             date = new Date();
@@ -394,7 +413,7 @@ public class CommonFunctions {
 //        //////System.out.println("... in milliseconds:      " + cal.getTimeInMillis());
         return cal.getTime();
     }
-    
+
     public static Date getStartOfBeforeDay(Date date) {
         if (date == null) {
             date = new Date();
@@ -433,8 +452,8 @@ public class CommonFunctions {
     }
 
     public YearMonthDay guessAge(Date dofb) {
-        YearMonthDay yearMonthDay=new YearMonthDay();
-        
+        YearMonthDay yearMonthDay = new YearMonthDay();
+
 //        Calendar cal=Calendar.getInstance();
 //        cal.setTime(dob);
 //        //System.out.println("cal.get(Calendar.YEAR) = " + cal.get(Calendar.YEAR));
@@ -442,7 +461,6 @@ public class CommonFunctions {
 //        //System.out.println("cal.get(Calendar.DATE) = " + cal.get(Calendar.DATE));
 //        LocalDate birthDay=new LocalDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH)+1, cal.get(Calendar.DATE));
 //        LocalDate now=new LocalDate();
-        
         LocalDate dob = new LocalDate(dofb);
         LocalDate date = new LocalDate(new Date());
 
@@ -450,7 +468,7 @@ public class CommonFunctions {
         int ageYears = period.getYears();
         int ageMonths = period.getMonths();
         int ageDays = period.getDays();
-        
+
 //        Years years=Years.yearsBetween(birthDay, now);
 //        Months months=Months.monthsBetween(birthDay, now);
 //        Days days=Days.daysBetween(birthDay, now);
@@ -460,7 +478,7 @@ public class CommonFunctions {
         yearMonthDay.setMonth(Integer.toString(ageMonths));
 //        //System.out.println("days.getDays() = " + days.getDays());
         yearMonthDay.setDay(Integer.toString(ageDays));
-        
+
         return yearMonthDay;
     }
 
