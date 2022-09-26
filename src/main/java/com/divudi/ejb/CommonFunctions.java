@@ -250,6 +250,19 @@ public class CommonFunctions {
         return getStartOfDay(new Date());
     }
 
+    public static String formatDate(Date date, String pattern) {
+        String dateString = "";
+        if (date == null) {
+            return dateString;
+        }
+        if (pattern == null || pattern.trim().equals("")) {
+            pattern = "dd-MM-yyyy";
+        }
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        dateString = simpleDateFormat.format(date);
+        return dateString;
+    }
+
     public static Date parseDate(String dateInString, String format) {
         if (format == null || format.trim().equals("")) {
             format = "dd MM yyyy";

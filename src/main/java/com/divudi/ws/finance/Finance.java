@@ -167,14 +167,66 @@ public class Finance {
             jSONObject.put("categoty", bill.getBillType().name());
 
             jSONObject.put("type", bill.getBillClassType().name());
-            jSONObject.put("categoty", bill.getBillType().name());
+            jSONObject.put("bill_categoty", bill.getBillType().name());
 
             jSONObject.put("gross_total", bill.getTotal());
             jSONObject.put("discount", bill.getDiscount());
             jSONObject.put("net_total", bill.getNetTotal());
+
+            if (bill.getTax() != null) {
+                jSONObject.put("tax", bill.getTax());
+            }
+            if (bill.getVat() != 0.0) {
+                jSONObject.put("vat", bill.getVat());
+            }
+
+            if (bill.getHospitalFee() != 0.0) {
+                jSONObject.put("hospital_fee", bill.getHospitalFee());
+            }
+            if (bill.getStaffFee() != 0.0) {
+                jSONObject.put("staff_fee", bill.getStaffFee());
+            }
+            if (bill.getProfessionalFee() != 0.0) {
+                jSONObject.put("professional_fee", bill.getProfessionalFee());
+            }
+
+            if (bill.getCashBalance() != null) {
+                jSONObject.put("cash_balance", bill.getCashBalance());
+            }
+            if (bill.getCashPaid() != null) {
+                jSONObject.put("cash_paid", bill.getCashPaid());
+            }
+
             jSONObject.put("payment_method", bill.getPaymentMethod().name());
             if (bill.getPaymentScheme() != null) {
                 jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
+            }
+            if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+                if (bill.getBank() != null) {
+                    jSONObject.put("cheque_bank", bill.getBank().getName());
+                }
+                jSONObject.put("cheque_number", bill.getChequeRefNo());
+                jSONObject.put("cheque_date", CommonFunctions.formatDate(bill.getChequeDate(), null));
+            }
+
+            if (bill.getPaymentMethod() == PaymentMethod.Card) {
+                if (bill.getBank() != null) {
+                    jSONObject.put("card_bank", bill.getBank().getName());
+                }
+                jSONObject.put("card_number", bill.getCreditCardRefNo());
+                jSONObject.put("cheque_date", CommonFunctions.formatDate(bill.getChequeDate(), null));
+            }
+
+            if (bill.getCreditCompany() != null) {
+                jSONObject.put("credit_company", bill.getCreditCompany().getName());
+            }
+
+            if (bill.getPaidAt() != null) {
+                jSONObject.put("paid_At", bill.getPaidAt());
+            }
+
+            if (bill.getPaidBill() != null) {
+                jSONObject.put("paid_bill_id", bill.getPaidBill());
             }
 
             if (bill.getInstitution() != null) {
@@ -199,6 +251,128 @@ public class Finance {
 
             jSONObject.put("created_at", bill.getCreatedAt());
             jSONObject.put("created_user", bill.getCreater().getWebUserPerson().getName());
+
+            if (bill.getPatient() != null) {
+                jSONObject.put("patient_id", bill.getPatient().getId());
+                jSONObject.put("patient", bill.getPatient().getPerson().getNameWithTitle());
+            }
+            if (bill.getPerson() != null) {
+                jSONObject.put("person_id", bill.getPerson().getNameWithTitle());
+                jSONObject.put("person", bill.getPerson());
+            }
+
+            if (bill.getApproveAt() != null) {
+                jSONObject.put("approved_at", bill.getApproveAt());
+            }
+            if (bill.getApproveUser() != null) {
+                jSONObject.put("approved_user", bill.getApproveUser());
+            }
+            if (bill.getAppointmentAt() != null) {
+                jSONObject.put("appointment_at", bill.getAppointmentAt());
+            }
+
+            if (bill.getCategory() != null) {
+                jSONObject.put("category", bill.getCategory().getName());
+            }
+            if (bill.getCatId() != null) {
+                jSONObject.put("catId", bill.getCatId());
+            }
+
+            if (bill.getCheckeAt() != null) {
+                jSONObject.put("checked_at", bill.getCheckeAt());
+            }
+
+            if (bill.getCheckedBy() != null) {
+                jSONObject.put("checked_by", bill.getCheckedBy().getWebUserPerson().getName());
+            }
+
+            if (bill.getCollectingCentre() != null) {
+                jSONObject.put("collecting_centre_id", bill.getCollectingCentre().getId());
+                jSONObject.put("collecting_centre", bill.getCollectingCentre().getName());
+            }
+
+            if (bill.getComments() != null) {
+                jSONObject.put("comments", bill.getComments());
+            }
+
+            if (bill.getEditedAt() != null) {
+                jSONObject.put("last_edite_at", bill.getEditedAt());
+            }
+            if (bill.getEditor() != null) {
+                jSONObject.put("last_edit_by", bill.getEditor());
+            }
+
+            if (bill.getFromStaff() != null) {
+                jSONObject.put("from_staff_id", bill.getFromStaff().getId());
+                jSONObject.put("from_staff", bill.getFromStaff().getName());
+            }
+            if (bill.getFromWebUser() != null) {
+                jSONObject.put("from_user_id", bill.getFromWebUser().getId());
+                jSONObject.put("from_user", bill.getFromWebUser().getName());
+            }
+            if (bill.getToStaff() != null) {
+                jSONObject.put("to_staff_id", bill.getToStaff());
+                jSONObject.put("to_staff", bill.getToStaff());
+            }
+            if (bill.getToWebUser() != null) {
+                jSONObject.put("to_user_id", bill.getToWebUser().getId());
+                jSONObject.put("to_user", bill.getToWebUser().getName());
+            }
+
+            if (bill.getGrantTotal() != 0.0) {
+                jSONObject.put("grand_total", bill.getGrantTotal());
+            }
+            if (bill.getGrnNetTotal() != 0.0) {
+                jSONObject.put("grn_net_total", bill.getGrnNetTotal());
+            }
+
+            if (bill.getInvoiceDate() != null) {
+                jSONObject.put("invoice_date", CommonFunctions.formatDate(bill.getInvoiceDate(), null));
+            }
+            if (bill.getInvoiceNumber() != null) {
+                jSONObject.put("invoice_number", bill.getInvoiceNumber());
+            }
+
+            if (bill.getMembershipScheme() != null) {
+                jSONObject.put("membership_scheme_id", bill.getMembershipScheme().getId());
+                jSONObject.put("membership_scheme", bill.getMembershipScheme().getName());
+            }
+
+            if (bill.getPaidBill() != null) {
+                jSONObject.put("paid_bill_id", bill.getPaidBill().getId());
+            }
+
+            if (bill.getQutationNumber() != null) {
+                jSONObject.put("qutation_number", bill.getQutationNumber());
+            }
+
+            if (bill.getReactivatedBill() != null) {
+                jSONObject.put("reactivated_bill_id", bill.getReactivatedBill().getId());
+            }
+
+            if (bill.getReferenceBill() != null) {
+                jSONObject.put("reference_bill_id", bill.getReferenceBill().getId());
+            }
+
+            if (bill.getReferenceInstitution() != null) {
+                jSONObject.put("reference_institution_id",
+                        bill.getReferenceInstitution().getId());
+                jSONObject.put("reference_institution",
+                        bill.getReferenceInstitution().getName());
+            }
+
+            if (bill.getReferredBy() != null) {
+                jSONObject.put("referred_by_id", bill.getReferredBy().getId());
+                jSONObject.put("referred_by", bill.getReferredBy().getPerson().getNameWithTitle());
+            }
+            if (bill.getReferralNumber() != null) {
+                jSONObject.put("referral_number", bill.getReferralNumber());
+            }
+
+            if (bill.getStaff() != null) {
+                jSONObject.put("staff_id", bill.getStaff().getId());
+                jSONObject.put("staff", bill.getStaff().getPerson().getName());
+            }
 
             array.put(jSONObject);
         }
@@ -567,6 +741,7 @@ public class Finance {
 
         return array;
     }
+    
 
     public JSONArray billsDetails(long agentId, Date fromDate, Date toDate, boolean createDate) {
         List<BillSession> billObjects;
