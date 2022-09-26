@@ -173,7 +173,9 @@ public class Finance {
             jSONObject.put("discount", bill.getDiscount());
             jSONObject.put("net_total", bill.getNetTotal());
             jSONObject.put("payment_method", bill.getPaymentMethod().name());
-            jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
+            if (bill.getPaymentScheme() != null) {
+                jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
+            }
 
             if (bill.getInstitution() != null) {
                 jSONObject.put("institution", bill.getInstitution().getName());
