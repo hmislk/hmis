@@ -43,6 +43,7 @@ public class ApiKeyController implements Serializable {
     @EJB
     private ApiKeyFacade ejbFacade;
     private ApiKey current;
+    private ApiKey removing;
     private List<ApiKey> items = null;
 
     public String toManageMyApiKeys() {
@@ -50,10 +51,10 @@ public class ApiKeyController implements Serializable {
         return "user_api_key";
     }
 
-    public ApiKeyType[] getApiKeyTypes(){
+    public ApiKeyType[] getApiKeyTypes() {
         return ApiKeyType.values();
     }
-    
+
     public void listMyApiKeys() {
         String j;
         j = "select a "
@@ -61,14 +62,28 @@ public class ApiKeyController implements Serializable {
                 + " where a.retired=false "
                 + " and a.webUser=:wu "
                 + " and a.dateOfExpiary > :ed "
-                + " order by a.name";
+                + " order by a.dateOfExpiary";
         Map m = new HashMap();
         m.put("wu", sessionController.getLoggedUser());
         m.put("ed", new Date());
         items = getFacade().findBySQL(j, m, TemporalType.DATE);
     }
+    
+    public ApiKey findApiKey(String keyValue) {
+        String j;
+        j = "select a "
+                + " from ApiKey a "
+                + " where a.keyValue=:kv";
+        Map m = new HashMap();
+        m.put("kv", keyValue);
+        return getFacade().findFirstBySQL(j, m);
+    }
 
     public void prepareAdd() {
+        createNewApiKey();
+    }
+
+    public void createNewApiKey() {
         UUID uuid = UUID.randomUUID();
         current = new ApiKey();
         current.setWebUser(sessionController.getLoggedUser());
@@ -101,6 +116,8 @@ public class ApiKeyController implements Serializable {
         }
         recreateModel();
         listMyApiKeys();
+        setCurrent(null);
+        getCurrent();
     }
 
     public ApiKeyFacade getEjbFacade() {
@@ -124,7 +141,7 @@ public class ApiKeyController implements Serializable {
 
     public ApiKey getCurrent() {
         if (current == null) {
-            current = new ApiKey();
+            createNewApiKey();
         }
         return current;
     }
@@ -134,20 +151,18 @@ public class ApiKeyController implements Serializable {
     }
 
     public void delete() {
-
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
+        if (removing != null) {
+            removing.setRetired(true);
+            removing.setRetiredAt(new Date());
+            removing.setRetirer(getSessionController().getLoggedUser());
+            getFacade().edit(removing);
+            UtilityController.addSuccessMessage("Removed Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         listMyApiKeys();
-        current = null;
-        getCurrent();
+        removing = null;
     }
 
     private ApiKeyFacade getFacade() {
@@ -156,6 +171,14 @@ public class ApiKeyController implements Serializable {
 
     public List<ApiKey> getItems() {
         return items;
+    }
+
+    public ApiKey getRemoving() {
+        return removing;
+    }
+
+    public void setRemoving(ApiKey removing) {
+        this.removing = removing;
     }
 
     /**

@@ -6,6 +6,7 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
+import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
@@ -21,6 +22,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.entity.AgentHistory;
+import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -132,6 +134,8 @@ public class Finance {
     AgentReferenceBookController AgentReferenceBookController;
     @Inject
     AuthenticateController authenticateController;
+    @Inject
+    ApiKeyController apiKeyController;
 
     /**
      * Creates a new instance of Api
@@ -157,6 +161,15 @@ public class Finance {
         return jSONObjectOut;
     }
 
+    private JSONObject errorMessageNotValidKey() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid key.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
     private JSONObject successMessage() {
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("code", 200);
@@ -175,10 +188,291 @@ public class Finance {
             jSONObject.put("bill_date", bill.getBillDate());
             jSONObject.put("bill_time", bill.getBillTime());
 
-            jSONObject.put("categoty", bill.getBillType().name());
+            if (bill.getBillType() != null) {
+                jSONObject.put("bill_categoty", bill.getBillType().name());
+            }
 
-            jSONObject.put("type", bill.getBillClassType().name());
-            jSONObject.put("bill_categoty", bill.getBillType().name());
+            if (bill.getBillClassType() != null) {
+                jSONObject.put("type", bill.getBillClassType().name());
+            }
+
+            jSONObject.put("gross_total", bill.getTotal());
+            jSONObject.put("discount", bill.getDiscount());
+            jSONObject.put("net_total", bill.getNetTotal());
+
+            if (bill.getTax() != null) {
+                jSONObject.put("tax", bill.getTax());
+            }
+            if (bill.getVat() != 0.0) {
+                jSONObject.put("vat", bill.getVat());
+            }
+
+            if (bill.getHospitalFee() != 0.0) {
+                jSONObject.put("hospital_fee", bill.getHospitalFee());
+            }
+            if (bill.getStaffFee() != 0.0) {
+                jSONObject.put("staff_fee", bill.getStaffFee());
+            }
+            if (bill.getProfessionalFee() != 0.0) {
+                jSONObject.put("professional_fee", bill.getProfessionalFee());
+            }
+
+            if (bill.getCashBalance() != null) {
+                jSONObject.put("cash_balance", bill.getCashBalance());
+            }
+            if (bill.getCashPaid() != null) {
+                jSONObject.put("cash_paid", bill.getCashPaid());
+            }
+
+            if (bill.getPaymentMethod() != null) {
+                jSONObject.put("payment_method", bill.getPaymentMethod().name());
+            }
+
+            if (bill.getPaymentScheme() != null) {
+                jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
+            }
+            if (bill.getPaymentMethod() == PaymentMethod.Cheque) {
+                if (bill.getBank() != null) {
+                    jSONObject.put("cheque_bank", bill.getBank().getName());
+                }
+                jSONObject.put("cheque_number", bill.getChequeRefNo());
+                jSONObject.put("cheque_date", CommonFunctions.formatDate(bill.getChequeDate(), null));
+            }
+
+            if (bill.getPaymentMethod() == PaymentMethod.Card) {
+                if (bill.getBank() != null) {
+                    jSONObject.put("card_bank", bill.getBank().getName());
+                }
+                jSONObject.put("card_number", bill.getCreditCardRefNo());
+                jSONObject.put("cheque_date", CommonFunctions.formatDate(bill.getChequeDate(), null));
+            }
+
+            if (bill.getCreditCompany() != null) {
+                jSONObject.put("credit_company", bill.getCreditCompany().getName());
+            }
+
+            if (bill.getPaidAt() != null) {
+                jSONObject.put("paid_At", bill.getPaidAt());
+            }
+
+            if (bill.getPaidBill() != null) {
+                jSONObject.put("paid_bill_id", bill.getPaidBill());
+            }
+
+            if (bill.getInstitution() != null) {
+                jSONObject.put("institution", bill.getInstitution().getName());
+            }
+            if (bill.getDepartment() != null) {
+                jSONObject.put("department", bill.getDepartment().getName());
+            }
+            if (bill.getFromInstitution() != null) {
+                jSONObject.put("from_institution", bill.getFromInstitution().getName());
+            }
+            if (bill.getFromDepartment() != null) {
+                jSONObject.put("from_department", bill.getFromDepartment().getName());
+            }
+
+            if (bill.getToInstitution() != null) {
+                jSONObject.put("to_institution", bill.getToInstitution().getName());
+            }
+            if (bill.getToDepartment() != null) {
+                jSONObject.put("to_department", bill.getToDepartment().getName());
+            }
+
+            jSONObject.put("created_at", bill.getCreatedAt());
+            jSONObject.put("created_user", bill.getCreater().getWebUserPerson().getName());
+
+            if (bill.getPatient() != null) {
+                jSONObject.put("patient_id", bill.getPatient().getId());
+                jSONObject.put("patient", bill.getPatient().getPerson().getNameWithTitle());
+            }
+            if (bill.getPerson() != null) {
+                jSONObject.put("person_id", bill.getPerson().getNameWithTitle());
+                jSONObject.put("person", bill.getPerson());
+            }
+
+            if (bill.getApproveAt() != null) {
+                jSONObject.put("approved_at", bill.getApproveAt());
+            }
+            if (bill.getApproveUser() != null) {
+                jSONObject.put("approved_user", bill.getApproveUser());
+            }
+            if (bill.getAppointmentAt() != null) {
+                jSONObject.put("appointment_at", bill.getAppointmentAt());
+            }
+
+            if (bill.getCategory() != null) {
+                jSONObject.put("category", bill.getCategory().getName());
+            }
+            if (bill.getCatId() != null) {
+                jSONObject.put("catId", bill.getCatId());
+            }
+
+            if (bill.getCheckeAt() != null) {
+                jSONObject.put("checked_at", bill.getCheckeAt());
+            }
+
+            if (bill.getCheckedBy() != null) {
+                jSONObject.put("checked_by", bill.getCheckedBy().getWebUserPerson().getName());
+            }
+
+            if (bill.getCollectingCentre() != null) {
+                jSONObject.put("collecting_centre_id", bill.getCollectingCentre().getId());
+                jSONObject.put("collecting_centre", bill.getCollectingCentre().getName());
+            }
+
+            if (bill.getComments() != null) {
+                jSONObject.put("comments", bill.getComments());
+            }
+
+            if (bill.getEditedAt() != null) {
+                jSONObject.put("last_edite_at", bill.getEditedAt());
+            }
+            if (bill.getEditor() != null) {
+                jSONObject.put("last_edit_by", bill.getEditor());
+            }
+
+            if (bill.getFromStaff() != null) {
+                jSONObject.put("from_staff_id", bill.getFromStaff().getId());
+                jSONObject.put("from_staff", bill.getFromStaff().getName());
+            }
+            if (bill.getFromWebUser() != null) {
+                jSONObject.put("from_user_id", bill.getFromWebUser().getId());
+                jSONObject.put("from_user", bill.getFromWebUser().getName());
+            }
+            if (bill.getToStaff() != null) {
+                jSONObject.put("to_staff_id", bill.getToStaff());
+                jSONObject.put("to_staff", bill.getToStaff());
+            }
+            if (bill.getToWebUser() != null) {
+                jSONObject.put("to_user_id", bill.getToWebUser().getId());
+                jSONObject.put("to_user", bill.getToWebUser().getName());
+            }
+
+            if (bill.getGrantTotal() != 0.0) {
+                jSONObject.put("grand_total", bill.getGrantTotal());
+            }
+            if (bill.getGrnNetTotal() != 0.0) {
+                jSONObject.put("grn_net_total", bill.getGrnNetTotal());
+            }
+
+            if (bill.getInvoiceDate() != null) {
+                jSONObject.put("invoice_date", CommonFunctions.formatDate(bill.getInvoiceDate(), null));
+            }
+            if (bill.getInvoiceNumber() != null) {
+                jSONObject.put("invoice_number", bill.getInvoiceNumber());
+            }
+
+            if (bill.getMembershipScheme() != null) {
+                jSONObject.put("membership_scheme_id", bill.getMembershipScheme().getId());
+                jSONObject.put("membership_scheme", bill.getMembershipScheme().getName());
+            }
+
+            if (bill.getPaidBill() != null) {
+                jSONObject.put("paid_bill_id", bill.getPaidBill().getId());
+            }
+
+            if (bill.getQutationNumber() != null) {
+                jSONObject.put("qutation_number", bill.getQutationNumber());
+            }
+
+            if (bill.getReactivatedBill() != null) {
+                jSONObject.put("reactivated_bill_id", bill.getReactivatedBill().getId());
+            }
+
+            if (bill.getReferenceBill() != null) {
+                jSONObject.put("reference_bill_id", bill.getReferenceBill().getId());
+            }
+
+            if (bill.getReferenceInstitution() != null) {
+                jSONObject.put("reference_institution_id",
+                        bill.getReferenceInstitution().getId());
+                jSONObject.put("reference_institution",
+                        bill.getReferenceInstitution().getName());
+            }
+
+            if (bill.getReferredBy() != null) {
+                jSONObject.put("referred_by_id", bill.getReferredBy().getId());
+                jSONObject.put("referred_by", bill.getReferredBy().getPerson().getNameWithTitle());
+            }
+            if (bill.getReferralNumber() != null) {
+                jSONObject.put("referral_number", bill.getReferralNumber());
+            }
+
+            if (bill.getStaff() != null) {
+                jSONObject.put("staff_id", bill.getStaff().getId());
+                jSONObject.put("staff", bill.getStaff().getPerson().getName());
+            }
+
+            array.put(jSONObject);
+        }
+        return array;
+    }
+
+    private JSONArray billAndBillItemsToJSONArray(List<Bill> bills) {
+        JSONArray array = new JSONArray();
+        for (Bill bill : bills) {
+            JSONObject jSONObject = new JSONObject();
+            jSONObject.put("id", bill.getId());
+            jSONObject.put("bill_id_1", bill.getInsId());
+            jSONObject.put("bill_id_2", bill.getDeptId());
+
+            jSONObject.put("bill_date", bill.getBillDate());
+            jSONObject.put("bill_time", bill.getBillTime());
+
+            JSONArray biArray = new JSONArray();
+            for (BillItem bi : bill.getBillItems()) {
+                if (bi != null) {
+                    JSONObject joBi = new JSONObject();
+                    if (bi.getItem() != null) {
+                        joBi.put("item_id", bi.getItem());
+                        joBi.put("item", bi.getItem().getName());
+                        if(bi.getItem().getItemType()!=null){
+                            joBi.put("item_type", bi.getItem().getItemType());
+                        }
+                    }
+                    
+                    
+                    bi.getBillSession();
+                    bi.getCatId();
+                    bi.getCatId();
+                    bi.getDeptId();
+                    bi.getDiscount();
+                    bi.getDiscountRate();
+                    bi.getEditedAt();
+                    bi.getEditor();
+                    bi.getFromTime();
+                    bi.getGrossValue();
+                    bi.getHospitalFee();
+                    bi.getId();
+                    bi.getInsId();
+                    bi.getInwardChargeType();
+                    bi.getItemId();
+                    bi.getMarginRate();
+                    bi.getMarginValue();
+                    bi.getNetRate();
+                    bi.getNetValue();
+                    bi.getPharmaceuticalBillItem();
+                    bi.getProFees();
+                    bi.getQty();
+                    bi.getRate();
+                    
+                            
+                            
+                    
+                    
+                    biArray.put(joBi);
+                }
+            }
+            jSONObject.put("bill_items", biArray);
+
+            if (bill.getBillType() != null) {
+                jSONObject.put("bill_categoty", bill.getBillType().name());
+            }
+
+            if (bill.getBillClassType() != null) {
+                jSONObject.put("type", bill.getBillClassType().name());
+            }
 
             jSONObject.put("gross_total", bill.getTotal());
             jSONObject.put("discount", bill.getDiscount());
@@ -412,26 +706,52 @@ public class Finance {
         }
     }
 
+    private boolean isValidKey(String key) {
+        System.out.println("key = " + key);
+        if (key == null || key.trim().equals("")) {
+            System.out.println("No key given");
+            return false;
+        }
+        ApiKey k = apiKeyController.findApiKey(key);
+        if (k == null) {
+            System.out.println("No key found");
+            return false;
+        }
+        if (k.getWebUser() == null) {
+            System.out.println("No user for the key");
+            return false;
+        }
+        if (k.getWebUser().isRetired()) {
+            System.out.println("User Retired");
+            return false;
+        }
+        if (!k.getWebUser().isActivated()) {
+            System.out.println("User Inactive");
+            return false;
+        }
+        if (k.getDateOfExpiary().before(new Date())) {
+            System.out.println("Key Expired");
+            return false;
+        }
+        return true;
+    }
+
     @GET
     @Path("/bill")
     @Produces("application/json")
-    public String getBill(@Context HttpServletRequest requestContext,
-            @Context SecurityContext context,
-            @HeaderParam("authorization") String authString) {
-        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
-        if (ipadd == null) {
-            ipadd = requestContext.getRemoteAddr();
-        }
+    public String getBill(@Context HttpServletRequest requestContext) {
+//        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
+//        if (ipadd == null) {
+//            ipadd = requestContext.getRemoteAddr();
+//        }
 
-        String key = requestContext.getHeader("Finance");
-        System.out.println("authhead = " + key);
-        System.out.println("ipadd = " + ipadd);
         List<Bill> bills = billList(0, null, null);
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
 
-        if (!isUserAuthenticated(authString)) {
-            jSONObjectOut = errorMessageNoData();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
             String json = jSONObjectOut.toString();
             return json;
         }
@@ -451,7 +771,7 @@ public class Finance {
     @GET
     @Path("/bill/{date}")
     @Produces("application/json")
-    public String getBill(@PathParam("date") String dateString
+    public String getBill(@PathParam("date") String dateString, @Context HttpServletRequest requestContext
     ) {
         String fromat = "dd-MM-yyyy";
         Date date = CommonFunctions.parseDate(dateString, fromat);
@@ -461,6 +781,14 @@ public class Finance {
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
         if (bills != null && !bills.isEmpty()) {
             array = billToJSONArray(bills);
             jSONObjectOut.put("data", array);
@@ -476,8 +804,8 @@ public class Finance {
     @GET
     @Path("/bill/{from}/{to}")
     @Produces("application/json")
-    public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString
-    ) {
+    public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString,
+            @Context HttpServletRequest requestContext) {
         String format = "dd MM yyyy hh:mm:ss";
         Date fromDate = CommonFunctions.getStartOfDay(CommonFunctions.parseDate(fromString, format));
         Date toDate = CommonFunctions.getEndOfDay(CommonFunctions.parseDate(toString, format));
@@ -485,6 +813,14 @@ public class Finance {
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
         if (!bills.isEmpty()) {
             array = billToJSONArray(bills);
             jSONObjectOut.put("data", array);
@@ -497,6 +833,128 @@ public class Finance {
         return json;
     }
 
+    
+    
+    
+    
+    
+    
+    
+    @GET
+    @Path("/bill_item")
+    @Produces("application/json")
+    public String getBillItem(@Context HttpServletRequest requestContext) {
+//        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
+//        if (ipadd == null) {
+//            ipadd = requestContext.getRemoteAddr();
+//        }
+
+        List<Bill> bills = billList(0, null, null);
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        if (!bills.isEmpty()) {
+            array = billAndBillItemsToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
+        } else {
+            jSONObjectOut = errorMessageNoData();
+        }
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    @GET
+    @Path("/bill_item/{date}")
+    @Produces("application/json")
+    public String getBillItem(@PathParam("date") String dateString, @Context HttpServletRequest requestContext
+    ) {
+        String fromat = "dd-MM-yyyy";
+        Date date = CommonFunctions.parseDate(dateString, fromat);
+        Date fromDate = CommonFunctions.getStartOfDay(date);
+        Date toDate = CommonFunctions.getEndOfDay(date);
+        List<Bill> bills = billList(0, fromDate, toDate);
+
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        if (bills != null && !bills.isEmpty()) {
+            array = billAndBillItemsToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
+        } else {
+            jSONObjectOut = errorMessageNoData();
+        }
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    @GET
+    @Path("/bill_item/{from}/{to}")
+    @Produces("application/json")
+    public String getBillItem(@PathParam("from") String fromString, @PathParam("to") String toString,
+            @Context HttpServletRequest requestContext) {
+        String format = "dd MM yyyy hh:mm:ss";
+        Date fromDate = CommonFunctions.getStartOfDay(CommonFunctions.parseDate(fromString, format));
+        Date toDate = CommonFunctions.getEndOfDay(CommonFunctions.parseDate(toString, format));
+        List<Bill> bills = billList(0, fromDate, toDate);
+
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        if (!bills.isEmpty()) {
+            array = billAndBillItemsToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
+        } else {
+            jSONObjectOut = errorMessageNoData();
+        }
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     public List<Bill> billList(Integer recordCount, Date fromDate, Date toDate) {
 
         List<Bill> bills;
