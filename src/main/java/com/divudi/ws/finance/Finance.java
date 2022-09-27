@@ -806,7 +806,7 @@ public class Finance {
     @Produces("application/json")
     public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString,
             @Context HttpServletRequest requestContext) {
-        String format = "dd MM yyyy hh:mm:ss";
+        String format = "dd-MM-yyyy-hh:mm:ss";
         Date fromDate = CommonFunctions.getStartOfDay(CommonFunctions.parseDate(fromString, format));
         Date toDate = CommonFunctions.getEndOfDay(CommonFunctions.parseDate(toString, format));
         List<Bill> bills = billList(0, fromDate, toDate);
