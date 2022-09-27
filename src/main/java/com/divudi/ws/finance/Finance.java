@@ -170,6 +170,15 @@ public class Finance {
         return jSONObjectOut;
     }
 
+    private JSONObject errorMessageNotValidPathParameter() {
+        JSONObject jSONObjectOut = new JSONObject();
+        jSONObjectOut.put("code", 401);
+        jSONObjectOut.put("type", "error");
+        String e = "Not a valid path parameter.";
+        jSONObjectOut.put("message", e);
+        return jSONObjectOut;
+    }
+
     private JSONObject successMessage() {
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("code", 200);
@@ -435,7 +444,7 @@ public class Finance {
                     if (bi.getBillSession() != null) {
                         joBi.put("BillSession", bi.getBillSession());
                     }
-                    
+
                     if (bi.getDiscount() != 0.0) {
                         joBi.put("Discount", bi.getDiscount());
                     }
@@ -503,7 +512,6 @@ public class Finance {
                         joBi.put("VatPlusNetValue", bi.getVatPlusNetValue());
                     }
 
-                    
                 }
                 biArray.put(joBi);
             }
@@ -552,7 +560,6 @@ public class Finance {
             if (bill.getPaymentScheme() != null) {
                 jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
             }
-            
 
             if (bill.getInstitution() != null) {
                 jSONObject.put("institution", bill.getInstitution().getName());
@@ -560,7 +567,6 @@ public class Finance {
             if (bill.getDepartment() != null) {
                 jSONObject.put("department", bill.getDepartment().getName());
             }
-            
 
             if (bill.getGrantTotal() != 0.0) {
                 jSONObject.put("grand_total", bill.getGrantTotal());
@@ -576,20 +582,11 @@ public class Finance {
                 jSONObject.put("invoice_number", bill.getInvoiceNumber());
             }
 
-           
-
             array.put(jSONObject);
         }
         return array;
     }
 
-    
-    
-    
-    
-    
-    
-    
     private boolean isUserAuthenticated(String authString) {
         System.out.println("authString = " + authString);
         try {
@@ -648,7 +645,7 @@ public class Finance {
 //            ipadd = requestContext.getRemoteAddr();
 //        }
 
-        List<Bill> bills = billList(0, null, null);
+        List<Bill> bills = billList(0, null, null, null);
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
 
@@ -680,7 +677,7 @@ public class Finance {
         Date date = CommonFunctions.parseDate(dateString, fromat);
         Date fromDate = CommonFunctions.getStartOfDay(date);
         Date toDate = CommonFunctions.getEndOfDay(date);
-        List<Bill> bills = billList(0, fromDate, toDate);
+        List<Bill> bills = billList(0, fromDate, toDate, null);
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -712,7 +709,7 @@ public class Finance {
         String format = "dd-MM-yyyy-hh:mm:ss";
         Date fromDate = CommonFunctions.parseDate(fromString, format);
         Date toDate = CommonFunctions.parseDate(toString, format);
-        List<Bill> bills = billList(0, fromDate, toDate);
+        List<Bill> bills = billList(0, fromDate, toDate, null);
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -745,7 +742,7 @@ public class Finance {
 //            ipadd = requestContext.getRemoteAddr();
 //        }
 
-        List<Bill> bills = billList(0, null, null);
+        List<Bill> bills = billList(0, null, null, null);
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
 
@@ -777,7 +774,7 @@ public class Finance {
         Date date = CommonFunctions.parseDate(dateString, fromat);
         Date fromDate = CommonFunctions.getStartOfDay(date);
         Date toDate = CommonFunctions.getEndOfDay(date);
-        List<Bill> bills = billList(0, fromDate, toDate);
+        List<Bill> bills = billList(0, fromDate, toDate, null);
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -809,7 +806,7 @@ public class Finance {
         String format = "dd-MM-yyyy-hh:mm:ss";
         Date fromDate = CommonFunctions.parseDate(fromString, format);
         Date toDate = CommonFunctions.parseDate(toString, format);
-        List<Bill> bills = billList(0, fromDate, toDate);
+        List<Bill> bills = billList(0, fromDate, toDate, null);
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -833,7 +830,151 @@ public class Finance {
         return json;
     }
 
-    public List<Bill> billList(Integer recordCount, Date fromDate, Date toDate) {
+    @GET
+    @Path("/bill_item_cat/{bill_category}")
+    @Produces("application/json")
+    public String getBillItemByCategory(@Context HttpServletRequest requestContext,
+            @PathParam("bill_category") String billCategory) {
+//        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
+//        if (ipadd == null) {
+//            ipadd = requestContext.getRemoteAddr();
+//        }
+
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        BillType bt;
+        try {
+            bt = BillType.valueOf(billCategory);
+            if (bt == null) {
+                jSONObjectOut = errorMessageNotValidPathParameter();
+                String json = jSONObjectOut.toString();
+                return json;
+            }
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<Bill> bills = billList(0, null, null, bt);
+
+        if (!bills.isEmpty()) {
+            array = billAndBillItemsToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
+        } else {
+            jSONObjectOut = errorMessageNoData();
+        }
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    @GET
+    @Path("/bill_item_cat/{date}/{bill_category}")
+    @Produces("application/json")
+    public String getBillItemByCategory(@PathParam("date") String dateString, @PathParam("bill_category") String billCategory, @Context HttpServletRequest requestContext
+    ) {
+        String fromat = "dd-MM-yyyy";
+        Date date = CommonFunctions.parseDate(dateString, fromat);
+        Date fromDate = CommonFunctions.getStartOfDay(date);
+        Date toDate = CommonFunctions.getEndOfDay(date);
+
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        BillType bt;
+        try {
+            bt = BillType.valueOf(billCategory);
+            if (bt == null) {
+                jSONObjectOut = errorMessageNotValidPathParameter();
+                String json = jSONObjectOut.toString();
+                return json;
+            }
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<Bill> bills = billList(0, fromDate, toDate, bt);
+
+        if (bills != null && !bills.isEmpty()) {
+            array = billAndBillItemsToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
+        } else {
+            jSONObjectOut = errorMessageNoData();
+        }
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    @GET
+    @Path("/bill_item_cat/{from}/{to}/{bill_category}")
+    @Produces("application/json")
+    public String getBillItemByCategory(@PathParam("from") String fromString, @PathParam("bill_category") String billCategory, @PathParam("to") String toString,
+            @Context HttpServletRequest requestContext
+    ) {
+        String format = "dd-MM-yyyy-hh:mm:ss";
+        Date fromDate = CommonFunctions.parseDate(fromString, format);
+        Date toDate = CommonFunctions.parseDate(toString, format);
+
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        BillType bt;
+        try {
+            bt = BillType.valueOf(billCategory);
+            if (bt == null) {
+                jSONObjectOut = errorMessageNotValidPathParameter();
+                String json = jSONObjectOut.toString();
+                return json;
+            }
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<Bill> bills = billList(0, fromDate, toDate, bt);
+
+        if (!bills.isEmpty()) {
+            array = billAndBillItemsToJSONArray(bills);
+            jSONObjectOut.put("data", array);
+            jSONObjectOut.put("status", successMessage());
+        } else {
+            jSONObjectOut = errorMessageNoData();
+        }
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    public List<Bill> billList(Integer recordCount, Date fromDate, Date toDate, BillType bt) {
 
         List<Bill> bills;
         String j;
@@ -842,8 +983,12 @@ public class Finance {
         j = " select b "
                 + " from Bill b "
                 + " where b.retired<>:ret "
-                + " and b.createdAt between :fd and :td "
-                + " order by b.id ";
+                + " and b.createdAt between :fd and :td ";
+        if (bt != null) {
+            j += " and b.billType=:bt";
+            m.put("bt", bt);
+        }
+        j = j + " order by b.id ";
 
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay();
