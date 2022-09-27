@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+
+    <ui:define name="content">
+        <p:growl />
+
+        <p:panelGrid >
+            <f:facet name="header" >
+                <h:outputText value="Manage My API Keys" ></h:outputText>
+            </f:facet>
+            <p:row >
+                <p:column headerText="Add New API Key" >
+                    <h:panelGrid columns="2" >
+                        <p:outputLabel for="keyname" value="Key Name" ></p:outputLabel>
+                        <p:selectOneMenu id="keyname" value="" required="true" requiredMessage="Please select key name" >
+                            <f:selectItems value="#{apiKeyController.apiKeyTypes}" ></f:selectItems>
+                        </p:selectOneMenu>
+                        <p:outputLabel for="keyvalue" value="Key Value" ></p:outputLabel>
+                        <p:inputText id="keyvalue" value="#{apiKeyController.current.keyValue}"  required="true" requiredMessage="Please select key value"></p:inputText>
+                    </h:panelGrid>
+                </p:column>
+                <p:column headerText="My Active API Keys">
+                    
+                </p:column>
+            </p:row>
+
+        </p:panelGrid>
+
+
+
+
+    </ui:define>
+
+
+</ui:composition>

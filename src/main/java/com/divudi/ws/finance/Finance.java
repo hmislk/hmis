@@ -6,6 +6,7 @@
 package com.divudi.ws.finance;
 
 import com.divudi.bean.channel.AgentReferenceBookController;
+import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.data.BillClassType;
@@ -44,16 +45,21 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import org.apache.commons.codec.binary.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -66,6 +72,9 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.core.SecurityContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -121,6 +130,8 @@ public class Finance {
     private CommonController commonController;
     @Inject
     AgentReferenceBookController AgentReferenceBookController;
+    @Inject
+    AuthenticateController authenticateController;
 
     /**
      * Creates a new instance of Api
@@ -197,7 +208,10 @@ public class Finance {
                 jSONObject.put("cash_paid", bill.getCashPaid());
             }
 
-            jSONObject.put("payment_method", bill.getPaymentMethod().name());
+            if (bill.getPaymentMethod() != null) {
+                jSONObject.put("payment_method", bill.getPaymentMethod().name());
+            }
+
             if (bill.getPaymentScheme() != null) {
                 jSONObject.put("discount_scheme", bill.getPaymentScheme().getName());
             }
@@ -379,13 +393,49 @@ public class Finance {
         return array;
     }
 
+    private boolean isUserAuthenticated(String authString) {
+        System.out.println("authString = " + authString);
+        try {
+            byte[] decoded = Base64.decodeBase64(authString);
+            String decodedAuth = new String(decoded, "UTF-8") + "\n";
+
+            String[] authParts = decodedAuth.split("\\s+");
+            System.out.println("authParts = " + authParts);
+            String username = authParts[0];
+            System.out.println("username = " + username);
+            String password = authParts[1];
+            System.out.println("password = " + password);
+            return authenticateController.userAuthenticated(username, password);
+        } catch (UnsupportedEncodingException ex) {
+            System.out.println("ex = " + ex);
+            return false;
+        }
+    }
+
     @GET
     @Path("/bill")
     @Produces("application/json")
-    public String getBill() {
+    public String getBill(@Context HttpServletRequest requestContext,
+            @Context SecurityContext context,
+            @HeaderParam("authorization") String authString) {
+        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
+        if (ipadd == null) {
+            ipadd = requestContext.getRemoteAddr();
+        }
+
+        String key = requestContext.getHeader("Finance");
+        System.out.println("authhead = " + key);
+        System.out.println("ipadd = " + ipadd);
         List<Bill> bills = billList(0, null, null);
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
+
+        if (!isUserAuthenticated(authString)) {
+            jSONObjectOut = errorMessageNoData();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
         if (!bills.isEmpty()) {
             array = billToJSONArray(bills);
             jSONObjectOut.put("data", array);
@@ -401,7 +451,8 @@ public class Finance {
     @GET
     @Path("/bill/{date}")
     @Produces("application/json")
-    public String getBill(@PathParam("date") String dateString) {
+    public String getBill(@PathParam("date") String dateString
+    ) {
         String fromat = "dd-MM-yyyy";
         Date date = CommonFunctions.parseDate(dateString, fromat);
         Date fromDate = CommonFunctions.getStartOfDay(date);
@@ -425,7 +476,8 @@ public class Finance {
     @GET
     @Path("/bill/{from}/{to}")
     @Produces("application/json")
-    public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString) {
+    public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString
+    ) {
         String format = "dd MM yyyy hh:mm:ss";
         Date fromDate = CommonFunctions.getStartOfDay(CommonFunctions.parseDate(fromString, format));
         Date toDate = CommonFunctions.getEndOfDay(CommonFunctions.parseDate(toString, format));
@@ -741,7 +793,6 @@ public class Finance {
 
         return array;
     }
-    
 
     public JSONArray billsDetails(long agentId, Date fromDate, Date toDate, boolean createDate) {
         List<BillSession> billObjects;
