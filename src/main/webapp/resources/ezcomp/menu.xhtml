@@ -50,7 +50,7 @@
                 </p:submenu>
                 <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                 <p:menuitem ajax="false" action="/opd_search_bill_change_payment" actionListener="#{searchController.makeListNull}"  value="Change Payment Method" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
-                
+
                 <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
                 <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" rendered="true" />
                 <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration" rendered="false" />
@@ -686,8 +686,11 @@
             </p:submenu>
 
             <p:submenu styleClass="rightBordrOnly" label="User"  >
-                <p:menuitem  ajax="false"  action="/user_change_password" value="Change Password"   ></p:menuitem>
-                <p:menuitem  ajax="false"  action="/user_preferances" value="Change Preferances"  ></p:menuitem>
+                <p:menuitem  ajax="false"  action="/user_change_password" value="Change My Password"   ></p:menuitem>
+                <p:menuitem  ajax="false"  action="/user_preferances" value="Change My Theme"  ></p:menuitem>
+                <p:menuitem  ajax="false"  action="#{apiKeyController.toManageMyApiKeys()}" 
+                             value="Manage My API Keys"  ></p:menuitem>
+
             </p:submenu>
 
             <p:submenu styleClass="rightBordrOnly" label="Admin"  rendered="#{webUserController.hasPrivilege('Admin')}">
