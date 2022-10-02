@@ -338,6 +338,12 @@ public class ReportsTransfer implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
     }
+    
+    public void fillDepartmentAdjustmentByBillItem() {
+        Date startTime = new Date();
+        transferItems = fetchBillItems(BillType.PharmacyAdjustment);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
+    }
 
     public List<BillItem> fetchBillItems(BillType bt) {
         List<BillItem> billItems = new ArrayList<>();
