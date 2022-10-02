@@ -388,7 +388,7 @@ public class InstitutionController implements Serializable {
 
         Institution i = getFacade().find(current.getId());
         double mcl = i.getMaxCreditLimit();
-        //System.out.println("mcl = " + mcl);
+        //// // System.out.println("mcl = " + mcl);
         double acl = i.getAllowedCredit();
         double scl = i.getStandardCreditLimit();
 
@@ -523,12 +523,12 @@ public class InstitutionController implements Serializable {
         InstitutionType[] types = {InstitutionType.Agency};
         selectedAgencies = completeInstitution(null, types);
         for (Institution a : selectedAgencies) {
-//            //System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //// // System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
             DecimalFormat df=new DecimalFormat("000");
             double d=Double.parseDouble(a.getInstitutionCode());
-//            //System.out.println("d = " + d);
+//            //// // System.out.println("d = " + d);
             a.setInstitutionCode(df.format(d));
-//            //System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //// // System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
             getFacade().edit(a);
         }
     }

@@ -696,7 +696,7 @@ public class CreditCompanyDueController implements Serializable {
         m.put("toDate", td);
         m.put("fromDate", fd);
         m.put("cl", BilledBill.class);
-//        //System.out.println("sql = " + sql);
+//        //// // System.out.println("sql = " + sql);
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
@@ -824,7 +824,7 @@ public class CreditCompanyDueController implements Serializable {
                 b.setCreditPaidAmount(com.divudi.java.CommonFunctions.round(b.getCreditPaidAmount()));
                 b.getFinalBill().setPaidAmount(com.divudi.java.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
                 b.setTransPaid(b.getFinalBill().getPaidAmount()+b.getCreditPaidAmount());
-                //System.out.println("b.getTransPaid() = " + b.getTransPaid());
+                //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
                 b.setTransPaid(com.divudi.java.CommonFunctions.round(b.getTransPaid()));
                 
                 
@@ -915,7 +915,7 @@ public class CreditCompanyDueController implements Serializable {
 //                    + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
 //                    + " and ( (upper(c.bhtNo) like :q )or (upper(c.patient.person.name)"
 //                    + " like :q) ) order by c.bhtNo";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            //      h.put("btp", BillType.InwardPaymentBill);
 //            h.put("q", "%" + query.toUpperCase() + "%");
 //            //suggestions = admissionFacade().findBySQL(sql, h);

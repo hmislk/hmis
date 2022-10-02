@@ -49,16 +49,16 @@ public class SmsManagerEjb {
     }
 
     private void sendSmsAwaitingToSendInDatabase() {
-        System.out.println("sendSmsAwaitingToSendInDatabase");
+        // // System.out.println("sendSmsAwaitingToSendInDatabase");
         String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
         Map m = new HashMap();
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, 0);
         m.put("d", c.getTime());
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
+        // // System.out.println("m = " + m);
+        // // System.out.println("j = " + j);
         List<Sms> smses = getSmsFacade().findBySQL(j,m,TemporalType.DATE);
-        System.out.println("smses = " + smses.size());
+        // // System.out.println("smses = " + smses.size());
 //        if (false) {
 //            Sms e = new Sms();
 //            e.getSentSuccessfully();
@@ -105,7 +105,7 @@ public class SmsManagerEjb {
         }
 
         try {
-            //System.out.println("targetURL = " + targetURL);
+            //// // System.out.println("targetURL = " + targetURL);
             //Create connection
             //Create connection
             //Create connection
@@ -114,26 +114,26 @@ public class SmsManagerEjb {
             //Create connection
             //Create connection
             //Create connection
-            //System.out.println("1");
+            //// // System.out.println("1");
             URL url = new URL(targetURL);
-            //System.out.println("2");
+            //// // System.out.println("2");
             connection = (HttpURLConnection) url.openConnection();
-            //System.out.println("3");
+            //// // System.out.println("3");
             connection.setRequestMethod("GET");
-            //System.out.println("4");
+            //// // System.out.println("4");
             connection.setDoOutput(true);
-            //System.out.println("4");
+            //// // System.out.println("4");
             //Send request
             DataOutputStream wr = new DataOutputStream(
                     connection.getOutputStream());
-            //System.out.println("5");
+            //// // System.out.println("5");
             wr.writeBytes(targetURL);
-            //System.out.println("6");
+            //// // System.out.println("6");
             wr.flush();
-            //System.out.println("wr = " + wr);
-            //System.out.println("7");
+            //// // System.out.println("wr = " + wr);
+            //// // System.out.println("7");
             wr.close();
-            //System.out.println("8");
+            //// // System.out.println("8");
             //Get Response  
             InputStream is = connection.getInputStream();
             BufferedReader rd = new BufferedReader(new InputStreamReader(is));
@@ -156,9 +156,9 @@ public class SmsManagerEjb {
 
     public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
-        //System.out.println("number = " + number);
-        //System.out.println("message = " + message);
-        //System.out.println("username = " + username);
+        //// // System.out.println("number = " + number);
+        //// // System.out.println("message = " + message);
+        //// // System.out.println("username = " + username);
 
         Map<String, String> m = new HashMap();
         m.put("userName", username);
