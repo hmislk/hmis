@@ -205,7 +205,7 @@ public class InwardReportController implements Serializable {
         if (withoutCancelBHT) {
             sql += " and b.retired=false ";
         }
-        //System.out.println("discharged = " + discharged);
+        //// // System.out.println("discharged = " + discharged);
         if (discharged != null) {
             if (discharged) {
                 sql += " and b.discharged=true ";

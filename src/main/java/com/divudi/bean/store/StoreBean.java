@@ -173,7 +173,7 @@ public class StoreBean {
         us.setCreater(webUser);
         us.setCreatedAt(new Date());
         us.setUserStockContainer(userStockContainer);
-        //   ////System.out.println("2");
+        //   ////// // System.out.println("2");
         if (us.getId() == null) {
             getUserStockFacade().create(us);
         } else {
@@ -1164,7 +1164,7 @@ public class StoreBean {
 //    }
 //    public double getRetailRate(Item item, Department department) {
 //
-//        //////System.out.println("getting Retail rate");
+//        //////// // System.out.println("getting Retail rate");
 //        double rate = getLastRetailRate(item, department);
 //        if (item instanceof Ampp) {
 //            return rate * item.getDblValue();
@@ -1215,7 +1215,7 @@ public class StoreBean {
     }
 
 //    public double getPurchaseRate(Item item, Department department) {
-//        //////System.out.println("getting purchase rate");
+//        //////// // System.out.println("getting purchase rate");
 //        double rate = getLastPurchaseRate(item, department);
 //        if (item instanceof Ampp) {
 //            return rate * item.getDblValue();
@@ -1524,11 +1524,11 @@ public class StoreBean {
 
     public Vmpp getVmpp(Vmp vmp, double issueUnitsPerPack, MeasurementUnit packUnit) {
         if (vmp == null || packUnit == null || vmp.getCategory() == null) {
-            //////System.out.println("vmp is " + vmp);
-            //////System.out.println("pack unit is " + packUnit);
-            //////System.out.println("vmp is " + vmp);
+            //////// // System.out.println("vmp is " + vmp);
+            //////// // System.out.println("pack unit is " + packUnit);
+            //////// // System.out.println("vmp is " + vmp);
             if (vmp != null) {
-                //////System.out.println("cat is " + vmp.getCategory());
+                //////// // System.out.println("cat is " + vmp.getCategory());
             }
             return null;
         }
@@ -1672,7 +1672,7 @@ public class StoreBean {
 //        return getBillItemFacade().findDoubleByJpql(sql, m);
 //    }
     public double getLastPurchaseRate(Item item, Department dept) {
-        //////System.out.println("getting last purchase rate");
+        //////// // System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1700,7 +1700,7 @@ public class StoreBean {
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
-        //////System.out.println("getting last purchase rate");
+        //////// // System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1739,7 +1739,7 @@ public class StoreBean {
     }
 
     public double getLastPurchaseRate(Item item) {
-        //////System.out.println("getting last purchase rate");
+        //////// // System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1765,7 +1765,7 @@ public class StoreBean {
     }
 
     public double getLastRetailRate(Item item, Institution ins) {
-        //////System.out.println("getting last purchase rate");
+        //////// // System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1791,7 +1791,7 @@ public class StoreBean {
     }
 
     public double getLastRetailRate(Item item) {
-        //////System.out.println("getting last purchase rate");
+        //////// // System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1816,7 +1816,7 @@ public class StoreBean {
     }
 
     public double getLastRetailRate(Item item, Department dept) {
-        //////System.out.println("getting last purchase rate");
+        //////// // System.out.println("getting last purchase rate");
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }

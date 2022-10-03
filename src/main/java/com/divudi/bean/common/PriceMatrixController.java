@@ -309,7 +309,7 @@ public class PriceMatrixController implements Serializable {
     
     
     public PharmacyMemberShipDiscount getPharmacyMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
-        //System.out.println("getPharmacyMemberDisCount");
+        //// // System.out.println("getPharmacyMemberDisCount");
         PharmacyMemberShipDiscount opdMemberShipDiscount = null;
 
         String jpql;

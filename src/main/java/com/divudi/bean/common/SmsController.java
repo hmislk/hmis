@@ -143,9 +143,9 @@ public class SmsController implements Serializable {
 
     public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
-        //System.out.println("number = " + number);
-        //System.out.println("message = " + message);
-        //System.out.println("username = " + username);
+        //// // System.out.println("number = " + number);
+        //// // System.out.println("message = " + message);
+        //// // System.out.println("username = " + username);
 
         Map m = new HashMap();
         m.put("userName", username);
@@ -167,9 +167,9 @@ public class SmsController implements Serializable {
 
     public boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
 
-        //System.out.println("number = " + number);
-        //System.out.println("message = " + message);
-        //System.out.println("username = " + username);
+        //// // System.out.println("number = " + number);
+        //// // System.out.println("message = " + message);
+        //// // System.out.println("username = " + username);
 
         Map m = new HashMap();
         m.put("userName", username);
