@@ -646,6 +646,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return false;
     }
+    
+     
 
     public void decryptAllUsers() {
         String temSQL;

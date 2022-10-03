@@ -88,6 +88,12 @@
                                     <p:commandButton styleClass="linkButton" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch" ajax="false" ></p:commandButton>                            
                                 </h:panelGrid>
                             </p:tab>
+                            <p:tab title="Adjustment Reports">
+                                <h:panelGrid columns="1" styleClass="alignTop">
+                                    <p:commandButton styleClass="linkButton" value="Item-vice adjustments" 
+                                                     action="pharmacy_report_adjustment_bill_item" ajax="false" ></p:commandButton>                            
+                                </h:panelGrid>
+                            </p:tab>
                             <p:tab title="Transaction Reports">
                                 <h:panelGrid columns="1" styleClass="alignTop">
                                     <p:commandButton styleClass="linkButton" value="All Items Transaction Summery" action="/pharmacy/raport_all_item_transaction_summery" ajax="false" ></p:commandButton>                            
@@ -95,7 +101,7 @@
                                 </h:panelGrid>
                             </p:tab>
                         </p:tabView>
-                        
+
                     </p:panel>
                 </h:form>
             </ui:define>
