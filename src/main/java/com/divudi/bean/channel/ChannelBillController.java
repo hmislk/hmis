@@ -1370,7 +1370,7 @@ public class ChannelBillController implements Serializable {
 //            return true;
 //        }
 
-        removeAgencyNullBill(getbookingController().getSelectedServiceSession());
+//        removeAgencyNullBill(getbookingController().getSelectedServiceSession());
 
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
@@ -1606,71 +1606,11 @@ public class ChannelBillController implements Serializable {
         printingBill = saveBilledBill();
 
         printingBill = getBillFacade().find(printingBill.getId());
-        bookingController.fillBillSessions();
-        bookingController.generateSessionsOnlyIdNew();
+//        bookingController.fillBillSessions();
+//        bookingController.generateSessionsOnlyIdNew();
         //********************retier bill,billitem,billsession***********************************************
-        if (errorCheckAfterSaveBill(printingBill)) {
+        
 
-            printingBill.setRetired(true);
-            printingBill.setRetireComments("Skip System Error");
-            printingBill.setRetiredAt(new Date());
-            getBillFacade().edit(printingBill);
-
-            BillItem bi;
-            BillSession bs;
-            List<BillFee> BillFees;
-            String sql;
-            Map m = new HashMap();
-            m.put("b", printingBill);
-            if (printingBill.getSingleBillItem() != null) {
-                bi = getBillItemFacade().find(printingBill.getSingleBillItem().getId());
-            } else {
-                sql = " select bi from billItem bi where "
-                        + " bi.bill=:b ";
-                bi = getBillItemFacade().findFirstBySQL(sql, m);
-            }
-            if (bi != null) {
-                bi.setRetired(true);
-                bi.setRetireComments("Skip System Error");
-                bi.setRetirer(getSessionController().getLoggedUser());
-                bi.setRetiredAt(new Date());
-                getBillItemFacade().edit(bi);
-            }
-
-            if (printingBill.getSingleBillSession() != null) {
-                bs = getBillSessionFacade().find(printingBill.getSingleBillSession().getId());
-            } else {
-                sql = " select bs from BillSession bs where "
-                        + " bs.bill=:b ";
-                bs = getBillSessionFacade().findFirstBySQL(sql, m);
-            }
-            if (bs != null) {
-                bs.setRetired(true);
-                bs.setRetireComments("Skip System Error");
-                bs.setRetirer(getSessionController().getLoggedUser());
-                bs.setRetiredAt(new Date());
-                getBillSessionFacade().edit(bs);
-            }
-
-            sql = " select bf from BillFee bf where "
-                    + " bf.bill=:b ";
-
-            BillFees = getBillFeeFacade().findBySQL(sql, m);
-            if (!BillFees.isEmpty()) {
-                for (BillFee bf : BillFees) {
-                    bf.setRetired(true);
-                    bf.setRetireComments("Skip System Error");
-                    bf.setRetirer(getSessionController().getLoggedUser());
-                    bf.setRetiredAt(new Date());
-                    getBillFeeFacade().edit(bf);
-                }
-            }
-            return;
-        }
-
-        if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-            checkAppoinmentNumberAlredyBooked(printingBill);
-        }
         settleSucessFully = true;
         sessionController.setBill(printingBill);
 
