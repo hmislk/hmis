@@ -786,7 +786,6 @@ public class Qb {
         j = " select b "
                 + " from Bill b "
                 + " where b.retired<>:ret "
-                + " and b.createdAt between :fd and :td "
                 + " and b.id > :bid ";
         if (toId != null) {
             j += " and b.id < :tid";
