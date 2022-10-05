@@ -434,7 +434,10 @@ public class Qb {
         JSONObject headerJo = new JSONObject();
         String supplierName = "Supplier";
         if (b.getFromInstitution() != null) {
-            b.getFromInstitution().getName();
+            supplierName = b.getFromInstitution().getName();
+        }
+        if (b.getToInstitution() != null) {
+            supplierName += " " + b.getToInstitution().getName();
         }
         headerJo.put("supplier", supplierName);
 
@@ -459,14 +462,17 @@ public class Qb {
 //        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
-    
+
     private JSONObject paymentBilltoJSONObject(Bill b) {
 //        System.out.println("pharmBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
         String supplierName = "Supplier";
         if (b.getFromInstitution() != null) {
-            b.getFromInstitution().getName();
+            supplierName = b.getFromInstitution().getName();
+        }
+        if (b.getToInstitution() != null) {
+            supplierName += " " + b.getToInstitution().getName();
         }
         headerJo.put("supplier", supplierName);
 
@@ -1161,7 +1167,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 1000;
+        int maxNo = 100;
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null);
         Long lastIdOfCurrentdata = null;
@@ -1224,7 +1230,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 1000;
+        int maxNo = 100;
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null);
         Long lastIdOfCurrentdata = null;
