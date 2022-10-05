@@ -69,7 +69,7 @@
                                     <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
                                             update=":#{p:component('txtTotal')}" process="colSelect dtF"      />  
 
-                                    <p:column id="colSelect"   selectionMode="multiple"  disabledSelection="#{b.refunded==true}"  >
+                                    <p:column id="colSelect"   selectionMode="multiple"   >
                                     </p:column>
 
                                     <p:column >
