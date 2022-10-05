@@ -45,7 +45,7 @@ public enum InwardChargeType {
     TreatmentCharges("Treatment Charges"),
     X_Ray("X-Ray"),
     WardProcedures("Surgical Procedures"),
-    CardiacMonitoring("Cardiac Monitoring"),
+    CardiacMonitoring("Holter Monitoring"),
     Nebulisation("Nebulisation"),
     Echo("Echo"),
     SyringePump("Syringe Pump"),
@@ -54,12 +54,11 @@ public enum InwardChargeType {
     OperationTheatreMachineryCharges("Operation Theatre Machinery Charges"),
     TheaterConsumbale("Theater Consumables & Drugs"),
     VAT("VAT (15%)"),
-    AccessoryCharges("Accessory Charges"),
-    EyeLence("Eye Lence"),
+    AccessoryCharges("Endoscopy Charges"),
+    EyeLence("Opthalmic Technician & Lense Fee"),
     HospitalSupportService("Hospital Support Service"),
     ExtraMedicine("Extra Medicine"),
     DialysisTreatment("Dialysis Treatment Charges"),
-    
     @Deprecated
     Investigations("Investigations"),
     @Deprecated

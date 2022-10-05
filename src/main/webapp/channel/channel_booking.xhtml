@@ -556,6 +556,7 @@
                                            :#{p:component('pgNewBookingDetail')}" 
                                            update="gpThisBookingDetails dialogChannelAdded" style="float: right;" 
                                            action="#{channelBillController.add}" 
+                                           onclick="if (! confirm('Are you sure?')) return false"
                                            oncomplete="PF('dlgAdd').show();">   
                             <!--<p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />-->
                         </p:commandButton>

@@ -327,7 +327,7 @@ public class PatientReport implements Serializable {
         } else {
             patientReportItemValues = new ArrayList<>();
         }
-//        //System.out.println("patientReportItemValues = " + patientReportItemValues.size());
+//        //// // System.out.println("patientReportItemValues = " + patientReportItemValues.size());
         return patientReportItemValues;
     }
 

@@ -66,10 +66,10 @@ public class StockHistoryController implements Serializable {
 
 //        List<StockHistory> historys=facade.findBySQL(jpql, m,TemporalType.TIMESTAMP);
 //        for (StockHistory history : historys) {
-//            //System.out.println("history.getStockAt() = " + history.getStockAt());
-//            //System.out.println("history.getStockAt() = " + history.getCreatedAt());
+//            //// // System.out.println("history.getStockAt() = " + history.getStockAt());
+//            //// // System.out.println("history.getStockAt() = " + history.getCreatedAt());
 //        }
-        ////System.out.println("m = " + m);
+        ////// // System.out.println("m = " + m);
         pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m, TemporalType.TIMESTAMP);
         for (Date d : pharmacyStockHistoryDays) {
         }

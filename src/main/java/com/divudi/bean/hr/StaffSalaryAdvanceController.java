@@ -194,7 +194,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //
 //    }
     public void onEdit(RowEditEvent event) {
-        ////////System.out.println("Runn");
+        ////////// // System.out.println("Runn");
         StaffSalaryComponant tmp = (StaffSalaryComponant) event.getObject();
 
         getHumanResourceBean().setEpf(tmp, getHrmVariablesController().getCurrent().getEpfRate(), getHrmVariablesController().getCurrent().getEpfCompanyRate());
