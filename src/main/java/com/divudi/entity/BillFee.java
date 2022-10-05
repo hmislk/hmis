@@ -314,7 +314,7 @@ public class BillFee implements Serializable {
     @Transient
     private Double tmpSettleChangedValue;
 
-        public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
+    public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {

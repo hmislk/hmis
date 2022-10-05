@@ -10,16 +10,32 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
+import com.divudi.data.FeeType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.PersonInstitutionType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.FinalVariables;
 import com.divudi.ejb.ServiceSessionBean;
+import com.divudi.entity.AgentHistory;
 import com.divudi.entity.ApiKey;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
+import com.divudi.entity.BillSession;
+import com.divudi.entity.BilledBill;
+import com.divudi.entity.CancelledBill;
+import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
+import com.divudi.entity.ItemFee;
+import com.divudi.entity.Patient;
+import com.divudi.entity.Person;
+import com.divudi.entity.RefundBill;
+import com.divudi.entity.ServiceSession;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -31,17 +47,27 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.apache.commons.codec.binary.Base64;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -49,6 +75,8 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.core.SecurityContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -57,13 +85,30 @@ import org.json.JSONObject;
  *
  * @author Archmage-Dushan
  */
-@Path("finance")
+@Path("qb")
 @RequestScoped
-public class Finance {
+public class Qb {
 
+    @Context
+    private UriInfo context;
 
     @EJB
+    private BillSessionFacade billSessionFacade;
+
+    @EJB
+    private InstitutionFacade institutionFacade;
+    @EJB
     private BillFacade billFacade;
+    @EJB
+    private BillItemFacade billItemFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
+
+    @EJB
+    private CommonFunctions commonFunctions;
+
+    @Inject
+    private CommonController commonController;
     @Inject
     AuthenticateController authenticateController;
     @Inject
@@ -72,7 +117,7 @@ public class Finance {
     /**
      * Creates a new instance of Api
      */
-    public Finance() {
+    public Qb() {
     }
 
     private JSONObject errorMessage() {
@@ -118,9 +163,10 @@ public class Finance {
         return jSONObjectOut;
     }
 
-    private JSONArray billToJSONArray(List<Bill> bills) {
+    private JSONArray billToJSONArray(List<BillFee> billFees) {
         JSONArray array = new JSONArray();
-        for (Bill bill : bills) {
+        for (BillFee billFee : billFees) {
+            Bill bill = billFee.getBill();
             JSONObject jSONObject = new JSONObject();
             jSONObject.put("id", bill.getId());
             jSONObject.put("bill_id_1", bill.getInsId());
@@ -350,6 +396,62 @@ public class Finance {
         return array;
     }
 
+    private JSONObject pharmBilltoJSONObject(Bill b) {
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        if (b.getPatient() != null & b.getPatient().getPerson() != null) {
+            headerJo.put("customerName", b.getPatient().getPerson().getNameWithTitle());
+        } else {
+            headerJo.put("customerName", "Customer");
+        }
+
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId());
+
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+            JSONObject bijo = new JSONObject();
+            if (bi.getItem() != null) {
+                bijo.put("item", bi.getItem().getName());
+            }else{
+                bijo.put("item", "item");
+            }
+            bijo.put("qty", bi.getQty());
+            bijo.put("amount", bi.getNetValue());
+            bijo.put("itemType", "Pharmacy Item");
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+        return jSONObject;
+    }
+
+    private JSONArray invoiceBillsToJSONArray(List<Bill> bills) {
+        JSONArray array = new JSONArray();
+        for (Bill bill : bills) {
+            if (bill.getBillType() != null) {
+                continue;
+            }
+            JSONObject jSONObject = new JSONObject();
+            switch (bill.getBillType()) {
+                case PharmacySale:
+                case PharmacyWholeSale:
+                    jSONObject = pharmBilltoJSONObject(bill);
+                    break;
+                case ChannelPaid:
+                case OpdBill:
+                case InwardPaymentBill:
+                case ChannelCash:
+                    break;
+                default:
+                    continue;
+            }
+
+            array.put(jSONObject);
+        }
+        return array;
+    }
+
     private JSONArray billAndBillItemsToJSONArray(List<Bill> bills) {
         JSONArray array = new JSONArray();
         for (Bill bill : bills) {
@@ -519,25 +621,6 @@ public class Finance {
         return array;
     }
 
-    private boolean isUserAuthenticated(String authString) {
-        System.out.println("authString = " + authString);
-        try {
-            byte[] decoded = Base64.decodeBase64(authString);
-            String decodedAuth = new String(decoded, "UTF-8") + "\n";
-
-            String[] authParts = decodedAuth.split("\\s+");
-            System.out.println("authParts = " + authParts);
-            String username = authParts[0];
-            System.out.println("username = " + username);
-            String password = authParts[1];
-            System.out.println("password = " + password);
-            return authenticateController.userAuthenticated(username, password);
-        } catch (UnsupportedEncodingException ex) {
-            System.out.println("ex = " + ex);
-            return false;
-        }
-    }
-
     private boolean isValidKey(String key) {
         System.out.println("key = " + key);
         if (key == null || key.trim().equals("")) {
@@ -569,18 +652,12 @@ public class Finance {
     }
 
     @GET
-    @Path("/bill")
+    @Path("/invoice/{last_invoice_id}")
     @Produces("application/json")
-    public String getBill(@Context HttpServletRequest requestContext) {
-//        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
-//        if (ipadd == null) {
-//            ipadd = requestContext.getRemoteAddr();
-//        }
-
-        List<Bill> bills = billList(0, null, null, null);
+    public String getInvoice(@Context HttpServletRequest requestContext,
+            @PathParam("last_invoice_id") String strLastIdInRequest) {
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
-
         String key = requestContext.getHeader("Finance");
         if (!isValidKey(key)) {
             jSONObjectOut = errorMessageNotValidKey();
@@ -588,326 +665,120 @@ public class Finance {
             return json;
         }
 
-        if (!bills.isEmpty()) {
-            array = billToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill/{date}")
-    @Produces("application/json")
-    public String getBill(@PathParam("date") String dateString, @Context HttpServletRequest requestContext
-    ) {
-        String fromat = "dd-MM-yyyy";
-        Date date = CommonFunctions.parseDate(dateString, fromat);
-        Date fromDate = CommonFunctions.getStartOfDay(date);
-        Date toDate = CommonFunctions.getEndOfDay(date);
-        List<Bill> bills = billList(0, fromDate, toDate, null);
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        if (bills != null && !bills.isEmpty()) {
-            array = billToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill/{from}/{to}")
-    @Produces("application/json")
-    public String getBill(@PathParam("from") String fromString, @PathParam("to") String toString,
-            @Context HttpServletRequest requestContext) {
-        String format = "dd-MM-yyyy-hh:mm:ss";
-        Date fromDate = CommonFunctions.parseDate(fromString, format);
-        Date toDate = CommonFunctions.parseDate(toString, format);
-        List<Bill> bills = billList(0, fromDate, toDate, null);
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        if (!bills.isEmpty()) {
-            array = billToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill_item")
-    @Produces("application/json")
-    public String getBillItem(@Context HttpServletRequest requestContext) {
-//        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
-//        if (ipadd == null) {
-//            ipadd = requestContext.getRemoteAddr();
-//        }
-
-        List<Bill> bills = billList(0, null, null, null);
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        if (!bills.isEmpty()) {
-            array = billAndBillItemsToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill_item/{date}")
-    @Produces("application/json")
-    public String getBillItem(@PathParam("date") String dateString, @Context HttpServletRequest requestContext
-    ) {
-        String fromat = "dd-MM-yyyy";
-        Date date = CommonFunctions.parseDate(dateString, fromat);
-        Date fromDate = CommonFunctions.getStartOfDay(date);
-        Date toDate = CommonFunctions.getEndOfDay(date);
-        List<Bill> bills = billList(0, fromDate, toDate, null);
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        if (bills != null && !bills.isEmpty()) {
-            array = billAndBillItemsToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill_item/{from}/{to}")
-    @Produces("application/json")
-    public String getBillItem(@PathParam("from") String fromString, @PathParam("to") String toString,
-            @Context HttpServletRequest requestContext) {
-        String format = "dd-MM-yyyy-hh:mm:ss";
-        Date fromDate = CommonFunctions.parseDate(fromString, format);
-        Date toDate = CommonFunctions.parseDate(toString, format);
-        List<Bill> bills = billList(0, fromDate, toDate, null);
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        if (!bills.isEmpty()) {
-            array = billAndBillItemsToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill_item_cat/{bill_category}")
-    @Produces("application/json")
-    public String getBillItemByCategory(@Context HttpServletRequest requestContext,
-            @PathParam("bill_category") String billCategory) {
-//        String ipadd = requestContext.getHeader("X-FORWARDED-FOR");
-//        if (ipadd == null) {
-//            ipadd = requestContext.getRemoteAddr();
-//        }
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        BillType bt;
+        Long lastIdInRequest;
         try {
-            bt = BillType.valueOf(billCategory);
-            if (bt == null) {
-                jSONObjectOut = errorMessageNotValidPathParameter();
-                String json = jSONObjectOut.toString();
-                return json;
-            }
+            lastIdInRequest = Long.valueOf(strLastIdInRequest);
         } catch (Exception e) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
             return json;
         }
-
-        List<Bill> bills = billList(0, null, null, bt);
-
-        if (!bills.isEmpty()) {
-            array = billAndBillItemsToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
-
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill_item_cat/{date}/{bill_category}")
-    @Produces("application/json")
-    public String getBillItemByCategory(@PathParam("date") String dateString, @PathParam("bill_category") String billCategory, @Context HttpServletRequest requestContext
-    ) {
-        String fromat = "dd-MM-yyyy";
-        Date date = CommonFunctions.parseDate(dateString, fromat);
-        Date fromDate = CommonFunctions.getStartOfDay(date);
-        Date toDate = CommonFunctions.getEndOfDay(date);
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        BillType bt;
-        try {
-            bt = BillType.valueOf(billCategory);
-            if (bt == null) {
-                jSONObjectOut = errorMessageNotValidPathParameter();
-                String json = jSONObjectOut.toString();
-                return json;
-            }
-        } catch (Exception e) {
+        if (lastIdInRequest == null || lastIdInRequest < 1) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
             return json;
         }
 
-        List<Bill> bills = billList(0, fromDate, toDate, bt);
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.ChannelPaid);
+        billTypes.add(BillType.OpdBill);
+        billTypes.add(BillType.InwardPaymentBill);
+        billTypes.add(BillType.ChannelCash);
+        billTypes.add(BillType.PharmacyWholeSale);
 
-        if (bills != null && !bills.isEmpty()) {
-            array = billAndBillItemsToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
-        }
+        /**
+         * PharmacySale ChannelPaid OpdBill InwardPaymentBill ChannelCash
+         * PharmacyWholeSale
+         *
+         */
+        int maxNo = 10000;
 
-        String json = jSONObjectOut.toString();
-        return json;
-    }
-
-    @GET
-    @Path("/bill_item_cat/{from}/{to}/{bill_category}")
-    @Produces("application/json")
-    public String getBillItemByCategory(@PathParam("from") String fromString, @PathParam("bill_category") String billCategory, @PathParam("to") String toString,
-            @Context HttpServletRequest requestContext
-    ) {
-        String format = "dd-MM-yyyy-hh:mm:ss";
-        Date fromDate = CommonFunctions.parseDate(fromString, format);
-        Date toDate = CommonFunctions.parseDate(toString, format);
-
-        JSONArray array;
-        JSONObject jSONObjectOut = new JSONObject();
-
-        String key = requestContext.getHeader("Finance");
-        if (!isValidKey(key)) {
-            jSONObjectOut = errorMessageNotValidKey();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        BillType bt;
-        try {
-            bt = BillType.valueOf(billCategory);
-            if (bt == null) {
-                jSONObjectOut = errorMessageNotValidPathParameter();
-                String json = jSONObjectOut.toString();
-                return json;
-            }
-        } catch (Exception e) {
-            jSONObjectOut = errorMessageNotValidPathParameter();
-            String json = jSONObjectOut.toString();
-            return json;
-        }
-
-        List<Bill> bills = billList(0, fromDate, toDate, bt);
-
+        List<Bill> bills = billList(maxNo, billTypes, BillClassType.Bill, lastIdInRequest, null);
+        Long lastIdOfCurrentdata = null;
         if (!bills.isEmpty()) {
-            array = billAndBillItemsToJSONArray(bills);
-            jSONObjectOut.put("data", array);
-            jSONObjectOut.put("status", successMessage());
-        } else {
-            jSONObjectOut = errorMessageNoData();
+            Bill tbf = bills.get(bills.size() - 1);
+            if (tbf != null) {
+                lastIdOfCurrentdata = tbf.getId();
+            }
         }
+
+        array = invoiceBillsToJSONArray(bills);
+        jSONObjectOut.put("cInvList", array);
+        jSONObjectOut.put("lastId", lastIdOfCurrentdata);
+        jSONObjectOut.put("status", successMessage());
 
         String json = jSONObjectOut.toString();
         return json;
     }
 
-    public List<Bill> billList(Integer recordCount, Date fromDate, Date toDate, BillType bt) {
+    public List<BillFee> billFeeList(Integer recordCount, List<BillType> bts, Long lastId) {
+        List<BillFee> billfees;
+        String j;
+        Map m = new HashMap();
 
+        j = " select b "
+                + " from BillFee b "
+                + " where b.retired<>:ret "
+                + " and b.bill.retired<>:ret "
+                + " and b.bill.createdAt between :fd and :td "
+                + " and b.id > :bid ";
+        if (bts != null) {
+            j += " and b.bill.billType in :bts";
+            m.put("bts", bts);
+        }
+        j = j + " order by b.id ";
+
+        m.put("bid", lastId);
+        m.put("ret", true);
+        if (recordCount == null || recordCount == 0) {
+            billfees = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+        } else {
+            billfees = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+        }
+
+        if (billfees == null) {
+            billfees = new ArrayList<>();
+        }
+        return billfees;
+    }
+
+    public List<BillItem> billItemList(Integer recordCount, List<BillType> bts, Long fromId, Long toId) {
+        List<BillItem> billItems;
+        String j;
+        Map m = new HashMap();
+
+        j = " select b "
+                + " from BillItem b "
+                + " where b.retired<>:ret "
+                + " and b.bill.retired<>:ret "
+                + " and b.bill.createdAt between :fd and :td "
+                + " and b.id > :bid ";
+        if (toId != null) {
+            j += " and b.id < :tid";
+            m.put("tid", toId);
+        }
+        if (bts != null) {
+            j += " and b.bill.billType in :bts";
+            m.put("bts", bts);
+        }
+        j = j + " order by b.id ";
+
+        m.put("bid", fromId);
+        m.put("ret", true);
+        if (recordCount == null || recordCount == 0) {
+            billItems = billItemFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+        } else {
+            billItems = billItemFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+        }
+
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
+        return billItems;
+    }
+
+    public List<Bill> billList(Integer recordCount, List<BillType> bts, BillClassType bct, Long fromId, Long toId) {
         List<Bill> bills;
         String j;
         Map m = new HashMap();
@@ -915,22 +786,23 @@ public class Finance {
         j = " select b "
                 + " from Bill b "
                 + " where b.retired<>:ret "
-                + " and b.createdAt between :fd and :td ";
-        if (bt != null) {
-            j += " and b.billType=:bt";
-            m.put("bt", bt);
+                + " and b.createdAt between :fd and :td "
+                + " and b.id > :bid ";
+        if (toId != null) {
+            j += " and b.id < :tid";
+            m.put("tid", toId);
+        }
+        if (bts != null) {
+            j += " and b.billType in :bts";
+            m.put("bts", bts);
+        }
+        if (bct != null) {
+            j += " and b.billType in :bct";
+            m.put("bct", bts);
         }
         j = j + " order by b.id ";
 
-        if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfDay();
-        }
-        if (toDate == null) {
-            toDate = CommonFunctions.getEndOfDay();
-        }
-
-        m.put("fd", fromDate);
-        m.put("td", toDate);
+        m.put("bid", fromId);
         m.put("ret", true);
         if (recordCount == null || recordCount == 0) {
             bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
@@ -942,6 +814,96 @@ public class Finance {
             bills = new ArrayList<>();
         }
         return bills;
+    }
+
+    public JSONArray billDetails(long billId) {
+        List<BillSession> billObjects;
+        JSONArray array = new JSONArray();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select bs From BillSession bs "
+                + " where bs.bill.id=:id ";
+
+        m.put("id", billId);
+        billObjects = billSessionFacade.findBySQL(sql, m);
+
+//        //System.out.println("m = " + m);
+//        //System.out.println("sql = " + sql);
+//        //System.out.println("billObjects.length = " + billObjects.size());
+        Map map = new HashMap();
+        if (!billObjects.isEmpty()) {
+
+            try {
+                map.put("bill_id", billObjects.get(0).getBill().getId());
+                map.put("bill_number", billObjects.get(0).getBill().getInsId());
+                map.put("bill_agent", billObjects.get(0).getBill().getCreditCompany().getId());
+                map.put("bill_app_no", billObjects.get(0).getBill().getSingleBillSession().getSerialNo());
+                map.put("bill_patient_name", billObjects.get(0).getBill().getPatient().getPerson().getName());
+                map.put("bill_phone", billObjects.get(0).getBill().getPatient().getPerson().getPhone());
+                map.put("bill_doc_name", billObjects.get(0).getBill().getStaff().getPerson().getName());
+                map.put("bill_session_date", commonController.getDateFormat(billObjects.get(0).getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_start_time", commonController.getTimeFormat24(billObjects.get(0).getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", commonController.getDateTimeFormat24(billObjects.get(0).getBill().getCreatedAt()));
+                map.put("bill_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal()));
+                map.put("bill_vat", commonController.getDouble(billObjects.get(0).getBill().getVat()));
+                map.put("bill_vat_plus_total", commonController.getDouble(billObjects.get(0).getBill().getNetTotal() + billObjects.get(0).getBill().getVat()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+//        //System.out.println("map.length = " + map.size());
+        array.put(map);
+
+        return array;
+    }
+
+    public JSONArray billsDetails(long agentId, Date fromDate, Date toDate, boolean createDate) {
+        List<BillSession> billObjects;
+        JSONArray array = new JSONArray();
+        String sql;
+        Map m = new HashMap();
+
+        sql = "Select bs From BillSession bs "
+                + " where bs.bill.creditCompany.id=:id ";
+        if (createDate) {
+            sql += " and bs.bill.createdAt between :fd and :td "
+                    + " order by bs.bill.createdAt ";
+        } else {
+            sql += " and bs.bill.singleBillSession.sessionDate between :fd and :td "
+                    + " order by bs.bill.singleBillSession.sessionDate ";
+        }
+
+        m.put("id", agentId);
+        m.put("fd", commonFunctions.getStartOfDay(fromDate));
+        m.put("td", commonFunctions.getEndOfDay(toDate));
+        billObjects = billSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+//        //System.out.println("m = " + m);
+//        //System.out.println("sql = " + sql);
+//        //System.out.println("billObjects.length = " + billObjects.size());
+        for (BillSession o : billObjects) {
+            try {
+                JSONObject map = new JSONObject();
+                map.put("bill_id", o.getBill().getId());
+                map.put("bill_number", o.getBill().getInsId());
+                map.put("bill_agent", o.getBill().getCreditCompany().getId());
+                map.put("bill_app_no", o.getBill().getSingleBillSession().getSerialNo());
+                map.put("bill_patient_name", o.getBill().getPatient().getPerson().getName());
+                map.put("bill_phone", o.getBill().getPatient().getPerson().getPhone());
+                map.put("bill_doc_name", o.getBill().getStaff().getPerson().getName());
+                map.put("bill_session_date", commonController.getDateFormat(o.getBill().getSingleBillSession().getSessionDate()));
+                map.put("bill_session_start_time", commonController.getTimeFormat24(o.getBill().getSingleBillSession().getServiceSession().getStartingTime()));
+                map.put("bill_created_at", commonController.getDateTimeFormat24(o.getBill().getCreatedAt()));
+                map.put("bill_total", commonController.getDouble(o.getBill().getNetTotal() + o.getBill().getVat()));
+                array.put(map);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return array;
     }
 
 }
