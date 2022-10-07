@@ -1,4 +1,4 @@
-# An Open-Source Hospital Management System Initiated by Dr M H B Ariyaratne
+# Open Hospital Management Information System
 
 ## Title
 
