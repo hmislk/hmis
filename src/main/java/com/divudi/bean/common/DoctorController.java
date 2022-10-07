@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * and
- * a Set of Related Tools
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Consultant;
