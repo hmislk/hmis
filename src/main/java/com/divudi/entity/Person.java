@@ -2,7 +2,7 @@
  * Author : Dr. M H B Ariyaratne
  *
  * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.entity;

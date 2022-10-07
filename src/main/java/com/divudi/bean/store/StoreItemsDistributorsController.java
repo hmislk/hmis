@@ -3,7 +3,7 @@
  *
  * Development and Implementation of Web-based System by ww.divudi.com
  Development and Implementation of Web-based System by ww.divudi.com
- * and
+ * (94) 71 5812399
  * (94) 71 5812399
  */
 package com.divudi.bean.store;
