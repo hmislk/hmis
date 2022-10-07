@@ -19,11 +19,6 @@
                             <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.channelCreditNoteCancelBill}" style="float: right;"  
                                              rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'AgentCreditNoteBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                          return false;"/>
-                            
-<!--                            <p:commandButton ajax="false" value="Cancel" action="#{agentPaymentReceiveSearchController.collectingCentreCancelBill}" style="float: right;"  
-                                             rendered="#{agentPaymentReceiveSearchController.bill.billType eq 'CollectingCentrePaymentReceiveBill'}" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                         return false;"/>-->
-                            
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
                             <p:panel header="Person Detail">
