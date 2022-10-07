@@ -7,16 +7,16 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
-        <cc:attribute name="billController" />
-        <cc:attribute name="dup" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="billController"  />
+        <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
         <div >
-
+            Bill
             <div >
                 <div >
 
@@ -151,9 +151,9 @@
                                  left: 25%;
                                  top: 15%;
                                  font-size:12px!important;" >                    
-                                 <p:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
+                                <p:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
                             </div>
-                            
+
                             <div style="position: absolute;
                                  left: 0%!important;
                                  top: 19%!important;

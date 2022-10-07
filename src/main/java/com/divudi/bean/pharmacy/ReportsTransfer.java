@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -336,6 +336,12 @@ public class ReportsTransfer implements Serializable {
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
+    }
+    
+    public void fillDepartmentAdjustmentByBillItem() {
+        Date startTime = new Date();
+        transferItems = fetchBillItems(BillType.PharmacyAdjustment);
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Transfer/reports/Transfer issue by bill item(/faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml or /faces/pharmacy/pharmacy_report_transfer_issue_bill_item.xhtml)");
     }
 

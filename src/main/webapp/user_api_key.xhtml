@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+
+
+    <ui:define name="content">
+        <p:growl />
+
+        <p:panelGrid columns="2" >
+            <f:facet name="header" >
+                <p:outputLabel value="Manage My API Keys" ></p:outputLabel>
+            </f:facet>
+
+            <h:form >
+                <h:panelGrid columns="2" >
+                    <f:facet name="header" >
+                        <p:outputLabel value="Add New API Key" ></p:outputLabel>
+                    </f:facet>
+                    <p:outputLabel for="keyname" value="Key Name" ></p:outputLabel>
+                    <p:selectOneMenu id="keyname" value="#{apiKeyController.current.keyType}" required="true" requiredMessage="Please select key name" >
+                        <f:selectItems value="#{apiKeyController.apiKeyTypes}" ></f:selectItems>
+                    </p:selectOneMenu>
+                    <p:outputLabel for="keyvalue" value="Key Value" ></p:outputLabel>
+                    <p:inputText id="keyvalue" value="#{apiKeyController.current.keyValue}"  required="true" requiredMessage="Please select key value"></p:inputText>
+                    <p:outputLabel for="doe" value="Date of Expiary" ></p:outputLabel>
+                    <p:calendar id="doe" value="#{apiKeyController.current.dateOfExpiary}" ></p:calendar>
+                    <p:spacer ></p:spacer>
+                    <p:commandButton ajax="false" value="Add Key" action="#{apiKeyController.saveSelected()}" ></p:commandButton>
+                </h:panelGrid>
+            </h:form>
+
+            <h:form >
+                <p:dataTable value="#{apiKeyController.items}" var="i" rowKey="#{i.id}" >
+                     <f:facet name="header" >
+                        <p:outputLabel value="My Active API Keys" ></p:outputLabel>
+                    </f:facet>
+                    <p:column headerText="Key Name" >
+                        <p:outputLabel value="#{i.keyType}" ></p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Key Value" >
+                        <p:outputLabel value="#{i.keyValue}" ></p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Expiary (dd-MM-yyyy)" >
+                        <p:outputLabel value="#{i.dateOfExpiary}" >
+                            <f:convertDateTime pattern="dd-MM-yyyy" ></f:convertDateTime>
+                        </p:outputLabel>
+                    </p:column>
+                    <p:column headerText="Actions" >
+                        <p:commandButton ajax="false" value="Remove" action="#{apiKeyController.removing}" >
+                            <f:setPropertyActionListener value="#{i}" target="#{apiKeyController.delete()}" ></f:setPropertyActionListener>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </h:form>
+
+        </p:panelGrid>
+
+
+
+
+    </ui:define>
+
+
+</ui:composition>

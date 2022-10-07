@@ -1,7 +1,7 @@
 
 /*
  * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 

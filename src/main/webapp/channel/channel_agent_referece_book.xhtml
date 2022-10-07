@@ -28,11 +28,11 @@
                                         listener="#{agentReferenceBookController.listnerChannelAgentSelect}" />
                             </p:autoComplete>
                             <p:outputLabel value="Book Number" />
-                            <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
+                            <p:inputNumber value="#{agentReferenceBookController.agentReferenceBook.bookNumber}" decimalPlaces="0" />
                             <p:outputLabel value="Strarting Reference Number" />
-                            <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
+                            <p:inputNumber value="#{agentReferenceBookController.agentReferenceBook.startingReferenceNumber}" decimalPlaces="0" />
                             <p:outputLabel value="Ending Reference Number" />
-                            <pe:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
+                            <p:inputNumber value="#{agentReferenceBookController.agentReferenceBook.endingReferenceNumber}" decimalPlaces="0" />
 
                             <p:commandButton action="#{agentReferenceBookController.saveChannelBook}" value="Save" ajax="false" ></p:commandButton> 
                             <p:commandButton action="#{agentReferenceBookController.makeNull}" value="Clear" ajax="false" ></p:commandButton> 

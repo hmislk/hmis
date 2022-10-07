@@ -1,8 +1,8 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
@@ -60,8 +60,8 @@ import org.primefaces.model.DefaultDashboardModel;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -646,6 +646,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return false;
     }
+    
+     
 
     public void decryptAllUsers() {
         String temSQL;

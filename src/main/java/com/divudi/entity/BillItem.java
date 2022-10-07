@@ -1,6 +1,6 @@
 /*
  * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -103,7 +102,7 @@ public class BillItem implements Serializable {
     String itemId;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date fromTime;
-    @Temporal(javax.persistence.TemporalType.DATE)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date toTime;
     @OneToOne
     BillItem referanceBillItem;
