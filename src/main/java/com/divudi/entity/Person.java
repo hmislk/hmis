@@ -1,7 +1,7 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
  * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
