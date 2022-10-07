@@ -37,9 +37,18 @@ public class WebContentController implements Serializable {
     SessionController sessionController;
     @EJB
     private WebContentFacade ejbFacade;
-    private WebContent current;
+    private WebContent selected;
     private List<WebContent> items = null;
 
+    
+    public String toAddNewWebContent(){
+        return "/webcontent/webcontent";
+    }
+    
+    public String toListWebContent(){
+        return "/webcontent/webcontent";
+    }
+    
     public List<WebContent> completeWebContent(String qry) {
         List<WebContent> list;
         String sql;
@@ -58,7 +67,7 @@ public class WebContentController implements Serializable {
     }
 
     public void prepwebContentdd() {
-        current = new WebContent();
+        selected = new WebContent();
     }
 
     private void recreateModel() {
@@ -66,11 +75,11 @@ public class WebContentController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
+        if (getSelected().getId() != null && getSelected().getId() > 0) {
+            getFacade().edit(selected);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getFacade().create(current);
+            getFacade().create(selected);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -96,29 +105,29 @@ public class WebContentController implements Serializable {
     public WebContentController() {
     }
 
-    public WebContent getCurrent() {
-        if (current == null) {
-            current = new WebContent();
+    public WebContent getSelected() {
+        if (selected == null) {
+            selected = new WebContent();
         }
-        return current;
+        return selected;
     }
 
-    public void setCurrent(WebContent current) {
-        this.current = current;
+    public void setSelected(WebContent selected) {
+        this.selected = selected;
     }
 
     public void delete() {
-        if (current != null) {
-            current.setRetired(true);
-            getFacade().edit(current);
+        if (selected != null) {
+            selected.setRetired(true);
+            getFacade().edit(selected);
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
-        current = null;
-        getCurrent();
+        selected = null;
+        getSelected();
     }
 
     private WebContentFacade getFacade() {

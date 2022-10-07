@@ -22,7 +22,7 @@ public class WebContent implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String code;
+    private String name;
     private boolean retired;
     @Lob
     private String sinhala;
@@ -68,12 +68,12 @@ public class WebContent implements Serializable {
         return "com.divudi.entity.WebContent[ id=" + id + " ]";
     }
 
-    public String getCode() {
-        return code;
+    public String getName() {
+        return name;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getSinhala() {
