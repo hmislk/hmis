@@ -32,8 +32,11 @@
                     </p:autoComplete>
                     <p:commandButton ajax="false" value="List All Bill Items" action="#{pharmacyErrorChecking.listPharmacyMovement() }" >
                     </p:commandButton>
+                    
+                   
                     <p:outputLabel value="Item" ></p:outputLabel>
-                    <p:autoComplete value="#{pharmacyErrorChecking.item}"  
+                    <p:autoComplete value="#{pharmacyErrorChecking.item}" 
+                                    
                                     style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  
                                     completeMethod="#{itemController.completeAmpItemAll}" 
                                     var="item" itemValue="#{item}" itemLabel="#{item.name}" 
@@ -45,7 +48,10 @@
                             <h:outputLabel value="#{item.code}"/>
                         </p:column>
                     </p:autoComplete>
-                    <p:outputLabel value="" ></p:outputLabel>
+                    
+                     <p:commandButton ajax="false" value="Download" >
+                        <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
+                    </p:commandButton>
                 </h:panelGrid>
                 <p:panelGrid columns="2" >
                     <p:panel header="All Bills" >
@@ -63,6 +69,8 @@
 
                         <p:dataTable value="#{pharmacyErrorChecking.billItems}" var="pb"  rowIndexVar="i"
                                      rows="100"
+                                     id="tbl"
+                                     rowKey="#{pb.id}"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="20,50,100,500,1000"

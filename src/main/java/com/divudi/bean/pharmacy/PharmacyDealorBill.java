@@ -201,7 +201,7 @@ public class PharmacyDealorBill implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void calTotalBySelectedBillTems() {
@@ -215,7 +215,7 @@ public class PharmacyDealorBill implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void calTotalWithResetingIndex() {
@@ -226,7 +226,7 @@ public class PharmacyDealorBill implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void removeAll() {

@@ -128,7 +128,7 @@ public class PettyCashBillController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
         Date fd = c.getTime();
-        //System.out.println("d = " + fd);
+        //// // System.out.println("d = " + fd);
         DecimalFormat df = new DecimalFormat("00000");
         String s=df.format(getCurrent().getIntInvoiceNumber());
         String inv = createInvoiceNumberSuffix() + s;

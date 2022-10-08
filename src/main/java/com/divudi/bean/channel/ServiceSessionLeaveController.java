@@ -193,9 +193,9 @@ public class ServiceSessionLeaveController implements Serializable {
         hm.put("st", getCurrentStaff());
 
         serviceSessionLeaves = getFacade().findBySQL(slq, hm, TemporalType.DATE);
-//        //System.out.println("hm = " + hm);
-//        //System.out.println("slq = " + slq);
-//        //System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
+//        //// // System.out.println("hm = " + hm);
+//        //// // System.out.println("slq = " + slq);
+//        //// // System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
         bookingController.generateSessionsOnlyId();
     }
 

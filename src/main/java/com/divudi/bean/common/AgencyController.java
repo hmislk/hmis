@@ -109,7 +109,7 @@ public class AgencyController implements Serializable {
                     + " and ((upper(p.name) like '%" + query.toUpperCase() + "%') "
                     + " or (upper(p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
                     + " order by p.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, m, 20);
         }
         return suggestions;

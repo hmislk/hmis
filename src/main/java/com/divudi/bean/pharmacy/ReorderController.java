@@ -307,7 +307,7 @@ public class ReorderController implements Serializable {
 
         if (dsso == null) {
             dsso = new ArrayList<>();
-            //    //System.out.println("new list as null");
+            //    //// // System.out.println("new list as null");
         }
         rows = new ArrayList<>();
         for (Object b : dsso) {
@@ -377,7 +377,7 @@ public class ReorderController implements Serializable {
 
         if (dsso == null) {
             dsso = new ArrayList<>();
-            //    //System.out.println("new list as null");
+            //    //// // System.out.println("new list as null");
         }
         rows = new ArrayList<>();
         for (Object b : dsso) {
@@ -539,7 +539,7 @@ public class ReorderController implements Serializable {
         bts.add(BillType.PharmacySale);
         bts.add(BillType.PharmacyTransferIssue);
         bts.add(BillType.PharmacyTransferReceive);
-        //System.out.println("bts = " + bts);
+        //// // System.out.println("bts = " + bts);
         String sql = "Select b.department from "
                 + " Bill b "
                 + " where b.retired=false "
@@ -561,7 +561,7 @@ public class ReorderController implements Serializable {
         m.put("td", getToDate());
         List<Department> depst = departmentController.getDepartments(sql, m);
 
-        //System.out.println("m = " + m);
+        //// // System.out.println("m = " + m);
 
         if (false) {
             Stock s = new Stock();
@@ -721,15 +721,15 @@ public class ReorderController implements Serializable {
                 }
 
                 if (temNo == 1) {
-                    //    //System.out.println("nextDeliveryDate = " + nextDeliveryDate);
-                    //    //System.out.println("nextDeliveryDate.getTime() = " + nextDeliveryDate.getTime());
-                    //    //System.out.println("expectedDeliveryDate = " + expectedDeliveryDate);
-                    //    //System.out.println("expectedDeliveryDate.getTime() = " + expectedDeliveryDate.getTime());
-                    //    //System.out.println("nextDeliveryDate.getTime() - expectedDeliveryDate.getTime() = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()));
-                    //    //System.out.println("(nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24) = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24));
-                    //    //System.out.println("((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)) = " + ((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)));
-                    //    //System.out.println("((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))) = " + ((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))));
-                    //    //System.out.println("((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue() = " + ((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue());
+                    //    //// // System.out.println("nextDeliveryDate = " + nextDeliveryDate);
+                    //    //// // System.out.println("nextDeliveryDate.getTime() = " + nextDeliveryDate.getTime());
+                    //    //// // System.out.println("expectedDeliveryDate = " + expectedDeliveryDate);
+                    //    //// // System.out.println("expectedDeliveryDate.getTime() = " + expectedDeliveryDate.getTime());
+                    //    //// // System.out.println("nextDeliveryDate.getTime() - expectedDeliveryDate.getTime() = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()));
+                    //    //// // System.out.println("(nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24) = " + (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24));
+                    //    //// // System.out.println("((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)) = " + ((int) (nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24)));
+                    //    //// // System.out.println("((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))) = " + ((int) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))));
+                    //    //// // System.out.println("((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue() = " + ((Long) ((nextDeliveryDate.getTime() - expectedDeliveryDate.getTime()) / (1000 * 60 * 60 * 24))).intValue());
                 }
                 temNo++;
 
@@ -853,26 +853,26 @@ public class ReorderController implements Serializable {
 
     private void generatePharmacyTransferRequestBillComponents() {
         purchaseOrderRequestController.setBillItems(new ArrayList<BillItem>());
-        //    //System.out.println("fromDepartment = " + fromDepartment);
-        //    //System.out.println("toDepartment = " + toDepartment);
+        //    //// // System.out.println("fromDepartment = " + fromDepartment);
+        //    //// // System.out.println("toDepartment = " + toDepartment);
         for (ItemReorders i : itemReorders) {
-            //    //System.out.println("i.getItem().getName() = " + i.getItem().getName());
+            //    //// // System.out.println("i.getItem().getName() = " + i.getItem().getName());
             Reorder fromReorder = new Reorder();
             Reorder toReorder = new Reorder();
 
             for (Reorder r : i.getReorders()) {
                 if (r.getDepartment().equals(fromDepartment)) {
-                    //    //System.out.println("from");
-                    //    //System.out.println("r.getTransientOrderingQty() = " + r.getTransientOrderingQty());
+                    //    //// // System.out.println("from");
+                    //    //// // System.out.println("r.getTransientOrderingQty() = " + r.getTransientOrderingQty());
                     fromReorder = r;
                 }
                 if (r.getDepartment().equals(toDepartment)) {
-                    //    //System.out.println("to");
-                    //    //System.out.println("r.getTransientStock() = " + r.getTransientStock());
+                    //    //// // System.out.println("to");
+                    //    //// // System.out.println("r.getTransientStock() = " + r.getTransientStock());
                     toReorder = r;
                 }
             }
-            //    //System.out.println("toReorder.getTransientOrderingQty() = " + toReorder.getTransientOrderingQty());
+            //    //// // System.out.println("toReorder.getTransientOrderingQty() = " + toReorder.getTransientOrderingQty());
 
             if (fromReorder.getTransientOrderingQty() <= 0) {
                 continue;
@@ -882,13 +882,13 @@ public class ReorderController implements Serializable {
             double requestingQty;
 
             availableToRequest = toReorder.getTransientStock() - (toReorder.getTransientOrderingQty() + toReorder.getBufferStocks());
-            //    //System.out.println("availableToRequest = " + availableToRequest);
+            //    //// // System.out.println("availableToRequest = " + availableToRequest);
             if (availableToRequest > fromReorder.getTransientOrderingQty()) {
                 requestingQty = fromReorder.getTransientOrderingQty();
             } else {
                 requestingQty = availableToRequest;
             }
-            //    //System.out.println("requestingQty = " + requestingQty);
+            //    //// // System.out.println("requestingQty = " + requestingQty);
             transferRequestController.getCurrentBillItem().setItem(i.getItem());
             transferRequestController.getCurrentBillItem().setTmpQty(requestingQty);
             transferRequestController.addItem();
@@ -981,13 +981,13 @@ public class ReorderController implements Serializable {
         long differenceInMs = 0l;
         for (Object[] objc : obj) {
             Bill b = (Bill) objc[0];
-            //    //System.out.println("b = " + b);
+            //    //// // System.out.println("b = " + b);
             Bill rf = (Bill) objc[1];
-            //    //System.out.println("rf = " + rf);
+            //    //// // System.out.println("rf = " + rf);
             count++;
-            //    //System.out.println("count = " + count);
+            //    //// // System.out.println("count = " + count);
             differenceInMs = differenceInMs + (rf.getCreatedAt().getTime() - b.getCreatedAt().getTime());
-            //    //System.out.println("differenceInMs = " + differenceInMs);
+            //    //// // System.out.println("differenceInMs = " + differenceInMs);
         }
 
         int avgLeadTimeInDays;
@@ -1002,7 +1002,7 @@ public class ReorderController implements Serializable {
     }
 
     public double calculateDailyDemandInUnits(Reorder reorder) {
-        //    //System.out.println("Calculate daily demand in Units - reorder = " + reorder);
+        //    //// // System.out.println("Calculate daily demand in Units - reorder = " + reorder);
         String jpql;
         Map m = new HashMap();
         DateTime dt = new DateTime();
@@ -1027,10 +1027,10 @@ public class ReorderController implements Serializable {
         m.put("amp", reorder.getItem());
         m.put("fd", fd);
         m.put("td", td);
-        //    //System.out.println("m = " + m);
-        //    //System.out.println("jpql = " + jpql);
+        //    //// // System.out.println("m = " + m);
+        //    //// // System.out.println("jpql = " + jpql);
         Object[] obj = ejbFacade.findSingleAggregate(jpql, m);
-        //    //System.out.println("obj = " + obj);
+        //    //// // System.out.println("obj = " + obj);
         if (obj == null) {
             return 14;
         }
@@ -1039,19 +1039,19 @@ public class ReorderController implements Serializable {
         Double totalQty;
 
         try {
-            //    //System.out.println(" obj[0] = " + obj[0]);
+            //    //// // System.out.println(" obj[0] = " + obj[0]);
             minDate = (Date) obj[0];
         } catch (Exception e) {
             minDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[1] = " + obj[1]);
+            //    //// // System.out.println(" obj[1] = " + obj[1]);
             maxDate = (Date) obj[1];
         } catch (Exception e) {
             maxDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[2] = " + obj[2]);
+            //    //// // System.out.println(" obj[2] = " + obj[2]);
             totalQty = Math.abs((Double) obj[2]);
         } catch (Exception e) {
             totalQty = 0.0;
@@ -1062,8 +1062,8 @@ public class ReorderController implements Serializable {
         Days daysDiff = Days.daysBetween(mind, maxd);
 
         int ds = daysDiff.getDays();
-        //    //System.out.println("ds = " + ds);
-        //    //System.out.println("totalQty = " + totalQty);
+        //    //// // System.out.println("ds = " + ds);
+        //    //// // System.out.println("totalQty = " + totalQty);
 
         double dailyDemand = 0;
         if (ds == 0) {
@@ -1077,12 +1077,12 @@ public class ReorderController implements Serializable {
         if (dailyDemand == 0.0) {
             dailyDemand = 1.0;
         }
-        //    //System.out.println("dailyDemand = " + dailyDemand);
+        //    //// // System.out.println("dailyDemand = " + dailyDemand);
         return dailyDemand;
     }
 
     public int calculateOrderingCycleDurationInDays(Reorder reorder) {
-        //    //System.out.println("calculating ordering cycle duration");
+        //    //// // System.out.println("calculating ordering cycle duration");
         String jpql;
         Map m = new HashMap();
 
@@ -1108,11 +1108,11 @@ public class ReorderController implements Serializable {
         m.put("fd", fd);
         m.put("td", td);
 
-        //    //System.out.println("jpql = " + jpql);
-        //    //System.out.println("m = " + m);
+        //    //// // System.out.println("jpql = " + jpql);
+        //    //// // System.out.println("m = " + m);
         Object[] obj = ejbFacade.findSingleAggregate(jpql, m);
 
-        //    //System.out.println("obj = " + obj);
+        //    //// // System.out.println("obj = " + obj);
         if (obj == null) {
             return 14;
         }
@@ -1121,19 +1121,19 @@ public class ReorderController implements Serializable {
         int count;
 
         try {
-            //    //System.out.println(" obj[0] = " + obj[0]);
+            //    //// // System.out.println(" obj[0] = " + obj[0]);
             minDate = (Date) obj[0];
         } catch (Exception e) {
             minDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[1] = " + obj[1]);
+            //    //// // System.out.println(" obj[1] = " + obj[1]);
             maxDate = (Date) obj[1];
         } catch (Exception e) {
             maxDate = new Date();
         }
         try {
-            //    //System.out.println(" obj[2] = " + obj[2]);
+            //    //// // System.out.println(" obj[2] = " + obj[2]);
             count = (int) obj[2];
         } catch (Exception e) {
             count = 1;
@@ -1148,8 +1148,8 @@ public class ReorderController implements Serializable {
         Days daysDiff = Days.daysBetween(maxd, mind);
 
         int ds = daysDiff.getDays();
-        //    //System.out.println("ds = " + ds);
-        //    //System.out.println("count = " + count);
+        //    //// // System.out.println("ds = " + ds);
+        //    //// // System.out.println("count = " + count);
         return (int) (ds / count);
 
     }

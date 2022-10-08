@@ -226,7 +226,7 @@ public class BillFee implements Serializable {
             this.feeValue = getFee().getFee();
 //            this.feeVatPlusValue = this.feeVat + this.feeValue;
         }
-        //    //////System.out.println("Setting fee value as " + feeValue);
+        //    //////// // System.out.println("Setting fee value as " + feeValue);
     }
 
     public void setFeeValueForDiscountAllowedAndUserChangable(boolean foriegn, double discountPercent) {
@@ -314,7 +314,7 @@ public class BillFee implements Serializable {
     @Transient
     private Double tmpSettleChangedValue;
 
-        public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
+    public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
