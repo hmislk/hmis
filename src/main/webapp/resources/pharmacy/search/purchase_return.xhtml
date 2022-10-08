@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -21,7 +21,7 @@
             <h:outputLabel value="Item Name"/>
             <h:outputLabel value="Item Code"/>
             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-              <pe:exporter type="xlsx" target="tblBills" fileName="pharmacy_purchase_return_detail"  />
+              <p:dataExporter type="xlsx" target="tblBills" fileName="pharmacy_purchase_return_detail"  />
             </p:commandButton>
             <p:commandButton value="Print" ajax="false" action="#" >
                <p:printer target="gpBill" ></p:printer>

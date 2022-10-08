@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -39,7 +39,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
 

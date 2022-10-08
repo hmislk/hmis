@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -48,7 +48,7 @@
                             <p:commandButton ajax="false" value="Process Doctor Payment" action="#{inwardReportController1.createDoctorPaymentInward()}" onclick="onSubmitButton();"  ></p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
+                                <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tb6,tbl7,tbl8" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview"></p:printer>

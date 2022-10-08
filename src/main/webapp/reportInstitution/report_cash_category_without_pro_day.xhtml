@@ -7,7 +7,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery" 
                 xmlns:in="http://java.sun.com/jsf/composite/income_report" 
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -43,10 +43,10 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
 <!--                        <p:commandButton value="Excelasfcas" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="Val" fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end" />
+                            <p:dataExporter type="xlsx" target="Val" fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end" />
                         </p:commandButton>-->
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="opd_new:opd_new,
+                            <p:dataExporter type="xlsx" target="opd_new:opd_new,
                                          colCash,
                                          colCredit,
                                          outside:outside,
@@ -70,8 +70,8 @@
                                          finalSum,
                                          opd_new_credit:opd_new_credit"
                                          fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
+                                              
+                                           />
                         </p:commandButton>
                     </h:panelGrid>
 

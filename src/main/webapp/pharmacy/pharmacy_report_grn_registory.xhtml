@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:se="http://java.sun.com/jsf/composite/pharmacy/search">
 
     <h:body>
@@ -43,7 +43,7 @@
                                 <p:printer target="panelPrint" />
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report ne '2'}">
-                                <pe:exporter type="xlsx" target="tblBills" fileName="QB_Export"/>
+                                <p:dataExporter type="xlsx" target="tblBills" fileName="QB_Export"/>
                             </p:commandButton>
                         </h:panelGrid>
                         <p:panel id="panelPrint" styleClass="noBorder summeryBorder">

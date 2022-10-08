@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 template="/resources/template/template.xhtml">
 
     <ui:define name="content">
@@ -58,7 +58,7 @@
                         <au:completeConsultant value="#{personInstitutionController.reportKeyWord.staff}" />
                         <p:commandButton value="Fill Person Institutions" action="#{personInstitutionController.fillStaffInstitutionPersons}" ajax="false" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="Channel_Doctor_List"/>
+                            <p:dataExporter type="xlsx" target="tb1" fileName="Channel_Doctor_List"/>
                         </p:commandButton>
                     </h:panelGrid>
                     <p:dataTable  value="#{personInstitutionController.institutionPersons}" 

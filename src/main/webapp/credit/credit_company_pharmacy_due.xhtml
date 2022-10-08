@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -31,7 +31,7 @@
                                 <p:printer target="panIx" />
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="lst" fileName="credit_company_pharmacy_due" subTable="true"  />
+                                <p:dataExporter type="xlsx" target="lst" fileName="credit_company_pharmacy_due"   />
                             </p:commandButton>
                         </h:panelGrid>
 

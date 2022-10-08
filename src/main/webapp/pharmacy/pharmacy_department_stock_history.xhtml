@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -91,7 +91,7 @@
                                 <p:printer target="panelPrint" />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" action="#" >
-                                <pe:exporter type="xlsx" target="tblHistories" fileName="Pharmacy_Stock_Report"   />
+                                <p:dataExporter type="xlsx" target="tblHistories" fileName="Pharmacy_Stock_Report"   />
                             </p:commandButton>
                         </h:panelGrid>
 

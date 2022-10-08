@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -37,7 +37,7 @@
                     <h:panelGrid columns="3" >
                         <p:commandButton action="#{channelReportController.createStaffBookingSummeryTable}" value="Process" ajax="false" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_staff_booking_summery"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_staff_booking_summery"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />

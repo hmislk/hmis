@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -27,7 +27,7 @@
                             <p:printer target="reportPrint"></p:printer>
                         </p:commandButton>
                         <p:commandButton actionListener="#{hrReportController.crateDepartmentList}" ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="hr_report_department"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="hr_report_department"  />
                         </p:commandButton> 
 
 

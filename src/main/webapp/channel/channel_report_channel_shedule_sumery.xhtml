@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -34,7 +34,7 @@
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
                             </p:commandButton>
                         </h:panelGroup>
                     </h:panelGrid>

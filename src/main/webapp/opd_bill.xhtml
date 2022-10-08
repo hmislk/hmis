@@ -24,7 +24,7 @@
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:form id="form">
-                        <p:growl autoUpdate="true" id="growl" ></p:growl>
+                        <p:growl id="growl" ></p:growl>
                         <p:focus id="focusIx" for="acIx" />
                         <f:facet name="header">
                             <h:outputLabel value="OPD"/>

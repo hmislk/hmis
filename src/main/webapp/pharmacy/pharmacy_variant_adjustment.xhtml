@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ph="http://java.sun.com/jsf/composite/pharmacy"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>        
@@ -21,7 +21,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
                     </f:facet>

@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -59,7 +59,7 @@
                                         <f:facet name="header">
                                             <h:outputLabel value= "#{i.department.name}" />
                                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                                <pe:exporter subTable="true" type="xlsx" target="tblDep" fileName="Unit_Issue_Report_by_department"  />
+                                                <p:dataExporter  type="xlsx" target="tblDep" fileName="Unit_Issue_Report_by_department"  />
                                             </p:commandButton>  
                                         </f:facet>
 
