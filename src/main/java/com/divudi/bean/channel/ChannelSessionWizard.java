@@ -161,7 +161,7 @@ public class ChannelSessionWizard implements Serializable {
             suggestions = new ArrayList<ServiceSession>();
         } else {
             if (getCurrentStaff() != null) {
-                sql = "select p from ServiceSession p where p.retired=false and upper(p.name) like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
+                sql = "select p from ServiceSession p where p.retired=false and p.name like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
                 suggestions = getServiceSessionFacade().findBySQL(sql);
             } else {
                 suggestions = new ArrayList<ServiceSession>();

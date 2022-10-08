@@ -64,7 +64,7 @@ public class AgentReferenceBookController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t and upper(c.name) like :q order by c.name";
+                + " c.institutionType =:t and c.name like :q order by c.name";
         //////System.out.println(sql);
         m.put("t", InstitutionType.Agency);
         m.put("q", "%" + query.toUpperCase() + "%");
@@ -266,7 +266,7 @@ public class AgentReferenceBookController implements Serializable {
                 + " and b.billType=:bt "
                 + " and b.paymentMethod=:pm "
                 + " and b.creditCompany=:ins "
-                + " and (upper(ah.referenceNo) like :rn) ";
+                + " and ah.referenceNo like :rn ";
 
         m.put("bt", bt);
         m.put("pm", pm);

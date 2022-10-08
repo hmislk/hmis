@@ -27,6 +27,7 @@ import com.divudi.facade.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -48,14 +49,16 @@ import javax.inject.Named;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
-import org.primefaces.context.RequestContext;
+import org.primefaces.PrimeFaces;
+import org.primefaces.context.PrimeRequestContext;
+//import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -338,7 +341,10 @@ public class PatientController implements Serializable {
         if (current != null && current.getCode() != null && !current.getCode().trim().equals("")) {
             try {
                 BarcodeImageHandler.saveJPEG(BarcodeFactory.createCode128(getCurrent().getCode()), barcodeFile);
-                barcode = new DefaultStreamedContent(new FileInputStream(barcodeFile), "image/jpeg");
+                InputStream targetStream = new FileInputStream(barcodeFile);
+                StreamedContent str = DefaultStreamedContent.builder().contentType("image/jpeg").name(barcodeFile.getName()).stream(() -> targetStream).build();
+                barcode = str;
+//                return str;
 
             } catch (Exception ex) {
                 //   ////System.out.println("ex = " + ex.getMessage());
@@ -352,7 +358,9 @@ public class PatientController implements Serializable {
                 bc.setDrawingText(true);
                 BarcodeImageHandler.saveJPEG(bc, barcodeFile);
                 //   ////System.out.println("12");
-                barcode = new DefaultStreamedContent(new FileInputStream(barcodeFile), "image/jpeg");
+                InputStream targetStream = new FileInputStream(barcodeFile);
+                StreamedContent str = DefaultStreamedContent.builder().contentType("image/jpeg").name(barcodeFile.getName()).stream(() -> targetStream).build();
+                barcode = str;
             } catch (Exception ex) {
                 //   ////System.out.println("ex = " + ex.getMessage());
             }
@@ -360,8 +368,6 @@ public class PatientController implements Serializable {
     }
 
     public void createFamilymembers(ActionEvent event) {
-
-        RequestContext context = RequestContext.getCurrentInstance();
         FacesMessage message = null;
         boolean loggedIn;
 
@@ -393,7 +399,8 @@ public class PatientController implements Serializable {
 
         familyMember = null;
 
-        context.addCallbackParam("loggedIn", loggedIn);
+//        context.addCallbackParam("loggedIn", loggedIn);
+        PrimeRequestContext.getCurrentInstance().getCallbackParams().put("loggedIn", loggedIn);
     }
 
     public void removeFamilyMember(Person p) {
@@ -455,7 +462,10 @@ public class PatientController implements Serializable {
         } else {
             if (p.getId() != null && p.getBaImage() != null) {
                 //////System.out.println("giving image");
-                return new DefaultStreamedContent(new ByteArrayInputStream(p.getBaImage()), p.getFileType(), p.getFileName());
+                InputStream targetStream = new ByteArrayInputStream(p.getBaImage());
+                StreamedContent str = DefaultStreamedContent.builder().contentType(p.getFileType()).name(p.getFileName()).stream(() -> targetStream).build();
+                return str;
+//                return new DefaultStreamedContent(new ByteArrayInputStream(p.getBaImage()), p.getFileType(), p.getFileName());
             } else {
                 return new DefaultStreamedContent();
             }
@@ -471,8 +481,9 @@ public class PatientController implements Serializable {
         } else if (p == null) {
             return new DefaultStreamedContent();
         } else {
-            //   ////System.out.println("giving image");
-            return new DefaultStreamedContent(new ByteArrayInputStream(p), "image/png", "photo.");
+            InputStream targetStream = new ByteArrayInputStream(p);
+            StreamedContent str = DefaultStreamedContent.builder().contentType("image/png").name("photo.png").stream(() -> targetStream).build();
+            return  str;
         }
     }
 
@@ -632,8 +643,6 @@ public class PatientController implements Serializable {
 //            return;
 //        }
 
-        
-
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -669,13 +678,13 @@ public class PatientController implements Serializable {
             getFacade().edit(p);
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
-        
+
         if (password != null) {
             p.getPerson().getWebUser().setWebUserPassword(securityController.hash(password));
-            
-            password=null;
+
+            password = null;
         }
-        
+
         getPersonFacade().edit(p.getPerson());
         getWebUserFacade().edit(p.getPerson().getWebUser());
         getPersonFacade().flush();
@@ -1150,8 +1159,6 @@ public class PatientController implements Serializable {
     public WebUserFacade getWebUserFacade() {
         return webUserFacade;
     }
-    
-    
 
     /**
      *
@@ -1297,8 +1304,6 @@ public class PatientController implements Serializable {
         this.currentRelation = currentRelation;
     }
 
-    
-    
     @FacesConverter("patientConverter")
     public static class PatientConverter implements Converter {
 

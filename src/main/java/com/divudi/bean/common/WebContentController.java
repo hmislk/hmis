@@ -8,8 +8,10 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.Language;
 import com.divudi.entity.WebContent;
 import com.divudi.facade.WebContentFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,8 +27,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -37,8 +39,112 @@ public class WebContentController implements Serializable {
     SessionController sessionController;
     @EJB
     private WebContentFacade ejbFacade;
-    private WebContent current;
+    private WebContent selected;
     private List<WebContent> items = null;
+    private Language language = Language.English;
+
+    public String toAddNewWebContent() {
+        selected = null;
+        return "/webcontent/webcontent";
+    }
+
+    public String toEditWebContent() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return "";
+        }
+        return "/webcontent/webcontent";
+    }
+
+    public String toDeleteWebContent() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return "";
+        }
+        selected.setRetired(true);
+        getFacade().edit(selected);
+        selected = null;
+        listItems();
+        return toListWebContent();
+    }
+
+    public String toListWebContent() {
+        listItems();
+        return "/webcontent/webcontent";
+    }
+
+    public WebContent findSingleWebContent(String word) {
+        WebContent list;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from WebContent c "
+                + " where c.retired=false "
+                + " and c.name = :q "
+                + " order by c.id desc";
+        hm.put("q", word);
+        list = getFacade().findFirstBySQL(sql, hm);
+        return list;
+    }
+
+    public String findSingleText(String word) {
+        WebContent wc = findSingleWebContent(word);
+        if (wc == null || language == null) {
+            return "";
+        }
+        switch (language) {
+            case English:
+                return wc.getEnglish();
+            case Sinhala:
+                return wc.getSinhala();
+            case Tamil:
+                return wc.getTamil();
+            default:
+                return "";
+        }
+    }
+
+    public Language[] getLanguages() {
+        return Language.values();
+    }
+
+    public List<String> findMultipleWebText(String word) {
+        List<WebContent> wcs = findMultipleWebContent(word);
+        List<String> strs = new ArrayList<>();
+        if (wcs == null || language == null) {
+            return strs;
+        }
+        for (WebContent wc : wcs) {
+            switch (language) {
+                case English:
+                    strs.add(wc.getEnglish());
+                    break;
+                case Sinhala:
+                    strs.add(wc.getSinhala());
+                    break;
+                case Tamil:
+                    strs.add(wc.getTamil());
+                    break;
+            }
+        }
+
+        return strs;
+    }
+
+    public List<WebContent> findMultipleWebContent(String word) {
+        List<WebContent> list;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from WebContent c "
+                + " where c.retired=false "
+                + " and c.name = :q "
+                + " order by c.name";
+        hm.put("q", word);
+        list = getFacade().findBySQL(sql, hm);
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        return list;
+    }
 
     public List<WebContent> completeWebContent(String qry) {
         List<WebContent> list;
@@ -46,7 +152,7 @@ public class WebContentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from WebContent c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and c.name like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         list = getFacade().findBySQL(sql, hm);
@@ -58,7 +164,7 @@ public class WebContentController implements Serializable {
     }
 
     public void prepwebContentdd() {
-        current = new WebContent();
+        selected = new WebContent();
     }
 
     private void recreateModel() {
@@ -66,11 +172,11 @@ public class WebContentController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            getFacade().edit(current);
+        if (getSelected().getId() != null && getSelected().getId() > 0) {
+            getFacade().edit(selected);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            getFacade().create(current);
+            getFacade().create(selected);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
@@ -96,29 +202,29 @@ public class WebContentController implements Serializable {
     public WebContentController() {
     }
 
-    public WebContent getCurrent() {
-        if (current == null) {
-            current = new WebContent();
+    public WebContent getSelected() {
+        if (selected == null) {
+            selected = new WebContent();
         }
-        return current;
+        return selected;
     }
 
-    public void setCurrent(WebContent current) {
-        this.current = current;
+    public void setSelected(WebContent selected) {
+        this.selected = selected;
     }
 
     public void delete() {
-        if (current != null) {
-            current.setRetired(true);
-            getFacade().edit(current);
+        if (selected != null) {
+            selected.setRetired(true);
+            getFacade().edit(selected);
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
         getItems();
-        current = null;
-        getCurrent();
+        selected = null;
+        getSelected();
     }
 
     private WebContentFacade getFacade() {
@@ -136,6 +242,17 @@ public class WebContentController implements Serializable {
 
     public List<WebContent> getItems() {
         return items;
+    }
+
+    public Language getLanguage() {
+        if (language == null) {
+            language = Language.English;
+        }
+        return language;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
     }
 
     /**
