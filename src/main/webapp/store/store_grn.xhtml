@@ -43,8 +43,8 @@
                         <h:outputLabel  value="Ordered Bill Item"/>                        
                     </f:facet>  
 
-                    <p:ajax event="rowEdit" listener="#{storeGrnController.onEdit}" update=":#{p:component('tot')}" />  
-                    <p:ajax event="rowEditCancel" listener="#{storeGrnController.onEdit}" update=":#{p:component('tot')}" /> 
+                    <p:ajax event="rowEdit" listener="#{storeGrnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
+                    <p:ajax event="rowEditCancel" listener="#{storeGrnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
                     <p:column style="width:6%">  
                         <p:rowEditor />  
@@ -53,7 +53,7 @@
                     <p:column >
                         <p:commandButton   value="Add Detail"
                                            process="@this" 
-                                           update=":#{p:component('dialogChannelDetail')}"
+                                           update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
                                            style="float: right;" 
                                            actionListener="#{storeGrnController.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgDetail').show();">                        
@@ -62,7 +62,7 @@
 
                     <p:column >
                         <p:commandButton   value="Add Accessories" process="@this" 
-                                           update=":#{p:component('dialogChannelDetail')}"
+                                           update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
                                            style="float: right;"                                            
                                            actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        

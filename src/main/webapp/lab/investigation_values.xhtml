@@ -187,8 +187,8 @@
                                 <p:dataTable id="tbl" value="#{investigationItemController.importantItems}" var="ii"
                                              selectionMode="single" rowKey="#{ii.id}" selection="#{investigationItemController.current}">
 
-                                    <p:ajax event="rowSelect" process="@this" update=":#{p:component('ixitemDetails')} :#{p:component('filters')}" />
-                                    <p:ajax event="rowUnselect" process="@this" update=":#{p:component('ixitemDetails')}  :#{p:component('filters')}" />
+                                    <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('ixitemDetails',view).clientId} :#{p:resolveFirstComponentWithId('filters',view).clientId}" />
+                                    <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('ixitemDetails',view).clientId}  :#{p:resolveFirstComponentWithId('filters',view).clientId}" />
 
                                     <p:column headerText="ID"  >
                                         <p:outputLabel value="#{ii.item.id}" ></p:outputLabel>

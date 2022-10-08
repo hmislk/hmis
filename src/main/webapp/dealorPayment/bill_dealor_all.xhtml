@@ -93,7 +93,7 @@
                             </f:facet>
 
                             <p:ajax event="rowSelect"  process="@this" 
-                                    update=":#{p:component('total')}"
+                                    update=":#{p:resolveFirstComponentWithId('total',view).clientId}"
                                     listener="#{pharmacyDealorBill.calTotalBySelectedBillTems()}" />  
 
 

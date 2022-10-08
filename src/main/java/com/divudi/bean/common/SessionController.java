@@ -365,7 +365,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         department = null;
         institution = null;
         if (loginWithoutDepartment()) {
-            return "/index.xhtml";
+            return "/home.xhtml";
         } else {
             UtilityController.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -866,7 +866,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String selectDepartment() {
         if (loggedUser == null) {
-            return "/index";
+            return "/login";
         }
         if (loggedUser.getWebUserPerson() == null) {
             Person p = new Person();
@@ -922,7 +922,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         setLoggedPreference(insPre);
         recordLogin();
-        return "/index";
+        return "/home";
     }
 
     //get Current hour

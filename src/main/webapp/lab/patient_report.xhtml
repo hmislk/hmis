@@ -57,7 +57,7 @@
                                     <p:outputLabel value="Report Format" ></p:outputLabel>
                                     <p:selectOneMenu  id="mnuCat" value="#{patientReportController.currentPatientReport.reportFormat}"  style="width: 300px!important;">
                                         <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax event="change" execute="mnuCat" render=":#{p:component('divPrint')}" />
+                                        <f:ajax event="change" execute="mnuCat" render=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <h:panelGrid columns="9" >
@@ -65,7 +65,7 @@
                                                      value="Save" 
                                                      action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:component('tblCals')} :#{p:component('tblFlags')} :#{p:component('divPrint')}"  styleClass="nonPrintBlock"  value="Calculate" 
+                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  styleClass="nonPrintBlock"  value="Calculate" 
                                                      action="#{patientReportController.calculate}" onclick="onSubmitButton();"   >
                                     </p:commandButton>
 

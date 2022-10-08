@@ -53,15 +53,10 @@
             <h2>
                 Call 071 5812399 with the Anydesk ID.
             </h2>
-
-
         </h:panelGroup>
 
         <h:panelGroup rendered="true" >
             <div id="panelFullSpread" class="fullSpread ui-widget-content "  >
-
-
-
                 <p:growl id="publicGrowl"    />
                 <h:panelGroup >
                     <h:form>
@@ -77,43 +72,29 @@
                             </p:ajaxStatus>
 
                             <h:panelGroup rendered="#{sessionController.logged and !sessionController.firstLogin and sessionController.department ne null}" styleClass="nonPrintBlock" >
-
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{labels.topic}" />
                                 </f:facet>
-
                                 <ez:menu/>
-
-
-
                             </h:panelGroup>
-
                             <ez:firstLogin/>
-
                         </h:panelGroup>
                     </h:form>
                 </h:panelGroup>
 
 
                 <h:panelGrid id="pgM" columns="1" style="width: 100%; border: 0px;" >
-
                     <h:panelGroup rendered ="#{(sessionController.logged and sessionController.department ne null ) or sessionController.firstLogin}" >
                         <div style="min-height: 600px;" >
-
                             <ui:insert name="content"   >
                                 Use Menu to Navigate
                             </ui:insert>
-
                         </div>
                     </h:panelGroup>
-
-
-
 
                     <p:panel rendered ="#{sessionController.logged and sessionController.department eq null}" 
                              styleClass="verticalAndHorizontalCentering">
                         <h:form id="formDept" >
-
                             <p:panel header="Select Department" >
                                 <h:panelGrid columns="3" >
                                     <h:outputText value="Department" ></h:outputText>

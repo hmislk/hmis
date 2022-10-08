@@ -20,7 +20,7 @@
                             completeMethod="#{creditCompanyController.completeCredit}" 
                             var="ix" itemLabel="#{ix.name}" 
                             itemValue="#{ix}" size="30" >  
-                <f:ajax event="itemSelect" execute="@this" render=":#{p:component('panelCompanyDesc')}" ></f:ajax>
+                <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('panelCompanyDesc',view).clientId}" ></f:ajax>
             </p:autoComplete>
             <h:outputLabel value="Credit Limit : " style="min-width: 100px;" />
             <p:inputText autocomplete="off" value="#{cc.attrs.patientEncounter.creditLimit}" />

@@ -69,7 +69,7 @@
                                     <p:panelGrid columns="3" >
                                         <h:selectOneListbox size="1"  id="dtbItem" value="#{commonReportItemController.current}" style="width: 270px;" >
                                             <f:selectItems value="#{commonReportItemController.items}" var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" />
-                                            <f:ajax event="change" execute="dtbItem" render=":#{p:component('pDetails')} :#{p:component('pPreview')}"/>
+                                            <f:ajax event="change" execute="dtbItem" render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                         </h:selectOneListbox>
                                         <p:commandButton ajax="false" action="#{commonReportItemController.duplicateItem()}" value="Duplicate"/>
                                         <p:commandButton ajax="false" action="#{commonReportItemController.removeItem()}" value="Remove"/>
@@ -92,7 +92,7 @@
                                         <h:panelGrid  columns="2">
                                             <h:outputText value="Name"   />
                                             <p:inputText style="min-width: 400px!important;" autocomplete="off" id="lblIiName" value="#{commonReportItemController.current.name}" >
-                                                <f:ajax event="keyup" execute="lblIiName" render=":#{p:component('pPreview')}"/>
+                                                <f:ajax event="keyup" execute="lblIiName" render=":#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                             </p:inputText>
 
                                             <h:outputText value="Content"/>

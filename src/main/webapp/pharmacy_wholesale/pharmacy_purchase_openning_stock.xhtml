@@ -106,7 +106,7 @@
                         <p:commandButton id="btnAdd" value="Add Item" 
                                         action="#{pharmacyPurchaseController.addItem}" 
                                          onclick="onSubmitButton();"
-                                         process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
+                                         process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId}"/>
                     </p:panelGrid>
 
                 </h:panelGrid>

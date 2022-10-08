@@ -23,7 +23,7 @@
                                 <p:autoComplete widgetVar="serv" id="acIx" forceSelection="true" converter="itemcon"
                                                 value="#{serviceFeeController.currentIx}" completeMethod="#{itemController.completeInwardItems}"
                                                 var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect" process="@this" update=":#{p:component('gpDetail')} :#{p:component('dtbFee')}" listener="#{serviceFeeController.createCharges()}" ></p:ajax>
+                                    <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId} :#{p:resolveFirstComponentWithId('dtbFee',view).clientId}" listener="#{serviceFeeController.createCharges()}" ></p:ajax>
                                     <p:column>#{ix.name}</p:column>
                                     <p:column>#{ix.category.name}</p:column>
                                     <p:column>#{ix.category.parentCategory.name}</p:column>
@@ -88,7 +88,7 @@
                                             <p:commandButton ajax="false" value="Update" action="#{serviceFeeController.edit(bi)}"/><br/><br/>
                                             <h:commandButton  id="remove" value="Remove" action="#{serviceFeeController.removeFee}" ><br/><br/>
                                                 <f:setPropertyActionListener value="#{bi}" target="#{serviceFeeController.removedItemFee}"/>
-                                                <p:ajax update=":#{p:component('lblTotal')} dtbFee"  process="remove dtbFee" />
+                                                <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee"  process="remove dtbFee" />
                                             </h:commandButton>                                            
                                         </p:column>
                                         

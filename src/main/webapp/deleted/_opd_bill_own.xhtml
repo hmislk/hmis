@@ -211,7 +211,7 @@
 
                                             </p:autoComplete>
                                             <h:commandButton actionListener="#{billController.calTotals()}" value="Set CreditCompay">
-                                                <f:ajax execute="creditCom" render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} "/>
+                                                <f:ajax execute="creditCom" render=":#{p:resolveFirstComponentWithId('panelBillTotals',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} "/>
                                             </h:commandButton>
                                         </p:tab>                                       
                                         <p:tab title="Staff">
@@ -276,7 +276,7 @@
                                                 <p:column>
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
-                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:component('tblRequests')}  :#{p:component('pBillDetails')}" listener="#{billController.feeChanged}" />
+                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billController.feeChanged}" />
                                                     </h:inputText>
                                                 </p:column>
 
