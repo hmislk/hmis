@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.context.RequestScoped;
@@ -53,30 +54,34 @@ public class BarcodeController {
     public StreamedContent getCreatePatientBarcode() {
         StreamedContent barcode = null;
         //Barcode  
-     //   ////System.out.println("creating pt bar code");
+        //   ////System.out.println("creating pt bar code");
 
         File barcodeFile = new File(getPatientController().getCurrent().toString());
-     //   ////System.out.println("current = " + getPatientController().getCurrent());
+        //   ////System.out.println("current = " + getPatientController().getCurrent());
         if (getPatientController().getCurrent() != null && getPatientController().getCurrent().getCode() != null && !getPatientController().getCurrent().getCode().trim().equals("")) {
-         //   ////System.out.println("getCurrent().getCode() = " + getPatientController().getCurrent().getCode());
+            //   ////System.out.println("getCurrent().getCode() = " + getPatientController().getCurrent().getCode());
             try {
                 BarcodeImageHandler.saveJPEG(BarcodeFactory.createCode128C(getPatientController().getCurrent().getCode()), barcodeFile);
-                barcode = new DefaultStreamedContent(new FileInputStream(barcodeFile), "image/jpeg");
+                InputStream targetStream = new FileInputStream(barcodeFile);
+                StreamedContent str = DefaultStreamedContent.builder().contentType("image/jpeg").name(barcodeFile.getName()).stream(() -> targetStream).build();
+                barcode = str;
+
             } catch (Exception ex) {
-             //   ////System.out.println("ex = " + ex.getMessage());
+                //   ////System.out.println("ex = " + ex.getMessage());
             }
         } else {
-         //   ////System.out.println("else = ");
+            //   ////System.out.println("else = ");
             try {
                 Barcode bc = BarcodeFactory.createCode128C("0000");
                 bc.setBarHeight(5);
                 bc.setBarWidth(3);
                 bc.setDrawingText(true);
                 BarcodeImageHandler.saveJPEG(bc, barcodeFile);
-             //   ////System.out.println("12");
-                barcode = new DefaultStreamedContent(new FileInputStream(barcodeFile), "image/jpeg");
+                InputStream targetStream = new FileInputStream(barcodeFile);
+                StreamedContent str = DefaultStreamedContent.builder().contentType("image/jpeg").name(barcodeFile.getName()).stream(() -> targetStream).build();
+                barcode = str;
             } catch (Exception ex) {
-             //   ////System.out.println("ex = " + ex.getMessage());
+                //   ////System.out.println("ex = " + ex.getMessage());
             }
         }
         return barcode;
@@ -84,32 +89,24 @@ public class BarcodeController {
 
     public StreamedContent getCreateBarcode(String code) {
         StreamedContent barcode = null;
-     //   ////System.out.println("code = " + code);
+        //   ////System.out.println("code = " + code);
         if (code == null || code.trim().equals("")) {
             return null;
         }
         File barcodeFile = new File(code);
         try {
             BarcodeImageHandler.saveJPEG(BarcodeFactory.createCode128C(code), barcodeFile);
-            barcode = new DefaultStreamedContent(new FileInputStream(barcodeFile), "image/jpeg");
+            InputStream targetStream = new FileInputStream(barcodeFile);
+            StreamedContent str = DefaultStreamedContent.builder().contentType("image/jpeg").name(barcodeFile.getName()).stream(() -> targetStream).build();
+            barcode = str;
         } catch (Exception ex) {
-         //   ////System.out.println("ex = " + ex.getMessage());
+            //   ////System.out.println("ex = " + ex.getMessage());
         }
 
         return barcode;
     }
 
-    public StreamedContent getBarcodeBy() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        if (context.getRenderResponse()) {
-            // So, we're rendering the view. Return a stub StreamedContent so that it will generate right URL.
-            return new DefaultStreamedContent();
-        } else {
-            // So, browser is requesting the image. Get ID value from actual request param.
-            String code = context.getExternalContext().getRequestParameterMap().get("code");
-            return new DefaultStreamedContent(new ByteArrayInputStream(getBarcodeBytes(code)), "jpg");
-        }
-    }
+    
 
     public byte[] getBarcodeBytes(String code) {
         Barcode39 code39 = new Barcode39();

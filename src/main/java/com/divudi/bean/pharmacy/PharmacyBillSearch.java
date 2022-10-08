@@ -1,5 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
@@ -30,7 +30,6 @@ import com.divudi.entity.BillFeePayment;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
-import com.divudi.entity.LazyBill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PriceMatrix;
@@ -497,40 +496,10 @@ public class PharmacyBillSearch implements Serializable {
 
     private LazyDataModel<Bill> lazyBills;
 
-    public void createTable() {
-        lazyBills = null;
-        Map m = new HashMap();
-        m.put("bt", BillType.PharmacySale);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        String sql;
-        sql = "Select b from BilledBill b where b.retired=false and b.createdAt  "
-                + " between :fd and :td and b.billType=:bt order by b.id desc ";
-
-        //     //////System.out.println("sql = " + sql);
-        List<Bill> lst = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        lazyBills = new LazyBill(lst);
-    }
+    
 
     public LazyDataModel<Bill> getSearchSaleBills() {
         return lazyBills;
-    }
-
-    public void createReturnSaleBills() {
-        lazyBills = null;
-        Map m = new HashMap();
-        m.put("bt", BillType.PharmacySale);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        String sql;
-
-        sql = "Select b from RefundBill b where b.retired=false and"
-                + " b.createdAt between :fd and :td and b.billType=:bt"
-                + " order by b.id desc ";
-
-        List<Bill> lst = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        lazyBills = new LazyBill(lst);
-
     }
 
     public EjbApplication getEjbApplication() {
@@ -2328,22 +2297,7 @@ public class PharmacyBillSearch implements Serializable {
         return bills;
     }
 
-    public void createPreBillsForReturn() {
-        lazyBills = null;
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from PreBill b where b.billType = :billType and b.referenceBill.billType=:refBillType "
-                + " and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc ";
-
-        temMap.put("billType", BillType.PharmacyPre);
-        temMap.put("refBillType", BillType.PharmacySale);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        List<Bill> lst = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        lazyBills = new LazyBill(lst);
-
-    }
+   
 
     public void makeNull() {
         refundAmount = 0;

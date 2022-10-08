@@ -7,9 +7,13 @@ package com.divudi.java;
 
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+
 
 /**
  *
@@ -43,6 +47,12 @@ public class CommonFunctions {
         return minCount;
     }
 
+    public static LocalDateTime getLocalDateTime(Date dateTime){
+        Date input = dateTime;
+        LocalDateTime date = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return date;
+    }
+    
     public static Date getStartOfMonth(Date date) {
         if (date == null) {
             date = new Date();

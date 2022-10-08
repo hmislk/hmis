@@ -1,5 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
@@ -572,7 +572,7 @@ public class BookingPastController implements Serializable {
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and pi.staff.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by pi.staff.person.name ";
 
                     m.put("ins", getSessionController().getInstitution());
@@ -581,7 +581,7 @@ public class BookingPastController implements Serializable {
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
-                            + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
                     consultants = getStaffFacade().findBySQL(sql);
                 }
@@ -595,7 +595,7 @@ public class BookingPastController implements Serializable {
                                 + " and pi.type=:typ "
                                 + " and pi.institution=:ins "
                                 + " and pi.staff.speciality=:sp "
-                                + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and pi.staff.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by pi.staff.person.name ";
 
                         m.put("ins", getSessionController().getInstitution());
@@ -603,7 +603,7 @@ public class BookingPastController implements Serializable {
 
                     } else {
                         sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
                     consultants = getStaffFacade().findBySQL(sql, m);

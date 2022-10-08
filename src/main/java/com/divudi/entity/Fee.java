@@ -1,6 +1,6 @@
 
 /*
- * To change this template, choose Tools | Templates
+* Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.entity;

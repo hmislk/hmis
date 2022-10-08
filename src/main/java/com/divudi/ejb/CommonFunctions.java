@@ -4,6 +4,8 @@ import com.divudi.data.dataStructure.DateRange;
 import com.divudi.data.dataStructure.YearMonthDay;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
@@ -289,6 +291,12 @@ public class CommonFunctions {
         calendar.set(year, month, day, 0, 0, 0);
         ////System.out.println("calendar.getTime() = " + calendar.getTime());
         return calendar.getTime();
+    }
+    
+     public static LocalDateTime getLocalDateTime(Date dateTime){
+        Date input = dateTime;
+        LocalDateTime date = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return date;
     }
 
     public static Date getStartOfMonth() {
