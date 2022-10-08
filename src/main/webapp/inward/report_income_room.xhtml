@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core" 
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
 
     <h:body>
@@ -48,7 +48,7 @@
                         <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
 
                          <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                            <pe:exporter type="xlsx" target="so1,so2,so3,so4,so5,so6,so7"  fileName="BHT_Category_Report" />
+                            <p:dataExporter type="xlsx" target="so1,so2,so3,so4,so5,so6,so7"  fileName="BHT_Category_Report" />
                         </p:commandButton> 
                         </p:panelGrid>
                         

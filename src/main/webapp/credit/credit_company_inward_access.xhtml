@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -34,7 +34,7 @@
                         </p:commandButton>
 
                         <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditAccess()}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="lst" fileName="Due Search(Credit Company)" subTable="true" />
+                            <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"  />
                         </p:commandButton>
 
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">

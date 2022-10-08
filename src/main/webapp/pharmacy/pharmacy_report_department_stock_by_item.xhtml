@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -25,9 +25,9 @@
                             <p:commandButton ajax="false" value="Process" 
                                              actionListener="#{reportsStock.fillDepartmentNonEmptyItemStocks()}" ></p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetFontStyle="BOLD" 
-                                             fontName="Courier New" />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                              
+                                              />
                             </p:commandButton>
                             <p:commandButton value="Print" actionListener="#{reportsStock.prepareForPrint()}" 
                                              oncomplete="$('#frm\\:print').click()"

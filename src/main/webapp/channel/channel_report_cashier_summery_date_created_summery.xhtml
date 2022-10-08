@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -39,7 +39,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{channelReportTempController.createUsercollectionByDateCreatedSummery()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_cashier_summery_date" subTable="true"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_cashier_summery_date"   />
                         </p:commandButton>
                     </h:panelGrid> 
                 </p:panel>

@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -93,7 +93,7 @@
                             <p:panelGrid columns="1" >
                                 <f:facet name="header" >
                                     <p:commandButton value="Excel" ajax="false">
-                                        <pe:exporter type="xlsx" target="tbl" fileName="/lab/dianamic_lables"  />
+                                        <p:dataExporter type="xlsx" target="tbl" fileName="/lab/dianamic_lables"  />
                                     </p:commandButton>
                                 </f:facet>
                                 <p:dataTable id="tbl" value="#{investigationItemDynamicLabelController.dynamicLabels}" var="f" >

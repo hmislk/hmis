@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"           
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -51,7 +51,7 @@
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton actionListener="#{channelReportController.getUsersWithFeeType}" ajax="false" value="Excel" styleClass="noPrintButton">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
 
 

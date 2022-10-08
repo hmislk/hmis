@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -62,7 +62,7 @@
                         </p:commandButton>
 
                         <p:commandButton value="Excel2" ajax="false" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="opd" fileName="Investigation_Summery"  />
+                            <p:dataExporter type="xlsx" target="opd" fileName="Investigation_Summery"  />
                         </p:commandButton>
                     </h:panelGrid>
                 </f:facet>

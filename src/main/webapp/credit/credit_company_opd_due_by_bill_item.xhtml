@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -34,7 +34,7 @@
                             </p:autoComplete>
                             <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" onclick="onSubmitButton();"/>
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="lst" fileName="credit_company_opd_due_by_bill_item" subTable="true" />
+                                <p:dataExporter type="xlsx" target="lst" fileName="credit_company_opd_due_by_bill_item"  />
                             </p:commandButton>
                         </h:panelGrid>
 

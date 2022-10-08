@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -45,7 +45,7 @@
                                          style="float: right;" onclick="onSubmitButton();"  />  
                         
                         <p:commandButton actionListener="#{commonReport.createBhtIssueTable()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
+                                <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum" fileName="report_grn_detail"  />
                         </p:commandButton>
                         
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 

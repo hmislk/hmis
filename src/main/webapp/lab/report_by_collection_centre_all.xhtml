@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -26,7 +26,7 @@
                         value="Excel"  
                         styleClass="noPrintButton" 
                         style="float: right;" onclick="onSubmitButton();"  >
-                        <pe:exporter 
+                        <p:dataExporter 
                             type="xlsx" 
                             target="tbl" 
                             fileName="Report By Referring Doctor"/>  

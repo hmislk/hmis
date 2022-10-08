@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:cre="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -48,7 +48,7 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Excel" action="#" actionListener="#{commonReport.createCollectingCenterBillTable}" >
-                        <pe:exporter type="xlsx" target="tbl" fileName="Collecting_Centre_Collection_Detail_Report"   />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="Collecting_Centre_Collection_Detail_Report"   />
                     </p:commandButton> 
                 </h:panelGrid>
 

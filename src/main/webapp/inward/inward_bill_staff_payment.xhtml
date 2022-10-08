@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -139,7 +139,7 @@
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
                                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                        <pe:exporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due"  />
+                                        <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due"  />
                                     </p:commandButton>  
                                 </h:panelGroup>
                             </h:panelGrid>

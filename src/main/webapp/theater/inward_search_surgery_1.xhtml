@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:se="http://java.sun.com/jsf/composite/inward/search"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -28,7 +28,7 @@
                                     </p:calendar>
                                     <p:commandButton ajax="false" action="#{searchController.createInwardSurgeryBillsReport()}" value="Search" onclick="onSubmitButton();" />
                                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
-                                        <pe:exporter type="xlsx" target="tblBills" fileName="surgery_details"  />
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="surgery_details"  />
                                     </p:commandButton>
                                 </h:panelGrid>
 

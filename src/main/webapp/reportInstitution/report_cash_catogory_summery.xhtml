@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -48,7 +48,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
                         <p:commandButton value="Excel" ajax="false" style="float: right;">
-                            <pe:exporter type="xlsx" target="tbl1" fileName="Category_Summery"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Category_Summery"  />
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>

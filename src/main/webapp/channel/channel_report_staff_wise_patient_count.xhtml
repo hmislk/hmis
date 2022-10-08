@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -41,7 +41,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="Staff_Wise_Patient_Count"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Staff_Wise_Patient_Count"  />
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>

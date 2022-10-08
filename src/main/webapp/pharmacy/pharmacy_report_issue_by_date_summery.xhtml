@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -30,7 +30,7 @@
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createIssueReportByDate()}"/>
                     <p:commandButton ajax="false" value="Excel" actionListener="#{pharmacySaleReport.createIssueReportByDate()}" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
+                        <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery"  />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />

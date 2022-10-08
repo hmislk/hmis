@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:poue="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -28,7 +28,7 @@
                         </p:commandButton>
 
                         <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                            <poue:exporter type="xlsx" target="tbl" fileName="Report By Referring Doctor"  />  
+                            <p:dataExporter type="xlsx" target="tbl" fileName="Report By Referring Doctor"  />  
                         </p:commandButton>
 
                         <p:panelGrid columns="4" style="min-width:100%;">

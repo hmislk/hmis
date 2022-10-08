@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:p="http://primefaces.org/ui">
 
 
@@ -53,7 +53,7 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                         </p:commandButton>
                     </h:panelGrid>
 

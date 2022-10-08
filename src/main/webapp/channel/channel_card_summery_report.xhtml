@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:panelGroup>
@@ -57,13 +57,13 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{!channelReportController.reportKeyWord.bool1}">
-                            <pe:exporter type="xlsx" target="tbl" fileName="card_summery" />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="card_summery" />
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '0'}" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="card_summery_bank_vise" />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="card_summery_bank_vise" />
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" rendered="#{channelReportController.reportKeyWord.bool1 and channelReportController.reportKeyWord.string eq '1'}" >
-                            <pe:exporter type="xlsx" target="tbl2" fileName="card_summery_bank_vise" subTable="true"/>
+                            <p:dataExporter type="xlsx" target="tbl2" fileName="card_summery_bank_vise" />
                         </p:commandButton>
                     </p:panel>
 

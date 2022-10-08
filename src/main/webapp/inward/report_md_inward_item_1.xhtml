@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -98,13 +98,13 @@
                                         action="#{mdInwardReportController.createItemWithFeeByAddedDate2}" style="float: right;" onclick="onSubmitButton();" />
 
                         <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="item_report_added_date"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="item_report_added_date"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate1}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate2}" ajax="false" value="Excel" styleClass="noPrintButton" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="item_report_discharge_date"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                             <p:printer target="reportPrint"/>

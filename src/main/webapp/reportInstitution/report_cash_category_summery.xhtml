@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         
@@ -28,7 +28,7 @@
                     </p:commandButton>
 
                     <p:commandButton value="Excel" ajax="false" style="float: right;">
-                        <pe:exporter type="xlsx" fileName="Accountant" facetBackground="#AAFFBB"   datasetPadding="4"
+                        <p:dataExporter type="xlsx" fileName="Accountant"    
                                      target="opd,s1,col,s2,finalSum"/>
                     </p:commandButton>
 
