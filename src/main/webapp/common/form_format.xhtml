@@ -33,7 +33,7 @@
                         <p:panel header="Report Items List" id="pIx">
                             <h:selectOneListbox size="1"  id="dtbItem" value="#{commonReportItemController.current}" style="width: 270px;" >
                                 <f:selectItems value="#{commonReportItemController.items}" var="ii" itemLabel="#{ii.name}" itemValue="#{ii}" />
-                                <f:ajax event="change" execute="dtbItem" render=":#{p:component('pDetails')} :#{p:component('pPreview')}"/>
+                                <f:ajax event="change" execute="dtbItem" render=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                             </h:selectOneListbox>
                             <h:commandButton action="#{commonReportItemController.removeItem()}" value="Remove"/>
                         </p:panel>
@@ -50,7 +50,7 @@
                             <h:panelGrid  columns="2">
                                 <h:outputText value="Name"   />
                                 <h:inputText autocomplete="off" id="lblIiName" value="#{commonReportItemController.current.name}" >
-                                    <f:ajax event="keyup" execute="lblIiName" render=":#{p:component('pPreview')}"/>
+                                    <f:ajax event="keyup" execute="lblIiName" render=":#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                 </h:inputText>
 
                                 <h:outputText value="Type"/>

@@ -79,7 +79,7 @@
                         <p:column headerText="Adjusted Value">
                             <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedValue}">
                                 <f:convertNumber pattern="#,##0.00" />  
-                                <p:ajax event="blur" update=":#{p:component('tot')} :#{p:component('intrim')}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
+                                <p:ajax event="blur" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('intrim',view).clientId}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="Previous Print Adjusted Value">

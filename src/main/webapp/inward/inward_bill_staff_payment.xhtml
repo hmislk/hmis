@@ -57,13 +57,13 @@
                                                var="bf" rowKey="#{bf.id}" >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{inwardStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                     <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{inwardStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                     <f:ajax  event="toggleSelect" execute="tblFee" listener="#{inwardStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                     <p:column selectionMode="multiple" ></p:column>
 

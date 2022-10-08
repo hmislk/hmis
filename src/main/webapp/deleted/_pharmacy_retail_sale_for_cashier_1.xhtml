@@ -65,7 +65,7 @@
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="focus" process="acStock :#{p:component('cmbPs')}"  ></p:ajax>
+                                                <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
                                                 <p:ajax event="itemSelect"   listener="#{pharmacySaleController.handleStockSelect}"  update="txtQty txtRate focusQty" ></p:ajax>
                                             </p:autoComplete>
 
@@ -73,8 +73,8 @@
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
                                             <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleController.qty}" style="width: 50px!important;"   >
-                                                <p:ajax event="keyup"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:component('cmbPs')}" update="txtRate txtVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:component('cmbPs')}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="keyup"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
@@ -90,7 +90,7 @@
                                             </p:outputLabel>
                                         </h:panelGrid>
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                         action="#{pharmacySaleController.addBillItem}" process="@this acStock txtQty :#{p:component('cmbPs')}" update=":#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
+                                                         action="#{pharmacySaleController.addBillItem}" process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -122,8 +122,8 @@
                                                     <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.transActiveBillItem}"
                                                                  var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
 
-                                                        <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" />  
-                                                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" /> 
+                                                        <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
                                                         <p:column headerText="Item">

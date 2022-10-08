@@ -35,7 +35,7 @@
                                                 itemValue="#{d}"
                                                 value="#{stockHistoryController.department}"
                                                  converter="departmentConverter" >
-                                    <f:ajax event="itemSelect" execute="@this" render=":#{p:component('tblHistories')}" ></f:ajax>
+                                    <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></f:ajax>
                                 </p:autoComplete>
 
                                 <p:commandButton ajax="false" 
@@ -70,10 +70,10 @@
                                 </p:selectOneMenu>
 
                                 <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithZero()}" 
-                                                 value="Display History" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
+                                                 value="Display History" process="@this :#{p:resolveFirstComponentWithId('tblDates',view).clientId}" update=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></p:commandButton>
                                                  
                                 <p:commandButton id="btnHx2" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithOutZero()}" 
-                                                 value="Display History(Stock With Out Zero)" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
+                                                 value="Display History(Stock With Out Zero)" process="@this :#{p:resolveFirstComponentWithId('tblDates',view).clientId}" update=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></p:commandButton>
 
 
 

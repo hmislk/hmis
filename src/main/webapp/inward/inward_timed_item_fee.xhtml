@@ -79,7 +79,7 @@
                                     <p:column headerText="Remove">
                                         <h:commandButton id="remove" value="Remove" action="#{timedItemFeeController.removeFee}" >
                                             <f:setPropertyActionListener value="#{bi}" target="#{timedItemFeeController.removedTimedItemFee}"/>
-                                            <p:ajax update=":#{p:component('lblTotal')} dtbFee"  process="remove dtbFee" />
+                                            <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee"  process="remove dtbFee" />
                                         </h:commandButton>
                                     </p:column>
                                 </p:dataTable>

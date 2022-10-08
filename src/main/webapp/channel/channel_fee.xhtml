@@ -175,7 +175,7 @@
                             </p:column>
 
                             <p:column headerText="Remove">
-                                <p:commandButton value="Remove" action="#{channellingFeeController.delete()}" process="tbl" update=":#{p:component('gpList')}" >
+                                <p:commandButton value="Remove" action="#{channellingFeeController.delete()}" process="tbl" update=":#{p:resolveFirstComponentWithId('gpList',view).clientId}" >
                                     <f:setPropertyActionListener value="#{i}" target="#{channellingFeeController.removingFee}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                             </p:column>

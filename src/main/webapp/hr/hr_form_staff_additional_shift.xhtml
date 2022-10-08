@@ -22,7 +22,7 @@
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         navigator="true"
                                         pattern="yyyy MM dd HH:mm:ss">
-                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
+                                <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('fromDate',view).clientId} :#{p:resolveFirstComponentWithId('toDate',view).clientId} " event="dateSelect" listener="#{staffAdditionalFormController.onDateSelect}"/>
                             </p:calendar> 
                             <h:outputLabel value="From Time"/>
                            <ez:enterDateTime id="fromDate" 

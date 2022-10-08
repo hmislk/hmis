@@ -146,7 +146,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem :#{p:component('panelError')} " onclick="onSubmitButton();"  ></p:commandButton>
+                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} " onclick="onSubmitButton();"  ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>

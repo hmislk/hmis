@@ -50,10 +50,8 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target=":#{p:component('tbl1')}"
-                                         fileName="Book_Keeping_Summery_without_pro_day"
-                                         facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
+                            <p:dataExporter type="xlsx" target=":#{p:resolveFirstComponentWithId('tbl1',view).clientId}"
+                                         fileName="Book_Keeping_Summery_without_pro_day" />
                         </p:commandButton>
                     </h:panelGrid>
                 

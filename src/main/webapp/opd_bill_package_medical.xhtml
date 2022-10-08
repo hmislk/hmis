@@ -199,7 +199,7 @@
                                                 <p:column>
                                                     <h:commandButton id="btnRemove" value="X" action="#{billPackageMedicalController.removeBillItem}" >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{billPackageMedicalController.index}" />
-                                                        <p:ajax  process="btnRemove" update=":#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" />
+                                                        <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
                                                     </h:commandButton>
                                                 </p:column>
 
@@ -231,7 +231,7 @@
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                         <f:convertNumber pattern="#,##0.00" />
-                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:component('tblRequests')}  :#{p:component('pBillDetails')}" listener="#{billPackageMedicalController.feeChanged}" />
+                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageMedicalController.feeChanged}" />
                                                     </h:inputText>
                                                 </p:column>
 

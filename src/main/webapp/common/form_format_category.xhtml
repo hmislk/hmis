@@ -15,7 +15,7 @@
                     <p:panel  >
                         <p:selectOneListbox   id="lstSelect"   value="#{formFormatController.current}" styleClass="listBox">
                             <f:selectItems  value="#{formFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                            <f:ajax render=":#{p:component('gpDetail')}" execute="lstSelect" >
+                            <f:ajax render=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" execute="lstSelect" >
                             </f:ajax>
                         </p:selectOneListbox>
                         <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{formFormatController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();"  >

@@ -57,7 +57,7 @@
                                     <h:panelGrid columns="1">
                                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                                            <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                            <p:ajax  event="click" process="@this scStaff" update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}"  
                                                      listener="#{bookingController.generateSessionsOnlyIdNew}"/>
                                         </p:selectOneListbox>
                                     </h:panelGrid>
@@ -80,7 +80,7 @@
                                                 styleClass="dateTimePickerSmall" pattern="yyyy MMMM dd" >
                                         <p:ajax event="dateSelect" 
                                                 process="@this date" 
-                                                update=":#{p:component('tblSessionsOfSelectedConsultant')} a"  
+                                                update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} a"  
                                                 listener="#{bookingController.generateSessionsOnlyIdNew}"
                                                 />
                                     </p:calendar>

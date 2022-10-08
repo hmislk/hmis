@@ -99,17 +99,8 @@
             <artifactId>itext-pdfa</artifactId>
             <version>5.4.4</version>
         </dependency>
-        <dependency>
-            <groupId>org.primefaces.extensions</groupId>
-            <artifactId>all-themes</artifactId>
-            <version>1.0.8</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.primefaces.extensions/primefaces-extensions -->
-        <dependency>
-            <groupId>org.primefaces.extensions</groupId>
-            <artifactId>primefaces-extensions</artifactId>
-            <version>6.2.5</version>
-        </dependency>
+        
+       
 
 
         <dependency>
