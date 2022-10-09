@@ -3,9 +3,15 @@ package com.divudi.bean.common;
 
 
 import com.divudi.entity.Upload;
+import com.divudi.entity.WebContent;
 import com.divudi.facade.UploadFacade;
+import com.divudi.facade.util.JsfUtil;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +24,8 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
+import org.apache.commons.io.IOUtils;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
@@ -28,6 +36,8 @@ public class UploadController implements Serializable {
     private UploadFacade ejbFacade;
     @Inject
     private WebUserController webUserController;
+    @Inject
+    WebContentController webContentController;
 
 
     private List<Upload> items = null;
@@ -35,9 +45,83 @@ public class UploadController implements Serializable {
   
     private UploadedFile file;
 
+   public String toAddNewUpload(){
+       selected = new Upload();
+       selected.setWebContent(new WebContent());
+       return "/webcontent/upload";
+   }
    
+    public String toListUploads(){
+       listUploads();
+       return "/webcontent/uploads";
+   }
+    
+    public String toViewUpload(){
+        if(selected==null){
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        if(selected.getWebContent()==null){
+            selected.setWebContent(new WebContent());
+        }
+        return "/webcontent/upload";
+    }
+    
+    public void listUploads(){
+        String j ="select u "
+                + " from Upload u "
+                + " where u.retired=:ret "
+                + " order by u.webContent.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findBySQL(j, m, TemporalType.DATE);
+    }
 
+    
+    
+    public String upload() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream input = file.getInputStream();
+            byte[] bytes = IOUtils.toByteArray(input);
+            selected.setBaImage(bytes);
+            selected.setFileName(file.getFileName());
+            selected.setFileType(file.getContentType());
+            saveUpload(selected);
+        } catch (IOException ex) {
+            System.out.println("ex = " + ex);
+        }
+        return toListUploads();
+    }
+    
     public UploadController() {
+    }
+    
+    public String save(){
+        saveUpload(selected);
+        listUploads();
+        return toListUploads();
+    }
+    
+    public void saveUpload(Upload u){
+        if(u==null){
+            return;
+        }
+        if(u.getWebContent()!=null){
+            webContentController.saveWebContent(u.getWebContent());
+        }
+        if(u.getId()==null){
+            getFacade().create(u);
+        }else{
+            getFacade().edit(u);
+        }
     }
 
     public Upload getSelected() {
@@ -70,14 +154,6 @@ public class UploadController implements Serializable {
 
     public Upload getUpload(java.lang.Long id) {
         return getFacade().find(id);
-    }
-
-    public List<Upload> getItemsAvailableSelectMany() {
-        return getFacade().findAll();
-    }
-
-    public List<Upload> getItemsAvailableSelectOne() {
-        return getFacade().findAll();
     }
 
     public WebUserController getWebUserController() {
