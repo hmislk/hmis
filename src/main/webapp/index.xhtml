@@ -11,7 +11,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <h:outputStylesheet library="css" name="web.css"/>
         <h:outputStylesheet library="css" name="headers.css"/>
-        <title>Facelets Template</title>
+        <title>#{webContentController.findSingleText("title")}</title>
         <!-- CSS only -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"></link>
 
@@ -77,27 +77,32 @@
                 <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
             </symbol>
         </svg>
+        <h:form>
+            <nav class="py-2 bg-light border-bottom">
+                <div class="container d-flex flex-wrap">
+                    <ul class="nav me-auto">
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">Home</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Channel Your Doctor</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">View my reports</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Our Services</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">About us</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Contact us</a></li>
+                        <li class="nav-item">
+                            <h:commandLink value="Login"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
+                        </li>
 
-        <nav class="py-2 bg-light border-bottom">
-            <div class="container d-flex flex-wrap">
-                <ul class="nav me-auto">
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">Home</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Channel Your Doctor</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2">View my reports</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Our Services</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2">About us</a></li>
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Contact us</a></li>
-                </ul>
-                <ul class="nav">
-                    <li class="nav-item">
-                        <h:form>
-                            <h:commandLink value="Login" action="/login.xhtml" class="nav-link link-dark px-2"></h:commandLink>
-                        </h:form>
-                    </li>
-                    <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Sign up</a></li>
-                </ul>
-            </div>
-        </nav>
+                    </ul>
+                    <ul class="nav">
+                        <li class="nav-item">
+                            <h:commandLink value="#{webContentController.findSingleText("sinhala")}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"></h:commandLink>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link link-dark px-2">Sign up</a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </h:form>
         <header class="py-3 mb-4 border-bottom">
             <div class="container d-flex flex-wrap justify-content-center">
                 <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">

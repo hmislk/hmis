@@ -90,7 +90,7 @@ public class WebContentController implements Serializable {
     public String findSingleText(String word) {
         WebContent wc = findSingleWebContent(word);
         if (wc == null || getLanguage() == null) {
-            return "";
+            return word;
         }
         switch (language) {
             case English:
@@ -106,6 +106,30 @@ public class WebContentController implements Serializable {
 
     public Language[] getLanguages() {
         return Language.values();
+    }
+
+    public boolean isSinhala(){
+        return language.equals(Language.Sinhala);
+    }
+    
+    public boolean isEnglish(){
+        return language.equals(Language.English);
+    }
+    
+    public boolean isTamil(){
+        return language.equals(Language.Tamil);
+    }
+    
+    public void makeLanguageSinhala() {
+        language = Language.Sinhala;
+    }
+
+    public void makeLanguageTamil() {
+        language = Language.Tamil;
+    }
+
+    public void makeLanguageEnglish() {
+        language = Language.English;
     }
 
     public List<String> findMultipleWebText(String word) {
@@ -171,9 +195,9 @@ public class WebContentController implements Serializable {
     private void recreateModel() {
         items = null;
     }
-    
-    public void saveWebContent(WebContent w){
-        if(w==null){
+
+    public void saveWebContent(WebContent w) {
+        if (w == null) {
             return;
         }
         if (w.getId() != null && w.getId() > 0) {
