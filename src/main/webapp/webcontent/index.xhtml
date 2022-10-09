@@ -32,6 +32,10 @@
                         </h:form>
                         
                         <h1>#{webContentController.findSingleText('title')}</h1>
+                        
+                        <ui:repeat value="#{webContentController.findMultipleWebText('vision')}" var="v" >
+                            #{v}
+                        </ui:repeat>
 
                     </div>
                     <div class="col-9" >
