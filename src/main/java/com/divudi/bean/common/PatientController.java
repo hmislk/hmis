@@ -152,8 +152,8 @@ public class PatientController implements Serializable {
         for (Patient p : getSelectedItems()) {
             if (p.getPerson() != null) {
                 p.getPerson().setMembershipScheme(membershipScheme);
-                p.getPerson().setEditedAt(new Date());
-                p.getPerson().setEditer(sessionController.getLoggedUser());
+//                p.getPerson().setEditedAt(new Date());
+//                p.getPerson().setEditer(sessionController.getLoggedUser());
                 getFacade().edit(p);
                 getPersonFacade().edit(p.getPerson());
             }
@@ -648,8 +648,8 @@ public class PatientController implements Serializable {
             p.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(p.getPerson());
         } else {
-            p.getPerson().setEditedAt(Calendar.getInstance().getTime());
-            p.getPerson().setEditer(getSessionController().getLoggedUser());
+//            p.getPerson().setEditedAt(Calendar.getInstance().getTime());
+//            p.getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(p.getPerson());
         }
         if (p.getId() == null) {
@@ -673,8 +673,8 @@ public class PatientController implements Serializable {
                     return;
                 }
             }
-            p.setEditedAt(Calendar.getInstance().getTime());
-            p.setEditer(getSessionController().getLoggedUser());
+//            p.setEditedAt(Calendar.getInstance().getTime());
+//            p.setEditer(getSessionController().getLoggedUser());
             getFacade().edit(p);
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
@@ -697,8 +697,8 @@ public class PatientController implements Serializable {
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
         } else {
-            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
-            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
+//            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
+//            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
         }
         if (getCurrent().getId() == null) {
@@ -707,8 +707,8 @@ public class PatientController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
-            getCurrent().setEditedAt(Calendar.getInstance().getTime());
-            getCurrent().setEditer(getSessionController().getLoggedUser());
+//            getCurrent().setEditedAt(Calendar.getInstance().getTime());
+//            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
@@ -776,14 +776,14 @@ public class PatientController implements Serializable {
     }
 
     public void activePatient(Patient p) {
-        p.setEditedAt(new Date());
-        p.setEditer(getSessionController().getLoggedUser());
+//        p.setEditedAt(new Date());
+//        p.setEditer(getSessionController().getLoggedUser());
         p.setRetired(false);
         p.setRetireComments("Re-Activated");
         getFacade().edit(p);
 
-        p.getPerson().setEditedAt(new Date());
-        p.getPerson().setEditer(getSessionController().getLoggedUser());
+//        p.getPerson().setEditedAt(new Date());
+//        p.getPerson().setEditer(getSessionController().getLoggedUser());
         p.getPerson().setRetired(false);
         p.getPerson().setRetireComments("Re-Activated");
         getPersonFacade().edit(p.getPerson());
@@ -792,14 +792,14 @@ public class PatientController implements Serializable {
     }
 
     public void deActivePatient(Patient p) {
-        p.setEditedAt(new Date());
-        p.setEditer(getSessionController().getLoggedUser());
+//        p.setEditedAt(new Date());
+//        p.setEditer(getSessionController().getLoggedUser());
         p.setRetired(true);
         p.setRetireComments("De-Activated");
         getFacade().edit(p);
 
-        p.getPerson().setEditedAt(new Date());
-        p.getPerson().setEditer(getSessionController().getLoggedUser());
+//        p.getPerson().setEditedAt(new Date());
+//        p.getPerson().setEditer(getSessionController().getLoggedUser());
         p.getPerson().setRetired(true);
         p.getPerson().setRetireComments("De-Activated");
         getPersonFacade().edit(p.getPerson());

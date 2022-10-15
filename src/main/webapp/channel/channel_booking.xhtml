@@ -311,60 +311,6 @@
 
                                     <h:outputLabel id="agRefLbl" value="Agent Ref"  style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; "/>
                                     <p:inputText autocomplete="off" id="agRefTxt" value="#{channelBillController.agentRefNo}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <!--                            <p:tooltip for="agRefLbl agent" >
-                                                                    <p:dataTable id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                                                        <p:column>
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="S.R.N." />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                                                                <f:convertNumber pattern="00000" />
-                                                                            </p:outputLabel>
-                                                                        </p:column>
-                                                                        <p:column>
-                                                                            <f:facet name="header">
-                                                                                <p:outputLabel value="E.R.N." />
-                                                                            </f:facet>
-                                                                            <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                                                                <f:convertNumber pattern="00000" />
-                                                                            </p:outputLabel>
-                                                                        </p:column>
-                                                                    </p:dataTable>
-                                                                </p:tooltip>-->
-                                    <!--<p:outputLabel />-->
-<!--                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                        <p:column>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="S.R.N." />
-                                            </f:facet>
-                                            <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                                <f:convertNumber pattern="00000" />
-                                            </p:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
-                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " id="tblAgentBooks2" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                        <p:column>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="E.R.N." />
-                                            </f:facet>
-                                            <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                                <f:convertNumber pattern="00000" />
-                                            </p:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>-->
-
-<!--                                    <h:outputLabel id="ballance" value="Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="ballance2" value="#{-channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                        <f:convertNumber  pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                    <h:outputLabel id="ballance5" value="Max Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="ballance6" value="#{-channelBillController.institution.maxCreditLimit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                        <f:convertNumber  pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                    <h:outputLabel id="ballance3" value="Ballance"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
-                                    <h:outputLabel id="ballance4" value="#{channelBillController.institution.ballance}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
-                                        <f:convertNumber  pattern="#,##0.00"/>
-                                    </h:outputLabel>-->
 
                                     <h:outputLabel id="staff" value="Staff"  style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; " />
                                     <h:panelGroup id="autoStaff" style="display: #{channelBillController.paymentMethod eq 'Staff' ? 'block' : 'none'} ; ">
@@ -413,26 +359,41 @@
                             <p:tab title="Agent Book" disabled="#{channelBillController.paymentMethod ne 'Agent'}" >
                                 <h:panelGrid id="pgNewBookingDetail2" columns="2"  styleClass="noBorder">
 
-                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooks" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                        <p:column>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="S.R.N." />
-                                            </f:facet>
-                                            <p:outputLabel value="#{a.startingReferenceNumber}" >
-                                                <f:convertNumber pattern="00000" />
-                                            </p:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
-                                    <p:dataTable emptyMessage="No Book" style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " id="tblAgentBooks2" value="#{channelBillController.institution.agentReferenceBooks}" var="a">
-                                        <p:column>
-                                            <f:facet name="header">
-                                                <p:outputLabel value="E.R.N." />
-                                            </f:facet>
-                                            <p:outputLabel value="#{a.endingReferenceNumber}" >
-                                                <f:convertNumber pattern="00000" />
-                                            </p:outputLabel>
-                                        </p:column>
-                                    </p:dataTable>
+
+                                    <h:panelGroup id="tblAgentBooks" >
+                                        <p:dataTable emptyMessage="No Book" 
+                                                     rendered="#{channelBillController.institution.agentReferenceBooks ne null}"
+                                                     style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooksTable" 
+                                                     value="#{channelBillController.institution.agentReferenceBooks}" var="a">
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <p:outputLabel value="S.R.N." />
+                                                </f:facet>
+                                                <p:outputLabel value="#{a.startingReferenceNumber}" >
+                                                    <f:convertNumber pattern="00000" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="tblAgentBooks2" >
+                                        <p:dataTable emptyMessage="No Book"
+                                                     rendered="#{channelBillController.institution.agentReferenceBooks ne null}"
+                                                     style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " 
+                                                     id="tblAgentBooks2Table" 
+                                                     value="#{channelBillController.institution.agentReferenceBooks}" 
+                                                     var="a">
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <p:outputLabel value="E.R.N." />
+                                                </f:facet>
+                                                <p:outputLabel value="#{a.endingReferenceNumber}" >
+                                                    <f:convertNumber pattern="00000" />
+                                                </p:outputLabel>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:panelGroup>
+
                                     <h:outputLabel id="ballance" value="Credit Limit"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; " />
                                     <h:outputLabel id="ballance2" value="#{-channelBillController.institution.allowedCredit}"  style="display: #{channelBillController.paymentMethod eq 'Agent' ? 'block' : 'none'} ; ">
                                         <f:convertNumber  pattern="#,##0.00"/>
@@ -556,7 +517,8 @@
                                            :#{p:resolveFirstComponentWithId('pgNewBookingDetail',view).clientId}" 
                                            update="gpThisBookingDetails dialogChannelAdded" style="float: right;" 
                                            action="#{channelBillController.add}" 
-                                           onclick="if (! confirm('Are you sure?')) return false"
+                                           onclick="if (!confirm('Are you sure?'))
+                                                       return false"
                                            oncomplete="PF('dlgAdd').show();">   
                             <!--<p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />-->
                         </p:commandButton>
@@ -1069,7 +1031,7 @@
 
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}">
                                             <div>
-                                                 <ch:channelRecipt bill="#{channelBillController.billSession.bill}" dup="false"/>
+                                                <ch:channelRecipt bill="#{channelBillController.billSession.bill}" dup="false"/>
                                             </div>
                                         </h:panelGroup>
                                         <h:panelGroup  styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >

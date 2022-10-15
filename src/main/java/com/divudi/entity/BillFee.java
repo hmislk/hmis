@@ -78,6 +78,8 @@ public class BillFee implements Serializable {
     Bill bill;
     ///////////////
     double feeValue = 0.0;
+    @Transient
+    private double absoluteFeeValue;
     Double feeGrossValue;
     double feeDiscount;
     double feeVat;
@@ -99,6 +101,8 @@ public class BillFee implements Serializable {
     double transNetValue;
     @ManyToOne
     private PatientRoom referencePatientRoom;
+    
+    
 
     public PriceMatrix getPriceMatrix() {
         return priceMatrix;
@@ -668,6 +672,11 @@ public class BillFee implements Serializable {
 
     public void setFeeVat(double feeVat) {
         this.feeVat = feeVat;
+    }
+
+    public double getAbsoluteFeeValue() {
+        absoluteFeeValue = Math.abs(feeValue);
+        return absoluteFeeValue;
     }
 
 }

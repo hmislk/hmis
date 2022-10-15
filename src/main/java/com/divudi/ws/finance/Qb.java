@@ -408,6 +408,9 @@ public class Qb {
 
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
+         if(b.getBillType()!=null){
+            headerJo.put("invoiceType", b.getBillType().toString());
+        }
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -417,9 +420,10 @@ public class Qb {
             } else {
                 bijo.put("item", "item");
             }
-            bijo.put("qty", bi.getQty());
-            bijo.put("amount", bi.getNetValue());
-            bijo.put("itemType", "Pharmacy Item");
+            bijo.put("qty", bi.getAbsoluteQty());
+            bijo.put("amount", bi.getAbsoluteNetValue());
+            bijo.put("bit", "Pharmacy Item");
+             bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -443,7 +447,11 @@ public class Qb {
 
         headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("billNo", b.getDeptId());
+        if(b.getBillType()!=null){
+            headerJo.put("billType", b.getBillType().toString());
+        }
 
+        
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
             JSONObject bijo = new JSONObject();
@@ -454,7 +462,8 @@ public class Qb {
             }
             bijo.put("qty", bi.getQty());
             bijo.put("amount", bi.getNetValue());
-            bijo.put("itemType", "Pharmacy Item");
+            bijo.put("bit", "Pharmacy Item");
+             bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -478,6 +487,9 @@ public class Qb {
 
         headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("billNo", b.getDeptId());
+         if(b.getBillType()!=null){
+            headerJo.put("billType", b.getBillType().toString());
+        }
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -489,7 +501,8 @@ public class Qb {
             }
             bijo.put("qty", bi.getQty());
             bijo.put("amount", bi.getNetValue());
-            bijo.put("itemType", "Pharmacy Item");
+            bijo.put("bit", "Pharmacy Item");
+             bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -510,12 +523,17 @@ public class Qb {
 
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
+        if(b.getBillType()!=null){
+            headerJo.put("invoiceType", b.getBillType().toString());
+        }
 
         JSONArray bija = new JSONArray();
         for (BillFee bi : b.getBillFees()) {
             JSONObject bijo = new JSONObject();
             String feeName = "";
             String itemName = "";
+            String docName = "";
+            String insName ="";
             String itemTypeName = "Service or Test";
             if (bi.getFee() != null && bi.getFee().getFeeType() != null) {
                 feeName = bi.getFee().getFeeType().getLabel();
@@ -527,10 +545,13 @@ public class Qb {
                     && bi.getBillItem().getItem().getItemType() != null) {
                 itemTypeName = bi.getBillItem().getItem().getItemType().name();
             }
+            
             bijo.put("item", itemName + " - " + feeName);
             bijo.put("qty", 1);
-            bijo.put("amount", bi.getFeeValue());
-            bijo.put("itemType", "Channellnig");
+            bijo.put("amount", bi.getAbsoluteFeeValue());
+            bijo.put("bit", "Channelling");
+            bijo.put("itemType", "Service");
+            
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -556,6 +577,9 @@ public class Qb {
         headerJo.put("customerName", ptName);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
+         if(b.getBillType()!=null){
+            headerJo.put("invoiceType", b.getBillType().toString());
+        }
 
         JSONArray bija = new JSONArray();
         for (BillFee bi : b.getBillFees()) {
@@ -570,8 +594,9 @@ public class Qb {
             }
             bijo.put("item", itemName + " - " + feeName);
             bijo.put("qty", 1);
-            bijo.put("amount", bi.getFeeValue());
-            bijo.put("itemType", "Inward Deposit");
+            bijo.put("amount", bi.getAbsoluteFeeValue());
+            bijo.put("bit", "Inward Deposit");
+             bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -592,6 +617,9 @@ public class Qb {
 
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
+         if(b.getBillType()!=null){
+            headerJo.put("invoiceType", b.getBillType().toString());
+        }
 
         JSONArray bija = new JSONArray();
         for (BillFee bi : b.getBillFees()) {
@@ -602,8 +630,9 @@ public class Qb {
                 bijo.put("item", "item");
             }
             bijo.put("qty", 1);
-            bijo.put("amount", bi.getFeeValue());
-            bijo.put("itemType", "Channellnig");
+            bijo.put("amount", bi.getAbsoluteFeeValue());
+            bijo.put("bit", "Channellnig");
+             bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -728,8 +757,8 @@ public class Qb {
                     if (bi.getProFees() != null) {
                         joBi.put("ProFees", bi.getProFees());
                     }
-                    if (bi.getQty() != null) {
-                        joBi.put("Qty", bi.getQty());
+                    if (bi.getAbsoluteQty() != null) {
+                        joBi.put("Qty", bi.getAbsoluteQty());
                     }
                     if (bi.getRate() != 0.0) {
                         joBi.put("Rate", bi.getRate());

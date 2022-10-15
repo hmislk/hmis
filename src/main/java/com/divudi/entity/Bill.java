@@ -142,6 +142,9 @@ public class Bill implements Serializable {
     double discount;
     double vat;
     double vatPlusNetTotal;
+    
+    @Transient
+    private double absoluteNetTotal;
 
     double discountPercent;
 
@@ -408,6 +411,8 @@ public class Bill implements Serializable {
         return claimableTotal;
     }
 
+    
+    
     public void setAdjustedTotal(double dbl) {
         claimableTotal = dbl;
     }
@@ -1793,6 +1798,11 @@ public class Bill implements Serializable {
             referredInstituteOrDoctor = referredBy;
         }
         return referredInstituteOrDoctor;
+    }
+
+    public double getAbsoluteNetTotal() {
+        absoluteNetTotal = Math.abs(netTotal);
+        return absoluteNetTotal;
     }
 
 }
