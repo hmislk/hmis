@@ -139,7 +139,7 @@
                                         <p:tab title="Refering Doctor" id="rdr">
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{appointmentController.currentBill.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" >
+                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" >
                                             <p:resetInput target="panelBillReferrals"/>
                                             </p:commandButton>  
                                       

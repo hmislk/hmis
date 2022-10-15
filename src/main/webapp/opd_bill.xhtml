@@ -395,7 +395,7 @@
                                                 <h:panelGroup >
                                                     <p:commandLink id="btnAddNewDoc" type="button"  value="Add" oncomplete="PF('dlg').show();" 
                                                                    actionListener="#{doctorController.prepareAdd}"  
-                                                                   process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                                                   process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                                     <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
 
 

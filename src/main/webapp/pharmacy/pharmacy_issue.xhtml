@@ -239,7 +239,7 @@
                                         <p:column headerText="Institution Name">
                                             #{w.institution.name}
                                         </p:column>
-                                        <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:component('tblBillItem')} " 
+                                        <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} #{p:resolveFirstComponentWithId('tblBillItem',view).clientId} " 
                                                 event="itemSelect"  listener="#{pharmacyIssueController.calculateAllRates}" />
                                     </p:autoComplete>
 
