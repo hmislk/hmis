@@ -1162,23 +1162,23 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.defLocale = defLocale;
     }
 
-    public String getPrimeTheme() {
-        if (primeTheme == null || primeTheme.equals("")) {
-            primeTheme = "hot-sneaks";
-        }
-        if (getLoggedUser() != null) {
-            if (getLoggedUser().getPrimeTheme() != null) {
-                if (!getLoggedUser().getPrimeTheme().equals("")) {
-                    return getLoggedUser().getPrimeTheme();
-                }
-            }
-        }
-        return primeTheme;
-    }
+//    public String getPrimeTheme() {
+//        if (primeTheme == null || primeTheme.equals("")) {
+//            primeTheme = "hot-sneaks";
+//        }
+//        if (getLoggedUser() != null) {
+//            if (getLoggedUser().getPrimeTheme() != null) {
+//                if (!getLoggedUser().getPrimeTheme().equals("")) {
+//                    return getLoggedUser().getPrimeTheme();
+//                }
+//            }
+//        }
+//        return primeTheme;
+//    }
 
-    public void setPrimeTheme(String primeTheme) {
-        this.primeTheme = primeTheme;
-    }
+//    public void setPrimeTheme(String primeTheme) {
+//        this.primeTheme = primeTheme;
+//    }
 
     /**
      *
