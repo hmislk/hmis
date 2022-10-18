@@ -30,6 +30,9 @@ public class WebContent implements Serializable {
     private String tamil;
     @Lob
     private String english;
+    private double orderNo;
+    
+    
     
 
     public Long getId() {
@@ -106,6 +109,14 @@ public class WebContent implements Serializable {
 
     public void setRetired(boolean retired) {
         this.retired = retired;
+    }
+
+    public double getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(double orderNo) {
+        this.orderNo = orderNo;
     }
     
 }

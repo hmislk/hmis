@@ -57,7 +57,7 @@ public class Upload implements Serializable {
     Long id;
 
     @ManyToOne
-    private WebContent document;
+    private WebContent webContent;
     @ManyToOne
     Institution institution;
     @ManyToOne
@@ -226,12 +226,12 @@ public class Upload implements Serializable {
         this.uploadType = uploadType;
     }
 
-    public WebContent getDocument() {
-        return document;
+    public WebContent getWebContent() {
+        return webContent;
     }
 
-    public void setDocument(WebContent document) {
-        this.document = document;
+    public void setWebContent(WebContent webContent) {
+        this.webContent = webContent;
     }
 
     public boolean isImage() {

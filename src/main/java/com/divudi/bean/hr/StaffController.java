@@ -1110,8 +1110,8 @@ public class StaffController implements Serializable {
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            current.getPerson().setEditer(getSessionController().getLoggedUser());
-            current.getPerson().setEditedAt(new Date());
+//            current.getPerson().setEditer(getSessionController().getLoggedUser());
+//            current.getPerson().setEditedAt(new Date());
             getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Staff Details Updated");

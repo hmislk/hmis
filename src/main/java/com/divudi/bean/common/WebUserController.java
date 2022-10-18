@@ -386,7 +386,7 @@ public class WebUserController implements Serializable {
 
             if (userName != null && w != null && w.getName() != null) {
                 if (userName.toLowerCase().equals((w.getName()).toLowerCase())) {
-                    //////System.out.println("Ift");
+                    //////// // System.out.println("Ift");
                     available = true;
                     return available;// ok. that is may be the issue. we will try with it ok
                 }
@@ -418,12 +418,12 @@ public class WebUserController implements Serializable {
         getCurrent().setActivatedAt(new Date());
         getCurrent().setActivator(getSessionController().getLoggedUser());
 
-        //////System.out.println("Start");
+        //////// // System.out.println("Start");
         //Save Person
         getCurrent().getWebUserPerson().setCreatedAt(new Date());
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
         getPersonFacade().create(getCurrent().getWebUserPerson());
-        //////System.out.println("Person Saved");
+        //////// // System.out.println("Person Saved");
 
         if (createOnlyUserForExsistingUser) {
             getCurrent().getWebUserPerson().setName(getStaff().getPerson().getName());
@@ -461,7 +461,7 @@ public class WebUserController implements Serializable {
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
-        //////System.out.println("Web User Saved");
+        //////// // System.out.println("Web User Saved");
         //SetPrivilage
 //        for (Privileges p : currentPrivilegeses) {
 //            WebUserPrivilege pv = new WebUserPrivilege();
@@ -733,6 +733,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getUserPrivilageController().setCurrentWebUser(selected);
+        getUserPrivilageController().createRootForUser();
         return "/admin_user_privilages";
     }
 

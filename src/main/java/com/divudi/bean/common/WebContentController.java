@@ -45,7 +45,7 @@ public class WebContentController implements Serializable {
 
     public String toAddNewWebContent() {
         selected = null;
-        return "/webcontent/webcontent";
+        return "/webcontent/web_content";
     }
 
     public String toEditWebContent() {
@@ -53,7 +53,7 @@ public class WebContentController implements Serializable {
             JsfUtil.addErrorMessage("Please select");
             return "";
         }
-        return "/webcontent/webcontent";
+        return "/webcontent/web_content";
     }
 
     public String toDeleteWebContent() {
@@ -70,7 +70,7 @@ public class WebContentController implements Serializable {
 
     public String toListWebContent() {
         listItems();
-        return "/webcontent/webcontent";
+        return "/webcontent/web_contents";
     }
 
     public WebContent findSingleWebContent(String word) {
@@ -78,18 +78,19 @@ public class WebContentController implements Serializable {
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from WebContent c "
-                + " where c.retired=false "
+                + " where c.retired=:ret "
                 + " and c.name = :q "
                 + " order by c.id desc";
         hm.put("q", word);
+        hm.put("ret", false);
         list = getFacade().findFirstBySQL(sql, hm);
         return list;
     }
 
     public String findSingleText(String word) {
         WebContent wc = findSingleWebContent(word);
-        if (wc == null || language == null) {
-            return "";
+        if (wc == null || getLanguage() == null) {
+            return word;
         }
         switch (language) {
             case English:
@@ -105,6 +106,30 @@ public class WebContentController implements Serializable {
 
     public Language[] getLanguages() {
         return Language.values();
+    }
+
+    public boolean isSinhala(){
+        return language.equals(Language.Sinhala);
+    }
+    
+    public boolean isEnglish(){
+        return language.equals(Language.English);
+    }
+    
+    public boolean isTamil(){
+        return language.equals(Language.Tamil);
+    }
+    
+    public void makeLanguageSinhala() {
+        language = Language.Sinhala;
+    }
+
+    public void makeLanguageTamil() {
+        language = Language.Tamil;
+    }
+
+    public void makeLanguageEnglish() {
+        language = Language.English;
     }
 
     public List<String> findMultipleWebText(String word) {
@@ -171,16 +196,21 @@ public class WebContentController implements Serializable {
         items = null;
     }
 
-    public void saveSelected() {
-        if (getSelected().getId() != null && getSelected().getId() > 0) {
-            getFacade().edit(selected);
-            UtilityController.addSuccessMessage("Updated Successfully.");
-        } else {
-            getFacade().create(selected);
-            UtilityController.addSuccessMessage("Saved Successfully");
+    public void saveWebContent(WebContent w) {
+        if (w == null) {
+            return;
         }
+        if (w.getId() != null && w.getId() > 0) {
+            getFacade().edit(w);
+        } else {
+            getFacade().create(w);
+        }
+    }
+
+    public void saveSelected() {
+        saveWebContent(selected);
         recreateModel();
-        getItems();
+        listItems();
     }
 
     public WebContentFacade getEjbFacade() {

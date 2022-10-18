@@ -166,7 +166,7 @@ public class ApiMembership {
         URLDecoder decoder = new URLDecoder();
 
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
-//        //System.out.println("s = " + s);
+//        //// // System.out.println("s = " + s);
 
         if (!"".equals(s)) {
             jSONObjectOut.put("save_patient", s);
@@ -177,7 +177,7 @@ public class ApiMembership {
         }
 
         try {
-//            //System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
+//            //// // System.out.println("Title.valueOf(title) = " + Title.valueOf(title));
             MembershipScheme ms = getMembershipSchemeFacade().find(3888l);
 //            MembershipScheme ms = getMembershipSchemeFacade().find(2670l);
             Person person = new Person();
@@ -406,11 +406,11 @@ public class ApiMembership {
         temp.setToDepartment(i.getDepartment());
         temp.setToInstitution(i.getDepartment().getInstitution());
 
-//        //System.out.println("temp.getDepartment().getName() = " + temp.getDepartment().getName());
-//        //System.out.println("temp.getInstitution().getName() = " + temp.getInstitution().getName());
+//        //// // System.out.println("temp.getDepartment().getName() = " + temp.getDepartment().getName());
+//        //// // System.out.println("temp.getInstitution().getName() = " + temp.getInstitution().getName());
 //
-//        //System.out.println("temp.getToDepartment().getName() = " + temp.getToDepartment().getName());
-//        //System.out.println("temp.getToInstitution().getName() = " + temp.getToInstitution().getName());
+//        //// // System.out.println("temp.getToDepartment().getName() = " + temp.getToDepartment().getName());
+//        //// // System.out.println("temp.getToInstitution().getName() = " + temp.getToInstitution().getName());
 //        temp.setStaff(staff);
 //        temp.setToStaff(toStaff);
 //        temp.setReferredBy(referredBy);
@@ -573,13 +573,13 @@ public class ApiMembership {
     }
 
     private Institution fetchBank(Long id) {
-//        //System.out.println("id = " + id);
+//        //// // System.out.println("id = " + id);
         String sql;
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
                 + " and i.id=" + id;
         Institution bank = getInstitutionFacade().findFirstBySQL(sql);
-//        //System.out.println("bank = " + bank);
+//        //// // System.out.println("bank = " + bank);
         return bank;
     }
 
@@ -596,7 +596,7 @@ public class ApiMembership {
 
         Bill b = getBillFacade().findFirstBySQL(sql, m);
 
-//        //System.out.println("b = " + b);
+//        //// // System.out.println("b = " + b);
         return b;
     }
 

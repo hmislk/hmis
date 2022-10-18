@@ -327,7 +327,7 @@
                                             <h:panelGrid columns="1">
                                                 <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 200px;float: left;">
                                                 </p:autoComplete>
-                                                <p:commandButton id="btnAddNewDoc" type="button" value="Add Refering Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                                <p:commandButton id="btnAddNewDoc" type="button" value="Add Refering Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                             </h:panelGrid>
                                             <p:outputLabel value="Refferal Institution"></p:outputLabel>
                                             <p:autoComplete forceSelection="true" id="cmdIns" 

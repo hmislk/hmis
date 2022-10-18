@@ -50,6 +50,8 @@ public class BillItem implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     Long id;
     Double qty = 0.0;
+    @Transient
+    private Double absoluteQty ;
     @Lob
     String descreption;
     @ManyToOne
@@ -64,6 +66,8 @@ public class BillItem implements Serializable {
     double discount;
     double vat;
     double netValue;
+    @Transient
+    private double absoluteNetValue;
     double vatPlusNetValue;
 
     double marginValue;
@@ -149,6 +153,8 @@ public class BillItem implements Serializable {
     @Transient
     boolean transRefund;
 
+    
+    
     public double getVat() {
         return vat;
     }
@@ -388,6 +394,8 @@ public class BillItem implements Serializable {
     public Bill getBill() {
         return bill;
     }
+    
+    
 
     public void setBill(Bill bill) {
         this.bill = bill;
@@ -805,6 +813,18 @@ public class BillItem implements Serializable {
         this.priority = priority;
     }
 
-    
-    
+    public double getAbsoluteNetValue() {
+        absoluteNetValue = Math.abs(netValue);
+        return absoluteNetValue;
+    }
+
+    public Double getAbsoluteQty() {
+        if(qty!=null){
+            absoluteQty = Math.abs(qty);
+        }else{
+            absoluteQty = 0.0;
+        }
+        return absoluteQty;
+    }
+
 }

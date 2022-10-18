@@ -72,17 +72,17 @@ public class Report3DController implements Serializable {
         fetchItemSaleMovement();
 
         int i = itemCounts.size();
-//        //System.out.println("i = " + i);
+//        //// // System.out.println("i = " + i);
         int j = headers.size();
-//        //System.out.println("j = " + j);
+//        //// // System.out.println("j = " + j);
         List<Double> list = new ArrayList<>();
-//        //System.out.println("Time 1 = " + new Date());
+//        //// // System.out.println("Time 1 = " + new Date());
         double totalNet = 0.0;
         for (int k = 0; k < j; k++) {
-//            //System.out.println("k = " + k);
+//            //// // System.out.println("k = " + k);
             double total = 0.0;
             for (int l = 0; l < i; l++) {
-//                //System.out.println("l = " + l);
+//                //// // System.out.println("l = " + l);
                 total += itemCounts.get(l).getCounts().get(k);
             }
             list.add((double) total);
@@ -127,7 +127,7 @@ public class Report3DController implements Serializable {
         m.put("i", i);
         d = getBillFacade().findDoubleByJpql(sql, m);
 
-//        //System.out.println("getBillFacade().findDoubleByJpql(sql, m) = " + getBillFacade().findDoubleByJpql(sql, m));
+//        //// // System.out.println("getBillFacade().findDoubleByJpql(sql, m) = " + getBillFacade().findDoubleByJpql(sql, m));
         return d;
     }
 
@@ -159,12 +159,12 @@ public class Report3DController implements Serializable {
 //        m.put("fd", getReportKeyWord().getFromDate());
 //        m.put("td", getReportKeyWord().getToDate());
 //        List<Object[]> objects = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-//        //System.out.println("objects.size() = " + objects.size());
+//        //// // System.out.println("objects.size() = " + objects.size());
 //        for (Object[] ob : objects) {
 //            Date date=(Date) ob[0];
-//            //System.out.println("date = " + date);
+//            //// // System.out.println("date = " + date);
 //            double co=(double) ob[1];
-//            //System.out.println("co = " + co);
+//            //// // System.out.println("co = " + co);
 //        }
         sql = " select FUNC('Month',pbi.billItem.bill.createdAt),sum(pbi.qty) "
                 + " from PharmaceuticalBillItem pbi "
@@ -197,7 +197,7 @@ public class Report3DController implements Serializable {
                 double co = (double) ob[1];
 //                Calendar cal = Calendar.getInstance();
 //                cal.set(Calendar.MONTH, in);
-//                //System.out.println("cal.getTime() = " + cal.getTime());
+//                //// // System.out.println("cal.getTime() = " + cal.getTime());
                 if (Integer.parseInt(s) == in) {
                     c = co;
                     break;
@@ -227,7 +227,7 @@ public class Report3DController implements Serializable {
 //
 //                DateFormat df = new SimpleDateFormat("yy MM dd");
 //                formatedDate = df.format(fd);
-//                //System.out.println("formatedDate = " + formatedDate);
+//                //// // System.out.println("formatedDate = " + formatedDate);
 //
 //            } else {
 //                fd = commonFunctions.getStartOfMonth(nowDate);
@@ -235,10 +235,10 @@ public class Report3DController implements Serializable {
 //
 //                DateFormat df = new SimpleDateFormat("yy MM");
 //                formatedDate = df.format(fd);
-//                //System.out.println("formatedDate = " + formatedDate);
+//                //// // System.out.println("formatedDate = " + formatedDate);
 //            }
 //            double tmpTot = fetchItemQty(i, fd, td, count, d);
-//            //System.out.println("tmpTot = " + tmpTot);
+//            //// // System.out.println("tmpTot = " + tmpTot);
 //
 //            ds.add(tmpTot);
 //            netTot += tmpTot;
@@ -251,7 +251,7 @@ public class Report3DController implements Serializable {
 //                cal.add(Calendar.MONTH, 1);
 //            }
 //            nowDate = cal.getTime();
-//            //System.out.println("nowDate = " + nowDate);
+//            //// // System.out.println("nowDate = " + nowDate);
 //        }
 //        ds.add(netTot);
 //        return ds;
@@ -285,9 +285,9 @@ public class Report3DController implements Serializable {
 
         if (count) {
 //            long d = getBillFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
-//            //System.out.println("d count = " + d);
+//            //// // System.out.println("d count = " + d);
 //            d = getBillFacade().findLongByJpql(sql, m, TemporalType.TIMESTAMP);
-//            //System.out.println("d count = " + d);
+//            //// // System.out.println("d count = " + d);
             double d = getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
             return d;
         } else {

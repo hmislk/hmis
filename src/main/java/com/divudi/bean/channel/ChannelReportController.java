@@ -429,7 +429,7 @@ public class ChannelReportController implements Serializable {
         m.put("td", toDate);
         m.put("bts", bts);
 
-        ////System.out.println("j = " + j);
+        ////// // System.out.println("j = " + j);
         //Bookings
         br = new ChannelReportColumnModel();
         m.put("bt", BilledBill.class);
@@ -723,17 +723,17 @@ public class ChannelReportController implements Serializable {
         totalCancel = calCashierNetTotal(new CancelledBill(), pay, bty);
         totalRefund = calCashierNetTotal(new RefundBill(), pay, bty);
 
-        ////System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
+        ////// // System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
         if (pay == PaymentMethod.Cash) {
-            ////System.out.println("payment method=" + pay);
-            ////System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
+            ////// // System.out.println("payment method=" + pay);
+            ////// // System.out.println("Billed,Cancell,Refund" + totalBilled + "," + totalCancel + "," + totalRefund);
             totalBilled += calCashierNetTotal(new BilledBill(), pay, BillType.ChannelPaid);
             totalCancel += calCashierNetTotal(new CancelledBill(), pay, BillType.ChannelPaid);
             totalRefund += calCashierNetTotal(new RefundBill(), pay, BillType.ChannelPaid);
-            ////System.out.println("netTotal" + netTotal);
+            ////// // System.out.println("netTotal" + netTotal);
         }
         netTotal = totalBilled + totalCancel + totalRefund;
-        ////System.out.println("netTotal = " + netTotal);
+        ////// // System.out.println("netTotal = " + netTotal);
 
         chm.setPaymentMethod(pay);
         chm.setBilledTotal(totalBilled);
@@ -742,7 +742,7 @@ public class ChannelReportController implements Serializable {
 
         chm.setTotal(netTotal);
 
-        ////System.out.println("chmlst = " + chmlst);
+        ////// // System.out.println("chmlst = " + chmlst);
         chmlst.add(chm);
     }
 
@@ -1048,15 +1048,15 @@ public class ChannelReportController implements Serializable {
 
         m.put("cla", b.getClass());
         m.put("bt", bt);
-        ////System.out.println("getBillSessionFacade().findBySQL(sql, m) = " + getBillSessionFacade().findBySQL(sql, m));
+        ////// // System.out.println("getBillSessionFacade().findBySQL(sql, m) = " + getBillSessionFacade().findBySQL(sql, m));
         List<BillSession> billSessions = getBillSessionFacade().findBySQL(sql, m);
-        ////System.out.println("billSessions = " + billSessions.size());
+        ////// // System.out.println("billSessions = " + billSessions.size());
         for (BillSession bs : billSessions) {
-            ////System.out.println("In");
+            ////// // System.out.println("In");
             bs.getBill().setSingleBillSession(bs);
-            ////System.out.println("bs.getSingleBillSession() = " + bs.getBill().getSingleBillSession());
+            ////// // System.out.println("bs.getSingleBillSession() = " + bs.getBill().getSingleBillSession());
             getBillFacade().edit(bs.getBill());
-            ////System.out.println("Out");
+            ////// // System.out.println("Out");
         }
     }
 
@@ -2222,9 +2222,9 @@ public class ChannelReportController implements Serializable {
 //
 //        double d = getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 //
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("m = " + m);
-//        //System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
+//        //// // System.out.println("sql = " + sql);
+//        //// // System.out.println("m = " + m);
+//        //// // System.out.println("getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP) = " + d);
 //        return d;
 //    }
     public double countBillByBillType(Bill bill, BillType bt, boolean sessoinDate, Staff st) {
@@ -2312,7 +2312,7 @@ public class ChannelReportController implements Serializable {
 //        m.put("ft", FeeType.Service);
 //        m.put("class", bill.getClass());
 //        m.put("bt", bt);
-//        //System.out.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
+//        //// // System.out.println("getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP) = " + getBillFeeFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP));
 //        return getBillFeeFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
 //    }
     FeeType feeType;
@@ -2457,7 +2457,7 @@ public class ChannelReportController implements Serializable {
                     }
                 }
 
-                //System.out.println("cashCount = " + cashCount);
+                //// // System.out.println("cashCount = " + cashCount);
 
                 dpsrs.setCashCount(cashCount);
                 dpsrs.setAgentCount(agentCount);
@@ -2466,7 +2466,7 @@ public class ChannelReportController implements Serializable {
                 //ptCount+=(cashCount + agentCount + onCallCount + staffCount);
 
             }
-            //System.out.println("dpsrs.getCashCount() = " + dpsrs.getCashCount());
+            //// // System.out.println("dpsrs.getCashCount() = " + dpsrs.getCashCount());
 
             dpsrs.setTotalCount(ptCount);
 
@@ -2490,13 +2490,13 @@ public class ChannelReportController implements Serializable {
         while (nowDate.before(td)) {
             DateFormat df = new SimpleDateFormat("dd-MMM-yyyy");
             String formattedDate = df.format(nowDate);
-            //System.out.println("formattedDate = " + formattedDate);
-            //System.out.println("nowDate = " + nowDate);
+            //// // System.out.println("formattedDate = " + formattedDate);
+            //// // System.out.println("nowDate = " + nowDate);
 
             DoctorPaymentSummeryRowSub doctorPaymentSummeryRowSub = new DoctorPaymentSummeryRowSub();
 
             doctorPaymentSummeryRowSub.setDate(nowDate);
-            //System.out.println("doctorPaymentSummeryRowSub.getDate() = " + doctorPaymentSummeryRowSub.getDate());
+            //// // System.out.println("doctorPaymentSummeryRowSub.getDate() = " + doctorPaymentSummeryRowSub.getDate());
 
             doctorPaymentSummeryRowSub.setBills(getChannelPaymentBillListbyClassTypes(bts, bt, nowDate, null, null, staff, null));
 
@@ -2616,7 +2616,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public List<Bill> getChannelUnPaidBillListbyClassTypes(List<BillType> bts, Date d, Staff stf) {
-        //System.out.println("Inside getChannelUnPaidBillListbyClassTypes");
+        //// // System.out.println("Inside getChannelUnPaidBillListbyClassTypes");
         HashMap hm = new HashMap();
 
         Date fd = commonFunctions.getStartOfDay(d);
@@ -2665,8 +2665,8 @@ public class ChannelReportController implements Serializable {
                 DoctorPaymentSummeryRowSub doctorPaymentSummeryRowSub = new DoctorPaymentSummeryRowSub();
                 doctorPaymentSummeryRowSub.setServiceSession(ss);
                 doctorPaymentSummeryRowSub.setDate(nowDate);
-                //System.out.println("doctorPaymentSummeryRowSub.getServiceSession() = " + doctorPaymentSummeryRowSub.getServiceSession());
-                //System.out.println("doctorPaymentSummeryRowSub.getDate() = " + doctorPaymentSummeryRowSub.getDate());
+                //// // System.out.println("doctorPaymentSummeryRowSub.getServiceSession() = " + doctorPaymentSummeryRowSub.getServiceSession());
+                //// // System.out.println("doctorPaymentSummeryRowSub.getDate() = " + doctorPaymentSummeryRowSub.getDate());
                 doctorPaymentSummeryRowSub.setBills(getChannelPaymentBillListbyClassTypes(bts, bt, nowDate, null, null, staff, ss));
 
                 doctorPaymentSummeryRowSub.setHospitalFeeTotal(getHospitalFeeTotal(doctorPaymentSummeryRowSub.getBills()));
@@ -2769,7 +2769,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public List<Bill> getChannelPaymentBillListbyClassTypes(List<BillType> bts, BillType bt, Date d, Date sessionFDate, Date sessionTDate, Staff stf, ServiceSession ss) {
-        //System.out.println("Inside getStaffbyClassType");
+        //// // System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
 
         Date fd = new Date();
@@ -2849,7 +2849,7 @@ public class ChannelReportController implements Serializable {
     }
 
     public double getChannelPaymentBillCountbyClassTypes(Bill b, List<BillType> bts, BillType bt, Date d, Staff stf, PaymentMethod pm) {
-        //System.out.println("Inside getStaffbyClassType");
+        //// // System.out.println("Inside getStaffbyClassType");
         HashMap hm = new HashMap();
 
         Date fd = commonFunctions.getStartOfDay(d);
@@ -3213,7 +3213,7 @@ public class ChannelReportController implements Serializable {
         BillType[] billTypes = {BillType.ChannelCash, BillType.ChannelAgent, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
 
-//        //System.out.println("getStaffbyClassType(bts) = " + getStaffbyClassType(bts, fromDate, toDate));
+//        //// // System.out.println("getStaffbyClassType(bts) = " + getStaffbyClassType(bts, fromDate, toDate));
         for (Staff s : getStaffbyClassType(bts, fromDate, toDate)) {
 
             BookingCountSummryRow row = new BookingCountSummryRow();
@@ -3228,7 +3228,7 @@ public class ChannelReportController implements Serializable {
                 refundCount = countBillByBillType(new RefundBill(), bt, sessionDate, s);
                 arr[i] = billedCount - (canceledCount + refundCount);
                 i++;
-                //System.out.println("i" + i);
+                //// // System.out.println("i" + i);
             }
             row.setCashCount(arr[0]);
             row.setAgentCount(arr[1]);
@@ -3249,7 +3249,7 @@ public class ChannelReportController implements Serializable {
 //        String sql = "select p from Staff p where p.retired=false ";
 //        
 //        if(st!=null){
-//            //System.out.println("1");
+//            //// // System.out.println("1");
 //            sql+=" and type(p)=:class ";
 //            hm.put("class", st.getClass());
 //        }
@@ -3936,16 +3936,16 @@ public class ChannelReportController implements Serializable {
             List<Bill> bills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
             List<Bill> rangeBills = new ArrayList<>();
             for (Bill b : bills) {
-//                //System.out.println("b.getSingleBillSession().getSessionDate() = " + b.getSingleBillSession().getSessionDate());
-//                //System.out.println("b.getSingleBillSession().getSessionTime() = " + b.getSingleBillSession().getSessionTime());
+//                //// // System.out.println("b.getSingleBillSession().getSessionDate() = " + b.getSingleBillSession().getSessionDate());
+//                //// // System.out.println("b.getSingleBillSession().getSessionTime() = " + b.getSingleBillSession().getSessionTime());
                 Calendar d = Calendar.getInstance();
                 d.setTime(b.getSingleBillSession().getSessionDate());
                 Calendar t = Calendar.getInstance();
                 t.setTime(b.getSingleBillSession().getSessionTime());
-//                //System.out.println("t.get(Calendar.HOUR) = " + t.get(Calendar.HOUR));
-//                //System.out.println("t.get(Calendar.HOUR_OF_DAY) = " + t.get(Calendar.HOUR_OF_DAY));
-//                //System.out.println("t.get(Calendar.MINUTE) = " + t.get(Calendar.MINUTE));
-//                //System.out.println("t.get(Calendar.SECOND) = " + t.get(Calendar.SECOND));
+//                //// // System.out.println("t.get(Calendar.HOUR) = " + t.get(Calendar.HOUR));
+//                //// // System.out.println("t.get(Calendar.HOUR_OF_DAY) = " + t.get(Calendar.HOUR_OF_DAY));
+//                //// // System.out.println("t.get(Calendar.MINUTE) = " + t.get(Calendar.MINUTE));
+//                //// // System.out.println("t.get(Calendar.SECOND) = " + t.get(Calendar.SECOND));
 //                Calendar cal = Calendar.getInstance();
 
                 t.set(Calendar.YEAR, d.get(Calendar.YEAR));
@@ -3955,7 +3955,7 @@ public class ChannelReportController implements Serializable {
 //                cal.add(Calendar.HOUR, t.get(Calendar.HOUR));
 //                cal.set(Calendar.MINUTE, t.get(Calendar.MINUTE));
 //                cal.set(Calendar.SECOND, t.get(Calendar.SECOND));
-//                //System.out.println("cal.getTime() = " + cal.getTime());
+//                //// // System.out.println("cal.getTime() = " + cal.getTime());
                 if (getFromDate().getTime() <= t.getTime().getTime()
                         && t.getTime().getTime() <= getToDate().getTime()) {
                     rangeBills.add(b);
@@ -4016,7 +4016,7 @@ public class ChannelReportController implements Serializable {
                 BillClassType classType = (BillClassType) ob[1];
                 long count = (long) ob[2];
                 System.err.println("****************");
-                //System.out.println("a.getName() = " + a.getName());
+                //// // System.out.println("a.getName() = " + a.getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;
                 } else {
@@ -4064,7 +4064,7 @@ public class ChannelReportController implements Serializable {
                 BillClassType classType = (BillClassType) ob[2];
                 long count = (long) ob[3];
                 System.err.println("****************");
-                //System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+                //// // System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;
                 } else {
@@ -4139,7 +4139,7 @@ public class ChannelReportController implements Serializable {
         }
         calTotals(valueList);
 
-        ////System.out.println("***Done***");
+        ////// // System.out.println("***Done***");
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Income buy feetype bu session date(/faces/channel/channel_report_by_fee_1.xhtml)");
     }
 
@@ -4173,14 +4173,14 @@ public class ChannelReportController implements Serializable {
         s1v3.setValue2(totCan);
         s1v3.setValue3(totRef);
 
-        ////System.out.println("*************");
-        ////System.out.println("Fee - " + s1v3.getString());
-        ////System.out.println("Bill - " + s1v3.getValue1());
-        ////System.out.println("Can - " + s1v3.getValue2());
-        ////System.out.println("Ref - " + s1v3.getValue3());
+        ////// // System.out.println("*************");
+        ////// // System.out.println("Fee - " + s1v3.getString());
+        ////// // System.out.println("Bill - " + s1v3.getValue1());
+        ////// // System.out.println("Can - " + s1v3.getValue2());
+        ////// // System.out.println("Ref - " + s1v3.getValue3());
         s1v3s.add(s1v3);
-        ////System.out.println("Add");
-        ////System.out.println("*************");
+        ////// // System.out.println("Add");
+        ////// // System.out.println("*************");
     }
 
     public double getFeeTotal(Bill bill, FeeType feeType) {
@@ -4610,7 +4610,7 @@ public class ChannelReportController implements Serializable {
         m.put("ssDate", Calendar.getInstance().getTime());
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
         if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
-//            //System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
+//            //// // System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
             if (getReportKeyWord().getString().equals("0")) {
 
             }
@@ -4619,41 +4619,41 @@ public class ChannelReportController implements Serializable {
                 for (Bill b : bills) {
                     Calendar cal = Calendar.getInstance();
                     cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
-//                    //System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
-//                    //System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
-//                    //System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
-//                    //System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
+//                    //// // System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
+//                    //// // System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
+//                    //// // System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
+//                    //// // System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
                     if (cal.get(Calendar.HOUR_OF_DAY) >= 12) {
                         reBills.add(b);
 //                        System.err.println("add 1");
                     }
                 }
-//                //System.out.println("bills.size() = " + bills.size());
-//                //System.out.println("reBills.size() = " + reBills.size());
+//                //// // System.out.println("bills.size() = " + bills.size());
+//                //// // System.out.println("reBills.size() = " + reBills.size());
                 bills.removeAll(reBills);
-//                //System.out.println("bills.size() = " + bills.size());
+//                //// // System.out.println("bills.size() = " + bills.size());
             }
             if (getReportKeyWord().getString().equals("2")) {
                 List<Bill> reBills = new ArrayList<>();
                 for (Bill b : bills) {
                     Calendar cal = Calendar.getInstance();
                     cal.setTime(b.getSingleBillSession().getServiceSession().getStartingTime());
-//                    //System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
-//                    //System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
-//                    //System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
-//                    //System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
+//                    //// // System.out.println("cal.get(Calendar.HOUR) = " + cal.get(Calendar.HOUR));
+//                    //// // System.out.println("cal.get(Calendar.MINUTE) = " + cal.get(Calendar.MINUTE));
+//                    //// // System.out.println("cal.get(Calendar.AM_PM) = " + cal.get(Calendar.AM_PM));
+//                    //// // System.out.println("cal.get(Calendar.HOUR_OF_DAY) = " + cal.get(Calendar.HOUR_OF_DAY));
                     if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
                         reBills.add(b);
 //                        System.err.println("add 2");
                     }
                 }
-//                //System.out.println("bills.size() = " + bills.size());
-//                //System.out.println("reBills.size() = " + reBills.size());
+//                //// // System.out.println("bills.size() = " + bills.size());
+//                //// // System.out.println("reBills.size() = " + reBills.size());
                 bills.removeAll(reBills);
-//                //System.out.println("bills.size() = " + bills.size());
+//                //// // System.out.println("bills.size() = " + bills.size());
             }
         }
-//        //System.out.println("bills = " + bills.size());
+//        //// // System.out.println("bills = " + bills.size());
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
@@ -4668,8 +4668,8 @@ public class ChannelReportController implements Serializable {
         for (ChannelDoctor cd : channelDoctors) {
 //            System.err.println("cd = " + cd.getConsultant().getPerson().getName());
             for (Bill b : bills) {
-//                //System.out.println("b = " + b.getStaff().getPerson().getName());
-//                //System.out.println("b = " + b.getBillClass());
+//                //// // System.out.println("b = " + b.getStaff().getPerson().getName());
+//                //// // System.out.println("b = " + b.getBillClass());
                 if (Objects.equals(b.getStaff().getId(), cd.getConsultant().getId())) {
                     if (b.getBillType() == BillType.ChannelCash
                             || b.getBillType() == BillType.ChannelPaid
@@ -4940,13 +4940,13 @@ public class ChannelReportController implements Serializable {
         total = 0.0;
 
         for (Staff s : staffs) {
-            //System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
+            //// // System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
             ChannelDoctor cd = new ChannelDoctor();
             cd.setConsultant(s);
             double cb = fetchBillCount(s, fromDate, toDate, new BilledBill(), Arrays.asList(types));
-            //System.out.println("cb = " + cb);
+            //// // System.out.println("cb = " + cb);
             double cc = fetchBillCount(s, fromDate, toDate, new CancelledBill(), Arrays.asList(types));
-            //System.out.println("cc = " + cc);
+            //// // System.out.println("cc = " + cc);
             double cr = fetchBillCount(s, fromDate, toDate, new RefundBill(), Arrays.asList(types));
             int icb = (int) ((cb * reportKeyWord.getFrom()) / 100);
             int icc = (int) ((cc * reportKeyWord.getFrom()) / 100);
@@ -5720,7 +5720,7 @@ public class ChannelReportController implements Serializable {
         }
 
 //        objects=getBillFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
-//        //System.out.println("objects.size() = " + objects.size());
+//        //// // System.out.println("objects.size() = " + objects.size());
     }
 
     public List<Bill> fetchCardTransactionBills(Institution i) {

@@ -24,7 +24,10 @@
 
                             <f:facet name="header" >
                                 <h:outputLabel value="Manage User Privilages"/>
-                                <p:commandButton value="Update User Privilage"  action="#{userPrivilageController.savePrivileges()}" ajax="false" onclick="onSubmitButton();" >  
+                                <p:commandButton value="Update User Privilage" 
+                                                 action="#{userPrivilageController.savePrivileges()}"
+                                                 ajax="false" 
+                                                  >  
                                 </p:commandButton>
 
 
@@ -45,9 +48,10 @@
 
                             <p:panel id="tree">
                                 <p:growl id="messages" showDetail="true" escape="false"/>  
-                                <p:tree value="#{userPrivilageController.tmp}" var="node"  
-                                        selectionMode="checkbox" 
-                                        selection="#{userPrivilageController.selectedNodes}">  
+                                <p:tree value="#{userPrivilageController.root}" var="node"  
+                                        selectionMode="checkbox"
+                                        selection="#{userPrivilageController.selectedNodes}"
+                                        >  
                                     <p:treeNode>  
                                         <h:outputText value="#{node}" />  
                                     </p:treeNode>  

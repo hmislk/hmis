@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <h:head >
+        <ui:define name="title">
+            Web Content Index
+        </ui:define>
+    </h:head>
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <div class="row container container-fluid" >
+                    <div class="col-3" >
+                        <h:form >
+                            <div class="col" >
+                                <h:commandButton class="btn btn-primary m-2 w-75" value="Add New Web Content" action="#{webContentController.toAddNewWebContent()}" ></h:commandButton>
+                            </div>
+                            <div class="col" >
+                                <h:commandButton  class="btn btn-primary m-2 w-75" value="List Web Content" action="#{webContentController.toListWebContent()}" ></h:commandButton>
+                            </div>
+                            <div class="col" >
+                                <h:commandButton  class="btn btn-primary m-2 w-75" value="Add Web Image" action="#{uploadController.toAddNewUpload()}" ></h:commandButton>
+                            </div>
+                            <div class="col" >
+                                <h:commandButton  class="btn btn-primary m-2 w-75" value="List Images" action="#{uploadController.toListUploads()}" ></h:commandButton>
+                            </div>
+                        </h:form>
+                        
+                        <h1>#{webContentController.findSingleText('title')}</h1>
+                        
+                        <ui:repeat value="#{webContentController.findMultipleWebText('vision')}" var="v" >
+                            #{v}
+                        </ui:repeat>
+
+                    </div>
+                    <div class="col-9" >
+                        <ui:insert name="contents"   >
+
+                        </ui:insert>
+                    </div>
+                </div>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
