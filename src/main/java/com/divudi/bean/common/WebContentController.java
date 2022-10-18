@@ -100,7 +100,7 @@ public class WebContentController implements Serializable {
             case Tamil:
                 return wc.getTamil();
             default:
-                return "";
+                return word;
         }
     }
 

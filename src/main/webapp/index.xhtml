@@ -81,14 +81,14 @@
             <nav class="py-2 bg-light border-bottom">
                 <div class="container d-flex flex-wrap">
                     <ul class="nav me-auto">
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">Home</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Channel Your Doctor</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">View my reports</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Our Services</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">About us</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Contact us</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">#{webContentController.findSingleText('home')}</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('channel')}</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('reports')}</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('services')}</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('about')}</a></li>
+                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('contact')}</a></li>
                         <li class="nav-item">
-                            <h:commandLink value="Login"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
+                            <h:commandLink value="#{webContentController.findSingleText('login')}"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
                         </li>
 
                     </ul>
@@ -97,7 +97,10 @@
                             <h:commandLink value="#{webContentController.findSingleText('sinhala')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link link-dark px-2">Sign up</a>
+                            <h:commandLink value="#{webContentController.findSingleText('tamil')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
+                        </li>
+                        <li class="nav-item">
+                            <h:commandLink value="#{webContentController.findSingleText('english')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
                         </li>
                     </ul>
                 </div>
@@ -108,10 +111,10 @@
                 <a href="/" class="d-flex align-items-center mb-3 mb-lg-0 me-lg-auto text-dark text-decoration-none">
                     <h:graphicImage  class="bi me-2" width="40" height="32" library="images" name="horizon.svg" ></h:graphicImage>
                     <svg class="bi me-2" width="40" height="32"><use /></svg>
-                    <span class="fs-4">Horizon Healthcare Services</span>
+                    <span class="fs-4">#{webContentController.findSingleText('title')}</span>
                 </a>
                 <h:form class="col-12 col-lg-auto mb-3 mb-lg-0" role="search">
-                    <h:inputText a:type="search" class="form-control" a:placeholder="Search..." a:aria-label="Search"></h:inputText>
+                    <h:inputText a:type="search" class="form-control" a:placeholder="#{webContentController.findSingleText('search')}..." a:aria-label="Search"></h:inputText>
                 </h:form>
             </div>
         </header>
