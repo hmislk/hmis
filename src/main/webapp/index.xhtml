@@ -81,12 +81,12 @@
             <nav class="py-2 bg-light border-bottom">
                 <div class="container d-flex flex-wrap">
                     <ul class="nav me-auto">
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">Home</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Channel Your Doctor</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">View my reports</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Our Services</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">About us</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Contact us</a></li>
+                        <li class="nav-item"><h:commandLink action="#{webContentController.toHome()}" class="nav-link link-dark px-2 active" >Home</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink action="#{webContentController.toChannel()}" class="nav-link link-dark px-2">Channel Your Doctor</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink action="#{webContentController.toReports()}" class="nav-link link-dark px-2">View my reports</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink action="#{webContentController.toServices()}" class="nav-link link-dark px-2">Our Services</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink action="#{webContentController.toAbout()}" class="nav-link link-dark px-2">About us</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink action="#{webContentController.toContact()}" class="nav-link link-dark px-2">Contact us</h:commandLink></li>
                         <li class="nav-item">
                             <h:commandLink value="Login"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
                         </li>
@@ -94,10 +94,13 @@
                     </ul>
                     <ul class="nav">
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText("sinhala")}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"></h:commandLink>
+                            <h:commandLink rendered="#{not webContentController.sinhala}" value="#{webContentController.findSingleText("sinhala")}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"></h:commandLink>
                         </li>
                         <li class="nav-item">
-                            <a href="#" class="nav-link link-dark px-2">Sign up</a>
+                            <h:commandLink rendered="#{not webContentController.tamil}" value="#{webContentController.findSingleText("tamil")}" action="#{webContentController.makeLanguageTamil()}" class="nav-link link-dark px-2"></h:commandLink>
+                        </li>
+                        <li class="nav-item">
+                            <h:commandLink rendered="#{not webContentController.english}" value="#{webContentController.findSingleText("english")}" action="#{webContentController.makeLanguageEnglish()}" class="nav-link link-dark px-2"></h:commandLink>
                         </li>
                     </ul>
                 </div>
