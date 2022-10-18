@@ -5,7 +5,6 @@
  */
 package com.divudi.entity.channel;
 
-import com.divudi.entity.BillSession;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.hr.FingerPrintRecord;
 import java.io.Serializable;

@@ -9,7 +9,6 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.DepartmentType;
-import com.divudi.data.InstitutionType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;

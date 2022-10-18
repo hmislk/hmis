@@ -4,12 +4,10 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -22,8 +20,8 @@ import javax.inject.Named;
 @SessionScoped
 public class ThemeController implements Serializable {
 
-    @EJB
-    WebUserFacade facade;
+//    @EJB
+//    WebUserFacade facade;
     /**
      * Managed Properties
      */
@@ -72,18 +70,18 @@ public class ThemeController implements Serializable {
     public void saveTheme() {
         if (getSessionController().getLoggedUser() != null) {
             getSessionController().getLoggedUser().setPrimeTheme(theme);
-            getFacade().edit(getSessionController().getLoggedUser());
+//            getFacade().edit(getSessionController().getLoggedUser());
             UtilityController.addSuccessMessage("Theme updated");
         }
     }
 
-    public WebUserFacade getFacade() {
-        return facade;
-    }
-
-    public void setFacade(WebUserFacade facade) {
-        this.facade = facade;
-    }
+//    public WebUserFacade getFacade() {
+//        return facade;
+//    }
+//
+//    public void setFacade(WebUserFacade facade) {
+//        this.facade = facade;
+//    }
 
     public SessionController getSessionController() {
         return sessionController;

@@ -7,9 +7,7 @@ package com.divudi.ejb;
 
 import com.divudi.entity.AppEmail;
 import com.divudi.facade.EmailFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.File;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -6,7 +6,6 @@
 
 package com.divudi.facade;
 
-import com.divudi.entity.hr.AdditionalForm;
 import com.divudi.entity.lab.PatientSampleComponant;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;

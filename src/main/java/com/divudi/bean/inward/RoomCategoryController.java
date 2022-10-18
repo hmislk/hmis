@@ -13,7 +13,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.inward.RoomCategory;
 import com.divudi.facade.RoomCategoryFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;

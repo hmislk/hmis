@@ -11,12 +11,9 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import javax.ejb.Singleton;
-import org.joda.time.Days;
 import org.joda.time.LocalDate;
-import org.joda.time.Months;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
-import org.joda.time.Years;
 
 /**
  *

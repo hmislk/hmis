@@ -20,7 +20,6 @@ import com.divudi.entity.pharmacy.AssetCategory;
 import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;

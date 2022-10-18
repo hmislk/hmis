@@ -12,7 +12,6 @@ import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.facade.DepartmentFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;

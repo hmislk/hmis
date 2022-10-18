@@ -28,7 +28,6 @@ import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
-import javax.swing.JOptionPane;
 
 /**
  *

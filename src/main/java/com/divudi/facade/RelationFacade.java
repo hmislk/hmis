@@ -7,7 +7,6 @@
 package com.divudi.facade;
 
 import com.divudi.entity.Relation;
-import com.divudi.entity.hr.AdditionalForm;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;

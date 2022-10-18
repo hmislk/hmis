@@ -14,7 +14,6 @@ import com.divudi.entity.pharmacy.Stock;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.StockFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;

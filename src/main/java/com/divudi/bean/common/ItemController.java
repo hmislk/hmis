@@ -3,7 +3,6 @@ package com.divudi.bean.common;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
@@ -47,7 +46,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.ClassUtils;
 
 /**
  *

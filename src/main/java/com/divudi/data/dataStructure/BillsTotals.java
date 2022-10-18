@@ -4,7 +4,6 @@
  */
 package com.divudi.data.dataStructure;
 
-import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import java.util.List;

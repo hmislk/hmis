@@ -49,7 +49,6 @@ import javax.inject.Named;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
-import org.primefaces.PrimeFaces;
 import org.primefaces.context.PrimeRequestContext;
 //import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;

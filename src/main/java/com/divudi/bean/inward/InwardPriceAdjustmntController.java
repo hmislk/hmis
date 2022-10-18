@@ -24,7 +24,6 @@ import com.divudi.entity.inward.InwardPriceAdjustment;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.PriceMatrixFacade;
 import java.io.Serializable;
 import java.util.Date;

@@ -8,16 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.PersonInstitutionType;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
 import com.divudi.facade.ConsultantFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +26,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Column;
 
 /**
  *

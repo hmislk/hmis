@@ -14,7 +14,6 @@ import com.divudi.data.InstitutionType;
 import com.divudi.entity.Institution;
 import com.divudi.facade.InstitutionFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;

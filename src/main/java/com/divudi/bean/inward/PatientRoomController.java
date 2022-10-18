@@ -13,7 +13,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.PatientRoomFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;

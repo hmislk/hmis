@@ -28,7 +28,6 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;

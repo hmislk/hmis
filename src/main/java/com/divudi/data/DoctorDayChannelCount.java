@@ -6,7 +6,6 @@
 package com.divudi.data;
 
 import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
 import java.util.Date;
 
 /**
