@@ -84,9 +84,7 @@
                         <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">#{webContentController.findSingleText('home')}</a></li>
                         <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('channel')}</a></li>
                         <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('reports')}</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('services')}</a></li>
                         <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('about')}</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('contact')}</a></li>
                         <li class="nav-item">
                             <h:commandLink value="#{webContentController.findSingleText('login')}"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
                         </li>
@@ -97,10 +95,10 @@
                             <h:commandLink value="#{webContentController.findSingleText('sinhala')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
                         </li>
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText('tamil')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
+                            <h:commandLink value="#{webContentController.findSingleText('tamil')}" action="#{webContentController.makeLanguageTamil()}" class="nav-link link-dark px-2"/>
                         </li>
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText('english')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
+                            <h:commandLink value="#{webContentController.findSingleText('english')}" action="#{webContentController.makeLanguageEnglish()}" class="nav-link link-dark px-2"/>
                         </li>
                     </ul>
                 </div>
