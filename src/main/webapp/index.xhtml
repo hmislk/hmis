@@ -81,24 +81,48 @@
             <nav class="py-2 bg-light border-bottom">
                 <div class="container d-flex flex-wrap">
                     <ul class="nav me-auto">
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">#{webContentController.findSingleText('home')}</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('channel')}</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('reports')}</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">#{webContentController.findSingleText('about')}</a></li>
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText('login')}"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
+                            <h:commandLink action="#{webContentController.toHome()}" class="nav-link link-dark px-2 active" >
+                                #{webContentController.findSingleText('home')}
+                            </h:commandLink>
+                        </li>
+                        <li class="nav-item">
+                            <h:commandLink action="#{webContentController.toChannel()}" class="nav-link link-dark px-2 active" >
+                                #{webContentController.findSingleText('channel')}
+                            </h:commandLink>
+                        </li>
+
+                        <li class="nav-item">
+                            <h:commandLink action="#{webContentController.toReports()}" class="nav-link link-dark px-2 active" >
+                                #{webContentController.findSingleText('reports')}
+                            </h:commandLink>
+                        </li>
+                        <li class="nav-item">
+                            <h:commandLink action="#{webContentController.toAbout()}" class="nav-link link-dark px-2 active" >
+                                #{webContentController.findSingleText('about')}
+                            </h:commandLink>
+                        </li>
+                        <li class="nav-item">
+                            <h:commandLink value="#{webContentController.findSingleText('login')}"  class="nav-link link-dark px-2" action="/login.xhtml" >
+                            </h:commandLink>
                         </li>
 
                     </ul>
                     <ul class="nav">
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText('sinhala')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
+                            <h:commandLink
+                                rendered="#{webContentController.language ne 'Sinhala'}"
+                                value="#{webContentController.findSingleText('sinhala')}" action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2"/>
                         </li>
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText('tamil')}" action="#{webContentController.makeLanguageTamil()}" class="nav-link link-dark px-2"/>
+                            <h:commandLink 
+                                rendered="#{webContentController.language ne 'Tamil'}"
+                                value="#{webContentController.findSingleText('tamil')}" action="#{webContentController.makeLanguageTamil()}" class="nav-link link-dark px-2"/>
                         </li>
                         <li class="nav-item">
-                            <h:commandLink value="#{webContentController.findSingleText('english')}" action="#{webContentController.makeLanguageEnglish()}" class="nav-link link-dark px-2"/>
+                            <h:commandLink 
+                                rendered="#{webContentController.language ne 'English'}"
+                                value="#{webContentController.findSingleText('english')}" action="#{webContentController.makeLanguageEnglish()}" class="nav-link link-dark px-2"/>
                         </li>
                     </ul>
                 </div>
