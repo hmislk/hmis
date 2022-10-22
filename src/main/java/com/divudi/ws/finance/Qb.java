@@ -305,6 +305,7 @@ public class Qb {
             String docName = "";
             String insName = "";
             String itemTypeName = "Service or Test";
+            String invType = "InvType";
             if (bi.getFee() != null && bi.getFee().getFeeType() != null) {
                 feeName = bi.getFee().getFeeType().getLabel();
             }
@@ -317,8 +318,11 @@ public class Qb {
             }
 
             String invClass = "invClass";
-            if (bi.getDepartment() != null) {
-                invClass = bi.getDepartment().getName();
+            if (b.getToDepartment() != null) {
+                invClass = b.getToDepartment().getName();
+            }
+            if(b.getBillType()!=null){
+                invType=b.getBillType().getLabel();
             }
             String itemType = "itemType";
             if (b.getBillType() != null) {
@@ -331,7 +335,7 @@ public class Qb {
             bijo.put("item", itemName + " - " + feeName);
             bijo.put("qty", 1);
             bijo.put("amount", bi.getAbsoluteFeeValue());
-            bijo.put("itemType", itemType);
+            bijo.put("invType", invType);
             bijo.put("invClass", invClass);
 
             bija.put(bijo);
