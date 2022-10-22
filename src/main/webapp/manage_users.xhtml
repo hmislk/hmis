@@ -12,7 +12,7 @@
     <!--  testing  -->
 
     <ui:define name="content">
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
             You are NOT authorized
         </h:panelGroup>
 
