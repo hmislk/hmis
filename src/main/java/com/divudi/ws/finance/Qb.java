@@ -269,13 +269,32 @@ public class Qb {
         //        System.out.println("opdBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
-        if (b.getPatient() != null & b.getPatient().getPerson() != null) {
-            headerJo.put("customerName", b.getPatient().getPerson().getNameWithTitle());
-        } else {
-            headerJo.put("customerName", "Customer");
+        String customerName = "Customer";
+        String soldTo = "Customer";
+        String paymentMethod = "Payment Method";
+        Date invoiceDate = new Date();
+        String strInvoiceDate;
+        if (b.getPatient() != null & b.getPatient().getPerson() != null && b.getPatient().getPerson().getNameWithTitle() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
         }
-
-        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        if (b.getToStaff() != null & b.getStaff().getPerson() != null && b.getStaff().getPerson().getNameWithTitle() != null) {
+            customerName = b.getStaff().getPerson().getNameWithTitle();
+        }
+        if (b.getCreditCompany() != null) {
+            customerName = b.getCreditCompany().getName();
+        }
+        if (b.getPaymentMethod() != null) {
+            paymentMethod = b.getPaymentMethod().getLabel();
+        }
+        if (b.getBillDate() != null) {
+            invoiceDate = b.getBillDate();
+        }else if(b.getCreatedAt()!=null){
+            invoiceDate = b.getCreatedAt();
+        }
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", paymentMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(invoiceDate, "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
 
         JSONArray bija = new JSONArray();
