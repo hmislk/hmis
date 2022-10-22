@@ -3,7 +3,7 @@
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -39,7 +39,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton value="Process" ajax="false" action="#{patientController.createPatientList()}" />
                                 <p:commandButton value="Excel" ajax="false">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="patent_list"  />
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="patent_list"  />
                                 </p:commandButton>
                             </h:panelGrid>
                             <p:panel id="panelSearch" header="Patient Details" styleClass="summeryBorder" >

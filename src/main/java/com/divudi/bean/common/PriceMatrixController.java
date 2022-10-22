@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -309,7 +309,7 @@ public class PriceMatrixController implements Serializable {
     
     
     public PharmacyMemberShipDiscount getPharmacyMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department, Category category) {
-        //System.out.println("getPharmacyMemberDisCount");
+        //// // System.out.println("getPharmacyMemberDisCount");
         PharmacyMemberShipDiscount opdMemberShipDiscount = null;
 
         String jpql;

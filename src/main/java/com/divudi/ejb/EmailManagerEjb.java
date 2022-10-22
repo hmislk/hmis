@@ -1,15 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
 import com.divudi.entity.AppEmail;
 import com.divudi.facade.EmailFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.File;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,8 +121,10 @@ public class EmailManagerEjb {
             return true;
 
         } catch (MessagingException e) {
+            System.out.println("e = " + e);
             return false;
         } catch (Exception e) {
+            System.out.println("e = " + e);
             return false;
         }
 

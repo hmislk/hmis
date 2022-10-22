@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -24,7 +24,7 @@
                             <p:selectOneMenu id="advanced" 
                                              value="#{hrReportController.salaryCycle}" 
                                              converter="salaryCycleConverter" 
-                                             effect="fade" var="t" 
+                                             var="t" 
                                              filter="true" 
                                              filterMatchMode="startsWith">
                                 <f:selectItems value="#{salaryCycleController.salaryCycles}" 
@@ -50,7 +50,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffWrokedDetail()}"/>
                         <p:commandButton ajax="false" value="Reset" action="#{hrReportController.reset()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_summery_by_staff"  />
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_summery_by_staff"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>

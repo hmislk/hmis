@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -42,10 +42,10 @@
                         <p:printer target="panPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts"
-                                     facetBackground="#008000" facetFontSize="15" 
-                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="Investigation Counts"
+                                       
+                                            
+                                       />
                     </p:commandButton> 
                 </h:panelGrid>
 

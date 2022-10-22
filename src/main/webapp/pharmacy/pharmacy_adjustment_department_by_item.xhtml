@@ -79,7 +79,7 @@
                             <p:panel>
                                 <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}" 
                                              var="s" editable="true" >
-                                    <p:ajax event="rowEdit" listener="#{pharmacyAdjustmentController.onEdit}" update=":#{p:component('input')}" />
+                                    <p:ajax event="rowEdit" listener="#{pharmacyAdjustmentController.onEdit}" update=":#{p:resolveFirstComponentWithId('input',view).clientId}" />
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="Item" />

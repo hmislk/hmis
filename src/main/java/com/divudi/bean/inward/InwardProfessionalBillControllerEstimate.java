@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
@@ -51,7 +51,7 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  * formatics)
  */
 @Named
@@ -130,7 +130,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 
         hm.put("q", "%" + qry.toUpperCase() + "%");
         List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
-        ////System.out.println("s = " + s);
+        ////// // System.out.println("s = " + s);
         return s;
     }
 
@@ -837,18 +837,18 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 
     public void removeBillItem() {
         //TODO: Need to add Logic
-        //////System.out.println(getIndex());
+        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
             //   boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////////System.out.println("Is Removed:" + remove);
+            ////////// // System.out.println("Is Removed:" + remove);
             calTotals();
-            //////System.out.println(getCurrent().getNetTotal());
+            //////// // System.out.println(getCurrent().getNetTotal());
         }
     }
 
@@ -867,7 +867,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

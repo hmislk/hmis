@@ -1,6 +1,6 @@
 /*
  * To change this currentlate, choose Tools | currentlates
- * and open the currentlate in the editor.
+ * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.channel;
 

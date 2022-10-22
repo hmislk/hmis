@@ -46,7 +46,7 @@
                                  selection="#{bookingController.selectedServiceSession}" >
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:component('tblBookingsOfSelectedSession')} :#{p:component('lblSessionTotal')}"
+                                update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId} :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId}"
                                 listener="#{bookingController.fillBillSessions}" />  
 
 
@@ -80,7 +80,7 @@
                                  value="#{bookingController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingController.selectedBillSession}">
-                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
                                 listener="#{channelBillController.createBillfees}" />  
 
                         <p:column headerText="No">#{bs.serialNo}</p:column>
@@ -332,7 +332,7 @@
                                     </p:column>
                                     <p:column headerText="Return Value">
                                         <p:inputText value="#{bi.tmpChangedValue}">
-                                            <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
                                         </p:inputText>
 
                                     </p:column>

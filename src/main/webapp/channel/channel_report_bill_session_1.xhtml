@@ -5,13 +5,11 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form >
                     <p:panel >
@@ -33,7 +31,7 @@
                         <p:commandButton ajax="false" value="Process Paid" action="#{channelReportController.createBillSession_report_1()}"/>
                         <p:commandButton ajax="false" value="Clear" action="#{channelReportController.makeNull()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1,tb2,tb3,tb4" fileName="bill_session_report"  />
+                            <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4" fileName="bill_session_report"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" />

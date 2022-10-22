@@ -41,7 +41,7 @@
                                  selection="#{bookingController.selectedServiceSession}" >
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:component('tblBookingsOfSelectedSession')}"
+                                update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}"
                                 listener="#{bookingController.fillBillSessions}" />  
 
 

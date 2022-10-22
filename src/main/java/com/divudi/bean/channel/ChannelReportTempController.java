@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
@@ -24,7 +24,6 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Consultant;
 import com.divudi.entity.Institution;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.RefundBill;
@@ -808,9 +807,9 @@ public class ChannelReportTempController implements Serializable {
 //        m.put("fn", "Scan Fee");
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("m = " + m);
-//        //System.out.println("bills.size() = " + bills.size());
+//        //// // System.out.println("sql = " + sql);
+//        //// // System.out.println("m = " + m);
+//        //// // System.out.println("bills.size() = " + bills.size());
         return bills;
     }
 
@@ -883,9 +882,9 @@ public class ChannelReportTempController implements Serializable {
 //        m.put("fn", "Scan Fee");
         List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("m = " + m);
-//        //System.out.println("bills.size() = " + bills.size());
+//        //// // System.out.println("sql = " + sql);
+//        //// // System.out.println("m = " + m);
+//        //// // System.out.println("bills.size() = " + bills.size());
         return bills;
     }
 
@@ -1264,7 +1263,7 @@ public class ChannelReportTempController implements Serializable {
             Date td;
             fd = commonFunctions.getStartOfDay(nowDate);
             td = commonFunctions.getEndOfDay(nowDate);
-            //System.out.println("td = " + td);
+            //// // System.out.println("td = " + td);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -1337,7 +1336,7 @@ public class ChannelReportTempController implements Serializable {
             Date td;
             fd = commonFunctions.getStartOfDay(nowDate);
             td = commonFunctions.getEndOfDay(nowDate);
-            //System.out.println("td = " + td);
+            //// // System.out.println("td = " + td);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -1429,7 +1428,7 @@ public class ChannelReportTempController implements Serializable {
             Date td;
             fd = commonFunctions.getStartOfDay(nowDate);
             td = commonFunctions.getEndOfDay(nowDate);
-            //System.out.println("td = " + td);
+            //// // System.out.println("td = " + td);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -2388,8 +2387,8 @@ public class ChannelReportTempController implements Serializable {
         c.setHeader("Total");
         c.setProperty(l.toString());
         columns.add(c);
-//        //System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).doctor.getPerson().getNameWithTitle());
-//        //System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).counts.get(0).longValue());
+//        //// // System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).doctor.getPerson().getNameWithTitle());
+//        //// // System.out.println("channelReportSpecialityWiseSummeryRows.indefOf() = " + channelReportSpecialityWiseSummeryRows.get(0).counts.get(0).longValue());
 
 
         return channelReportSpecialityWiseSummeryRows;
@@ -2429,9 +2428,9 @@ public class ChannelReportTempController implements Serializable {
 //            if (byDate) {
             fd = commonFunctions.getStartOfDay(nowDate);
             td = commonFunctions.getEndOfDay(nowDate);
-//            //System.out.println("td = " + td);
-//            //System.out.println("fd = " + fd);
-//            //System.out.println("nowDate = " + nowDate);
+//            //// // System.out.println("td = " + td);
+//            //// // System.out.println("fd = " + fd);
+//            //// // System.out.println("nowDate = " + nowDate);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);
@@ -2476,9 +2475,9 @@ public class ChannelReportTempController implements Serializable {
 //            if (byDate) {
             fd = commonFunctions.getStartOfDay(nowDate);
             td = commonFunctions.getEndOfDay(nowDate);
-//            //System.out.println("td = " + td);
-//            //System.out.println("fd = " + fd);
-//            //System.out.println("nowDate = " + nowDate);
+//            //// // System.out.println("td = " + td);
+//            //// // System.out.println("fd = " + fd);
+//            //// // System.out.println("nowDate = " + nowDate);
 
             DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
             formatedDate = df.format(fd);

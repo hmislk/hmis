@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ws.lims;
 
@@ -216,8 +216,8 @@ public class Lims {
             @PathParam("username") String username,
             @PathParam("password") String password) {
 
-        //System.out.println("password = " + password);
-        //System.out.println("username = " + username);
+        //// // System.out.println("password = " + password);
+        //// // System.out.println("username = " + username);
 
         boolean failed = false;
         JSONArray array = new JSONArray();
@@ -279,7 +279,7 @@ public class Lims {
     public List<PatientSample> prepareSampleCollectionByBillsForRequestss(List<Bill> bills, WebUser wu) {
         String j = "";
         Map m;
-        //System.out.println("prepareSampleCollectionByBillsForRequestss");
+        //// // System.out.println("prepareSampleCollectionByBillsForRequestss");
         Set<PatientSample> rPatientSamplesSet = new HashSet<>();
 
         if (bills == null) {
@@ -298,7 +298,7 @@ public class Lims {
 
             for (PatientInvestigation ptix : pis) {
 
-                //System.out.println("ptix = " + ptix);
+                //// // System.out.println("ptix = " + ptix);
 
                 Investigation ix = ptix.getInvestigation();
 
@@ -335,11 +335,11 @@ public class Lims {
                             j += " and ps.investigationComponant=:sc ";
                             m.put("sc", ixi.getSampleComponent());
                         }
-                        //System.out.println("j = " + j);
-                        //System.out.println("m = " + m);
+                        //// // System.out.println("j = " + j);
+                        //// // System.out.println("m = " + m);
 
                         PatientSample pts = patientSampleFacade.findFirstBySQL(j, m);
-                        //System.out.println("pts = " + pts);
+                        //// // System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
                             pts.setTube(ixi.getTube());
@@ -376,7 +376,7 @@ public class Lims {
                         m.put("pt", b.getPatient());
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
-                        //System.out.println("j = " + j);
+                        //// // System.out.println("j = " + j);
                         ptsc = patientSampleComponantFacade.findFirstBySQL(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
@@ -425,7 +425,7 @@ public class Lims {
     }
 
     public List<Bill> getPatientBillsForId(String strBillId, WebUser wu) {
-        //System.out.println("strBillId = " + strBillId);
+        //// // System.out.println("strBillId = " + strBillId);
         Long billId = stringToLong(strBillId);
         List<Bill> temBills;
         if (billId != null) {
@@ -437,7 +437,7 @@ public class Lims {
     }
 
     public List<Bill> prepareSampleCollectionByBillId(Long bill) {
-        //System.out.println("prepareSampleCollectionByBillId = ");
+        //// // System.out.println("prepareSampleCollectionByBillId = ");
         Bill b = billFacade.find(bill);
         List<Bill> bs = validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
@@ -490,7 +490,7 @@ public class Lims {
         m.put("n", temUserName.trim().toLowerCase());
         WebUser u = webUserFacade.findFirstBySQL(temSQL, m);
 
-        //System.out.println("temSQL = " + temSQL);
+        //// // System.out.println("temSQL = " + temSQL);
 
         if (u == null) {
             return null;

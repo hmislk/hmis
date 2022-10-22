@@ -4,7 +4,7 @@
                 template="/resources/template/template.xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
@@ -45,7 +45,7 @@
                 </h:panelGrid>
                 <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                    <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_list"  />
+                    <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_list"  />
                 </p:commandButton>
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>

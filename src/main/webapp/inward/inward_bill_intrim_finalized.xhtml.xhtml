@@ -31,7 +31,7 @@
                             <p:column>
                                 <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                             </p:column>
-                            <p:ajax event="itemSelect" process="acPt2" update=":#{p:component('gpDetail')}" />
+                            <p:ajax event="itemSelect" process="acPt2" update=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                         </p:autoComplete>
                         
                         <h:form>

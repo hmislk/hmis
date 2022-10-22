@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -44,8 +44,8 @@
                         <p:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processInwardCharges()}" onclick="onSubmitButton();"  ></p:commandButton>
                             <p:commandButton ajax="false" value="Excel" >
-                                <pe:exporter target="tbl1,tbl2,tbl3,tbl4" type="xlsx" fileName="inward_charge" >
-                                </pe:exporter>
+                                <p:dataExporter target="tbl1,tbl2,tbl3,tbl4" type="xlsx" fileName="inward_charge" >
+                                </p:dataExporter>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
                         </p:panelGrid>

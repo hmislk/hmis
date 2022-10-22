@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -40,7 +40,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_finger_edit_search"  />
+                                <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_finger_edit_search"  />
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >

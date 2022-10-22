@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
@@ -67,8 +67,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -220,7 +220,7 @@ public class BillBhtController implements Serializable {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //////System.out.println("ggg : " + getBillSearch().getComment());
+            //////// // System.out.println("ggg : " + getBillSearch().getComment());
             getBillSearch().cancelBill();
         }
 
@@ -736,16 +736,16 @@ public class BillBhtController implements Serializable {
     public void removeBillItem() {
 
         //TODO: Need to add Logic
-        //////System.out.println(getIndex());
+        //////// // System.out.println(getIndex());
         if (getIndex() != null) {
             boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////////System.out.println("Is Removed:" + remove);
+            ////////// // System.out.println("Is Removed:" + remove);
             calTotals();
 
         }
@@ -757,7 +757,7 @@ public class BillBhtController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////System.out.println(b.getBillItem().getNetValue());
+                //////// // System.out.println(b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

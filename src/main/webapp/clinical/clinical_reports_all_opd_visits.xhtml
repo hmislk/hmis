@@ -39,7 +39,7 @@
                                         itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
                                         >
                             <f:ajax  event="itemSelect" execute="@this" 
-                                     render=":#{p:component('pList')}"  
+                                     render=":#{p:resolveFirstComponentWithId('pList',view).clientId}"  
                                      listener="#{practiceBookingController.listBillSessions}" />                                                
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Process" 

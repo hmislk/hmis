@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
+ * Dr M H B Ariyaratne
  Genealogical, Clinical, Storeoratory and Genetic Data
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Department;
@@ -31,7 +31,7 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -187,7 +187,7 @@ public  class UserDepartmentController implements Serializable {
     }
 
     public void setSelectedUser(WebUser selectedUser) {
-        //////System.out.println("Setting user");
+        //////// // System.out.println("Setting user");
         this.selectedUser = selectedUser;
     }
 
@@ -256,17 +256,17 @@ public  class UserDepartmentController implements Serializable {
 
     public List<Department> getCurrentInsDepartments() {
         if (currentInstituion == null) {
-            //////System.out.println("1");
+            //////// // System.out.println("1");
             return new ArrayList<>();
         }
-        //////System.out.println("2");
+        //////// // System.out.println("2");
         Map m = new HashMap();
         m.put("ins", currentInstituion);
         String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
         currentInsDepartments = getDepartmentFacade().findBySQL(sql,m);
-        //////System.out.println("3");
+        //////// // System.out.println("3");
         if (currentInsDepartments == null) {
-            //////System.out.println("4");
+            //////// // System.out.println("4");
             currentInsDepartments = new ArrayList<>();
         }
         return currentInsDepartments;

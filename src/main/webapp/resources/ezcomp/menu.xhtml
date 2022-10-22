@@ -13,7 +13,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
-            <p:menuitem  ajax="false"  action="/index" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
+            <p:menuitem  ajax="false"  action="/home" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
             <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
                 <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
@@ -697,6 +697,7 @@
                 <p:menuitem  ajax="false"  action="/admin_manage_users" value="Manage Users" rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" ></p:menuitem>
                 <p:menuitem  ajax="false"  action="/admin_mange_institutions_index" value="Manage Institutions" rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" ></p:menuitem>
                 <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff" rendered="#{webUserController.hasPrivilege('AdminStaff')}" ></p:menuitem>
+                <p:menuitem  ajax="false"  action="/webcontent/index" value="Manage Web" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                 <p:menuitem  ajax="false"  action="/admin_items" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                 <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
                 <p:menuitem ajax="false" action="/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>

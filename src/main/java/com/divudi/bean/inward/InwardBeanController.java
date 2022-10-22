@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.inward;
 
@@ -471,7 +471,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
 
         return getBillFeeFacade().findBySQL(sql, hm, TemporalType.TIME);
-        //////System.out.println("Size : " + profesionallFee.size());
+        //////// // System.out.println("Size : " + profesionallFee.size());
 
     }
 
@@ -491,7 +491,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
 
         return getBillFeeFacade().findBySQL(sql, hm, TemporalType.TIME);
-        //////System.out.println("Size : " + profesionallFee.size());
+        //////// // System.out.println("Size : " + profesionallFee.size());
 
     }
 
@@ -517,7 +517,7 @@ public class InwardBeanController implements Serializable {
             getBillFeeFacade().edit(bf);
         }
 
-        //////System.out.println("Size : " + profesionallFee.size());
+        //////// // System.out.println("Size : " + profesionallFee.size());
     }
 
     public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType) {

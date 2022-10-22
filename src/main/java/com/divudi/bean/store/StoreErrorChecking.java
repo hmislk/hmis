@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
@@ -133,7 +133,7 @@ public class StoreErrorChecking implements Serializable {
         for (BillItem bi : billItems) {
 
             if (bi.getQty() != bi.getPharmaceuticalBillItem().getQty()) {
-                //////System.out.println("Error in qty " + bi);
+                //////// // System.out.println("Error in qty " + bi);
             }
 
             if (bi.getBill().getCreatedAt() == null) {
@@ -196,7 +196,7 @@ public class StoreErrorChecking implements Serializable {
 
             }
 
-            //////System.out.println("calculatedStock = " + calculatedStock + " " + bi.getBill().getBillType() + " " + bi.getBill().getClass() + " " + bi.getId());
+            //////// // System.out.println("calculatedStock = " + calculatedStock + " " + bi.getBill().getBillType() + " " + bi.getBill().getClass() + " " + bi.getId());
 //
             //
             //

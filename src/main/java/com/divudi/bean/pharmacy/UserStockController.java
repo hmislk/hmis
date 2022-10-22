@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -131,7 +131,7 @@ public class UserStockController implements Serializable {
         us.setCreater(webUser);
         us.setCreatedAt(new Date());
         us.setUserStockContainer(userStockContainer);
-        //   ////System.out.println("2");
+        //   ////// // System.out.println("2");
         if (us.getId() == null) {
             getUserStockFacade().create(us);
         } else {

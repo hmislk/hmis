@@ -1,10 +1,10 @@
     /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
@@ -24,7 +24,6 @@ import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.AdmissionType;
 import com.divudi.entity.inward.PatientRoom;
 import com.divudi.facade.AdmissionFacade;
 import com.divudi.facade.AppointmentFacade;
@@ -54,8 +53,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -289,7 +288,7 @@ public class AdmissionController implements Serializable {
         } else {
             sql = "select c from Admission c where c.retired=false and c.paymentMethod=:pm  and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
             hm.put("pm", PaymentMethod.Credit);
-            ////System.out.println(sql);
+            ////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, hm, TemporalType.TIME, 20);
         }
         return suggestions;
@@ -306,7 +305,7 @@ public class AdmissionController implements Serializable {
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
                     + " and ( (upper(c.bhtNo) like :q )or (upper(c.patient.person.name)"
                     + " like :q) ) order by c.bhtNo";
-            ////System.out.println(sql);
+            ////// // System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findBySQL(sql, h, 20);
@@ -327,7 +326,7 @@ public class AdmissionController implements Serializable {
                     + " and (upper(c.bhtNo) like :q "
                     + " or upper(c.patient.person.name) like :q)"
                     + "  order by c.bhtNo";
-            ////System.out.println(sql);
+            ////// // System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findBySQL(sql, h, 20);
@@ -342,7 +341,7 @@ public class AdmissionController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select c from Admission c where c.retired=false and c.discharged=true and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-            ////System.out.println(sql);
+            ////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, 20);
         }
         return suggestions;
@@ -376,7 +375,7 @@ public class AdmissionController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Admission p where p.retired=false and upper(p.bhtNo) like '%" + query.toUpperCase() + "%'";
-            ////System.out.println(sql);
+            ////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, 20);
         }
         if (suggestions == null) {

@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
@@ -29,8 +29,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -52,31 +52,31 @@ public class InvestigationItemValueController implements Serializable {
     }
 
     public List<String> completeValues(String qry) {
-        //////System.out.println("completing values");
+        //////// // System.out.println("completing values");
         FacesContext context = FacesContext.getCurrentInstance();
         InvestigationItem ii;
-        //////System.out.println("1");
-        //////System.out.println(context
+        //////// // System.out.println("1");
+        //////// // System.out.println(context
 //                .getApplication()
 //                .evaluateExpressionGet(FacesContext.getCurrentInstance(),
 //                        "#{pv}", PatientReportItemValue.class));
-        //////System.out.println("2");
+        //////// // System.out.println("2");
         try {
-            //////System.out.println("3");
+            //////// // System.out.println("3");
             PatientReportItemValue priv = (PatientReportItemValue) context
                     .getApplication()
                     .evaluateExpressionGet(FacesContext.getCurrentInstance(),
                             "#{pvm}", PatientReportItemValue.class);
-            //////System.out.println("4");
+            //////// // System.out.println("4");
             ii = priv.getInvestigationItem();
-            //////System.out.println("5");
-            //////System.out.println("ii = " + ii);
+            //////// // System.out.println("5");
+            //////// // System.out.println("ii = " + ii);
         } catch (Exception e) {
             ii = null;
-            //////System.out.println("error " + e.getMessage());
-            //////System.out.println("6");
+            //////// // System.out.println("error " + e.getMessage());
+            //////// // System.out.println("6");
         }
-        //////System.out.println("7");
+        //////// // System.out.println("7");
         Map m = new HashMap();
         String sql;
         sql = "select v.name from InvestigationItemValue v "
@@ -85,9 +85,9 @@ public class InvestigationItemValueController implements Serializable {
         m.put("s", "%" + qry.toUpperCase() + "%");
         m.put("ii", ii);
         List<String> sls = getFacade().findString(sql, m);
-        //////System.out.println("m = " + m);
-        //////System.out.println("sql = " + sql);
-        //////System.out.println("sls = " + sls);
+        //////// // System.out.println("m = " + m);
+        //////// // System.out.println("sql = " + sql);
+        //////// // System.out.println("sls = " + sls);
         return sls;
     }
 

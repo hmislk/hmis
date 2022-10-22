@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -1070,8 +1070,8 @@ public class LabReportSearchByInstitutionController implements Serializable {
         sql = "select pi from PatientInvestigation pi join pi.investigation i "
                 + "join pi.billItem.bill b join b.patient.person p where b.createdAt"
                 + " between :fromDate and :toDate order by pi.id desc";
-        ////System.out.println("m = " + m);
-        ////System.out.println("sql = " + sql);
+        ////// // System.out.println("m = " + m);
+        ////// // System.out.println("sql = " + sql);
         patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
 
     }

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -424,10 +424,10 @@ public class SaleReturnController implements Serializable {
         printPreview = true;
         UtilityController.addSuccessMessage("Successfully Returned");
         if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-            //   ////System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-            //   ////System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+            //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+            //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
             if (getBill().getToStaff() != null) {
-                //   ////System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                 getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                 UtilityController.addSuccessMessage("Staff Credit Updated");
                 getReturnBill().setFromStaff(getBill().getToStaff());

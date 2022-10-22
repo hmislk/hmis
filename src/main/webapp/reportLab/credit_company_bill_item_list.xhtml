@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -29,7 +29,7 @@
                         <h:panelGrid columns="3" >
                             <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemListForCreditCompany()}"/>
                             <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                                <pe:exporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
+                                <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                             </p:commandButton>
                         </h:panelGrid>
 

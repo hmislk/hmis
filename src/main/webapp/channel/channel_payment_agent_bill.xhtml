@@ -8,7 +8,6 @@
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form>
                     <h:panelGroup rendered="#{!channelStaffPaymentBillController.printPreview}" styleClass="alignTop" >
@@ -36,13 +35,13 @@
                                 <p:dataTable   id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('ins')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('ins',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                     <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('ins')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('ins',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                     <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('ins')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('ins',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
 
                                     <p:column selectionMode="multiple" ></p:column>
 

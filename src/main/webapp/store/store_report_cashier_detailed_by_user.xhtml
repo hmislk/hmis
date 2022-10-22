@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -32,7 +32,7 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{commonReport.createCashierTableByUser()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="sum1,sum2,sum3,sum4,sum5" fileName="Cashier_Detailed_Report"  />
+                                <p:dataExporter type="xlsx" target="sum1,sum2,sum3,sum4,sum5" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
 
 

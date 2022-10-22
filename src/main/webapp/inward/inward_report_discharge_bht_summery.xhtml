@@ -6,7 +6,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:se="http://java.sun.com/jsf/composite/inward/search"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -30,7 +30,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Bht_Final_Bill"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Bht_Final_Bill"  />
                             </p:commandButton>  
                         </h:panelGrid>
 

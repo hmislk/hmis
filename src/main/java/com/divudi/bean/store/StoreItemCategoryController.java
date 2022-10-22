@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.store;
 
@@ -31,8 +31,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -56,7 +56,7 @@ public class StoreItemCategoryController implements Serializable {
                 + " c.retired=false and (upper(c.name) like :n) order by c.name";
 
         a = getFacade().findBySQL(sql, m, 20);
-        //////System.out.println("a size is " + a.size());
+        //////// // System.out.println("a size is " + a.size());
 
         if (a == null) {
             a = new ArrayList<>();
@@ -72,7 +72,7 @@ public class StoreItemCategoryController implements Serializable {
                 + " c.retired=false and (upper(c.name) like :n) order by c.name";
 
         a = getAssetCategoryFacade().findBySQL(sql, m, 20);
-        //////System.out.println("a size is " + a.size());
+        //////// // System.out.println("a size is " + a.size());
 
         if (a == null) {
             a = new ArrayList<>();

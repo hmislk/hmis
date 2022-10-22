@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -77,11 +77,11 @@
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report ne '2'}">
                             <!--<p:dataExporter type="csv" target="tbl" fileName="QB_Export"/>-->
-                            <pe:exporter type="xlsx" target="tbl" fileName="QB_Export"/>
+                            <p:dataExporter type="xlsx" target="tbl" fileName="QB_Export"/>
                         </p:commandButton>
                         <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" rendered="#{quickBookReportController.report eq '2'}">
                             <!--<p:dataExporter type="csv" target="tbl" fileName="QB_Export"/>-->
-                            <pe:exporter type="xlsx" target="tbl1" fileName="QB_Export"/>
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="QB_Export"/>
                         </p:commandButton>
                     </h:panelGrid>
 

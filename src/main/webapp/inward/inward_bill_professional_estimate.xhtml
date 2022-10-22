@@ -106,7 +106,7 @@
                                         <f:facet name="header">Fee</f:facet>
                                         <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}">
                                             <p:ajax event="blur" process="txtFeeVal"
-                                                    update=":#{p:component('pBillDetails')}"
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                     listener="#{inwardProfessionalBillController.feeChanged(bif)}" />
                                         </h:inputText>
                                     </p:column>

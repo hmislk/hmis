@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -103,7 +103,7 @@ public class ApplicationController {
             loggins.add(login);
 //            for (SessionController s : getSessionControllers()) {
 //                if (s.getLoggedUser().equals(login.getWebUser())) {
-//                    //////System.out.println("making log out");
+//                    //////// // System.out.println("making log out");
 //                    s.logout();
 //                }
 //            }
@@ -114,7 +114,7 @@ public class ApplicationController {
 
     public void removeLoggins(SessionController sc) {
         Logins login = sc.getThisLogin();
-        //////System.out.println("sessions logged before removing is " + getLoggins().size());
+        //////// // System.out.println("sessions logged before removing is " + getLoggins().size());
         loggins.remove(login);
 //        sessionControllers.remove(sc);
     }

@@ -1,6 +1,6 @@
 /*
  * To change this currentlate, choose Tools | currentlates
- * and open the currentlate in the editor.
+ * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
 
@@ -128,7 +128,7 @@ public class PettyCashBillController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
         Date fd = c.getTime();
-        //System.out.println("d = " + fd);
+        //// // System.out.println("d = " + fd);
         DecimalFormat df = new DecimalFormat("00000");
         String s=df.format(getCurrent().getIntInvoiceNumber());
         String inv = createInvoiceNumberSuffix() + s;

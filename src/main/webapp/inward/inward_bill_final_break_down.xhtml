@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 xmlns:breakDown="http://java.sun.com/jsf/composite/inward/breakDown"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -65,7 +65,7 @@
                         </p:commandButton>  
                         <p:commandButton value="Export Excel" ajax="false" 
                                          styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="pharmacyIssue" 
+                            <p:dataExporter type="xlsx" target="pharmacyIssue" 
                                          fileName="Pharmacy_Issue"/>
                         </p:commandButton>
                         </p:panelGrid>
@@ -138,7 +138,7 @@
                         </p:commandButton>  
                         <p:commandButton value="Export Excel" ajax="false" 
                                          styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="storeIssue" 
+                            <p:dataExporter type="xlsx" target="storeIssue" 
                                          fileName="store_Issue"/>
                         </p:commandButton>
                         </p:panelGrid>

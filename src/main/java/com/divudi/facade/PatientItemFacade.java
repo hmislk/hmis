@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.facade;
 
@@ -21,7 +21,7 @@ public class PatientItemFacade extends AbstractFacade<PatientItem> {
     @Override
     protected EntityManager getEntityManager() {
         if(em==null){
-            ////System.out.println("em is nulkl");
+            ////// // System.out.println("em is nulkl");
         }
         if(em == null){}return em;
     }

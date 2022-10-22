@@ -7,13 +7,10 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
-
-
     <ui:define name="content">
-
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -54,7 +51,7 @@
                             <p:printer target="tbl"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="hr_bill_list"  />
                         </p:commandButton>
                     </h:panelGrid>
 

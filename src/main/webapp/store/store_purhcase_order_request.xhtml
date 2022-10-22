@@ -44,7 +44,7 @@
                                         forceSelection="true"
                                         completeMethod="#{storeDealorController.completeDealor}"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
-                            <f:ajax event="itemSelect" execute="@this" render=":#{p:component('itemList')}" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
+                            <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('itemList',view).clientId}" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
                         </p:autoComplete>
                         <h:panelGroup>                            
                             <p:commandButton ajax="false" value="Fill with Item" action="#{storePurchaseOrderRequestController.createOrderWithItems}" disabled="#{storePurchaseOrderRequestController.currentBill.id ne null}"/>
@@ -66,7 +66,7 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:component('itemList')} :#{p:component('tot')} " />
+                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} " />
 
                     </p:tab>
 
@@ -85,7 +85,7 @@
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
                         </p:autoComplete>
-                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:component('itemList')} :#{p:component('tot')}" />
+                        <p:commandButton value="Add Item" action="#{storePurchaseOrderRequestController.addItem}" process="exItem @this" update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}" />
 
                     </p:tab>
 <!--                    <p:tab title="Payment Method + Qutation">
@@ -130,15 +130,15 @@
                     #{a}
                     <p:column headerText="Qty" style="width:20%"> 
                         <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">                       
-                            <f:ajax event="blur" render="@this total :#{p:component('tot')} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                            <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
+                            <f:ajax event="blur" render="@this total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
+                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
                         </p:inputText>
                     </p:column>  
                     <p:column headerText="Purchase Price" style="width:20%">  
                         <h:panelGroup id="price">
                             <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">                                
-                                <f:ajax event="keyup" render="total :#{p:component('tot')}"  execute="@this qty" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                <f:ajax event="focus" render=":#{p:component('tab')}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
+                                <f:ajax event="keyup" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
+                                <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
                             </p:inputText>
                         </h:panelGroup>
                     </p:column>  

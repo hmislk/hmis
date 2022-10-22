@@ -178,8 +178,8 @@
                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                     <f:ajax event="keyup" execute="@this" 
-                                                            render=" :#{p:component('tblRequests')}  
-                                                            :#{p:component('pBillDetails')} matrix feeValue" 
+                                                            render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  
+                                                            :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
                                                             listener="#{billBhtController.feeChangedSurgery(bif)}" />
                                                 </h:inputText>
                                             </p:column>

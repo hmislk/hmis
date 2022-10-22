@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -114,24 +114,24 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void fillDepartments() {
-        ////System.out.println("fill dept");
+        ////// // System.out.println("fill dept");
         String jpql;
         Map m = new HashMap();
         m.put("ins", getItemFee().getInstitution());
         jpql = "select d from Department d where d.retired=false and d.institution=:ins order by d.name";
-        ////System.out.println("m = " + m);
-        ////System.out.println("jpql = " + jpql);
+        ////// // System.out.println("m = " + m);
+        ////// // System.out.println("jpql = " + jpql);
         departments = departmentFacade.findBySQL(jpql, m);
     }
 
     public void fillStaff() {
-        ////System.out.println("fill staff");
+        ////// // System.out.println("fill staff");
         String jpql;
         Map m = new HashMap();
         m.put("ins", getItemFee().getSpeciality());
         jpql = "select d from Staff d where d.retired=false and d.speciality=:ins order by d.person.name";
-        ////System.out.println("m = " + m);
-        ////System.out.println("jpql = " + jpql);
+        ////// // System.out.println("m = " + m);
+        ////// // System.out.println("jpql = " + jpql);
         staffs = staffFacade.findBySQL(jpql, m);
     }
 

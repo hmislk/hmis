@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
@@ -34,8 +34,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -72,7 +72,7 @@ public class VmpController implements Serializable {
             vmpList = new ArrayList<Vmp>();
         } else {
             sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             vmpList = getFacade().findBySQL(sql);
         }
         return vmpList;
@@ -230,7 +230,7 @@ public class VmpController implements Serializable {
             suggestions = new ArrayList<Vmp>();
         } else {
             sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -293,7 +293,7 @@ public class VmpController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //////System.out.println(code + " " + ix + " " + ic + " " + f);
+                //////// // System.out.println(code + " " + ix + " " + ic + " " + f);
 
                 Vmp tix = new Vmp();
                 tix.setCode(code);

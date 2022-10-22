@@ -1,15 +1,14 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -21,8 +20,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Entity
 @XmlRootElement
@@ -98,7 +97,7 @@ public class WebUser implements Serializable {
     }
 
     public Institution getInstitution() {
-        //////System.out.println("Getting Institution");
+        //////// // System.out.println("Getting Institution");
         return institution;
     }
 

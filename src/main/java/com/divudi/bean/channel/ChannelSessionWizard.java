@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
@@ -161,7 +161,7 @@ public class ChannelSessionWizard implements Serializable {
             suggestions = new ArrayList<ServiceSession>();
         } else {
             if (getCurrentStaff() != null) {
-                sql = "select p from ServiceSession p where p.retired=false and upper(p.name) like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
+                sql = "select p from ServiceSession p where p.retired=false and p.name like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
                 suggestions = getServiceSessionFacade().findBySQL(sql);
             } else {
                 suggestions = new ArrayList<ServiceSession>();
@@ -182,7 +182,7 @@ public class ChannelSessionWizard implements Serializable {
             } else {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getStaffFacade().findBySQL(sql);
         }
         return suggestions;
@@ -312,18 +312,18 @@ public class ChannelSessionWizard implements Serializable {
 
             if (fees.isEmpty()) {
                 createScanFee();
-                ////System.out.println("Scan Fee Created");
+                ////// // System.out.println("Scan Fee Created");
             }
         }
     }
 
     public void feesListner() {
 
-//        ////System.out.println("view");
+//        ////// // System.out.println("view");
 //        fillFees();
-//        ////System.out.println("fees = " + fees);
+//        ////// // System.out.println("fees = " + fees);
 //        if (fees.isEmpty()) {
-//            ////System.out.println("Create New Fees");
+//            ////// // System.out.println("Create New Fees");
         createHospitalFee();
         createStaffFee();
 

@@ -25,7 +25,7 @@
                                                 completeMethod="#{investigationController.completeInvest}" 
                                                 var="apt" itemLabel="#{apt.name}"
                                                 itemValue="#{apt}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')}"/>
+                                    <p:ajax event="itemSelect" process="acPt" update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                 </p:autoComplete> 
                                 <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
                                     <p:ajax event="change" process="@this" update="acPt tbl count" />
@@ -164,7 +164,7 @@
                                                      rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'Move_Mode'}" >
                                             <f:ajax event="keyup" execute="@this keyCode" 
                                                     listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
-                                                    render="gpIi :#{p:component('pDetails')} moveFocus "/>
+                                                    render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
                                         </h:inputText>
 
                                         <p:watermark value="#{myIi.htmltext}" for="txtMove" ></p:watermark>

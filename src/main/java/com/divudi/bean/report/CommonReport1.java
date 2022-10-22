@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -426,8 +426,8 @@ public class CommonReport1 implements Serializable {
 
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
-        ////System.out.println("sql = " + sql);
-        ////System.out.println("temMap = " + temMap);
+        ////// // System.out.println("sql = " + sql);
+        ////// // System.out.println("temMap = " + temMap);
         referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
@@ -478,8 +478,8 @@ public class CommonReport1 implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("bt", BillType.OpdBill);
-        ////System.out.println("sql = " + sql);
-        ////System.out.println("temMap = " + temMap);
+        ////// // System.out.println("sql = " + sql);
+        ////// // System.out.println("temMap = " + temMap);
 //        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
         bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
@@ -587,7 +587,7 @@ public class CommonReport1 implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         m.put("inv", Investigation.class);
-        //System.out.println("sql = " + sql);
+        //// // System.out.println("sql = " + sql);
         List<Object[]> objects = billItemFacade.findAggregates(sql, m, TemporalType.TIMESTAMP);
         List<Object[]> obj = fetchReferingDoctoerNull();
         if (objects == null) {
@@ -616,7 +616,7 @@ public class CommonReport1 implements Serializable {
                     continue;
                 }
             }
-            //System.out.println("d.getName() = " + d.getPerson().getName());
+            //// // System.out.println("d.getName() = " + d.getPerson().getName());
             BillClassType billClassType = (BillClassType) o[1];
             long l = (long) o[2];
             if (billClassType == BillClassType.CancelledBill || billClassType == BillClassType.RefundBill) {
@@ -2101,7 +2101,7 @@ public class CommonReport1 implements Serializable {
         if (ob != null) {
             try {
                 total = (double) ob[0];
-                //System.out.println("total = " + total);
+                //// // System.out.println("total = " + total);
                 discount = (double) ob[1];
                 staffTotal = (double) ob[2];
                 vat = (double) ob[3];

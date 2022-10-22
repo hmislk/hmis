@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
@@ -18,7 +18,6 @@ import com.divudi.data.CssVerticalAlign;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.ItemType;
-import com.divudi.data.ReportItemType;
 import com.divudi.entity.Item;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
@@ -33,15 +32,7 @@ import com.divudi.facade.InvestigationItemValueFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Serializable;
-import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -57,19 +48,13 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
-import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -854,99 +839,17 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void upload() {
-        if (getCurrentInvestigation() == null) {
-            JsfUtil.addErrorMessage("No Investigation");
-            return;
-        }
-        for (InvestigationItem ii : getCurrentInvestigation().getReportItems()) {
-            ii.setRetired(true);
-            ii.setRetiredAt(new Date());
-            ii.setRetireComments("Retired before importing the format");
-            ii.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(ii);
-        }
-        InputStream in;
-
-        StringWriter writer = new StringWriter();
-        if (file != null) {
-            try {
-                File uploadedFile = new File("/tmp/" + file.getFileName());
-                InputStream inputStream = file.getInputstream();
-                OutputStream out = new FileOutputStream(uploadedFile);
-                int read = 0;
-                byte[] bytes = new byte[1024];
-                while ((read = inputStream.read(bytes)) != -1) {
-                    out.write(bytes, 0, read);
-                }
-                inputStream.close();
-                out.flush();
-                out.close();
-                SAXBuilder builder = new SAXBuilder();
-                File xmlfile = uploadedFile;
-                Document document = (Document) builder.build(xmlfile);
-                Element rootNode = document.getRootElement();
-                List list = rootNode.getChildren("investigation_item");
-                for (int i = 0; i < list.size(); i++) {
-                    Element nii = (Element) list.get(i);
-                    InvestigationItem ii = new InvestigationItem();
-                    ii.setItem(currentInvestigation);
-                    ii.setCreatedAt(new Date());
-                    ii.setCreater(getSessionController().getLoggedUser());
-                    ii.setCssFontFamily(nii.getAttributeValue("font_family"));
-                    ii.setCssFontVariant(nii.getAttributeValue("font_variant"));
-                    ii.setCssFontWeight(nii.getAttributeValue("font_weight"));
-                    ii.setCssMargin(nii.getAttributeValue("margin"));
-                    ii.setCssPadding(nii.getAttributeValue("padding"));
-                    ii.setDescription(nii.getAttributeValue("description"));
-                    ii.setFormatPrefix(nii.getAttributeValue("prefix"));
-                    ii.setFormatString(nii.getAttributeValue("format_string"));
-                    ii.setFormatSuffix(nii.getAttributeValue("suffix"));
-                    ii.setName(nii.getAttributeValue("name"));
-                    ii.setHtmltext(nii.getAttributeValue("html_text"));
-                    ii.setCssFontFamily(nii.getAttributeValue("font_family"));
-                    ii.setCssFontStyle(CssFontStyle.valueOf(nii.getAttributeValue("font_style")));
-                    ii.setCssTextAlign(CssTextAlign.valueOf(nii.getAttributeValue("text_align")));
-                    ii.setCssVerticalAlign(CssVerticalAlign.valueOf(nii.getAttributeValue("vertical_align")));
-                    ii.setIxItemType(InvestigationItemType.valueOf(nii.getAttributeValue("item_type")));
-                    ii.setIxItemValueType(InvestigationItemValueType.valueOf(nii.getAttributeValue("value_type")));
-                    if (nii.getAttributeValue("report_item_type") != null && ReportItemType.valueOf(nii.getAttributeValue("report_item_type")) != null) {
-                        ii.setReportItemType(ReportItemType.valueOf(nii.getAttributeValue("report_item_type")));
-                    }
-                    ii.setRiFontSize(nii.getAttribute("font_size").getDoubleValue());
-                    ii.setRiHeight(nii.getAttribute("height").getDoubleValue());
-                    ii.setRiLeft(nii.getAttribute("left").getDoubleValue());
-                    ii.setRiTop(nii.getAttribute("top").getDoubleValue());
-                    ii.setRiWidth(nii.getAttribute("width").getDoubleValue());
-
-                    List listiivs = nii.getChildren("investigation_item_value");
-                    for (Object listiiv : listiivs) {
-                        Element niiv = (Element) listiiv;
-                        InvestigationItemValue iiv = new InvestigationItemValue();
-                        iiv.setInvestigationItem(ii);
-                        iiv.setCreatedAt(new Date());
-                        iiv.setCreater(getSessionController().getLoggedUser());
-                        iiv.setName(niiv.getAttributeValue("name"));
-                        ii.getInvestigationItemValues().add(iiv);
-                        getIivFacade().edit(iiv);
-                    }
-                    getFacade().edit(ii);
-                }
-                getIxFacade().edit(currentInvestigation);
-            } catch (IOException io) {
-            } catch (Exception jdomex) {
-            }
-
-        }
+        
     }
 
     private StreamedContent downloadingFile;
 
     public void createXml() {
-        if (currentInvestigation == null) {
-            return;
-        }
-        InputStream stream = new ByteArrayInputStream(ixToXml(currentInvestigation).getBytes(Charset.defaultCharset()));
-        downloadingFile = new DefaultStreamedContent(stream, "image/jpg", currentInvestigation.getName() + ".xml");
+//        if (currentInvestigation == null) {
+//            return;
+//        }
+//        InputStream stream = new ByteArrayInputStream(ixToXml(currentInvestigation).getBytes(Charset.defaultCharset()));
+//        downloadingFile = new DefaultStreamedContent(stream, "image/jpg", currentInvestigation.getName() + ".xml");
     }
 
     public StreamedContent getDownloadingFile() {
@@ -954,168 +857,6 @@ public class InvestigationItemController implements Serializable {
         return downloadingFile;
     }
 
-//    public void get
-    public String ixToXml(Item item) {
-        if (item == null) {
-            return "";
-        }
-        if (!(item instanceof Investigation)) {
-            return "";
-        }
-
-        Investigation ix = (Investigation) item;
-
-        String xml = "";
-
-        Element eix = new Element("investigation");
-
-        if (ix.getBarcode() != null) {
-            eix.setAttribute("bar_code", ix.getBarcode());
-        }
-
-        if (ix.getCode() != null) {
-            eix.setAttribute("code", ix.getCode());
-        }
-
-        if (ix.getDescreption() != null) {
-            eix.setAttribute("descreption", ix.getDescreption());
-        }
-
-        if (ix.getName() != null) {
-            eix.setAttribute("name", ix.getName());
-        }
-
-        if (ix.getFullName() != null) {
-            eix.setAttribute("full_name", ix.getFullName());
-        }
-
-        if (ix.getPrintName() != null) {
-            eix.setAttribute("print_name", ix.getPrintName());
-        }
-
-        if (ix.getShortName() != null) {
-            eix.setAttribute("short_name", ix.getShortName());
-        }
-
-        if (ix.getCategory() != null && ix.getCategory().getName() != null) {
-            eix.setAttribute("category_name", ix.getCategory().getName());
-        }
-
-        if (ix.getInvestigationCategory() != null && ix.getCategory().getName() != null) {
-            eix.setAttribute("investigation_category_name", ix.getInvestigationCategory().getName());
-        }
-
-        if (ix.getInvestigationTube() != null && ix.getInvestigationTube().getName() != null) {
-            eix.setAttribute("investigation_tube_name", ix.getInvestigationTube().getName());
-        }
-
-        if (ix.getReportType() != null) {
-            eix.setAttribute("report_type", ix.getReportType().name());
-        }
-
-        if (ix.getSample() != null && ix.getSample().getName() != null) {
-            eix.setAttribute("sample_name", ix.getSample().getName());
-        }
-
-        Document doc = new Document(eix);
-        doc.setRootElement(eix);
-
-        for (InvestigationItem ii : ix.getReportItems()) {
-
-            if (!ii.isRetired()) {
-
-                Element eii = new Element("investigation_item");
-
-                if (ii.getCssFontFamily() != null) {
-                    eii.setAttribute("font_family", ii.getCssFontFamily());
-                }
-
-                if (ii.getCssFontVariant() != null) {
-                    eii.setAttribute("font_variant", ii.getCssFontVariant());
-                }
-
-                if (ii.getCssFontWeight() != null) {
-                    eii.setAttribute("font_weight", ii.getCssFontWeight());
-                }
-
-                if (ii.getCssMargin() != null) {
-                    eii.setAttribute("margin", ii.getCssMargin());
-                }
-
-                if (ii.getCssPadding() != null) {
-                    eii.setAttribute("padding", ii.getCssPadding());
-                }
-
-                if (ii.getDescription() != null) {
-                    eii.setAttribute("description", ii.getDescription());
-                }
-
-                if (ii.getFormatPrefix() != null) {
-                    eii.setAttribute("prefix", ii.getFormatPrefix());
-                }
-
-                if (ii.getFormatString() != null) {
-                    eii.setAttribute("format_string", ii.getFormatString());
-                }
-
-                if (ii.getFormatSuffix() != null) {
-                    eii.setAttribute("suffix", ii.getFormatSuffix());
-                }
-
-                if (ii.getName() != null) {
-                    eii.setAttribute("name", ii.getName());
-                }
-
-                if (ii.getHtmltext() != null) {
-                    eii.setAttribute("html_text", ii.getHtmltext());
-                }
-
-                if (ii.getCssFontStyle() != null) {
-                    eii.setAttribute("font_style", ii.getCssFontStyle().name());
-                }
-
-                if (ii.getCssTextAlign() != null) {
-                    eii.setAttribute("text_align", ii.getCssTextAlign().name());
-                }
-
-                if (ii.getCssVerticalAlign() != null) {
-                    eii.setAttribute("vertical_align", ii.getCssVerticalAlign().name());
-                }
-
-                if (ii.getIxItemType() != null) {
-                    eii.setAttribute("item_type", ii.getIxItemType().name());
-                }
-
-                if (ii.getIxItemValueType() != null) {
-                    eii.setAttribute("value_type", ii.getIxItemValueType().name());
-                }
-
-                if (ii.getReportItemType() != null) {
-                    eii.setAttribute("report_item_type", ii.getReportItemType().name());
-                }
-
-                eii.setAttribute("font_size", String.valueOf(ii.getRiFontSize()));
-                eii.setAttribute("height", String.valueOf(ii.getRiHeight()));
-                eii.setAttribute("left", String.valueOf(ii.getRiLeft()));
-                eii.setAttribute("top", String.valueOf(ii.getRiTop()));
-                eii.setAttribute("width", String.valueOf(ii.getRiWidth()));
-
-                for (InvestigationItemValue iiv : ii.getInvestigationItemValues()) {
-                    Element eiiv = new Element("investigation_item_value");
-                    eiiv.setAttribute("name", iiv.getName());
-                    eii.addContent(eiiv);
-                }
-
-                eix.addContent(eii);
-            }
-        }
-
-        XMLOutputter xmlOutput = new XMLOutputter();
-        xmlOutput.setFormat(Format.getPrettyFormat());
-        xml = xmlOutput.outputString(doc);
-
-        return xml;
-    }
 
     public InvestigationItem getLastReportItem() {
         return getLastReportItem(null);

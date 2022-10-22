@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.hr;
 
@@ -22,12 +22,10 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
-import com.divudi.entity.DoctorSpeciality;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.hr.Roster;
-import com.divudi.entity.hr.SalaryCycle;
 import com.divudi.entity.hr.StaffDesignation;
 import com.divudi.entity.hr.StaffEmployeeStatus;
 import com.divudi.entity.hr.StaffEmployment;
@@ -41,7 +39,6 @@ import com.divudi.facade.CommonReportItemFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FormItemValueFacade;
 import com.divudi.facade.PersonFacade;
-import com.divudi.facade.SalaryCycleFacade;
 import com.divudi.facade.StaffEmploymentFacade;
 import com.divudi.facade.StaffFacade;
 import com.divudi.facade.StaffSalaryFacade;
@@ -67,12 +64,12 @@ import javax.persistence.TemporalType;
 import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -778,7 +775,7 @@ public class StaffController implements Serializable {
         //////System.out.println("file name is not null");
         //////System.out.println(file.getFileName());
         try {
-            in = getFile().getInputstream();
+            in = getFile().getInputStream();
             getCurrent().setFileName(file.getFileName());
             getCurrent().setFileType(file.getContentType());
             getCurrent().setBaImage(IOUtils.toByteArray(in));
@@ -807,7 +804,12 @@ public class StaffController implements Serializable {
             }
             Staff temImg = getFacade().find(Long.valueOf(id));
             if (temImg != null) {
-                return new DefaultStreamedContent(new ByteArrayInputStream(temImg.getBaImage()), temImg.getFileType());
+
+                InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
+                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+
+//                return new DefaultStreamedContent(new ByteArrayInputStream(temImg.getBaImage()), temImg.getFileType());
+                return str;
             } else {
                 return new DefaultStreamedContent();
             }
@@ -830,7 +832,12 @@ public class StaffController implements Serializable {
         if (current.getId() != null && current.getBaImage() != null) {
             //////System.out.println(current.getFileType());
             //////System.out.println(current.getFileName());
-            return new DefaultStreamedContent(new ByteArrayInputStream(current.getBaImage()), current.getFileType(), current.getFileName());
+//            return new DefaultStreamedContent(new ByteArrayInputStream(current.getBaImage()), current.getFileType(), current.getFileName());
+
+            InputStream targetStream = new ByteArrayInputStream(current.getBaImage());
+            StreamedContent str = DefaultStreamedContent.builder().contentType(current.getFileType()).name(current.getFileName()).stream(() -> targetStream).build();
+
+            return str;
         } else {
             //////System.out.println("nulls");
             return new DefaultStreamedContent();
@@ -856,7 +863,11 @@ public class StaffController implements Serializable {
         } else if (temStaff.getId() != null && temStaff.getBaImage() != null) {
             //////System.out.println(temStaff.getFileType());
             //////System.out.println(temStaff.getFileName());
-            return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
+
+            InputStream targetStream = new ByteArrayInputStream(temStaff.getBaImage());
+            StreamedContent str = DefaultStreamedContent.builder().contentType(temStaff.getFileType()).name(temStaff.getFileName()).stream(() -> targetStream).build();
+            return str;
+//            return new DefaultStreamedContent(new ByteArrayInputStream(temStaff.getBaImage()), temStaff.getFileType(), temStaff.getFileName());
         } else {
             return new DefaultStreamedContent();
         }
@@ -1099,8 +1110,8 @@ public class StaffController implements Serializable {
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            current.getPerson().setEditer(getSessionController().getLoggedUser());
-            current.getPerson().setEditedAt(new Date());
+//            current.getPerson().setEditer(getSessionController().getLoggedUser());
+//            current.getPerson().setEditedAt(new Date());
             getPersonFacade().edit(current.getPerson());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Staff Details Updated");

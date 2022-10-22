@@ -58,8 +58,8 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="List of All Users" />
                                 </f:facet>
-                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
-                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
+                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
                                 <p:column headerText="Institution">
                                     <h:outputLabel value="#{u.institution.name}"/>
                                 </p:column>

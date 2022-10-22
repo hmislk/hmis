@@ -1,6 +1,6 @@
 /*
  * To change this currentlate, choose Tools | currentlates
- * and open the currentlate in the editor.
+ * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
 
@@ -322,7 +322,7 @@ public class CashRecieveBillController implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void addToBill() {
@@ -391,15 +391,15 @@ public class CashRecieveBillController implements Serializable {
 
     public void calTotal() {
         double n = 0.0;
-//        //System.out.println("getBillItems().size() = " + getBillItems().size());
-//        //System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+//        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
+//        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
         for (BillItem b : selectedBillItems) {
-//            //System.out.println("b.getNetValue() = " + b.getNetValue());
-//            //System.out.println("b.getSearialNo() = " + b.getSearialNo());
+//            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
+//            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
-        //////System.out.println("AAA : " + n);
+        //////// // System.out.println("AAA : " + n);
     }
 
 //    public double getDue() {

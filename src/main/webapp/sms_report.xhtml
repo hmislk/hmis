@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -32,10 +32,10 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                                  action="#{smsController.createSmsTable()}"/>
                                 <p:commandButton actionListener="#{smsController.createSmsTable}" value="Excel1" ajax="false" rendered="#{smsController.reportKeyWord.additionalDetails ne true}">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="sms_report"  />
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="sms_report"  />
                                 </p:commandButton>
                                 <p:commandButton actionListener="#{smsController.createSmsTable}" value="Excel2" ajax="false" rendered="#{smsController.reportKeyWord.additionalDetails eq true}">
-                                    <pe:exporter type="xlsx" target="tblBills1" fileName="sms_report"  />
+                                    <p:dataExporter type="xlsx" target="tblBills1" fileName="sms_report"  />
                                 </p:commandButton>
                             </h:panelGrid>
                         </f:facet>

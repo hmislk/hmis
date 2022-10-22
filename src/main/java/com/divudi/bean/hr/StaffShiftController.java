@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.hr;
 
@@ -34,8 +34,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -76,7 +76,7 @@ public class StaffShiftController implements Serializable {
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         lst = ejbFacade.findBySQL(sql, hm);
-        //   ////System.out.println("lst = " + lst);
+        //   ////// // System.out.println("lst = " + lst);
         return lst;
     }
 
@@ -99,7 +99,7 @@ public class StaffShiftController implements Serializable {
             ss.setDayOfWeek(cal.get(Calendar.DAY_OF_WEEK));
             staffShiftFacade.edit(ss);
         }
-        //   ////System.out.println("lst = " + lst);
+        //   ////// // System.out.println("lst = " + lst);
 
     }
 
@@ -120,7 +120,7 @@ public class StaffShiftController implements Serializable {
             ss.calShiftStartEndTime();
             staffShiftFacade.edit(ss);
         }
-        //   ////System.out.println("lst = " + lst);
+        //   ////// // System.out.println("lst = " + lst);
 
     }
 

@@ -3,8 +3,8 @@
  *
  * Development and Implementation of Web-based System by ww.divudi.com
  Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
@@ -34,7 +34,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -135,7 +135,7 @@ public class PackageItemController implements Serializable {
             calculateTotalFee();
             setCurrent(getCurrent());
         } catch (Exception e) {
-            //////System.out.println(e.getMessage());
+            //////// // System.out.println(e.getMessage());
         }
     }
 

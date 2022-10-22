@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -31,8 +31,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -81,7 +81,7 @@ public class MetadataSuperCategoryController implements Serializable {
 
     public void editMetadataCategory(Category mdc) {
         if (mdc == null) {
-            ////System.out.println("mdc = " + mdc);
+            ////// // System.out.println("mdc = " + mdc);
             return;
         }
         categoryFacade.edit(mdc);
@@ -209,7 +209,7 @@ public class MetadataSuperCategoryController implements Serializable {
             temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", cat);
-            //////System.out.println("common report cat sql is " + temSql + " and " + m.toString());
+            //////// // System.out.println("common report cat sql is " + temSql + " and " + m.toString());
             cis = getFacade().findBySQL(temSql, m);
         } else {
             cis = new ArrayList<>();

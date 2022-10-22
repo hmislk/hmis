@@ -24,7 +24,7 @@
                                 <p:calendar value="#{practiceBookingController.sessionDate}" pattern="dd MMMM yyyy" >
                                     <f:ajax event="dateSelect"
                                             listener="#{practiceBookingController.listCompleteAndToCompleteBillSessions}"
-                                            execute="calSessionDate" render=":#{p:component('bSession')}" ></f:ajax>
+                                            execute="calSessionDate" render=":#{p:resolveFirstComponentWithId('bSession',view).clientId}" ></f:ajax>
                                 </p:calendar>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <h:outputLabel value="Speciality" ></h:outputLabel>
@@ -44,7 +44,7 @@
                                                 var="doc"
                                                 itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"
                                                 >
-                                    <f:ajax  event="itemSelect" execute="@this" render=":#{p:component('bSession')}"  
+                                    <f:ajax  event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('bSession',view).clientId}"  
                                              listener="#{practiceBookingController.listCompleteAndToCompleteBillSessions}" />                                                
                                 </p:autoComplete>
                                 <h:outputLabel value="" ></h:outputLabel>

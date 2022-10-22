@@ -8,7 +8,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:in="http://java.sun.com/jsf/composite/patient"
                 xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany"
-                xmlns:poue="http://primefaces.org/ui/extensions"
+                
                 xmlns:bill="http://java.sun.com/jsf/composite/inward"
                 >
 
@@ -24,7 +24,7 @@
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" disabled="#{bhtEditController.current.bhtNo ne null}"
                                         size="30"  style="width: 400px;">
-                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 :#{p:component('panPrint')} @this"/>
+                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 :#{p:resolveFirstComponentWithId('panPrint',view).clientId} @this"/>
                             <p:column>
                                 <h:outputLabel value="#{myItem.bhtNo}"/>
                             </p:column>

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
@@ -243,7 +243,7 @@ public class ShiftController implements Serializable {
                 + " where s.retired=false "
                 + " and s.roster=:rs ";
         //   + " order by s.shiftOrder ";
-        ////System.out.println("sql = " + sql);
+        ////// // System.out.println("sql = " + sql);
         HashMap hm = new HashMap();
         hm.put("rs", getCurrentRoster());
 

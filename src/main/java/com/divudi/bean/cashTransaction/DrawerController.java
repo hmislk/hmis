@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.cashTransaction;
 
@@ -28,8 +28,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -68,7 +68,7 @@ public class DrawerController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Drawer c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and c.name like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         list = getFacade().findBySQL(sql, hm);

@@ -1,12 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleBhtController;
-import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
@@ -48,8 +47,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -69,7 +66,7 @@ import javax.persistence.TemporalType;
 import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -7244,7 +7241,7 @@ public class SearchController implements Serializable {
             System.err.println("in 1");
             UtilityController.addSuccessMessage(file.getFileName());
             System.err.println("in 2");
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);

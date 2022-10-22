@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
@@ -79,7 +79,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
 import org.primefaces.event.RowEditEvent;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -293,7 +293,7 @@ public class HrReportController implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);

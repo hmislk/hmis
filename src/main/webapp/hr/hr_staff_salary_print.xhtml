@@ -21,7 +21,7 @@
                         <p:selectOneMenu id="advanced" 
                                          value="#{staffSalaryController.salaryCycle}" 
                                          converter="salaryCycleConverter" 
-                                         effect="fade" var="t" 
+                                         var="t" 
                                          filter="true" 
                                          filterMatchMode="startsWith"  >
 
@@ -130,7 +130,7 @@
 
                                 <p:column>
                                     <p:commandButton process="@this" 
-                                                     update=":#{p:component('lst')} " 
+                                                     update=":#{p:resolveFirstComponentWithId('lst',view).clientId} " 
                                                      value="View"  
                                                      actionListener="#{staffSalaryController.onEditListener(i)}" onclick="onSubmitButton();">                              
                                     </p:commandButton>                          

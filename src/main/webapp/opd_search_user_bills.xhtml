@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -20,10 +20,10 @@
                                     <f:ajax render="tblBills" execute="txtSearch" event="keyup" />
                                 </h:inputText>
                                 <p:commandButton  value="Export as Excel" ajax="false" styleClass="noPrintButton" style="float:right;">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="Report by Referring Doctor"
-                                                 facetBackground="#008000" facetFontSize="15" 
-                                                 facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                                 fontName="Courier New"  />
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="Report by Referring Doctor"
+                                                   
+                                                        
+                                                   />
                                 </p:commandButton>
                             </h:panelGrid>
                             

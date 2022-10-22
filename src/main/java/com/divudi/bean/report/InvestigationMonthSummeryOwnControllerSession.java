@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -884,7 +884,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //        m.put("ixbt", Investigation.class);
 //
 //        List<Object[]> bojsl = billFacade.findAggregates(jpql, m, TemporalType.DATE);
-//        ////System.out.println("bojsl = " + bojsl);
+//        ////// // System.out.println("bojsl = " + bojsl);
 //        insInvestigationCountRows = new ArrayList<>();
 //
 //        Map<Institution, ItemInstitutionCollectingCentreCountRow> map = new HashMap<>();
@@ -903,9 +903,9 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 ////            }
 //            insInvestigationCountRows.add(r);
 //        }
-//        ////System.out.println("sql = " + jpql);
-//        ////System.out.println("m = " + m);
-//        ////System.out.println("insInvestigationCountRows.size() = " + insInvestigationCountRows.size());
+//        ////// // System.out.println("sql = " + jpql);
+//        ////// // System.out.println("m = " + m);
+//        ////// // System.out.println("insInvestigationCountRows.size() = " + insInvestigationCountRows.size());
 //    }
     public List<ItemInstitutionCollectingCentreCountRow> getInsInvestigationCountRows() {
         return insInvestigationCountRows;
@@ -928,11 +928,11 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 //        countTotal = 0;
 //
 //        long billed = getCount2(new BilledBill());
-//        ////System.out.println("billed = " + billed);
+//        ////// // System.out.println("billed = " + billed);
 //        long cancelled = getCount2(new CancelledBill());
-//        ////System.out.println("cancelled = " + cancelled);
+//        ////// // System.out.println("cancelled = " + cancelled);
 //        long refunded = getCount2(new RefundBill());
-//        ////System.out.println("refunded = " + refunded);
+//        ////// // System.out.println("refunded = " + refunded);
 //
 //        countTotal = billed - (refunded + cancelled);
     }
@@ -1529,7 +1529,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
                 + " and bi.bill.createdAt between :fromDate and :toDate ";
 
         institutionsTemp = institutionFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //System.out.println("institutions.size() = " + institutions.size());
+        //// // System.out.println("institutions.size() = " + institutions.size());
         for (Institution i : institutionsTemp) {
             for (Institution in : institutions) {
                 if (i.equals(in)) {

@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
@@ -25,7 +25,6 @@ import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -45,8 +44,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -376,7 +375,7 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "(upper(c.name) like :n ) order by c.name", m, 30);
-            //////System.out.println("a size is " + a.size());
+            //////// // System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -396,7 +395,7 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "(upper(c.name) like :n ) order by c.name", m, 30);
-            //////System.out.println("a size is " + a.size());
+            //////// // System.out.println("a size is " + a.size());
         }
         return vmps;
     }
@@ -414,7 +413,7 @@ public class AmpController implements Serializable {
             ampList = getFacade().findBySQL("select c from Amp c where "
                     + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
                     + "(upper(c.code) like :n ) order by c.code", m, 30);
-            //////System.out.println("a size is " + a.size());
+            //////// // System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -430,13 +429,13 @@ public class AmpController implements Serializable {
         String sql = "select c from Amp c where "
                 + " c.retired=false and c.departmentType!=:dep and "
                 + "(upper(c.barcode) like :n ) order by c.barcode";
-        //   ////System.out.println("sql = " + sql);
-        //   ////System.out.println("m = " + m);
+        //   ////// // System.out.println("sql = " + sql);
+        //   ////// // System.out.println("m = " + m);
 
         if (qry != null) {
             ampList = getFacade().findBySQL(sql, m, 30);
-            //   ////System.out.println("a = " + a);
-            //////System.out.println("a size is " + a.size());
+            //   ////// // System.out.println("a = " + a);
+            //////// // System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -474,7 +473,7 @@ public class AmpController implements Serializable {
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().equals("")) {
-            //System.out.println("amp.getCode() = " + amp.getCode());
+            //// // System.out.println("amp.getCode() = " + amp.getCode());
 
             String s = amp.getCode().substring(2);
 

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -226,7 +226,7 @@ public class InvestigationMonthSummeryController implements Serializable {
                 + "b.item.id=" + w.getId() + "    and b.createdAt between :fromDate and :toDate and (b.refunded is null or b.bill.cancelledBill is null)";
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        //////System.out.println("Sql iiiiiiiii "+ sql);
+        //////// // System.out.println("Sql iiiiiiiii "+ sql);
         List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 

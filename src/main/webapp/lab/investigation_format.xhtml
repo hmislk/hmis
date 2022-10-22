@@ -36,7 +36,7 @@
                                         <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
                                     </p:column>
                                     <p:ajax event="itemSelect" process="acPt" 
-                                            update=":#{p:component('pPreview')} :#{p:component('pDetails')} :#{p:component('pIx')} "/>
+                                            update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
                                 </p:autoComplete> 
                                 <p:panel header="Add New ..." >
                                     <h:panelGrid columns="6" >
@@ -72,7 +72,7 @@
                                                 <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
 
                                                 <p:outputLabel value="Reference" ></p:outputLabel>
-                                                <p:editor value="#{investigationItemController.testReferenceRange}" height="100" ></p:editor>
+                                                <p:textEditor value="#{investigationItemController.testReferenceRange}" height="100" ></p:textEditor>
 
                                                 <p:outputLabel value="Comments" ></p:outputLabel>
                                                 <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
@@ -268,7 +268,7 @@
                                 <p:selectOneMenu  id="dtbItem" value="#{investigationItemController.current}" style="width: 270px;" >
                                     <f:selectItem itemLabel="Select" />
                                     <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
-                                    <p:ajax  event="change" process="dtbItem" update=":#{p:component('pDetails')} "/>
+                                    <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
                                 </p:selectOneMenu>
                                 <p:commandButton action="#{investigationItemController.removeItem()}" value="Remove" ajax="false"/>
                             </p:panel>
@@ -334,10 +334,10 @@
                                                         <p:commandButton process="lblIiText" update="txtContents" value="Save" 
                                                                          oncomplete="PF('dlgContents').hide()" 
                                                                          ></p:commandButton>
-                                                        <p:editor  width="800" height="600" id="lblIiText" 
+                                                        <p:textEditor  height="600" id="lblIiText" 
                                                                    value="#{investigationItemController.current.htmltext}" >
 
-                                                        </p:editor >
+                                                        </p:textEditor >
 
                                                     </p:dialog>
                                                 </p:column>
@@ -639,8 +639,8 @@
                                                              rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
                                                              value="#{myIi.htmltext}" 
                                                              style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
-                                                    <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:component('dtbItem')} :#{p:component('pDetails')} "  ></f:ajax>
-                                                    <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:component('dtbItem')} :#{p:component('pDetails')}"></f:ajax>
+                                                    <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} "  ></f:ajax>
+                                                    <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"></f:ajax>
                                                 </p:inputText>
 
 
@@ -650,7 +650,7 @@
                                                              rendered="#{investigationItemController.editMode eq 'Move_Mode'}" >
                                                     <f:ajax event="keyup" execute="@this keyCode" 
                                                             listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
-                                                            render="gpIi :#{p:component('pDetails')} moveFocus "/>
+                                                            render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
                                                 </h:inputText>
 
                                                 <p:watermark value="#{myIi.htmltext}" for="txtMove" ></p:watermark>

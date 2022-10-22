@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -36,7 +36,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="ins"  fileName="Caashier2" subTable="true" />
+                                <p:dataExporter type="xlsx" target="ins"  fileName="Caashier2"  />
                             </p:commandButton> 
                         </h:panelGrid>
                     </f:facet>

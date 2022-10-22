@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -27,9 +27,9 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="All_Items"
-                                             facetFontStyle="BOLD" 
-                                             fontName="Courier New" />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="All_Items"
+                                              
+                                              />
                             </p:commandButton>
                         </h:panelGrid>
 
