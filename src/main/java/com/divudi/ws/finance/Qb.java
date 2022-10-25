@@ -398,23 +398,24 @@ public class Qb {
             String invClass = "invClass";
             String item = "Advance Payment";
             Double amount = 1000.0000;
-            String feeName = "";
-            String itemName = "";
+            String itemName = "Advance Payment";
 
             JSONObject bijo = new JSONObject();
 
             if (b.getBillType() != null) {
                 invType = b.getBillType().getLabel();
-                item = b.getBillType().getLabel();
+                itemName = b.getBillType().getLabel();
             }
 
             if (b.getDepartment() != null) {
                 invClass = b.getDepartment().getName();
             }
 
+            amount = Math.abs(b.getNetTotal());
+
             bijo.put("item", itemName);
             bijo.put("qty", 1);
-            bijo.put("amount", bi.getNetValue());
+            bijo.put("amount", amount);
             bijo.put("invType", invType);
             bijo.put("invClass", invClass);
 
@@ -427,7 +428,7 @@ public class Qb {
     }
 
     private JSONObject inwardFinalBilltoJSONObject(Bill b) {
-        //        System.out.println("inwardPaymentBilltoJSONObject");
+        System.out.println("inwardFinalBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
@@ -456,13 +457,13 @@ public class Qb {
 
         JSONArray bija = new JSONArray();
 
-        List<BillItem> bis;
+        List<BillFee> bis;
 
         bis = findBillItemsForEncounter(b.getPatientEncounter());
 
         if (bis != null && !bis.isEmpty()) {
 
-            for (BillItem bi : bis) {
+            for (BillFee bi : bis) {
                 String invType = "invType";
                 String invClass = "invClass";
                 Double amount = 1000.0000;
@@ -474,15 +475,15 @@ public class Qb {
                 if (bi.getBill().getBillType() != null) {
                     invType = bi.getBill().getBillType().getLabel();
                 }
-                if (bi.getItem() != null) {
-                    itemName = bi.getItem().getName();
+                if (bi.getBillItem()!= null && bi.getBillItem().getItem()!=null) {
+                    itemName = bi.getBillItem().getItem().getName();
                 }
 
-                if (bi.getBill().getDepartment() != null) {
-                    invClass = b.getDepartment().getName();
+                if (bi.getDepartment() != null) {
+                    invClass = bi.getDepartment().getName();
                 }
 
-                amount = Math.abs(bi.getNetValue());
+                amount = Math.abs(bi.getFeeValue());
 
                 bijo.put("item", itemName);
                 bijo.put("qty", 1);
@@ -504,8 +505,7 @@ public class Qb {
                 invType = b.getBillType().getLabel();
             }
             String itemName = "Advance Payment";
-            Double amount = 1000.0000;
-            amount = 0 - Math.abs(b.getPaidAmount());
+            Double amount = 0 - Math.abs(b.getPaidAmount());
             JSONObject bijo = new JSONObject();
             bijo.put("item", itemName);
             bijo.put("qty", 1);
@@ -573,7 +573,7 @@ public class Qb {
                 continue;
             }
             JSONObject jSONObject = new JSONObject();
-//            System.out.println("bill.getBillType() = " + bill.getBillType());
+            System.out.println("bill.getBillType() = " + bill.getBillType());
             switch (bill.getBillType()) {
                 case PharmacySale:
                 case PharmacyWholeSale:
@@ -817,6 +817,46 @@ public class Qb {
     }
 
     @GET
+    @Path("/last_invoice_id/{institution_code}/{last_date}")
+    @Produces("application/json")
+    public String lastInvoiceId(@Context HttpServletRequest requestContext,
+            @PathParam("institution_code") String strInstitutionCode,
+            @PathParam("last_date") String strLastDate) {
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        Institution ins = findInstitutionByCode(strInstitutionCode);
+
+        if (ins == null) {
+            jSONObjectOut = errorMessageNotValidInstitution();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Date lastDate;
+        try {
+            lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Long lastInvoiceId = findLastInvoiceId(lastDate, ins);
+
+        jSONObjectOut.put("lastInvoiceId", lastInvoiceId.toString());
+        jSONObjectOut.put("status", successMessage());
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+
+    @GET
     @Path("/cInvList/{institution_code}/{last_invoice_id}/{last_date}")
     @Produces("application/json")
     public String cInvList(@Context HttpServletRequest requestContext,
@@ -854,6 +894,19 @@ public class Qb {
             String json = jSONObjectOut.toString();
             return json;
         }
+        if (strLastDate == null || strLastDate.trim().equals("")) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        Date lastDate;
+        try {
+            lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
 
         List<BillType> billTypes = new ArrayList<>();
         billTypes.add(BillType.PharmacySale);
@@ -873,9 +926,19 @@ public class Qb {
          */
         int maxNo = 1000;
 
-        Date lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
-
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
+        List<Bill> billsInpatient = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate);
+
+        if (bills != null && !bills.isEmpty()) {
+            if (billsInpatient != null && !billsInpatient.isEmpty()) {
+                bills.addAll(billsInpatient);
+            }
+        } else {
+            if (billsInpatient != null && !billsInpatient.isEmpty()) {
+                bills = billsInpatient;
+            }
+        }
+
         Long lastIdOfCurrentdata = null;
         if (!bills.isEmpty()) {
             Bill tbf = bills.get(bills.size() - 1);
@@ -1429,19 +1492,23 @@ public class Qb {
         if (pms != null) {
             j += " and b.paymentMethod in :pms";
             m.put("pms", pms);
+        } else {
+            j += " and b.paymentMethod is null";
         }
         if (ins != null) {
             j += " and b.institution =:ins";
             m.put("ins", ins);
         }
         if (lastDate != null) {
-            j += " and b.created_at <:ld";
+            j += " and b.createdAt <:ld";
             m.put("ld", lastDate);
         }
         j = j + " order by b.id ";
 
         m.put("bid", fromId);
         m.put("ret", true);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
         if (recordCount == null || recordCount == 0) {
             bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
         } else {
@@ -1587,6 +1654,26 @@ public class Qb {
         return billFeeFacade.findBySQL(j, m);
     }
 
+    private Long findLastInvoiceId(Date bd, Institution ins) {
+        String j = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.createdAt<:bd";
+        Map m = new HashMap();
+        m.put("bd", bd);
+        m.put("ret", false);
+        if (ins != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", ins);
+        }
+        j += " order by b.id desc ";
+        Bill b = billFacade.findFirstBySQL(j, m);
+        if(b!=null){
+            return b.getId();
+        }
+        return 0l;
+    }
+
     private List<BillItem> findBillItemsFromBill(Bill b) {
         String j = "select bi "
                 + " from BillItem bi "
@@ -1598,18 +1685,18 @@ public class Qb {
         return billItemFacade.findBySQL(j, m);
     }
 
-    private List<BillItem> findBillItemsForEncounter(PatientEncounter b) {
+    private List<BillFee> findBillItemsForEncounter(PatientEncounter b) {
         if (b == null) {
             return null;
         }
         String j = "select bi "
-                + " from BillItem bi "
+                + " from BillFee bi "
                 + " where bi.retired=:ret "
                 + " and bi.bill.patientEncounter=:b";
         Map m = new HashMap();
         m.put("b", b);
         m.put("ret", false);
-        return billItemFacade.findBySQL(j, m);
+        return billFeeFacade.findBySQL(j, m);
     }
 
 }
