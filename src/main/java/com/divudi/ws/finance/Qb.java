@@ -605,7 +605,8 @@ public class Qb {
                     jSONObject = paymentBilltoJSONObject(bill);
                     break;
                 case InwardFinalBill:
-                    jSONObject = inwardPaymentBilltoJSONObject(bill);
+                    jSONObject = inwardFinalBilltoJSONObject(bill);
+                    break;
                 default:
                     continue;
             }
@@ -874,7 +875,7 @@ public class Qb {
 
         Date lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
 
-        List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), null);
+        List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
         Long lastIdOfCurrentdata = null;
         if (!bills.isEmpty()) {
             Bill tbf = bills.get(bills.size() - 1);
