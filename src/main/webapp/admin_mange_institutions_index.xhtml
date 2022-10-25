@@ -10,58 +10,58 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel header="Manage Institutions" > 
-                          
+
                         <p:tabView orientation="left" >
-                        
+
                             <p:tab title="Items" >
-                                <h:panelGrid columns="1" >  
+                                <p:panelGrid columns="1" >  
                                     <p:commandButton styleClass="linkButton" ajax="false" value="Institution" action="/lab/institution" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Branch" action="/lab/institution_branch" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Branch" action="/lab/institution_branch" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" onclick="onSubmitButton();"/>
 
 
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" onclick="onSubmitButton();"/>
-                         </h:panelGrid>
-                                  </p:tab>
-                                
-
-                               
-
-                           
-                                
-                               <p:tab title="Preferences" >
-
-                                <h:panelGrid columns="1">
-
-                            
-
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" onclick="onSubmitButton();"/>
-
-                           </h:panelGrid>                     
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" onclick="onSubmitButton();"/>
+                                </p:panelGrid>
                             </p:tab>
 
-                             <p:tab title="Developer" >
 
-                                <h:panelGrid columns="1">
-                            
 
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
 
-                            </h:panelGrid>                     
+
+
+                            <p:tab title="Preferences" >
+
+                                <p:panelGrid columns="1">
+
+
+
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" onclick="onSubmitButton();"/>
+
+                                </p:panelGrid>                     
+                            </p:tab>
+
+                            <p:tab title="Developer" >
+
+                                <p:panelGrid columns="1">
+
+
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
+
+                                </p:panelGrid>                     
                             </p:tab>
 
                         </p:tabView>
 
-                         </p:panel>
+                    </p:panel>
                 </h:form>
-                   
-                
+
+
             </ui:define>
 
 
