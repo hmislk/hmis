@@ -139,14 +139,32 @@ public class Qb {
     private JSONObject pharmBilltoJSONObject(Bill b) {
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
+
+        String soldTo = "soldTo";
+        String customerName = "customerName";
+        String paymentMethod = "paymentMethod";
         if (b.getPatient() != null && b.getPatient().getPerson() != null) {
-            headerJo.put("customerName", b.getPatient().getPerson().getNameWithTitle());
-        } else {
-            headerJo.put("customerName", "Customer");
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getPatient() != null && b.getPatient().getPerson() != null && b.getPatient().getPerson().getNameWithTitle() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getNameWithTitle() != null) {
+            customerName = b.getToStaff().getPerson().getNameWithTitle();
+        }
+        if (b.getCreditCompany() != null) {
+            customerName = b.getCreditCompany().getName();
+        }
+        if (b.getPaymentMethod() != null) {
+            paymentMethod = b.getPaymentMethod().getLabel();
         }
 
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", paymentMethod);
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -373,10 +391,11 @@ public class Qb {
         }
 
         if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
-            ptName = b.getPatient().getPerson().getNameWithTitle();
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
         }
 
-        headerJo.put("customerName", ptName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
 
@@ -452,6 +471,7 @@ public class Qb {
 
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
 
@@ -467,15 +487,15 @@ public class Qb {
                 String invType = "invType";
                 String invClass = "invClass";
                 Double amount = 1000.0000;
-                String feeName = "";
-                String itemName = "";
+                String feeName = "Fee";
+                String itemName = "Item";
 
                 JSONObject bijo = new JSONObject();
 
                 if (bi.getBill().getBillType() != null) {
                     invType = bi.getBill().getBillType().getLabel();
                 }
-                if (bi.getBillItem()!= null && bi.getBillItem().getItem()!=null) {
+                if (bi.getBillItem() != null && bi.getBillItem().getItem() != null) {
                     itemName = bi.getBillItem().getItem().getName();
                 }
 
@@ -485,13 +505,15 @@ public class Qb {
 
                 amount = Math.abs(bi.getFeeValue());
 
-                bijo.put("item", itemName);
-                bijo.put("qty", 1);
-                bijo.put("amount", amount);
-                bijo.put("invType", invType);
-                bijo.put("invClass", invClass);
+                if (amount > 0.0) {
+                    bijo.put("item", itemName);
+                    bijo.put("qty", 1);
+                    bijo.put("amount", amount);
+                    bijo.put("invType", invType);
+                    bijo.put("invClass", invClass);
 
-                bija.put(bijo);
+                    bija.put(bijo);
+                }
             }
         }
 
@@ -507,13 +529,15 @@ public class Qb {
             String itemName = "Advance Payment";
             Double amount = 0 - Math.abs(b.getPaidAmount());
             JSONObject bijo = new JSONObject();
-            bijo.put("item", itemName);
-            bijo.put("qty", 1);
-            bijo.put("amount", amount);
-            bijo.put("invType", invType);
-            bijo.put("invClass", invClass);
+            if (Math.abs(amount) > 0.0) {
+                bijo.put("item", itemName);
+                bijo.put("qty", 1);
+                bijo.put("amount", amount);
+                bijo.put("invType", invType);
+                bijo.put("invClass", invClass);
 
-            bija.put(bijo);
+                bija.put(bijo);
+            }
         }
 
         jSONObject.put("header", headerJo);
@@ -532,9 +556,30 @@ public class Qb {
             headerJo.put("customerName", "Customer");
         }
 
+        String customerName = "Insurance";
+        String soldTo = "Customer";
+        String payMethod = "Cash";
+        Date invoiceDate = new Date();
+        String invoiceNo = "";
+
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
+            soldTo = b.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
+            customerName = b.getPatientEncounter().getCreditCompany().getName();
+        }
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
-
+        
         JSONArray bija = new JSONArray();
         for (BillFee bi : b.getBillFees()) {
             String invType = "invType";
@@ -1668,7 +1713,7 @@ public class Qb {
         }
         j += " order by b.id desc ";
         Bill b = billFacade.findFirstBySQL(j, m);
-        if(b!=null){
+        if (b != null) {
             return b.getId();
         }
         return 0l;
