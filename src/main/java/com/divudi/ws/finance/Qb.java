@@ -157,6 +157,9 @@ public class Qb {
         }
         if (b.getPaymentMethod() != null) {
             paymentMethod = b.getPaymentMethod().getLabel();
+            if(customerName.equalsIgnoreCase("customerName")){
+                customerName = b.getPaymentMethod().getLabel() + " customer";
+            }
         }
 
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
@@ -473,7 +476,7 @@ public class Qb {
         headerJo.put("soldTo", soldTo);
         headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
-        headerJo.put("invoiceNo", b.getDeptId());
+        headerJo.put("invoiceNo", b.getInsId());
 
         JSONArray bija = new JSONArray();
 
@@ -495,8 +498,8 @@ public class Qb {
                 if (bi.getBill().getBillType() != null) {
                     invType = bi.getBill().getBillType().getLabel();
                 }
-                if (bi.getBillItem() != null && bi.getBillItem().getItem() != null) {
-                    itemName = bi.getBillItem().getItem().getName();
+                if (bi.getBillItem() != null && bi.getBillItem().getInwardChargeType() != null) {
+                    itemName = bi.getBillItem().getInwardChargeType().getLabel();
                 }
 
                 if (bi.getDepartment() != null) {
@@ -547,6 +550,91 @@ public class Qb {
     }
 
     private JSONObject channelBilltoJSONObject(Bill b) {
+//        System.out.println("channelBilltoJSONObject");
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        if (b.getPatient() != null & b.getPatient().getPerson() != null) {
+            headerJo.put("customerName", b.getPatient().getPerson().getNameWithTitle());
+        } else {
+            headerJo.put("customerName", "Customer");
+        }
+
+        String customerName = "Customer";
+        String soldTo = "Customer";
+        String payMethod = "Cash";
+        Date invoiceDate = new Date();
+        String invoiceNo = "";
+        
+        if(b.getPaymentMethod()!=null){
+            customerName = b.getPaymentMethod().getLabel() + " customer";
+        }
+
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
+            soldTo = b.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
+            customerName = b.getPatientEncounter().getCreditCompany().getName();
+        }
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", payMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId());
+        
+        JSONArray bija = new JSONArray();
+        for (BillFee bi : b.getBillFees()) {
+            
+            if(bi.getFeeGrossValue() == null ||  bi.getFeeGrossValue()<0.01){
+                continue;
+            }
+            
+            String invType = "invType";
+            String invClass = "invClass";
+            String item = "Item";
+            if (b.getBillType() != null) {
+                invType = b.getBillType().toString();
+            }
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            JSONObject bijo = new JSONObject();
+            
+            if (bi.getFee() != null) {
+                item =  bi.getFee().getFeeType().getLabel();
+            }
+            
+            if(bi.getSpeciality()!=null){
+                item += bi.getSpeciality().getName();
+            }
+            if(bi.getStaff()!=null){
+                item += bi.getStaff().getPerson().getNameWithTitle();
+            }
+            
+            if(bi.getDepartment()!=null){
+                item += item + bi.getDepartment().getName();
+            }
+            
+            bijo.put("item", item);
+            bijo.put("qty", 1);
+            bijo.put("amount", bi.getAbsoluteFeeValue());
+            bijo.put("invClass", invClass);
+            bijo.put("invType", invType);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+//        System.out.println("jSONObject = " + jSONObject);
+        return jSONObject;
+    }
+    
+    private JSONObject channelOncallBilltoJSONObject(Bill b) {
 //        System.out.println("channelBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
@@ -651,6 +739,9 @@ public class Qb {
                     break;
                 case InwardFinalBill:
                     jSONObject = inwardFinalBilltoJSONObject(bill);
+                    break;
+                case ChannelOnCall:
+                     jSONObject = channelOncallBilltoJSONObject(bill);
                     break;
                 default:
                     continue;
@@ -969,11 +1060,18 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 1000;
+        int maxNo = 500;
 
-        List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
         List<Bill> billsInpatient = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate);
 
+        int inpatientBillCount = 0;
+        if(billsInpatient!=null && !billsInpatient.isEmpty()){
+            inpatientBillCount = billsInpatient.size();
+        }
+        
+        List<Bill> bills = billList(maxNo - inpatientBillCount, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
+        
+        
         if (bills != null && !bills.isEmpty()) {
             if (billsInpatient != null && !billsInpatient.isEmpty()) {
                 bills.addAll(billsInpatient);
