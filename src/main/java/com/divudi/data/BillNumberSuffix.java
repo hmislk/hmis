@@ -204,6 +204,8 @@ public enum BillNumberSuffix {
                 case PO:break;
                 case POCAN:break;
                 case POR:break;
+                case SALE: suffix = "S"; break;
+                case SALCAN: suffix = "SC"; break;
                 default:
                     throw new AssertionError();
             }

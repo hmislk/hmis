@@ -611,14 +611,14 @@ public class Qb {
             }
             
             if(bi.getSpeciality()!=null){
-                item += bi.getSpeciality().getName();
+                item += " " + bi.getSpeciality().getName();
             }
             if(bi.getStaff()!=null){
-                item += bi.getStaff().getPerson().getNameWithTitle();
+                item += " " + bi.getStaff().getPerson().getNameWithTitle();
             }
             
             if(bi.getDepartment()!=null){
-                item += item + bi.getDepartment().getName();
+                item += " " + bi.getDepartment().getName();
             }
             
             bijo.put("item", item);
