@@ -140,7 +140,7 @@ public class Qb {
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
-        String soldTo = "soldTo";
+        String soldTo = "Customer";
         String customerName = "customerName";
         String paymentMethod = "paymentMethod";
         if (b.getPatient() != null && b.getPatient().getPerson() != null) {
@@ -157,7 +157,7 @@ public class Qb {
         }
         if (b.getPaymentMethod() != null) {
             paymentMethod = b.getPaymentMethod().getLabel();
-            if(customerName.equalsIgnoreCase("customerName")){
+            if (customerName.equalsIgnoreCase("customerName")) {
                 customerName = b.getPaymentMethod().getLabel() + " customer";
             }
         }
@@ -480,44 +480,39 @@ public class Qb {
 
         JSONArray bija = new JSONArray();
 
-        List<BillFee> bis;
+        List<BillItem> billItems;
 
-        bis = findBillItemsForEncounter(b.getPatientEncounter());
+        billItems = findBillItemsFromBill(b);
 
-        if (bis != null && !bis.isEmpty()) {
+        if (billItems != null && !billItems.isEmpty()) {
 
-            for (BillFee bi : bis) {
-                String invType = "invType";
-                String invClass = "invClass";
-                Double amount = 1000.0000;
-                String feeName = "Fee";
-                String itemName = "Item";
+            String invType = "invType";
+            String invClass = "invClass";
+            Double amount = 1000.0000;
+            String feeName = "Fee";
+            String itemName = "Item";
 
-                JSONObject bijo = new JSONObject();
+            JSONObject bijo = new JSONObject();
 
+            for (BillItem bi : billItems) {
                 if (bi.getBill().getBillType() != null) {
                     invType = bi.getBill().getBillType().getLabel();
                 }
-                if (bi.getBillItem() != null && bi.getBillItem().getInwardChargeType() != null) {
-                    itemName = bi.getBillItem().getInwardChargeType().getLabel();
+                if (bi.getInwardChargeType() != null) {
+                    itemName = bi.getInwardChargeType().getLabel();
                 }
-
-                if (bi.getDepartment() != null) {
-                    invClass = bi.getDepartment().getName();
+                if (b.getDepartment() != null) {
+                    invClass = b.getDepartment().getName();
                 }
-
-                amount = Math.abs(bi.getFeeValue());
-
-                if (amount > 0.0) {
-                    bijo.put("item", itemName);
-                    bijo.put("qty", 1);
-                    bijo.put("amount", amount);
-                    bijo.put("invType", invType);
-                    bijo.put("invClass", invClass);
-
-                    bija.put(bijo);
-                }
+                amount = Math.abs(bi.getAdjustedValue());
+                bijo.put("item", itemName);
+                bijo.put("qty", 1);
+                bijo.put("amount", amount);
+                bijo.put("invType", invType);
+                bijo.put("invClass", invClass);
+                bija.put(bijo);
             }
+
         }
 
         if (b.getPaidAmount() > 0.0) {
@@ -564,8 +559,8 @@ public class Qb {
         String payMethod = "Cash";
         Date invoiceDate = new Date();
         String invoiceNo = "";
-        
-        if(b.getPaymentMethod()!=null){
+
+        if (b.getPaymentMethod() != null) {
             customerName = b.getPaymentMethod().getLabel() + " customer";
         }
 
@@ -586,14 +581,14 @@ public class Qb {
         headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
-        
+
         JSONArray bija = new JSONArray();
         for (BillFee bi : b.getBillFees()) {
-            
-            if(bi.getFeeGrossValue() == null ||  bi.getFeeGrossValue()<0.01){
+
+            if (bi.getFeeGrossValue() == null || bi.getFeeGrossValue() < 0.01) {
                 continue;
             }
-            
+
             String invType = "invType";
             String invClass = "invClass";
             String item = "Item";
@@ -605,22 +600,22 @@ public class Qb {
             }
 
             JSONObject bijo = new JSONObject();
-            
+
             if (bi.getFee() != null) {
-                item =  bi.getFee().getFeeType().getLabel();
+                item = bi.getFee().getFeeType().getLabel();
             }
-            
-            if(bi.getSpeciality()!=null){
+
+            if (bi.getSpeciality() != null) {
                 item += " " + bi.getSpeciality().getName();
             }
-            if(bi.getStaff()!=null){
+            if (bi.getStaff() != null) {
                 item += " " + bi.getStaff().getPerson().getNameWithTitle();
             }
-            
-            if(bi.getDepartment()!=null){
+
+            if (bi.getDepartment() != null) {
                 item += " " + bi.getDepartment().getName();
             }
-            
+
             bijo.put("item", item);
             bijo.put("qty", 1);
             bijo.put("amount", bi.getAbsoluteFeeValue());
@@ -633,7 +628,7 @@ public class Qb {
 //        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
-    
+
     private JSONObject channelOncallBilltoJSONObject(Bill b) {
 //        System.out.println("channelBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
@@ -667,7 +662,7 @@ public class Qb {
         headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId());
-        
+
         JSONArray bija = new JSONArray();
         for (BillFee bi : b.getBillFees()) {
             String invType = "invType";
@@ -741,7 +736,7 @@ public class Qb {
                     jSONObject = inwardFinalBilltoJSONObject(bill);
                     break;
                 case ChannelOnCall:
-                     jSONObject = channelOncallBilltoJSONObject(bill);
+                    jSONObject = channelOncallBilltoJSONObject(bill);
                     break;
                 default:
                     continue;
@@ -1065,13 +1060,12 @@ public class Qb {
         List<Bill> billsInpatient = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate);
 
         int inpatientBillCount = 0;
-        if(billsInpatient!=null && !billsInpatient.isEmpty()){
+        if (billsInpatient != null && !billsInpatient.isEmpty()) {
             inpatientBillCount = billsInpatient.size();
         }
-        
+
         List<Bill> bills = billList(maxNo - inpatientBillCount, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
-        
-        
+
         if (bills != null && !bills.isEmpty()) {
             if (billsInpatient != null && !billsInpatient.isEmpty()) {
                 bills.addAll(billsInpatient);
