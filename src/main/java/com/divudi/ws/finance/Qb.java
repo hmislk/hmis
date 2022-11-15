@@ -505,6 +505,7 @@ public class Qb {
                     invClass = b.getDepartment().getName();
                 }
                 amount = Math.abs(bi.getAdjustedValue());
+                bijo.put("id", bi.getId());
                 bijo.put("item", itemName);
                 bijo.put("qty", 1);
                 bijo.put("amount", amount);
