@@ -486,15 +486,16 @@ public class Qb {
 
         if (billItems != null && !billItems.isEmpty()) {
 
-            String invType = "invType";
-            String invClass = "invClass";
-            Double amount = 1000.0000;
-            String feeName = "Fee";
-            String itemName = "Item";
-
             JSONObject bijo = new JSONObject();
 
             for (BillItem bi : billItems) {
+
+                String invType = "invType";
+                String invClass = "invClass";
+                Double amount = 1000.0000;
+                String feeName = "Fee";
+                String itemName = "Item";
+
                 if (bi.getBill().getBillType() != null) {
                     invType = bi.getBill().getBillType().getLabel();
                 }
