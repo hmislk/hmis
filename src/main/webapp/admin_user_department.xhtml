@@ -16,11 +16,11 @@
 
             <ui:define name="content">
 
-                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}" >
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>
 
-                <h:panelGroup   rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
+                <h:panelGroup   rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
                     <h:form  >
                         <p:panel header="Allow user to log on to Departments" >
 

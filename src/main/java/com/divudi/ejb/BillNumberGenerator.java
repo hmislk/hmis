@@ -125,15 +125,15 @@ public class BillNumberGenerator {
         String suffix = "";
 
         if (bill instanceof BilledBill) {
-            suffix = "CHANN";
+            suffix = "C";
         }
 
         if (bill instanceof CancelledBill) {
-            suffix = "CHANNCAN";
+            suffix = "CC";
         }
 
         if (bill instanceof RefundBill) {
-            suffix = "CHANNREF";
+            suffix = "CF";
         }
 
         if (i != null) {
@@ -376,20 +376,20 @@ public class BillNumberGenerator {
         String suff = "";
 
         if (bill instanceof CancelledBill) {
-            suff = "CAN";
+            suff = "C";
         }
 
         if (bill instanceof RefundBill) {
-            suff = "REF";
+            suff = "R";
         }
 
         Long b = getBillFacade().findAggregateLong(sql, h, TemporalType.DATE);
 
         if (b != 0) {
-            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + (b + 1) + "";
+            result = institution.getInstitutionCode() + "C" + suff + "/" + (b + 1) + "";
             return result;
         } else {
-            result = institution.getInstitutionCode() + "CHANN" + suff + "/" + 1 + "";
+            result = institution.getInstitutionCode() + "C" + suff + "/" + 1 + "";
             return result;
         }
 

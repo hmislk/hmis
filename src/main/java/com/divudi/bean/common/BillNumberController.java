@@ -74,15 +74,15 @@ public class BillNumberController {
         String suffix = "";
 
         if (bill instanceof BilledBill) {
-            suffix = "CHANN";
+            suffix = "C";
         }
 
         if (bill instanceof CancelledBill) {
-            suffix = "CHANNCAN";
+            suffix = "CC";
         }
 
         if (bill instanceof RefundBill) {
-            suffix = "CHANNREF";
+            suffix = "CF";
         }
 
         if (i != null) {
