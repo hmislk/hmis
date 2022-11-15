@@ -42,6 +42,37 @@ public class WebContentController implements Serializable {
     private WebContent selected;
     private List<WebContent> items = null;
     private Language language = Language.English;
+    String page;
+
+    public String toHome() {
+        page = "home";
+        return page;
+    }
+
+    public String toChannel() {
+        page = "channel";
+        return page;
+    }
+
+    public String toReports() {
+        page = "reports";
+        return page;
+    }
+    
+    public String toServices() {
+        page = "services";
+        return page;
+    }
+
+    public String toContact() {
+        page = "contact";
+        return page;
+    }
+
+    public String toAbout() {
+        page = "about";
+        return page;
+    }
 
     public String toAddNewWebContent() {
         selected = null;
@@ -108,18 +139,18 @@ public class WebContentController implements Serializable {
         return Language.values();
     }
 
-    public boolean isSinhala(){
+    public boolean isSinhala() {
         return language.equals(Language.Sinhala);
     }
-    
-    public boolean isEnglish(){
+
+    public boolean isEnglish() {
         return language.equals(Language.English);
     }
-    
-    public boolean isTamil(){
+
+    public boolean isTamil() {
         return language.equals(Language.Tamil);
     }
-    
+
     public void makeLanguageSinhala() {
         language = Language.Sinhala;
     }
