@@ -236,6 +236,8 @@ public enum BillType {
                 return "Channel";
             case XrayScan:
                 return "X-Ray and Scan";
+            case InwardFinalBill:
+                return "Inward Final Bill";
 
         }
 
