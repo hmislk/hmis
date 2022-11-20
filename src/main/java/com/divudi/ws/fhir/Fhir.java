@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.divudi.ws.finance;
+package com.divudi.ws.fhir;
 
+import com.divudi.ws.finance.*;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.CommonController;
@@ -47,9 +48,9 @@ import org.json.JSONObject;
  *
  * @author Archmage-Dushan
  */
-@Path("qb")
+@Path("fhir")
 @RequestScoped
-public class Qb {
+public class Fhir {
 
     @Context
     private UriInfo context;
@@ -79,7 +80,7 @@ public class Qb {
     /**
      * Creates a new instance of Api
      */
-    public Qb() {
+    public Fhir() {
     }
 
     private JSONObject errorMessage() {
