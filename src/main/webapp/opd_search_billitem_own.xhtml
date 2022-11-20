@@ -130,7 +130,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column headerText="Payment Method"   >
+                            <p:column headerText="Payment Method">
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentMethod}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
@@ -142,7 +142,7 @@
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Gross Value"   >
+                            <p:column headerText="Gross Value">
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -150,7 +150,7 @@
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Discount"   >
+                            <p:column headerText="Discount">
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.discount}" >
                                         <f:convertNumber pattern="#,##0.00"/>

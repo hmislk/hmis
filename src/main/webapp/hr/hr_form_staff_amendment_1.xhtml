@@ -26,12 +26,12 @@
                                     <p:commandButton ajax="false" value="Process Staff Shift" 
                                                     action="#{staffAmendmentFormController.fetchFromStaffShift()}" />
                                     <h:panelGroup>
-                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}"   >
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShift}">
                                             <f:selectItem itemLabel="Select Staff Shift 1"/>
                                             <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
                                                            var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
                                         </p:selectOneMenu>
-                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShiftSecond}"   >
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.fromStaffShiftSecond}">
                                             <f:selectItem itemLabel="Select Staff Shift 2"/>
                                             <f:selectItems value="#{staffAmendmentFormController.fromStaffShifts}"
                                                            var="itm" itemLabel="#{itm.shift.name}" itemValue="#{itm}" />
@@ -51,12 +51,12 @@
                                     <p:commandButton ajax="false" value="Process Shift" 
                                                     action="#{staffAmendmentFormController.fetchToShift()}" />
                                     <h:panelGroup>
-                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}"   >
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShift}">
                                             <f:selectItem itemLabel="Select Shift 1"/>
                                             <f:selectItems value="#{staffAmendmentFormController.toShifts}"
                                                            var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />
                                         </p:selectOneMenu>
-                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShiftSecond}"   >
+                                        <p:selectOneMenu value="#{staffAmendmentFormController.currAmendmentForm.toShiftSecond}">
                                             <f:selectItem itemLabel="Select Shift 2"/>
                                             <f:selectItems value="#{staffAmendmentFormController.toShifts}"
                                                            var="itm" itemLabel="#{itm.name}" itemValue="#{itm}" />

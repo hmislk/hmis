@@ -66,7 +66,7 @@
                                                     value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
                                                     completeMethod="#{specialityController.completeSpeciality}" 
                                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                    converter="specilityCon"   >
+                                                    converter="specilityCon">
                                         <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
                                     </p:autoComplete>
                                     <h:outputLabel  value="Select OPD Doctor" ></h:outputLabel>
@@ -74,7 +74,7 @@
                                                      value="#{bhtEditController.current.opdDoctor}" 
                                                      completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
                                                      var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                     converter="stfcon"   >
+                                                     converter="stfcon">
                                     </p:autoComplete>
                                     <p:outputLabel value="Select Refering Doctor"/>                            
                                     <p:autoComplete forceSelection="true" value="#{bhtEditController.current.referringDoctor}"

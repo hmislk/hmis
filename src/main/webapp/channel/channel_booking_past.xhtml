@@ -38,7 +38,7 @@
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingPastController.generateSessions}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   ></p:tooltip>
+                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"></p:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>

@@ -38,7 +38,7 @@
                                 <p:commandButton ajax="false" value="Process Late and Early Shift" 
                                                 action="#{staffLeaveFromLateAndEarlyController.fetchStaffShiftLateInErlyOut()}" />
                             </h:panelGroup>
-                            <p:selectManyCheckbox id="s1" value="#{staffLeaveFromLateAndEarlyController.staffShiftsArray}"   >
+                            <p:selectManyCheckbox id="s1" value="#{staffLeaveFromLateAndEarlyController.staffShiftsArray}">
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffLeaveFromLateAndEarlyController.staffShifts}"
                                                var="itm" itemLabel="#{itm.shiftDate}|#{itm.shift.name}" 

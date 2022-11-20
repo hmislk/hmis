@@ -135,7 +135,7 @@
                                                 <p:inputText autocomplete="off"  accesskey="q"   
                                                              id="txtQty" 
                                                              value="#{pharmacySaleBhtController.qty}" 
-                                                             style="width: 50px!important;"   >
+                                                             style="width: 50px!important;">
                                                     <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                     <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                 </p:inputText>
@@ -255,7 +255,7 @@
 
                         </div>
                         <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
+                            <h:panelGroup   id="gpBillPreview"> 
                                 <phi:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
                         </div>

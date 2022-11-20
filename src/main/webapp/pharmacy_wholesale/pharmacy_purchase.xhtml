@@ -149,7 +149,7 @@
                             <f:ajax event="keyup" execute="@this" ></f:ajax>
                         </p:inputText><!--newly added-->
                         <p:calendar navigator="true"
-                                    id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"   >
+                                    id="calDoe" pattern="dd MM yy" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
                             <f:ajax event="dateSelect" execute="@this" render="tmp" 
                                     listener="#{pharmacyPurchaseController.setBatch()}"/>
                         </p:calendar> 

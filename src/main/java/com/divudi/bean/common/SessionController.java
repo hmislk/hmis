@@ -121,6 +121,15 @@ public class SessionController implements Serializable, HttpSessionListener {
     Bill bill;
     private DashboardModel dashboardModel;
     String loginRequestResponse;
+    
+    private boolean websiteUserGoingToLog=false;
+    
+    public String toLoginFromWeb(){
+        websiteUserGoingToLog=true;
+        return "";
+    }
+    
+    
 
     public UserPreference getCurrentPreference() {
         return currentPreference;
@@ -368,6 +377,8 @@ public class SessionController implements Serializable, HttpSessionListener {
             return "";
         }
     }
+    
+    
 
     private boolean login() {
 
@@ -990,6 +1001,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void logout() {
         userPrivilages = null;
+        websiteUserGoingToLog=false;
         recordLogout();
         setLoggedUser(null);
         setLogged(false);
@@ -1502,6 +1514,14 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setInstitutionPreference(UserPreference institutionPreference) {
         this.institutionPreference = institutionPreference;
         setApplicationPreference(institutionPreference);
+    }
+
+    public boolean isWebsiteUserGoingToLog() {
+        return websiteUserGoingToLog;
+    }
+
+    public void setWebsiteUserGoingToLog(boolean websiteUserGoingToLog) {
+        this.websiteUserGoingToLog = websiteUserGoingToLog;
     }
 
     

@@ -39,14 +39,14 @@
             <nav class="py-2 bg-light border-bottom">
                 <div class="container d-flex flex-wrap">
                     <ul class="nav me-auto">
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2 active" aria-current="page">Home</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Channel Your Doctor</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">View my reports</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Our Services</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">About us</a></li>
-                        <li class="nav-item"><a href="#" class="nav-link link-dark px-2">Contact us</a></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2 active" >#{webContentController.findSingleText('home')}</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2">#{webContentController.findSingleText('channel')}</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2">#{webContentController.findSingleText('reports')}</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2">#{webContentController.findSingleText('services')}</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2">#{webContentController.findSingleText('about')}</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2">#{webContentController.findSingleText('contact')}</h:commandLink></li>
                         <li class="nav-item">
-                            <h:commandLink value="Login"  class="nav-link link-dark px-2" action="/login.xhtml" ></h:commandLink>
+                            <h:commandLink value="Login"  class="nav-link link-dark px-2" action="#{sessionController.toLoginFromWeb()}" ></h:commandLink>
                         </li>
 
                     </ul>

@@ -474,7 +474,7 @@
                         </p:panel>
                         <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false"   >
+                                <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false">
                                     <p:printer target="professionalAndFinaBill" ></p:printer>
                                 </p:commandButton> 
                                 <p:commandButton value="Check Intrim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" onclick="onSubmitButton();">
@@ -496,7 +496,7 @@
                                                 </p:panel>-->
                         <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"   >
+                                <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false">
                                     <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
                                 </p:commandButton>
                             </h:panelGrid>

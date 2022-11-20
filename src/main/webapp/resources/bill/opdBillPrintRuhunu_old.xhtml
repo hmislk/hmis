@@ -112,7 +112,7 @@
 
 
                     <div class="itemsPrintingRuhunu" >
-                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip"   >
+                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip">
                             <h:column >
 
                                 <h:outputLabel rendered="#{bip.item.department.id eq cc.attrs.bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
