@@ -486,9 +486,10 @@ public class Qb {
 
         if (billItems != null && !billItems.isEmpty()) {
 
-            JSONObject bijo = new JSONObject();
+            
 
             for (BillItem bi : billItems) {
+                JSONObject bijo = new JSONObject();
 
                 String invType = "invType";
                 String invClass = "invClass";
