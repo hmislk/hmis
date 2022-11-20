@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
@@ -306,12 +306,12 @@ public class StaffLeaveApplicationFormController implements Serializable {
                 getCurrentLeaveForm().getStaff(), getCurrentLeaveForm().getLeaveType(),
                 getCurrentLeaveForm().getFromDate(),
                 getCurrentLeaveForm().getToDate());
-        ////// // System.out.println("getCurrentLeaveForm().getStaff() = " + getCurrentLeaveForm().getStaff());
-        ////// // System.out.println("getCurrentLeaveForm().getLeaveType() = " + getCurrentLeaveForm().getLeaveType());
-        ////// // System.out.println("commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
-        ////// // System.out.println("commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()));
-        ////// // System.out.println("staffLeaveEntitle = " + staffLeaveEntitle);
-        ////// // System.out.println("leaveTypeLocal.isExceptionalLeave() = " + leaveTypeLocal.isExceptionalLeave());
+        ////System.out.println("getCurrentLeaveForm().getStaff() = " + getCurrentLeaveForm().getStaff());
+        ////System.out.println("getCurrentLeaveForm().getLeaveType() = " + getCurrentLeaveForm().getLeaveType());
+        ////System.out.println("commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getLastDayOfYear(getCurrentLeaveForm().getFromDate()));
+        ////System.out.println("commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()) = " + commonFunctions.getFirstDayOfYear(getCurrentLeaveForm().getFromDate()));
+        ////System.out.println("staffLeaveEntitle = " + staffLeaveEntitle);
+        ////System.out.println("leaveTypeLocal.isExceptionalLeave() = " + leaveTypeLocal.isExceptionalLeave());
 
         if (!leaveTypeLocal.isExceptionalLeave() && staffLeaveEntitle == null) {
             UtilityController.addErrorMessage("Please Set Leave Enttile count for this Staff in Administration");
@@ -412,7 +412,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         }
         if (staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate()) != null) {
             SalaryCycle s = staffAdditionalFormController.fetchCurrentSalaryCycle(currentLeaveForm.getFromDate());
-            //// // System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
+            //System.out.println("s.getWorkedFromDate() = " + s.getWorkedFromDate());
             Date nowDate = com.divudi.java.CommonFunctions.getEndOfDay();
             if (nowDate.getTime() > s.getDayOffPhToDate().getTime()) {
                 double d = (nowDate.getTime() - s.getDayOffPhToDate().getTime()) / (1000 * 60 * 60 * 24);

@@ -37,7 +37,7 @@
                                             style="height: 150px; width: 300px; padding: 2px; margin: auto;" >
 
                             <f:selectItems value="#{bookingPastController.serviceSessions}" var="mys" itemLabel="#{mys.name}" itemValue="#{mys}" />
-                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:component('bSession')} "  /> 
+                            <f:ajax  event="change" execute="@this scStaff date" render=":#{p:resolveFirstComponentWithId('bSession',view).clientId} "  /> 
                         </p:selectOneListbox>
                     </h:panelGrid>
 
@@ -47,7 +47,7 @@
                     <p:dataTable id="bSession" value="#{bookingPastController.billSessions}" var='bs'
                                  selectionMode="single" rowKey="#{bs.id}"
                                  selection="#{bookingPastController.selectedBillSession}">
-                        <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />  
+                        <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" />  
 
                         <p:column headerText="No">#{bs.serialNo}</p:column>
                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.hr;
 
@@ -582,7 +582,7 @@ public class StaffSalary implements Serializable {
         try {
             return Double.valueOf(newFormat.format(d));
         } catch (NumberFormatException e) {
-            ////// // System.out.println("e = " + e);
+            ////System.out.println("e = " + e);
             return 0;
         }
     }
@@ -625,15 +625,15 @@ public class StaffSalary implements Serializable {
 //                }
 
 //                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getName()!=null){
-//                    //// // System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getName() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getName());
+//                    //System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getName() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getName());
 //                }
 //                
 //                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType()!=null){
-//                    //// // System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
+//                    //System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentType());
 //                }
 //                
 //                if(spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()!=0){
-//                    //// // System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()); 
+//                    //System.out.println("spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue() = " + spc.getStaffPaysheetComponent().getPaysheetComponent().getComponentValue()); 
 //                }
                 switch (paysheetComponentType) {
                     case BasicSalary:
@@ -644,8 +644,8 @@ public class StaffSalary implements Serializable {
                         overTimeValue += value;
                         break;
                     case ExtraDutyNormal:
-//                        ////// // System.out.println("extraDutyNormalValue = " + extraDutyNormalValue);
-//                        ////// // System.out.println("value = " + value);
+//                        ////System.out.println("extraDutyNormalValue = " + extraDutyNormalValue);
+//                        ////System.out.println("value = " + value);
                         extraDutyNormalValue += value;
                         break;
                     case ExtraDutyMerchantile:

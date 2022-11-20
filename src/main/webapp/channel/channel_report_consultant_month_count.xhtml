@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -33,7 +33,7 @@
                     <h:panelGrid columns="2" id="pg1" >
                         <h:outputLabel value="Count"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.count}" >
-                            <p:ajax event="change" process="@this" update="pan1 pan2 :#{p:component('pan3')} pg1 " />
+                            <p:ajax event="change" process="@this" update="pan1 pan2 :#{p:resolveFirstComponentWithId('pan3',view).clientId} pg1 " />
                         </p:selectBooleanCheckbox>
                         <h:outputLabel value="By Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.byDate}" />

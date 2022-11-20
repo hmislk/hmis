@@ -1,8 +1,8 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
@@ -50,9 +50,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import org.primefaces.event.CloseEvent;
-import org.primefaces.event.DashboardReorderEvent;
-import org.primefaces.event.ToggleEvent;
 import org.primefaces.model.DashboardColumn;
 import org.primefaces.model.DashboardModel;
 import org.primefaces.model.DefaultDashboardColumn;
@@ -60,8 +57,8 @@ import org.primefaces.model.DefaultDashboardModel;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -365,7 +362,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         department = null;
         institution = null;
         if (loginWithoutDepartment()) {
-            return "/index.xhtml";
+            return "/home.xhtml";
         } else {
             UtilityController.addErrorMessage("Invalid User! Login Failure. Please try again");
             return "";
@@ -866,7 +863,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String selectDepartment() {
         if (loggedUser == null) {
-            return "/index";
+            return "/login";
         }
         if (loggedUser.getWebUserPerson() == null) {
             Person p = new Person();
@@ -922,7 +919,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         setLoggedPreference(insPre);
         recordLogin();
-        return "/index";
+        return "/home";
     }
 
     //get Current hour
@@ -1162,23 +1159,23 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.defLocale = defLocale;
     }
 
-    public String getPrimeTheme() {
-        if (primeTheme == null || primeTheme.equals("")) {
-            primeTheme = "hot-sneaks";
-        }
-        if (getLoggedUser() != null) {
-            if (getLoggedUser().getPrimeTheme() != null) {
-                if (!getLoggedUser().getPrimeTheme().equals("")) {
-                    return getLoggedUser().getPrimeTheme();
-                }
-            }
-        }
-        return primeTheme;
-    }
+//    public String getPrimeTheme() {
+//        if (primeTheme == null || primeTheme.equals("")) {
+//            primeTheme = "hot-sneaks";
+//        }
+//        if (getLoggedUser() != null) {
+//            if (getLoggedUser().getPrimeTheme() != null) {
+//                if (!getLoggedUser().getPrimeTheme().equals("")) {
+//                    return getLoggedUser().getPrimeTheme();
+//                }
+//            }
+//        }
+//        return primeTheme;
+//    }
 
-    public void setPrimeTheme(String primeTheme) {
-        this.primeTheme = primeTheme;
-    }
+//    public void setPrimeTheme(String primeTheme) {
+//        this.primeTheme = primeTheme;
+//    }
 
     /**
      *

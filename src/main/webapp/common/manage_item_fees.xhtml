@@ -158,7 +158,7 @@
 
                                 <p:commandButton value="Update" action="#{itemFeeManager.updateFee}" 
                                                  process="@this tblFees" 
-                                                 update=":#{p:component('lblTotal')} :#{p:component('lblTotalF')}" ></p:commandButton>
+                                                 update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} :#{p:resolveFirstComponentWithId('lblTotalF',view).clientId}" ></p:commandButton>
 
                                 <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
                                     <p:column headerText="No" width="30" >
@@ -166,7 +166,7 @@
                                     </p:column>
                                     <p:column headerText="Name" >
                                         <p:inputText id="txtFeeName" value="#{f.name}" >
-                                            <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
+                                            <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId}" ></p:ajax>
                                         </p:inputText>
                                     </p:column>
                                     <p:column headerText="Type" >
@@ -209,13 +209,18 @@
                                     </p:column>
                                     <p:column headerText="Value" >
                                         <p:inputText id="txtFeeVal" value="#{f.fee}" >
-                                            <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
+                                            <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId}" ></p:ajax>
                                         </p:inputText>
                                     </p:column>
                                     <p:column headerText="Value for Foreigners" >
                                         <p:inputText id="txtFfeeVal" value="#{f.ffee}" >
-                                            <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:component('lblTotalF')}"></p:ajax>
+                                            <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:resolveFirstComponentWithId('lblTotalF',view).clientId}"></p:ajax>
                                         </p:inputText>
+                                    </p:column>
+                                     <p:column headerText="Actions" >
+                                         <p:commandButton id="cmdRemove" value="Remove" ajax="false" action="#{itemFeeManager.removeFee()}" >
+                                             <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
                                     </p:column>
 
 

@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
@@ -28,7 +28,6 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
@@ -59,8 +58,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped

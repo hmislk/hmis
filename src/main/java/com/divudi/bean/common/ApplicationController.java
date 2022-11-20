@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -49,6 +49,10 @@ public class ApplicationController {
 
     private String subject;
     private String body;
+    
+    private boolean hasAwebsiteAsFrontEnd=false;
+    
+    
 
     public void sendEmail() {
         eejb.sendEmail("arogyafirst","arogya123@","arogyafirst@gmail.com","buddhika.ari@gmail.com", subject, body, null);
@@ -265,6 +269,14 @@ public class ApplicationController {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public boolean isHasAwebsiteAsFrontEnd() {
+        return hasAwebsiteAsFrontEnd;
+    }
+
+    public void setHasAwebsiteAsFrontEnd(boolean hasAwebsiteAsFrontEnd) {
+        this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
     }
 
     class InstitutionLastPhn {

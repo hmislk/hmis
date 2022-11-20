@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:cashier="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -30,7 +30,7 @@
                             <p:printer target="reportPrint"/>
                         </p:commandButton>  
                         <p:commandButton ajax="false" actionListener="#{commonReport.createTableByBillType()}" value="Excel"  styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" 
+                            <p:dataExporter type="xlsx" 
                                          target="#{commonReport.institutionBilledBillsOwn.bills.size()>0 and commonReport.billType eq 'OpdBill' ?'billed,':''}
                                          #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'cancelled,':''}
                                          #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 and commonReport.billType eq 'OpdBill' ?'refunded,':''}

@@ -62,9 +62,9 @@
                              id="itemList" editable="true">  
 
                     <p:ajax event="rowEdit" listener="#{goodsReturnController.onEdit(ph)}" 
-                            update=":#{p:component('total')} :#{p:component('tab')}" />  
+                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('tab',view).clientId}" />  
                     <p:ajax event="rowEditCancel" listener="#{goodsReturnController.onEdit(ph)}" 
-                            update=":#{p:component('total')} :#{p:component('tab')}" /> 
+                            update=":#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('tab',view).clientId}" /> 
 
 
                     <f:facet name="header">  

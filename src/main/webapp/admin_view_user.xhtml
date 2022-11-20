@@ -23,18 +23,18 @@
                             <p:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
                                 <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
                             </p:inputText>
-                            <p:commandButton ajax="false" value="List Users" action="#{webUserController.createTable()}"/>
+                            <p:commandButton ajax="false" value="List All Users" action="#{webUserController.createTable()}"/>
                             <p:commandButton ajax="false" value="Remove Selected" 
                                              action="#{webUserController.removeSelectedItems()}"
                                              onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                     return false;"
+                                                         return false;"
                                              />
                         </p:panelGrid>
 
-                        <h:panelGrid columns="2" styleClass="alignTop" >
-                            <h:panelGrid id="actions" columns="1"  >
+                        <p:panelGrid columns="2" styleClass="alignTop" >
+                            <p:panelGrid id="actions" columns="1"  >
                                 <p:commandButton styleClass="linkButton"  ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                        return false;" action="#{webUserController.removeUser}">
+                                            return false;" action="#{webUserController.removeUser}">
                                 </p:commandButton>
                                 <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage User" action="#{webUserController.toManageUser()}" ajax="false" />
                                 <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage Password" action="#{webUserController.toManagePassword()}" ajax="false" />
@@ -45,7 +45,7 @@
                                 <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Signature" action="#{webUserController.toManageSignature()}" ajax="false" />
                                 <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Dashboards" action="#{webUserController.toManageDashboards()}" ajax="false" />
 
-                            </h:panelGrid>
+                            </p:panelGrid>
 
                             <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u"
                                          rowKey="#{u.id}"
@@ -58,8 +58,8 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="List of All Users" />
                                 </f:facet>
-                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
-                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
+                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
                                 <p:column headerText="Institution">
                                     <h:outputLabel value="#{u.institution.name}"/>
                                 </p:column>
@@ -86,7 +86,7 @@
                                 </p:column>
                             </p:dataTable>
 
-                        </h:panelGrid>
+                        </p:panelGrid>
 
 
 

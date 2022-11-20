@@ -4,7 +4,7 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:f="http://java.sun.com/jsf/core">
 
     <ui:define name="content">
@@ -29,7 +29,7 @@
                             <p:commandButton value="Process" action="#{dataAdministrationController.createDuplicateBillTableByBillType}" ajax="false" />
                             <p:commandButton value="Process All" action="#{dataAdministrationController.createBillTable}" ajax="false" />
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="dtable" fileName="opd_search_professional_payment_done"  />
+                                <p:dataExporter type="xlsx" target="dtable" fileName="opd_search_professional_payment_done"  />
                             </p:commandButton>
                         </h:panelGrid>
                         <p:dataTable id ="dtable" value="#{dataAdministrationController.bills}" var="b" rowIndexVar="a" >

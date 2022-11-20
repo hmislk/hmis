@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.lab;
 
@@ -10,7 +10,6 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -62,7 +61,7 @@ public class SysMexAdf1 {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -77,7 +76,7 @@ public class SysMexAdf1 {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -92,7 +91,7 @@ public class SysMexAdf1 {
                 Byte b = (byte) s;
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -124,12 +123,12 @@ public class SysMexAdf1 {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
-//        //// // System.out.println("from = " + from);
-//        //// // System.out.println("to = " + to);
+//        //System.out.println("from = " + from);
+//        //System.out.println("to = " + to);
 
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            //// // System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
             int temN;
             try {
                 temN = bytes.get(i);
@@ -171,7 +170,7 @@ public class SysMexAdf1 {
     private String findStringValue(int from, int to) {
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            //// // System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
             int temN = bytes.get(i);
             display += (char) temN + "";
         }

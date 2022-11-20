@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -31,13 +31,11 @@ import com.divudi.entity.BillItem;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.entity.LazyBill;
 import com.divudi.entity.Payment;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.cashTransaction.CashTransaction;
 import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillComponentFacade;
@@ -761,38 +759,7 @@ public class BillSearch implements Serializable {
         return lazyBills;
     }
 
-    public void createTableByKeyword2() {
-        lazyBills = null;
-        String sql;
-        Map temMap = new HashMap();
-
-        if (txtSearch == null || txtSearch.trim().equals("")) {
-            UtilityController.addErrorMessage("Please Enter Bill Id ,Billed Value,Patient Name or Phone Number & Search");
-            return;
-        }
-
-        sql = "select b from BilledBill b where b.billType = :billType and b.institution=:ins "
-                + " and  (upper(b.patient.person.name) like :str "
-                + " or upper(b.patient.person.phone) like :str "
-                + "  or upper(b.insId) like :str "
-                + " or upper(b.netTotal) like :str "
-                + " or upper(b.total) like :str )  and"
-                + " b.createdAt between :fromDate and :toDate and b.retired=false "
-                + " order by b.id desc  ";
-
-        temMap.put("str", "%" + txtSearch.toUpperCase() + "%");
-
-        temMap.put("billType", BillType.OpdBill);
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
-        temMap.put("ins", getSessionController().getInstitution());
-        List<Bill> lst = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-        //System.err.println("SIZE : " + lst.size());
-
-        lazyBills = new LazyBill(lst);
-    }
-
-    public void createDealorPaymentTable() {
+     public void createDealorPaymentTable() {
         bills = null;
         String sql;
         Map temMap = new HashMap();

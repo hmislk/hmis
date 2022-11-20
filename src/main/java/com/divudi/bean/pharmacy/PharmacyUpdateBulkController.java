@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -108,15 +108,15 @@ public class PharmacyUpdateBulkController implements Serializable {
             return;
         }
 
-        ////// // System.out.println("Size = " + amps.size());
+        ////System.out.println("Size = " + amps.size());
         for (Amp a : amps) {
-            ////// // System.out.println("**********************************");
-            ////// // System.out.println("Name = " + a.getName());
-            ////// // System.out.println("Categery Name before = " + a.getCategory().getName());
+            ////System.out.println("**********************************");
+            ////System.out.println("Name = " + a.getName());
+            ////System.out.println("Categery Name before = " + a.getCategory().getName());
             a.setCategory(updateCategory);
             getAmpFacade().edit(a);
-            ////// // System.out.println("Categery Name After = " + a.getCategory().getName());
-            ////// // System.out.println("**********************************");
+            ////System.out.println("Categery Name After = " + a.getCategory().getName());
+            ////System.out.println("**********************************");
         }
 
         UtilityController.addSuccessMessage("Updated...");
@@ -129,15 +129,15 @@ public class PharmacyUpdateBulkController implements Serializable {
             return;
         }
 
-        ////// // System.out.println("Size = " + amps.size());
+        ////System.out.println("Size = " + amps.size());
         for (Amp a : amps) {
-            ////// // System.out.println("**********************************");
-            ////// // System.out.println("Name = " + a.getName());
-            ////// // System.out.println("Discount Allowd before = " + a.getDiscountAllowed());
+            ////System.out.println("**********************************");
+            ////System.out.println("Name = " + a.getName());
+            ////System.out.println("Discount Allowd before = " + a.getDiscountAllowed());
             a.setDiscountAllowed(Boolean.TRUE);
             getAmpFacade().edit(a);
-            ////// // System.out.println("Discount Allowd After = " + a.getDiscountAllowed());
-            ////// // System.out.println("**********************************");
+            ////System.out.println("Discount Allowd After = " + a.getDiscountAllowed());
+            ////System.out.println("**********************************");
         }
 
         UtilityController.addSuccessMessage("Updated...");

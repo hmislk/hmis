@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -55,13 +55,13 @@
                                                          />-->
 
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
                     </p:commandButton>
 <!--                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
                     </p:commandButton>
                     <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByDischargeDate()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
                     </p:commandButton>-->
 
                     <p:commandButton value="Print" ajax="false" action="#" >

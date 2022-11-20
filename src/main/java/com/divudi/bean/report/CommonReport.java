@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -1407,7 +1407,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            ////// // System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            ////System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
         sql += "order by b.deptId,b.fromInstitution.name ";
 
@@ -1907,7 +1907,7 @@ public class CommonReport implements Serializable {
             temMap.put("td", td);
         }
 
-        //// // System.out.println("temMap = " + temMap);
+        //System.out.println("temMap = " + temMap);
         
         List<Bill> tbs = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
         
@@ -1939,7 +1939,7 @@ public class CommonReport implements Serializable {
             sql += "  and b.toDepartment=:td ";
             temMap.put("td", td);
         }
-        //// // System.out.println("temMap = " + temMap);
+        //System.out.println("temMap = " + temMap);
         Double val = getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return val;
 
@@ -2374,7 +2374,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            ////// // System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            ////System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
 
         temMap.put("fromDate", getFromDate());
@@ -2403,7 +2403,7 @@ public class CommonReport implements Serializable {
         if (getReferenceInstitution() != null) {
             sql += " and b.referenceInstitution=:inst ";
             temMap.put("inst", getReferenceInstitution());
-            ////// // System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
+            ////System.out.println("getReferenceInstitution().getName() = " + getReferenceInstitution().getName());
         }
 
         temMap.put("fromDate", getFromDate());
@@ -5294,7 +5294,7 @@ public class CommonReport implements Serializable {
         tmp5.setValue(getFinalCashTotal(list));
 
         String1Value1 tmp6 = new String1Value1();
-        tmp6.setString("Grant Total");
+        tmp6.setString("Grand Total");
         tmp6.setValue(getFinalCreditTotal(list) + getFinalCreditCardTotal(list) + getFinalChequeTot(list) + getFinalSlipTot(list) + getFinalCashTotal(list));
 
         data.add(tmp1);

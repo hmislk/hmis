@@ -7,12 +7,9 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
-
-
     <ui:define name="content">
-
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -35,7 +32,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{channelReportController.createChannelFees()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                            <p:dataExporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
                         </p:commandButton>
                     </h:panelGrid>
 

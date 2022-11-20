@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -1067,7 +1067,7 @@ public class CashSummeryController implements Serializable {
     }
 
     public List<DailyCash> getDailyCash() {
-        // //////// // System.out.println("Starting : ");
+        // //////System.out.println("Starting : ");
         if (dailyCash == null) {
             dailyCash = new ArrayList<>();
 

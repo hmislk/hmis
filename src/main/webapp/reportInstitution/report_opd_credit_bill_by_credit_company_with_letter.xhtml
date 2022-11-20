@@ -6,7 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:cre="http://java.sun.com/jsf/composite/cashier">
 
     <ui:define name="content">
@@ -49,7 +49,7 @@
                             <p:printer target="panelPrint" />
                         </p:commandButton>
                         <p:commandButton actionListener="#{creditSummeryController.createCreditDueTable}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
+                            <p:dataExporter type="xlsx" target="safrin" fileName="credit_dep_by_bill"  />
                         </p:commandButton>
 
                     </h:panelGrid>

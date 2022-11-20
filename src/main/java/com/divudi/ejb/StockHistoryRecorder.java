@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -34,9 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import javax.ejb.EJB;
-import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
@@ -85,7 +83,7 @@ public class StockHistoryRecorder {
 //    @Schedule(second="*/1", minute="*",hour="*", persistent=false)
     public void myTimer() {
         Date startTime = new Date();
-        ////// // System.out.println("Start writing stock history: " + startTime);
+        ////System.out.println("Start writing stock history: " + startTime);
         for (Department d : fetchStockDepartment()) {
             if (!d.isRetired()) {
                 for (Item amp : fetchStockItem(d)) {
@@ -109,11 +107,11 @@ public class StockHistoryRecorder {
                         getStockHistoryFacade().create(h);
                     }
                 }
-                ////// // System.out.println("hx finished for = " + d);
+                ////System.out.println("hx finished for = " + d);
             }
         }
-        ////// // System.out.println("End writing stock history: " + new Date());
-//        ////// // System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+        ////System.out.println("End writing stock history: " + new Date());
+//        ////System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
 
     @SuppressWarnings("unused")
@@ -124,9 +122,9 @@ public class StockHistoryRecorder {
             if (fc.getFee().getStaff() != null) {
             }
             for (ItemFee f : fetchServiceSessionFees(fc.getFee().getFeeType(), fc.getFee().getName(), fc.getFee().getStaff())) {
-                //// // System.out.println("1.f.getFee() = " + f.getFee());
+                //System.out.println("1.f.getFee() = " + f.getFee());
                 f.setFee(f.getFee() + fc.getFee().getFee());
-                //// // System.out.println("2.f.getFee() = " + f.getFee());
+                //System.out.println("2.f.getFee() = " + f.getFee());
                 f.setFfee(f.getFfee() + fc.getFee().getFfee());
                 getItemFeeFacade().edit(f);
             }
@@ -134,24 +132,24 @@ public class StockHistoryRecorder {
             fc.setDone(true);
             getFeeChangeFacade().edit(fc);
         }
-        ////// // System.out.println("End writing stock history: " + new Date());
-//        ////// // System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+        ////System.out.println("End writing stock history: " + new Date());
+//        ////System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
     }
 
 //    @SuppressWarnings("unused")
 //    @Schedule(hour = "03", minute = "15", second = "00", dayOfMonth = "*", info = "Daily Mornining", persistent = false)
 //    public void myTimerDailyChannelShedule() {
 //        Date startTime = new Date();
-//        //// // System.out.println("Start Create Shedule " + startTime);
+//        //System.out.println("Start Create Shedule " + startTime);
 //
 //        for (Staff s : staffs()) {
 //            generateSessions(s);
 //        }
 //
-//        //// // System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
+//        //System.out.println("Start and End Create Shedule " + startTime + " - " + new Date());
 //
-//        ////// // System.out.println("End writing stock history: " + new Date());
-////        ////// // System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
+//        ////System.out.println("End writing stock history: " + new Date());
+////        ////System.out.println("TIme taken for Hx is " + (((new Date()) - startTime )/(1000*60*60)) + " minutes.");
 //    }
 
  

@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -37,7 +37,7 @@
                     <h:panelGrid columns="2" id="pg1" >
                         <h:outputLabel value="Scan"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.scan}" >
-                            <p:ajax event="change" process="@this" update=":#{p:component('pan3')} pg1" />
+                            <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('pan3',view).clientId} pg1" />
                         </p:selectBooleanCheckbox>
                         <h:outputLabel value="Session Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.sessoinDate}" />
@@ -54,7 +54,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
                         <p:commandButton actionListener="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Excel" ajax="false">
-                            <pe:exporter type="xlsx" target="tbl1" fileName="channel_count"  subTable="true"/>
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_count"  />
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>

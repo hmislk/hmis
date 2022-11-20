@@ -1,15 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.java;
 
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+
 
 /**
  *
@@ -43,6 +46,12 @@ public class CommonFunctions {
         return minCount;
     }
 
+    public static LocalDateTime getLocalDateTime(Date dateTime){
+        Date input = dateTime;
+        LocalDateTime date = input.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        return date;
+    }
+    
     public static Date getStartOfMonth(Date date) {
         if (date == null) {
             date = new Date();

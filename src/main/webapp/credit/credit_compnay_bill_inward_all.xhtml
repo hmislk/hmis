@@ -60,7 +60,7 @@
                                 <p:column>
                                     <h:outputLabel value="#{ix.institutionCode}"/>
                                 </p:column>
-                                <f:ajax execute="@this" event="itemSelect" render=":#{p:component('items')} tot" 
+                                <f:ajax execute="@this" event="itemSelect" render=":#{p:resolveFirstComponentWithId('items',view).clientId} tot" 
                                         listener="#{cashRecieveBillController.selectInstitutionListenerBht()}"/>
                             </p:autoComplete>                           
                         </h:panelGroup>
@@ -73,13 +73,13 @@
                                 <p:commandButton ajax="false" action="#{cashRecieveBillController.removeAll()}" value="Remove Selected" onclick="onSubmitButton();"/>
                             </f:facet>       
                             <p:ajax  event="rowSelect" process="@this" 
-                                     update=":#{p:component('tot')} :#{p:component('items')}" 
+                                     update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('items',view).clientId}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
                             <p:ajax  event="rowSelectCheckbox" process="@this" 
-                                     update=":#{p:component('tot')}" 
+                                     update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
                             <p:ajax  event="rowUnselectCheckbox" process="@this" 
-                                     update=":#{p:component('tot')}" 
+                                     update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
                                      listener="#{cashRecieveBillController.calTotal}"/>
                             <p:column selectionMode="multiple" />                                        
 

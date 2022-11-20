@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -18,10 +18,8 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Staff;
-import com.divudi.entity.channel.ArrivalRecord;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;

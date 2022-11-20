@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -13,9 +13,9 @@
                 <h:form>
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
                     <p:panel header="Bill Type Summery" >
-                        <p:panelGrid columns="2" styleClass="alignTop" >
-                            <p:panel header="Fill" >
-                                <h:panelGrid columns="2" >
+                        <p:panelGrid columns="1" styleClass="alignTop" >
+                            <p:panel header="Fillters" >
+                                <p:panelGrid columns="2" >
                                     <h:outputLabel value="From"/>
                                     <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                         <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
@@ -47,8 +47,8 @@
                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                                     value="#{billSearch.user}" >
                                     </p:autoComplete>
-                                </h:panelGrid>
-                                <h:panelGrid columns="3" >
+                                </p:panelGrid>
+                                <p:panelGrid columns="3" >
 
                                     <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillBillTypeSummery}" styleClass="noPrintButton">
                                     </p:commandButton>
@@ -58,14 +58,14 @@
                                     </p:commandButton>
 
                                     <p:commandButton  value="Export as Excel" ajax="false" styleClass="noPrintButton" >
-                                        <pe:exporter type="xlsx" target="tblBills" fileName="Bill Data"
-                                                     facetBackground="#008000" facetFontSize="15" 
-                                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                                     fontName="Courier New"  />
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Data"
+                                                       
+                                                            
+                                                       />
                                     </p:commandButton>
 
 
-                                </h:panelGrid>
+                                </p:panelGrid>
 
 
                             </p:panel>

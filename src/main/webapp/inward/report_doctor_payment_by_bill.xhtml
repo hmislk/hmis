@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -62,7 +62,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
                             </p:commandButton>
 
 

@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -52,7 +52,7 @@
                                              action="#{investigationMonthSummeryOwnControllerSession.createInvestigationTurnoverTimeByBills}"
                                              styleClass="noPrintButton" />
                             <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="turn over time"/>
+                                <p:dataExporter type="xlsx" target="tbl" fileName="turn over time"/>
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" styleClass="noPrintButton" >
                                 <p:printer target="tbl" ></p:printer>

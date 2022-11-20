@@ -20,7 +20,7 @@
                 <p:tab title="Cycle">
                     <p:selectOneMenu id="advanced" 
                                      value="#{staffSalaryAdvanceController.salaryCycle}"                                      
-                                     effect="fade" var="t" 
+                                     var="t" 
                                      filter="true" 
                                      filterMatchMode="startsWith"  >
 
@@ -164,7 +164,7 @@
                         </p:column>   
                         <p:column>
                             <p:commandButton process="@this" 
-                                             update=":#{p:component('lst')}" 
+                                             update=":#{p:resolveFirstComponentWithId('lst',view).clientId}" 
                                              value="View Detail"  
                                             actionListener="#{staffSalaryAdvanceController.onEditListener(ii)}" onclick="onSubmitButton();">                              
                             </p:commandButton>                          

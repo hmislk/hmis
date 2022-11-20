@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -31,7 +31,7 @@
                                                   onclick="onSubmitButton();"/>
                             </h:panelGrid>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tbl1" fileName="Staff_Without_Specility"  />
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="Staff_Without_Specility"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="tbl1" />

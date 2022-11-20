@@ -1,27 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:h="http://java.sun.com/jsf/html">
-    <ui:define name="login">
-        <p:panel header="Time out" styleClass="verticalAndHorizontalCentering">
-            Application timed out. <br/>
-            (That means you were not using the system at least for 30 minutes.)<br/>
-            Please Login again to continue.<br/>
-            <h:form >
-                <p:commandButton ajax="false" value="Login" action="/index" ></p:commandButton>
-            </h:form>
-        </p:panel>
-
-
-    </ui:define>
-
-    <ui:define name="content">
-        <h4>
-            Please use menu to continue.
-        </h4>
-    </ui:define>
-
-
-</ui:composition>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+           
+        </ui:composition>
+    </h:body>
+</html>

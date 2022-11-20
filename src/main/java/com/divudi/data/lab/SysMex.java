@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.lab;
 
@@ -87,7 +87,7 @@ public class SysMex {
     private String basoPercentage;
 
     public boolean isCorrectReport() {
-        //// // System.out.println("Checking wether the report is Correct");
+        //System.out.println("Checking wether the report is Correct");
         boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
@@ -96,33 +96,33 @@ public class SysMex {
             return false;
         }
         Double id1 = findValue(sampleId1Start, sampleId1End, 0);
-        //// // System.out.println("id1 = " + id1);
+        //System.out.println("id1 = " + id1);
         Double id2 = findValue(sampleId2Start, sampleId2End, 0);
-        //// // System.out.println("id2 = " + id2);
+        //System.out.println("id2 = " + id2);
         if (!Objects.equals(id1, id2)) {
             return false;
         }
-        //// // System.out.println("ID check OK");
+        //System.out.println("ID check OK");
         String insId1 = findStringValue(instrumentId1Start, instrumentId1End);
         insId1 = insId1.replaceAll("\\s", "");
         insId1 = insId1.substring(0, 5);
-        //// // System.out.println("instrument Id1 = " + insId1);
+        //System.out.println("instrument Id1 = " + insId1);
         String insId2 = findStringValue(instrumentId2Start, instrumentId2End);
         insId2 = insId2.replaceAll("\\s", "");
         insId2 = insId2.substring(0, 5);
-        //// // System.out.println("instrument Id2 = " + insId2);
+        //System.out.println("instrument Id2 = " + insId2);
 
         if (insId1 == null ? insId2 != null : !insId1.equals(insId2)) {
             return false;
         }
-        //// // System.out.println("Instrument ID checks ok");
+        //System.out.println("Instrument ID checks ok");
 
         Double thb = findValue(hgbStart, hgbEnd, 2);
-        //// // System.out.println("Hb Check = " + thb);
+        //System.out.println("Hb Check = " + thb);
         if (thb < 2 || thb > 20) {
             return false;
         }
-        //// // System.out.println("Hb  checks ok");
+        //System.out.println("Hb  checks ok");
 
         Double tpcv = findValue(hctStart, hctEnd, 2);
         if (tpcv < 5 || tpcv > 60) {
@@ -192,7 +192,7 @@ public class SysMex {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -207,7 +207,7 @@ public class SysMex {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -222,7 +222,7 @@ public class SysMex {
                 Byte b = (byte) s;
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
@@ -254,12 +254,12 @@ public class SysMex {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
-//        //// // System.out.println("from = " + from);
-//        //// // System.out.println("to = " + to);
+//        //System.out.println("from = " + from);
+//        //System.out.println("to = " + to);
 
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            //// // System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
             int temN;
             try {
                 temN = bytes.get(i);
@@ -301,7 +301,7 @@ public class SysMex {
     private String findStringValue(int from, int to) {
         String display = "";
         for (int i = from; i < to + 1; i++) {
-//            //// // System.out.println("i = " + i);
+//            //System.out.println("i = " + i);
             int temN = bytes.get(i);
             display += (char) temN + "";
         }

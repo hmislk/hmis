@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -12,7 +12,6 @@ import com.divudi.data.BillClassType;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
 import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.QuickBookFormat;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.AdmissionTypeEnum;

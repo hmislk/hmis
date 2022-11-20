@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+        <h:form  >
+            <p:panelGrid columns="5" >
+                <p:outputLabel value="Search Users" ></p:outputLabel>
+                <p:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
+                    <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
+                </p:inputText>
+                <p:commandButton ajax="false" value="List Users" action="#{webUserController.createTable()}"/>
+            </p:panelGrid>
+
+            <h:panelGrid columns="2" styleClass="alignTop" >
+                <h:panelGrid id="actions" columns="1"  >
+                    <p:commandButton  styleClass="linkButton" value="Decrypt Usernames" action="#{sessionController.decryptAllUsers()}" ajax="false" />
+                    
+                    <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage Password" action="password" ajax="false" />
+                    <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Privileges" action="pri" ajax="false" />
+                    <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Loggable Departments" action="depts" ajax="false" />
+                </h:panelGrid>
+
+                <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u"
+                             rowKey="#{u.id}"
+                             selection="#{webUserController.selected}" 
+                             rows="100" selectionMode="single"
+                             paginator="#{commonController.renderPaginator(webUserController.selectedItems, 10)}"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,50,100,500"
+                             >
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of All Users" />
+                    </f:facet>
+                    <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                    <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                    <p:column headerText="Institution">
+                        <h:outputLabel value="#{u.institution.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Department">
+                        <h:outputLabel value="#{u.department.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Users Full Name">
+                        <h:outputLabel value="#{u.webUserPerson.name}"/>
+                    </p:column>
+
+                    <p:column headerText="User Name">
+                        <h:outputLabel value="#{u.name}"/>
+                    </p:column>
+                    <p:column headerText="Staff Name">
+                        <h:outputLabel value="#{u.staff.person.name}"/>
+                    </p:column>
+                    <p:column headerText="Staff Code">
+                        <h:outputLabel value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
+                    </p:column>
+                    <p:column headerText="Staff Specility">
+                        <h:outputLabel value="#{u.staff.speciality.name}" rendered="#{u.staff.speciality ne null}"/>
+                    </p:column>
+                </p:dataTable>
+
+            </h:panelGrid>
+
+
+
+
+        </h:form>
+
+       
+
+    </h:body>
+</html>
+

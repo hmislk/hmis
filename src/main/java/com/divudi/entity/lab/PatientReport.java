@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -327,7 +327,7 @@ public class PatientReport implements Serializable {
         } else {
             patientReportItemValues = new ArrayList<>();
         }
-//        //// // System.out.println("patientReportItemValues = " + patientReportItemValues.size());
+//        //System.out.println("patientReportItemValues = " + patientReportItemValues.size());
         return patientReportItemValues;
     }
 

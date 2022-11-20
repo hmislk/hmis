@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -24,7 +24,7 @@
 
                             <h:outputLabel value="From"/>                            
                             <p:calendar  navigator="true" value="#{staffPaySheetComponentAllPerformanceAllowanceController.fromDate}" pattern="dd MM yyyy">
-                                <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
+                                <f:ajax execute="@this" render="#{p:resolveFirstComponentWithId('frm',view).clientId}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
                             <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformanceAllowanceController.toDate}" pattern="dd MM yyyy"/>
@@ -136,7 +136,7 @@
                     <h:panelGrid columns="3">
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb3" fileName="hr_staff_paysheet_component_all_performance_allovance"  />
+                            <p:dataExporter type="xlsx" target="tb3" fileName="hr_staff_paysheet_component_all_performance_allovance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="perallpanel" ></p:printer>

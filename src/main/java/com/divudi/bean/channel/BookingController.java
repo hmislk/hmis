@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
@@ -340,9 +340,9 @@ public class BookingController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and (p.person.name like '%" + query.toUpperCase() + "%'or  p.code like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and (p.person.name like '%" + query.toUpperCase() + "%'or  p.code like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
             suggestions = getStaffFacade().findBySQL(sql);
@@ -417,7 +417,7 @@ public class BookingController implements Serializable {
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and pi.staff.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by pi.staff.person.name ";
 
                     m.put("ins", getSessionController().getInstitution());
@@ -428,7 +428,7 @@ public class BookingController implements Serializable {
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
-                            + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
                     consultants = getStaffFacade().findBySQL(sql);
                 }
@@ -442,7 +442,7 @@ public class BookingController implements Serializable {
                                 + " and pi.type=:typ "
                                 + " and pi.institution=:ins "
                                 + " and pi.staff.speciality=:sp "
-                                + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and pi.staff.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by pi.staff.person.name ";
 
                         m.put("ins", getSessionController().getInstitution());
@@ -450,7 +450,7 @@ public class BookingController implements Serializable {
 
                     } else {
                         sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
                     consultants = getStaffFacade().findBySQL(sql, m);
@@ -1131,8 +1131,8 @@ public class BookingController implements Serializable {
             ChannelScheduleEvent e = new ChannelScheduleEvent();
             e.setServiceSession(s);
             e.setTitle(s.getName());
-            e.setStartDate(s.getTransStartTime());
-            e.setEndDate(s.getTransEndTime());
+            e.setStartDate(CommonFunctions.getLocalDateTime(s.getTransStartTime()));
+            e.setEndDate(CommonFunctions.getLocalDateTime(s.getTransEndTime()));
             eventModel.addEvent(e);
             checkDoctorArival(s);
         }

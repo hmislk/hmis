@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">    
@@ -29,7 +29,7 @@
                         </p:commandButton>  
 
                         <p:commandButton actionListener="#{cashierReportController.calCashierData()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
-                            <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report" subTable="true"/>
+                            <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery_Detail_Report" />
                         </p:commandButton>  
 
                         <h:outputLabel value="All Cashier Report"/><br/>
@@ -118,7 +118,7 @@
                         <p:columnGroup type="footer">
                             <p:row>
 
-                                <p:column footerText="Grant Total">
+                                <p:column footerText="Grand Total">
 
                                 </p:column>
 

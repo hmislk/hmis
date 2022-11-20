@@ -69,7 +69,7 @@
 
                                         <h:outputLabel value="Billed bill Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
-                                        
+
                                         <h:outputLabel value="Invoice Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.invoiceDate}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
@@ -77,13 +77,13 @@
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
-                                        
+
                                         <h:outputLabel value="Refunded :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.refunded}" ></p:selectBooleanCheckbox>
-                                        
+
                                         <h:outputLabel value="Refunded Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.refundedBill}" />
-                                        
+
 
                                         <h:outputLabel value="Canceled Bill(Ins Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
@@ -269,14 +269,19 @@
                                 </p:panel>
                             </p:panelGrid>
                             <p:panel header="Bill Fee Detail">
+
+                                <p:commandButton ajax="false" value="download" 
+                                                 >
+
+                                    <p:dataExporter target="tblBillIFes" type="xlsx" fileName="ill items" ></p:dataExporter>
+                                </p:commandButton>
+
                                 <p:dataTable rowIndexVar="rowIndex"
+                                             id="tblBilFee"
                                              editable="true" value="#{billSearch.billFeesList}" var="bip" >
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
                                     <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" />  
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>
+                                    
                                     <p:column style="width:6%">  
                                         <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
                                         </p:rowEditor>
@@ -286,16 +291,16 @@
                                         <h:outputLabel value="#{bip.bill.deptId} - "/>
                                         <h:outputLabel value="#{bip.bill.id}"/>
                                     </p:column>
-<!--                                    <p:column headerText="Bill Edit" rendered="false">
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip.bill.deptId}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip.bill}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>-->
+                                    <!--                                    <p:column headerText="Bill Edit" rendered="false">
+                                                                            <p:cellEditor>
+                                                                                <f:facet name="output" >
+                                                                                    <h:outputLabel value="#{bip.bill.deptId}" />
+                                                                                </f:facet>
+                                                                                <f:facet name="input" >
+                                                                                    <p:inputText value="#{bip.bill}" />
+                                                                                </f:facet>
+                                                                            </p:cellEditor>
+                                                                        </p:column>-->
                                     <p:column rendered="false">
                                         <f:facet name="header">Bill paid</f:facet>
                                         <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.deptId} - "/>
@@ -308,6 +313,10 @@
                                     <p:column>
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip.billItem.item.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">Inward Fee Type</f:facet>
+                                        <h:outputLabel value="#{bip.billItem.inwardChargeType.label}"/>
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Paid Value</f:facet>
@@ -437,158 +446,275 @@
                                 </p:dataTable>
                             </p:panel>
                             <p:panel header="Bill Item Detail">
-                                <p:dataTable value="#{billSearch.billItemList}"
-                                             editable="true"  var="bip21" rowIndexVar="rowIndex">
-                                    <p:ajax event="rowEdit" listener="#{billSearch.onEditItem}" />  
-                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEditItem}" /> 
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>
-                                    </p:column>
-                                    <p:column style="width:6%">  
-                                        <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
-                                        </p:rowEditor>
-                                    </p:column>
-                                    <p:column headerText="Bill">
-                                        <h:outputLabel value="#{bip21.bill.deptId} - " />
-                                        <h:outputLabel value="#{bip21.bill.id}" />
-                                    </p:column>
-                                    <p:column headerText="Ref">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.bill.billType}" />
-                                    </p:column>
-                                    <p:column headerText="bill edit">
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.bill.deptId}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.bill}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Bill paid">
-                                        <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.deptId} - " />
-                                        <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.id}" />
-                                    </p:column>
-                                    <p:column headerText="BillItem Id">
-                                        <h:outputLabel value="#{bip21.id}" />
-                                    </p:column>
-                                    <p:column headerText="Ref. Bill Id">
-                                        <h:outputLabel value="#{bip21.referenceBill.id}" />
-                                    </p:column>
-                                    <p:column headerText="Item Department">
-                                        <h:outputLabel value="#{bip21.item.department.name}" />
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip21.item.name}"/>
-                                    </p:column>
-                                    <p:column headerText="1">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" rendered="#{bip21.paidForBillFee ne null}"/>
-                                    </p:column>
-                                    <p:column headerText="2" >
-                                        <p:cellEditor rendered="#{bip21.paidForBillFee ne null}" >
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.paidForBillFee.paidValue}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Test/Service">
-                                        <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
-                                    </p:column>
-                                    <p:column headerText="Qty" >
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.qty}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.qty}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Gross" >
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.grossValue}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.grossValue}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Discount" >
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.discount}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.discount}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Fee" >
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.netValue}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.netValue}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Net Rate">
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.netRate}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.netRate}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Vat">
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.vat}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.vat}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Vat Plus Net Value">
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.vatPlusNetValue}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.vatPlusNetValue}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
-                                    <p:column headerText="Fee Adjusted" >
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip21.adjustedValue}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip21.adjustedValue}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>
 
-                                    <p:column>
-                                        <f:facet name="header">Retired</f:facet>
-                                        <p:selectBooleanCheckbox value="#{bip21.retired}" ></p:selectBooleanCheckbox>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Update</f:facet>
-                                        <p:commandButton value="Bill Item Retired" action="#{billSearch.updateBillItemRetierd(bip21)}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
-                                    </p:column>
-                                </p:dataTable>
+                                <p:tabView >
+
+                                    <p:tab title="View" >
+                                        <p:commandButton ajax="false" value="download" 
+                                                         >
+                                            <p:dataExporter target="tblBillItems" type="xls" fileName="ill items" ></p:dataExporter>
+                                        </p:commandButton>
+                                        <p:commandButton ajax="false" value="Update" ></p:commandButton>
+                                        <p:dataTable value="#{billSearch.billItemList}"
+                                                     id="tblBillItems"
+                                                     resizableColumns="true"
+                                                     var="bip21" rowIndexVar="rowIndex">
+                                            <p:ajax event="rowEdit" listener="#{billSearch.onEditItem}" />  
+                                            <p:ajax event="rowEditCancel" listener="#{billSearch.onEditItem}" /> 
+<!--                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>-->
+                                            <p:column headerText="ID">
+                                                <h:outputLabel value="#{bip21.id}" />
+                                            </p:column>
+<!--                                            <p:column headerText="Dept ID of Bill">
+                                                <h:outputLabel value="#{bip21.bill.deptId}" />
+                                            </p:column>
+                                            <p:column headerText="Ins ID of Bill ">
+                                                <h:outputLabel value="#{bip21.bill.insId}" />
+                                            </p:column>
+                                            <p:column headerText="Bill Type">
+                                                <h:outputLabel value="#{bip21.paidForBillFee.bill.billType}" />
+                                            </p:column>-->
+                                            
+                                            <p:column headerText="Bill paid">
+                                                <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.deptId} - " />
+                                                <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.id}" />
+                                            </p:column>
+                                            <p:column headerText="Bill Item Id">
+                                                <h:outputLabel value="#{bip21.id}" />
+                                            </p:column>
+                                            <p:column headerText="Ref. Bill Id">
+                                                <h:outputLabel value="#{bip21.referenceBill.id}" />
+                                            </p:column>
+                                            <p:column headerText="Item Department">
+                                                <h:outputLabel value="#{bip21.item.department.name}" />
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bip21.item.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Inward Category</f:facet>
+                                                <h:outputLabel value="#{bip21.inwardChargeType.label}"/>
+                                            </p:column>
+<!--                                            <p:column headerText="1">
+                                                <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" rendered="#{bip21.paidForBillFee ne null}"/>
+                                            </p:column>
+                                            <p:column headerText="2" >
+
+                                                <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
+
+                                            </p:column>-->
+                                            <p:column headerText="Test/Service">
+                                                <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
+                                            </p:column>
+                                            <p:column headerText="Qty" >
+
+                                                <h:outputLabel value="#{bip21.qty}" />
+
+                                            </p:column>
+                                            <p:column headerText="Gross" >
+
+                                                <h:outputLabel value="#{bip21.grossValue}" />
+
+                                            </p:column>
+                                            <p:column headerText="Discount" >
+
+                                                <h:outputLabel value="#{bip21.discount}" />
+
+                                            </p:column>
+                                            <p:column headerText="Fee" >
+
+                                                <h:outputLabel value="#{bip21.netValue}" />
+
+                                            </p:column>
+                                            <p:column headerText="Net Rate">
+
+                                                <h:outputLabel value="#{bip21.netRate}" />
+
+                                            </p:column>
+                                            <p:column headerText="Vat">
+
+                                                <h:outputLabel value="#{bip21.vat}" />
+
+                                            </p:column>
+                                            <p:column headerText="Vat Plus Net Value">
+
+                                                <h:outputLabel value="#{bip21.vatPlusNetValue}" />
+
+                                            </p:column>
+                                            <p:column headerText="Fee Adjusted" >
+
+                                                <h:outputLabel value="#{bip21.adjustedValue}" />
+
+                                            </p:column>
+
+
+                                        </p:dataTable>
+                                    </p:tab>
+                                    <p:tab title="Edit" >
+                                        <p:dataTable value="#{billSearch.billItemList}"
+                                                     editable="true"  var="bip21" rowIndexVar="rowIndex">
+                                            <p:ajax event="rowEdit" listener="#{billSearch.onEditItem}" />  
+                                            <p:ajax event="rowEditCancel" listener="#{billSearch.onEditItem}" /> 
+                                            <p:column>
+                                                <f:facet name="header">No</f:facet>
+                                                <h:outputLabel value="#{rowIndex+1}"/>
+                                            </p:column>
+                                            <p:column style="width:6%">  
+                                                <p:rowEditor rendered="#{webUserController.hasPrivilege('Developers')}"> 
+                                                </p:rowEditor>
+                                            </p:column>
+                                            <p:column headerText="Bill">
+                                                <h:outputLabel value="#{bip21.bill.deptId} - " />
+                                                <h:outputLabel value="#{bip21.bill.id}" />
+                                            </p:column>
+                                            <p:column headerText="Ref">
+                                                <h:outputLabel value="#{bip21.paidForBillFee.bill.billType}" />
+                                            </p:column>
+                                            <p:column headerText="bill edit">
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.bill.deptId}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.bill}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Bill paid">
+                                                <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.deptId} - " />
+                                                <h:outputLabel value="#{bip21.bill.billedBill.paidBill.cancelledBill.id}" />
+                                            </p:column>
+                                            <p:column headerText="BillItem Id">
+                                                <h:outputLabel value="#{bip21.id}" />
+                                            </p:column>
+                                            <p:column headerText="Ref. Bill Id">
+                                                <h:outputLabel value="#{bip21.referenceBill.id}" />
+                                            </p:column>
+                                            <p:column headerText="Item Department">
+                                                <h:outputLabel value="#{bip21.item.department.name}" />
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bip21.item.name}"/>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Inward Category</f:facet>
+                                                <h:outputLabel value="#{bip21.inwardChargeType.label}"/>
+                                            </p:column>
+                                            <p:column headerText="1">
+                                                <h:outputLabel value="#{bip21.paidForBillFee.feeValue}" rendered="#{bip21.paidForBillFee ne null}"/>
+                                            </p:column>
+                                            <p:column headerText="2" >
+                                                <p:cellEditor rendered="#{bip21.paidForBillFee ne null}" >
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.paidForBillFee.paidValue}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.paidForBillFee.paidValue}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Test/Service">
+                                                <h:outputLabel value="#{bip21.paidForBillFee.billItem.item.name}" />
+                                            </p:column>
+                                            <p:column headerText="Qty" >
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.qty}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.qty}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Gross" >
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.grossValue}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.grossValue}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Discount" >
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.discount}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.discount}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Fee" >
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.netValue}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.netValue}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Net Rate">
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.netRate}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.netRate}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Vat">
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.vat}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.vat}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Vat Plus Net Value">
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.vatPlusNetValue}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.vatPlusNetValue}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+                                            <p:column headerText="Fee Adjusted" >
+                                                <p:cellEditor>
+                                                    <f:facet name="output" >
+                                                        <h:outputLabel value="#{bip21.adjustedValue}" />
+                                                    </f:facet>
+                                                    <f:facet name="input" >
+                                                        <p:inputText value="#{bip21.adjustedValue}" />
+                                                    </f:facet>
+                                                </p:cellEditor>
+                                            </p:column>
+
+                                            <p:column>
+                                                <f:facet name="header">Retired</f:facet>
+                                                <p:selectBooleanCheckbox value="#{bip21.retired}" ></p:selectBooleanCheckbox>
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">Update</f:facet>
+                                                <p:commandButton value="Bill Item Retired" action="#{billSearch.updateBillItemRetierd(bip21)}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}"></p:commandButton>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:tab>
+                                </p:tabView>
+
+
                             </p:panel>
                         </p:panel>
                     </p:panel>
@@ -616,15 +742,15 @@
                                     </p:commandButton>
                                 </div>
                                 <h:panelGroup  rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false
-                                                                             and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'
-                                                                             and sessionController.loggedPreference.fiveFivePaperWithHeadings eq false}">
+                                                           and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'
+                                                           and sessionController.loggedPreference.fiveFivePaperWithHeadings eq false}">
                                     <bi:opdBillPrintRuhunu bill="#{billSearch.billSearch}" dup="false" />
 
                                 </h:panelGroup>
 
                             </h:panelGroup>
 
-                            
+
                         </p:panel>
                     </h:panelGroup>
 

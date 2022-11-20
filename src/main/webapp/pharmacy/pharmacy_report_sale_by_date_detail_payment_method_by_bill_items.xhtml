@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -27,7 +27,7 @@
                     
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSalePaymentMethodDetailBillItems()}"/>
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                        <pe:exporter subTable="true" type="xlsx" target="sum1,sum2,sum3,fin" fileName="report_grn_detail_by_supplier"  />
+                        <p:dataExporter  type="xlsx" target="sum1,sum2,sum3,fin" fileName="report_grn_detail_by_supplier"  />
                             </p:commandButton>
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                         <p:printer target="panelPrint" />

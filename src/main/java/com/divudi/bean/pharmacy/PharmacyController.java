@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
 
@@ -59,8 +59,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -334,7 +334,7 @@ public class PharmacyController implements Serializable {
             }
         }
 
-//        //// // System.out.println("m = " + m);
+//        //System.out.println("m = " + m);
         itemTransactionSummeryRows = new ArrayList<>(m.values());
 
         for (ItemTransactionSummeryRow r : itemTransactionSummeryRows) {
@@ -400,8 +400,8 @@ public class PharmacyController implements Serializable {
         }
         sql += " group by i.item";
         sql += " order by i.item.name";
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
+//        //System.out.println("m = " + m);
+//        //System.out.println("sql = " + sql);
         List<ItemQuantityAndValues> lst = getBillItemFacade().findItemQuantityAndValuesList(sql, m, TemporalType.DATE);
         return lst;
 
@@ -460,12 +460,12 @@ public class PharmacyController implements Serializable {
                         r.setAverage(avg);
                     }
 
-//                    //////// // System.out.println("calPerStock = " + calPerStock);
-//                    //////// // System.out.println("insStockTotal = " + insStockTotal);
-//                    //////// // System.out.println("insAverageTotal = " + insAverageTotal);
+//                    //////System.out.println("calPerStock = " + calPerStock);
+//                    //////System.out.println("insStockTotal = " + insStockTotal);
+//                    //////System.out.println("insAverageTotal = " + insAverageTotal);
                     if ((insStock < calPerStock) && r.getStock() != 0) {
-                        //////// // System.out.println("*insStock = " + insStock);
-                        //////// // System.out.println("*calPerStock = " + calPerStock);
+                        //////System.out.println("*insStock = " + insStock);
+                        //////System.out.println("*calPerStock = " + calPerStock);
                         insStockTotal += r.getStock();
                         insAverageTotal += r.getAverage();
                         newTable.getDepatmentStocks().add(r);
@@ -473,9 +473,9 @@ public class PharmacyController implements Serializable {
 
                 }
 
-//                //////// // System.out.println("calPerStock = " + calPerStock);
-//                //////// // System.out.println("insStockTotal = " + insStockTotal);
-//                //////// // System.out.println("insAverageTotal = " + insAverageTotal);
+//                //////System.out.println("calPerStock = " + calPerStock);
+//                //////System.out.println("insStockTotal = " + insStockTotal);
+//                //////System.out.println("insAverageTotal = " + insAverageTotal);
                 newTable.setInstitutionTotal(insStockTotal);
                 newTable.setInstitutionAverage(insAverageTotal);
 
@@ -863,14 +863,14 @@ public class PharmacyController implements Serializable {
 //        if (billItems!=null) {
 //            grns.addAll(billItems);
 //        }
-//        //// // System.out.println("billItems = " + billItems);
-//        //// // System.out.println("institution.getName() = " + institution.getName());
+//        //System.out.println("billItems = " + billItems);
+//        //System.out.println("institution.getName() = " + institution.getName());
 
 //        for (BillItem bi : billItems) {
-//            //// // System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
-//            //// // System.out.println("bi.getInsId() = " + bi.getInsId());
-//            //// // System.out.println("bi.getDeptId() = " + bi.getDeptId());
-//            //// // System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
+//            //System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
+//            //System.out.println("bi.getInsId() = " + bi.getInsId());
+//            //System.out.println("bi.getDeptId() = " + bi.getDeptId());
+//            //System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
 //        }
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
@@ -1587,13 +1587,13 @@ public class PharmacyController implements Serializable {
         makeNull();
         grns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
-        //// // System.out.println("Time 1 = " + new Date());
+        //System.out.println("Time 1 = " + new Date());
         createInstitutionSale();
-        //// // System.out.println("Time 2 = " + new Date());
+        //System.out.println("Time 2 = " + new Date());
         createInstitutionWholeSale();
-        //// // System.out.println("Time 3 = " + new Date());
+        //System.out.println("Time 3 = " + new Date());
         createInstitutionBhtIssue();
-        //// // System.out.println("Time 4 = " + new Date());
+        //System.out.println("Time 4 = " + new Date());
         createInstitutionStock();
         createInstitutionTransferIssue();
         createInstitutionIssue();

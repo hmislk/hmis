@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
@@ -2182,25 +2182,25 @@ public class ChannelBillController implements Serializable {
             if (bill.getBillType() == BillType.ChannelOnCall || bill.getBillType() == BillType.ChannelStaff) {
                 billType = bill.getBillType();
                 if (billType == BillType.ChannelOnCall) {
-                    suffix += "BKONCALL";
+                    suffix += "COS";
                 } else {
-                    suffix += "BKSTAFF";
+                    suffix += "CS";
                 }
                 insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), billType, billClassType, suffix);
             } else {
-                suffix += "CHANN";
+                suffix += "C";
                 insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
             }
         }
 
         if (bill instanceof CancelledBill) {
-            suffix += "CHANNCAN";
+            suffix += "CC";
             billClassType = BillClassType.CancelledBill;
             insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
 
         if (bill instanceof RefundBill) {
-            suffix += "CHANNREF";
+            suffix += "CF";
             billClassType = BillClassType.RefundBill;
             insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(), bts, billClassType, suffix);
         }
@@ -2221,25 +2221,25 @@ public class ChannelBillController implements Serializable {
             if (bill.getBillType() == BillType.ChannelOnCall || bill.getBillType() == BillType.ChannelStaff) {
                 billType = bill.getBillType();
                 if (billType == BillType.ChannelOnCall) {
-                    suffix += "BKONCALL";
+                    suffix += "COS";
                 } else {
-                    suffix += "BKSTAFF";
+                    suffix += "CS";
                 }
                 deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), billType, billClassType, suffix);
             } else {
-                suffix += "CHANN";
+                suffix += "C";
                 deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
             }
         }
 
         if (bill instanceof CancelledBill) {
-            suffix += "CHANNCAN";
+            suffix += "CC";
             billClassType = BillClassType.CancelledBill;
             deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }
 
         if (bill instanceof RefundBill) {
-            suffix += "CHANNREF";
+            suffix += "CF";
             billClassType = BillClassType.RefundBill;
             deptId = getBillNumberBean().departmentBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), bts, billClassType, suffix);
         }

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
@@ -41,7 +41,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -145,7 +145,7 @@ public class AttendanceUploadController implements Serializable {
 //    public void uploadAttendance() {
 //        try {
 //            InputStream in;
-//            in = file.getInputstream();
+//            in = file.getInputStream();
 //            File f;
 //            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
 //            FileOutputStream out;
@@ -261,7 +261,7 @@ public class AttendanceUploadController implements Serializable {
     public void uploadAttendance() {
         try {
             InputStream in;
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out;
@@ -324,7 +324,7 @@ public class AttendanceUploadController implements Serializable {
             Workbook w;
             Cell cell;
             InputStream in;
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out;

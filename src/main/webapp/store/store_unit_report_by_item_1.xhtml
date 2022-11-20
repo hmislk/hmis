@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -45,7 +45,7 @@
                         <p:commandButton ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCountsWithOutMarginStore}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tbl" fileName="store_unit_report_by_item"  />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="store_unit_report_by_item"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>

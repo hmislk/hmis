@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -25,8 +25,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -85,10 +85,10 @@ public class DoctorSpecialityController implements Serializable {
     }
 
     public List<DoctorSpeciality> completeSpeciality(String qry) {
-        //   ////// // System.out.println("qry = " + qry);
+        //   ////System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
         lst = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        //   ////// // System.out.println("lst = " + lst);
+        //   ////System.out.println("lst = " + lst);
         return lst;
     }
 

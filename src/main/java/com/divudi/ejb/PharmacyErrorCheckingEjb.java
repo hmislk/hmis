@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -282,14 +282,14 @@ public class PharmacyErrorCheckingEjb {
     }
 
     public List<Bill> errPreBills(Department dept) {
-        //////// // System.out.println("errrPreBills");
+        //////System.out.println("errrPreBills");
         String sql;
 
         Map m = new HashMap();
         m.put("d", dept);
         sql = "select pb from PreBill pb where pb.retired=false and pb.department=:d order by pb.id";
-        //////// // System.out.println("m = " + m);
-        //////// // System.out.println("sql = " + sql);
+        //////System.out.println("m = " + m);
+        //////System.out.println("sql = " + sql);
         List<Bill> pbs = getBillFacade().findBySQL(sql, m);
         List<Bill> epbs = new ArrayList<>();
         epbs = new ArrayList<Bill>();
@@ -299,13 +299,13 @@ public class PharmacyErrorCheckingEjb {
             Bill bb = pb.getReferenceBill();
 
             if (bb == null) {
-                //////// // System.out.println("bb is null");
+                //////System.out.println("bb is null");
                 if (pb.getBillItems() != null) {
-                    //////// // System.out.println("pb has bill Items = " + pb.getBillItems());
+                    //////System.out.println("pb has bill Items = " + pb.getBillItems());
                     for (BillItem bi : pb.getBillItems()) {
-                        //////// // System.out.println("bi = " + bi);
+                        //////System.out.println("bi = " + bi);
                         if (bi.isRetired() != false) {
-                            //////// // System.out.println("bi is NOT retired ");
+                            //////System.out.println("bi is NOT retired ");
                             //System.err.println("err1");
                             err1 = true;
                         }
@@ -314,8 +314,8 @@ public class PharmacyErrorCheckingEjb {
             } else {
                 if (bb.getBillItems() != null && pb.getBillItems() != null) {
                     if (bb.getNetTotal() != pb.getNetTotal()) {
-                        //////// // System.out.println("bb.getBillItems().size() = " + bb.getNetTotal());
-                        //////// // System.out.println("pb.getBillItems().size() = " + pb.getNetTotal());
+                        //////System.out.println("bb.getBillItems().size() = " + bb.getNetTotal());
+                        //////System.out.println("pb.getBillItems().size() = " + pb.getNetTotal());
                         err1 = true;
                         //System.err.println("err 2");
                     }

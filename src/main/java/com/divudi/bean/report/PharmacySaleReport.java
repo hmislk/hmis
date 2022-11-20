@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -306,7 +306,7 @@ public class PharmacySaleReport implements Serializable {
                 + " order by s.itemBatch.item.name";
 
         nonMovingItems = itemFacade.findBySQL(j, m);
-        ////// // System.out.println("nonMovingItems = " + nonMovingItems);
+        ////System.out.println("nonMovingItems = " + nonMovingItems);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk category(/faces/pharmacy/pharmacy_report_non_moving_items.xhtml)");
     }
@@ -547,9 +547,9 @@ public class PharmacySaleReport implements Serializable {
     public double fetchSaleByBillTotal(List<BillItem> bis) {
         double db = 0.0;
         for (BillItem bi : bis) {
-            //// // System.out.println("bi = " + db);
+            //System.out.println("bi = " + db);
             db = db + bi.getNetValue();
-            //// // System.out.println("bi2 = " + db);
+            //System.out.println("bi2 = " + db);
 
         }
         return db;
@@ -2590,7 +2590,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            ////// // System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String1Value3) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -2643,8 +2643,8 @@ public class PharmacySaleReport implements Serializable {
 
             BillClassType billClassType = (BillClassType) obj[1];
             Double value = (Double) obj[2];
-            //// // System.out.println("value = " + value);
-            //// // System.out.println("billClassType = " + billClassType);
+            //System.out.println("value = " + value);
+            //System.out.println("billClassType = " + billClassType);
 
             DateFormat df = new SimpleDateFormat("dd MMMM yyyy");
             String formattedDate = df.format(date);
@@ -2834,13 +2834,13 @@ public class PharmacySaleReport implements Serializable {
 
                 sv = (double) o[2];
                 cv = (double) o[3];
-                ////// // System.out.println("cv = " + cv);
-                ////// // System.out.println("sv = " + sv);
+                ////System.out.println("cv = " + cv);
+                ////System.out.println("sv = " + sv);
 
-                ////// // System.out.println("pi = " + pi);
-                ////// // System.out.println("ti = " + ti);
+                ////System.out.println("pi = " + pi);
+                ////System.out.println("ti = " + ti);
                 if (pi == null || !ti.equals(pi)) {
-                    ////// // System.out.println("new item - " + ti.getName());
+                    ////System.out.println("new item - " + ti.getName());
                     r = new CategoryMovementReportRow();
                     r.setItem(ti);
                     r.setDepartmentIssue(0.0);
@@ -2854,55 +2854,55 @@ public class PharmacySaleReport implements Serializable {
                     r.setTransferOut(0.0);
                     pi = ti;
                     categoryMovementReportRows.add(r);
-                    ////// // System.out.println("size = " + categoryMovementReportRows.size());
+                    ////System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
-                ////// // System.out.println("tbt = " + tbt);
+                ////System.out.println("tbt = " + tbt);
                 switch (tbt) {
                     case PharmacySale:
                     case PharmacyPre:
-                        ////// // System.out.println("pharmacy sale");
-                        ////// // System.out.println("r.getOpdSale() = " + r.getOpdSale());
+                        ////System.out.println("pharmacy sale");
+                        ////System.out.println("r.getOpdSale() = " + r.getOpdSale());
                         r.setOpdSale(r.getOpdSale() + sv);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
                         break;
                     case PharmacyBhtPre:
-                        ////// // System.out.println("bht sale ");
-                        ////// // System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        ////System.out.println("bht sale ");
+                        ////System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         r.setInwardIssue(r.getInwardIssue() + sv);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        ////// // System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+                        ////System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         break;
                     case PharmacyIssue:
-                        ////// // System.out.println("pharmacy issue ");
-                        ////// // System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        ////System.out.println("pharmacy issue ");
+                        ////System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         r.setDepartmentIssue(r.getDepartmentIssue() + sv);
                         r.setPurchaseValue(r.getPurchaseValue() + cv);
-                        ////// // System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+                        ////System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         break;
                     case PharmacyTransferIssue:
-                        ////// // System.out.println("tx issue ");
-                        ////// // System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        ////System.out.println("tx issue ");
+                        ////System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         r.setTransferIn(r.getTransferIn() + sv);
-                        ////// // System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        ////System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         break;
                     case PharmacyTransferReceive:
-                        ////// // System.out.println("tx issue ");
-                        ////// // System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        ////System.out.println("tx issue ");
+                        ////System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         r.setTransferOut(r.getTransferOut() + sv);
-                        ////// // System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        ////System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         break;
 
                     default:
-                    ////// // System.out.println("other bill type");
+                    ////System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
-                ////// // System.out.println("e = " + e);
+                ////System.out.println("e = " + e);
             }
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
-            ////// // System.out.println("r.getTotal() = " + r.getTotal());
+            ////System.out.println("r.getTotal() = " + r.getTotal());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
 
             totalOpdSale += r.getOpdSale();
@@ -2959,16 +2959,16 @@ public class PharmacySaleReport implements Serializable {
                 double sv = (double) o[2];
                 double cv = (double) o[3];
 
-                //// // System.out.println("cv = " + cv);
-                //// // System.out.println("sv = " + sv);
+                //System.out.println("cv = " + cv);
+                //System.out.println("sv = " + sv);
 
-                //// // System.out.println("pi = " + pi);
-                //// // System.out.println("ti = " + ti);
+                //System.out.println("pi = " + pi);
+                //System.out.println("ti = " + ti);
                 if (sv == 0) {
                     continue;
                 }
                 if (pi == null || !ti.equals(pi)) {
-                    ////// // System.out.println("new item - " + ti.getName());
+                    ////System.out.println("new item - " + ti.getName());
                     r = new CategoryMovementReportRow();
                     r.setItem(ti);
                     r.setDepartmentIssue(0.0);
@@ -2982,7 +2982,7 @@ public class PharmacySaleReport implements Serializable {
                     r.setTransferOut(0.0);
                     pi = ti;
                     categoryMovementReportRows.add(r);
-                    //// // System.out.println("size = " + categoryMovementReportRows.size());
+                    //System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
                 switch (tbt) {
@@ -3010,13 +3010,13 @@ public class PharmacySaleReport implements Serializable {
                 }
 
             } catch (Exception e) {
-                //// // System.out.println("e = " + e);
+                //System.out.println("e = " + e);
             }
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
-            //// // System.out.println("r.getOpdSale() = " + r.getOpdSale());
-            //// // System.out.println("totalOpdSale = " + totalOpdSale);
+            //System.out.println("r.getOpdSale() = " + r.getOpdSale());
+            //System.out.println("totalOpdSale = " + totalOpdSale);
             totalOpdSale += r.getOpdSale();
             totalInwardIssue += r.getInwardIssue();
             totalDepartmentIssue += r.getDepartmentIssue();
@@ -3084,9 +3084,9 @@ public class PharmacySaleReport implements Serializable {
                 qty = (double) o[3];
                 stock = (Stock) o[4];
 
-                //// // System.out.println("***billType = " + billType);
-                //// // System.out.println("itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
-                //// // System.out.println("qty = " + qty);
+                //System.out.println("***billType = " + billType);
+                //System.out.println("itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
+                //System.out.println("qty = " + qty);
 
                 if (pi == null || !itemBatch.equals(pi)) {
                     r = new CategoryMovementReportRow();
@@ -3103,58 +3103,58 @@ public class PharmacySaleReport implements Serializable {
                     r.setTransferOut(0.0);
                     pi = itemBatch;
                     categoryMovementReportRows.add(r);
-//                    ////// // System.out.println("size = " + categoryMovementReportRows.size());
+//                    ////System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
-//                ////// // System.out.println("tbt = " + tbt);
+//                ////System.out.println("tbt = " + tbt);
                 switch (billType) {
                     case PharmacySale:
                     case PharmacyPre:
-//                        ////// // System.out.println("pharmacy sale");
-//                        ////// // System.out.println("r.getOpdSale() = " + r.getOpdSale());
+//                        ////System.out.println("pharmacy sale");
+//                        ////System.out.println("r.getOpdSale() = " + r.getOpdSale());
                         r.setOpdSale(r.getOpdSale() + netValue);
                         r.setOpdSaleQty(qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getOpdSaleQty()));
                         break;
                     case PharmacyBhtPre:
-//                        ////// // System.out.println("bht sale ");
-//                        ////// // System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+//                        ////System.out.println("bht sale ");
+//                        ////System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         r.setInwardIssue(r.getInwardIssue() + netValue);
                         r.setInwardIssueQty(qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getInwardIssueQty()));
-//                        ////// // System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+//                        ////System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         break;
                     case PharmacyIssue:
-//                        ////// // System.out.println("pharmacy issue ");
-//                        ////// // System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+//                        ////System.out.println("pharmacy issue ");
+//                        ////System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         r.setDepartmentIssue(r.getDepartmentIssue() + netValue);
                         r.setDepartmentIssueQty(qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * r.getDepartmentIssueQty()));
-//                        ////// // System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+//                        ////System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         break;
                     case PharmacyTransferIssue:
-//                        ////// // System.out.println("tx issue ");
-//                        ////// // System.out.println("r.getTransferIn() = " + r.getTransferIn());
+//                        ////System.out.println("tx issue ");
+//                        ////System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         r.setTransferIn(r.getTransferIn() + netValue);
-//                        ////// // System.out.println("r.getTransferIn() = " + r.getTransferIn());
+//                        ////System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         break;
                     case PharmacyTransferReceive:
-//                        ////// // System.out.println("tx issue ");
-//                        ////// // System.out.println("r.getTransferOut() = " + r.getTransferOut());
+//                        ////System.out.println("tx issue ");
+//                        ////System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         r.setTransferOut(r.getTransferOut() + netValue);
-//                        ////// // System.out.println("r.getTransferOut() = " + r.getTransferOut());
+//                        ////System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         break;
 
                     default:
-                    ////// // System.out.println("other bill type");
+                    ////System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
-                ////// // System.out.println("e = " + e);
+                ////System.out.println("e = " + e);
             }
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
-            ////// // System.out.println("r.getTotal() = " + r.getTotal());
+            ////System.out.println("r.getTotal() = " + r.getTotal());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
 
             totalOpdSale += r.getOpdSale();
@@ -3198,10 +3198,10 @@ public class PharmacySaleReport implements Serializable {
         jpql = jpql + " group by pbi.billItem.bill.billType, pbi.itemBatch, pbi.billItem ";
         jpql = jpql + " order by pbi.itemBatch.item.name ";
         List<Object[]> objs = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
-        //// // System.out.println("objs = " + objs.size());
+        //System.out.println("objs = " + objs.size());
 //        List<Object[]> obj = fetchTransferIssueReciveBills();
 //        objs.addAll(obj);
-//        //// // System.out.println("objs = " + objs.size());
+//        //System.out.println("objs = " + objs.size());
         categoryMovementReportRows = new ArrayList<>();
         ItemBatch pi = null;
         BillItem bi = null;
@@ -3229,16 +3229,16 @@ public class PharmacySaleReport implements Serializable {
                     netValue = billItem.getNetValue();
                     qty = billItem.getPharmaceuticalBillItem().getQty();
                 }
-                //// // System.out.println("****itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
-                //// // System.out.println("billItem.getBill().getInsId() = " + billItem.getBill().getInsId());
-                //// // System.out.println("billType = " + billType);
-                //// // System.out.println("itemBatch = " + itemBatch);
-                //// // System.out.println("billItem.getDiscount() = " + billItem.getDiscount());
-                //// // System.out.println("billItem.getDiscountRate() = " + billItem.getDiscountRate());
-                //// // System.out.println("billItem.getMarginRate() = " + billItem.getMarginRate());
-                //// // System.out.println("billItem.getMarginValue() = " + billItem.getMarginValue());
-                //// // System.out.println("netValue = " + netValue);
-                //// // System.out.println("***qty = " + qty);
+                //System.out.println("****itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
+                //System.out.println("billItem.getBill().getInsId() = " + billItem.getBill().getInsId());
+                //System.out.println("billType = " + billType);
+                //System.out.println("itemBatch = " + itemBatch);
+                //System.out.println("billItem.getDiscount() = " + billItem.getDiscount());
+                //System.out.println("billItem.getDiscountRate() = " + billItem.getDiscountRate());
+                //System.out.println("billItem.getMarginRate() = " + billItem.getMarginRate());
+                //System.out.println("billItem.getMarginValue() = " + billItem.getMarginValue());
+                //System.out.println("netValue = " + netValue);
+                //System.out.println("***qty = " + qty);
 
                 if (pi == null || !itemBatch.equals(pi)) {
                     r = new CategoryMovementReportRow();
@@ -3256,10 +3256,10 @@ public class PharmacySaleReport implements Serializable {
                     pi = itemBatch;
                     bi = billItem;
                     categoryMovementReportRows.add(r);
-                    //// // System.out.println("size = " + categoryMovementReportRows.size());
+                    //System.out.println("size = " + categoryMovementReportRows.size());
                 }
 
-//                ////// // System.out.println("tbt = " + tbt);
+//                ////System.out.println("tbt = " + tbt);
                 switch (billType) {
                     case PharmacySale:
                     case PharmacyPre:
@@ -3270,51 +3270,51 @@ public class PharmacySaleReport implements Serializable {
                         totalOpdSale += netValue;
                         break;
                     case PharmacyBhtPre:
-//                        ////// // System.out.println("bht sale ");
-//                        ////// // System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+//                        ////System.out.println("bht sale ");
+//                        ////System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         r.setInwardIssue(r.getInwardIssue() + netValue);
                         r.setInwardIssueQty(r.getInwardIssueQty() + qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * qty));
                         r.setInwardMargin(billItem.getMarginValue());
                         totalInwardIssue += netValue;
-//                        ////// // System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
+//                        ////System.out.println("r.getInwardIssue() = " + r.getInwardIssue());
                         break;
                     case PharmacyIssue:
-//                        ////// // System.out.println("pharmacy issue ");
-//                        ////// // System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+//                        ////System.out.println("pharmacy issue ");
+//                        ////System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         r.setDepartmentIssue(r.getDepartmentIssue() + netValue);
                         r.setDepartmentIssueQty(r.getDepartmentIssueQty() + qty);
                         r.setPurchaseValue(r.getPurchaseValue() + (itemBatch.getPurcahseRate() * qty));
                         totalDepartmentIssue += netValue;
-//                        ////// // System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
+//                        ////System.out.println("r.getDepartmentIssue() = " + r.getDepartmentIssue());
                         break;
                     case PharmacyTransferIssue:
-//                        ////// // System.out.println("tx issue ");
-//                        ////// // System.out.println("r.getTransferIn() = " + r.getTransferIn());
-                        //// // System.out.println("qty IN = " + qty);
+//                        ////System.out.println("tx issue ");
+//                        ////System.out.println("r.getTransferIn() = " + r.getTransferIn());
+                        //System.out.println("qty IN = " + qty);
                         r.setTransferInQty(r.getTransferInQty() + qty);
                         r.setTransferIn(r.getTransferIn() + (r.getTransferIn() * itemBatch.getPurcahseRate()));
-//                        ////// // System.out.println("r.getTransferIn() = " + r.getTransferIn());
+//                        ////System.out.println("r.getTransferIn() = " + r.getTransferIn());
                         break;
                     case PharmacyTransferReceive:
-//                        ////// // System.out.println("tx issue ");
-//                        ////// // System.out.println("r.getTransferOut() = " + r.getTransferOut());
-                        //// // System.out.println("qty OUT = " + qty);
+//                        ////System.out.println("tx issue ");
+//                        ////System.out.println("r.getTransferOut() = " + r.getTransferOut());
+                        //System.out.println("qty OUT = " + qty);
                         r.setTransferOutQty(r.getTransferOutQty() + qty);
                         r.setTransferOut(r.getTransferOut() + (r.getTransferOutQty() * itemBatch.getPurcahseRate()));
-//                        ////// // System.out.println("r.getTransferOut() = " + r.getTransferOut());
+//                        ////System.out.println("r.getTransferOut() = " + r.getTransferOut());
                         break;
 
                     default:
-                    ////// // System.out.println("other bill type");
+                    ////System.out.println("other bill type");
                 }
 
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+//                //System.out.println("e = " + e);
             }
 
             r.setTotal(r.getOpdSale() + r.getInwardIssue() + r.getDepartmentIssue());
-            ////// // System.out.println("r.getTotal() = " + r.getTotal());
+            ////System.out.println("r.getTotal() = " + r.getTotal());
             r.setMarginValue(r.getTotal() + r.getPurchaseValue());
 
             if (r.getItemBatch() != null && r.getStock() != null) {
@@ -3359,7 +3359,7 @@ public class PharmacySaleReport implements Serializable {
         jpql = jpql + " group by pbi.billItem.bill.billType, pbi.itemBatch, pbi.billItem ";
         jpql = jpql + " order by pbi.itemBatch.item.name ";
         objects = getBillFacade().findAggregates(jpql, m, TemporalType.TIMESTAMP);
-        //// // System.out.println("objects = " + objects.size());
+        //System.out.println("objects = " + objects.size());
         return objects;
     }
 
@@ -3733,7 +3733,7 @@ public class PharmacySaleReport implements Serializable {
     List<Bill> getLabBills(BillType billType, Bill bill) {
         Map hm = new HashMap();
         String sql;
-        ////// // System.out.println("In to method");
+        ////System.out.println("In to method");
         sql = "SELECT b FROM Bill b "
                 + " WHERE b.createdAt between :fromDate and :toDate "
                 + " and type(b)=:bill "
@@ -4566,7 +4566,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            ////// // System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -4627,7 +4627,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            ////// // System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -4690,7 +4690,7 @@ public class PharmacySaleReport implements Serializable {
         Iterator it = hm.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry) it.next();
-            ////// // System.out.println(pairs.getKey() + " = " + pairs.getValue());
+            ////System.out.println(pairs.getKey() + " = " + pairs.getValue());
             listRow.add((String2Value4) pairs.getValue());
 //            it.remove(); // avoids a ConcurrentModificationException
         }
@@ -4758,16 +4758,16 @@ public class PharmacySaleReport implements Serializable {
                     }
 
                     if (qty != 0) {
-                        ////// // System.out.println("i.getName() = " + i.getItem().getName());
-                        ////// // System.out.println("d.getName() = " + d.getName());
+                        ////System.out.println("i.getName() = " + i.getItem().getName());
+                        ////System.out.println("d.getName() = " + d.getName());
                         s1v3.setString(d.getName());
                         s1v3.setValue1(qty);
                         s1v3.setValue2(magine);
                         s1v3.setValue3(vaue);
-                        ////// // System.out.println("total = " + total);
-                        ////// // System.out.println("s1v3.getValue3() = " + s1v3.getValue3());
+                        ////System.out.println("total = " + total);
+                        ////System.out.println("s1v3.getValue3() = " + s1v3.getValue3());
                         total += s1v3.getValue3();
-                        ////// // System.out.println("total = " + total);
+                        ////System.out.println("total = " + total);
                         s1v3s.add(s1v3);
                     }
 
@@ -5570,14 +5570,14 @@ public class PharmacySaleReport implements Serializable {
         Date toDate = null;
 
         List<Amp> allAmps = getAllPharmacyItems();
-        ////// // System.out.println("allAmps = " + allAmps.size());
+        ////System.out.println("allAmps = " + allAmps.size());
         List<Amp> ampsWithDealor = getAllDealorItems();
-        ////// // System.out.println("ampsWithOutDealor = " + ampsWithDealor.size());
+        ////System.out.println("ampsWithOutDealor = " + ampsWithDealor.size());
         allAmps.removeAll(ampsWithDealor);
-        ////// // System.out.println("After remove allAmps = " + allAmps.size());
+        ////System.out.println("After remove allAmps = " + allAmps.size());
         amps = new ArrayList<>();
         amps.addAll(allAmps);
-        ////// // System.out.println("amps = " + amps.size());
+        ////System.out.println("amps = " + amps.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Items without distributors(/faces/pharmacy/pharmacy_report_list_amps_with_out_distributor.xhtml)");
     }
@@ -5589,10 +5589,10 @@ public class PharmacySaleReport implements Serializable {
 
         distributerWithDestributorItems = new ArrayList<>();
         List<Institution> distributors = getAllDealors();
-        //// // System.out.println("distributors.size() = " + distributors.size());
+        //System.out.println("distributors.size() = " + distributors.size());
         for (Institution distributor : distributors) {
             DistributerWithDestributorItem dwdi = new DistributerWithDestributorItem();
-            //// // System.out.println("distributor = " + distributor.getName());
+            //System.out.println("distributor = " + distributor.getName());
             List<ItemsDistributors> list = getAllDealorItems(distributor);
             if (list.size() > 0) {
                 dwdi.setDistributor(distributor);
@@ -5606,23 +5606,23 @@ public class PharmacySaleReport implements Serializable {
 
     public void createItemListOneItemHasGreterThanOneDistributor() {
         List<Object[]> objs = getAllDealorItemsWithCount();
-        ////// // System.out.println("objs = " + objs);
-        ////// // System.out.println("objs = " + objs.size());
+        ////System.out.println("objs = " + objs);
+        ////System.out.println("objs = " + objs.size());
         amps = new ArrayList<>();
         for (Object[] obj : objs) {
-            ////// // System.out.println("obj = " + obj);
+            ////System.out.println("obj = " + obj);
             if (obj != null) {
                 Amp item = (Amp) obj[0];
-                ////// // System.out.println("item = " + item.getName());
+                ////System.out.println("item = " + item.getName());
                 long count = (long) obj[1];
-                ////// // System.out.println("count = " + count);
+                ////System.out.println("count = " + count);
                 if (count > 1) {
-                    ////// // System.out.println("****Add****");
+                    ////System.out.println("****Add****");
                     amps.add(item);
                 }
             }
         }
-        ////// // System.out.println("items = " + amps.size());
+        ////System.out.println("items = " + amps.size());
 
     }
 
@@ -5632,25 +5632,25 @@ public class PharmacySaleReport implements Serializable {
         Date toDate = null;
 
         List<Amp> ampsWithDealor = getAllDealorItems();
-        ////// // System.out.println("ampsWithDealor = " + ampsWithDealor.size());
+        ////System.out.println("ampsWithDealor = " + ampsWithDealor.size());
 
         items = new ArrayList<>();
         for (Item i : ampsWithDealor) {
             System.err.println("in");
-            ////// // System.out.println("item = " + i.getName());
+            ////System.out.println("item = " + i.getName());
             List<Amp> allAmps = getAmpItems(i);
-            ////// // System.out.println("amps = " + allAmps.size());
+            ////System.out.println("amps = " + allAmps.size());
             int count = 0;
             if (allAmps != null) {
                 count = allAmps.size();
             }
-            ////// // System.out.println("count = " + count);
+            ////System.out.println("count = " + count);
             if (count > 1) {
-                ////// // System.out.println("****Add****");
+                ////System.out.println("****Add****");
                 items.add(i);
             }
         }
-        ////// // System.out.println("items = " + items.size());
+        ////System.out.println("items = " + items.size());
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/item with multiple ditributors(Items only)(/faces/pharmacy/pharmacy_report_list_grater_than_one_distributor.xhtml)");
     }
@@ -5665,7 +5665,7 @@ public class PharmacySaleReport implements Serializable {
         for (Item i : items) {
             ItemsWithDistributer iwd = new ItemsWithDistributer();
             List<Institution> is = getItemDealors(i);
-            //// // System.out.println("i.getName() = " + i.getName());
+            //System.out.println("i.getName() = " + i.getName());
             if (is.size() > 0) {
                 iwd.setItem(i);
                 iwd.setInstitutions(is);

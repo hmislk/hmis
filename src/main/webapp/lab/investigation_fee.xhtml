@@ -28,7 +28,7 @@
                                             itemValue="#{ix}" size="30"  style="width: 400px;">
                                 <p:column>#{ix.name}</p:column>
                                 <p:column>#{ix.department.name}</p:column>
-                                <p:ajax event="itemSelect" process="@this" update=":#{p:component('gpDetail')} :#{p:component('dtbFee')}" listener="#{itemFeeController.createCharges()}"></p:ajax>
+                                <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId} :#{p:resolveFirstComponentWithId('dtbFee',view).clientId}" listener="#{itemFeeController.createCharges()}"></p:ajax>
                             </p:autoComplete>
 
                             <p:outputLabel value="Total For Locals"/>

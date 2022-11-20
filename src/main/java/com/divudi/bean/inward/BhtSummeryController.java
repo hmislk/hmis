@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
@@ -82,8 +82,8 @@ import org.primefaces.event.RowEditEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -1072,7 +1072,7 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void updatePatientRoom(PatientRoom patientRoom) {
-        //   ////// // System.out.println("patientRoom = " + patientRoom);
+        //   ////System.out.println("patientRoom = " + patientRoom);
         if (patientRoom == null) {
             return;
         }
@@ -1214,10 +1214,10 @@ public class BhtSummeryController implements Serializable {
         //For update Printing room
         setCurrent(getBillFacade().findByField("id", getCurrent().getId().toString(), false));
 
-        ////// // System.out.println("1." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
-        ////// // System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
-        ////// // System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
-        ////// // System.out.println("4." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getRoom().getName());
+        ////System.out.println("1." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
+        ////System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
+        ////System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
+        ////System.out.println("4." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getRoom().getName());
         UtilityController.addSuccessMessage("Bill Saved");
 
         printPreview = true;
@@ -1860,25 +1860,25 @@ public class BhtSummeryController implements Serializable {
 
         double linen = p.getCurrentLinenCharge();
         Date dischargedAt = p.getDischargedAt();
-        ////// // System.out.println("dischargedAt = " + dischargedAt);
-        ////// // System.out.println("linen = " + linen);
+        ////System.out.println("dischargedAt = " + dischargedAt);
+        ////System.out.println("linen = " + linen);
         if (dischargedAt == null) {
             dischargedAt = new Date();
         }
 
         double extra = p.getAddedLinenCharge();
-        ////// // System.out.println("extra = " + extra);
+        ////System.out.println("extra = " + extra);
         if (getCommonFunctions().checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
             if (p.getAdmittedAt().equals(dischargedAt)) {
                 p.setCalculatedLinenCharge(0 + extra);
-                ////// // System.out.println("1.1 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+                ////System.out.println("1.1 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
             } else {
                 p.setCalculatedLinenCharge(linen + extra);
-                ////// // System.out.println("1.2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+                ////System.out.println("1.2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
             }
         } else {
             p.setCalculatedLinenCharge((linen * getCommonFunctions().getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
-            ////// // System.out.println("2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+            ////System.out.println("2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
         }
     }
 
@@ -1953,20 +1953,20 @@ public class BhtSummeryController implements Serializable {
         }
 
         double roomCharge = p.getCurrentRoomCharge();
-        ////// // System.out.println("roomCharge = " + roomCharge);
+        ////System.out.println("roomCharge = " + roomCharge);
         double calculated = getCharge(p, roomCharge) + p.getAddedRoomCharge();
-        ////// // System.out.println("calculated = " + calculated);
+        ////System.out.println("calculated = " + calculated);
 
         p.setCalculatedRoomCharge(calculated);
     }
 
     private double getCharge(PatientRoom patientRoom, double value) {
-        ////// // System.out.println("value = " + value);
-        ////// // System.out.println("patientRoom = " + patientRoom);
+        ////System.out.println("value = " + value);
+        ////System.out.println("patientRoom = " + patientRoom);
         TimedItemFee timedFee = patientRoom.getRoomFacilityCharge().getTimedItemFee();
-        ////// // System.out.println("timedFee = " + timedFee);
+        ////System.out.println("timedFee = " + timedFee);
         Date dischargeAt = patientRoom.getDischargedAt();
-        ////// // System.out.println("dischargeAt = " + dischargeAt);
+        ////System.out.println("dischargeAt = " + dischargeAt);
 
         if (dischargeAt == null) {
             dischargeAt = new Date();
@@ -1977,10 +1977,10 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (getPatientEncounter().getCurrentPatientRoom().equals(patientRoom)) {
-            ////// // System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
+            ////System.out.println("value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCountWithoutOverShoot(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         } else {
-            ////// // System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
+            ////System.out.println("value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt) = " + value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt));
             return value * getInwardBean().calCount(timedFee, patientRoom.getAdmittedAt(), dischargeAt);
         }
 

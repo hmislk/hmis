@@ -39,13 +39,9 @@
                             <h:inputTextarea value="#{incomeExpensessBillController.comment}"/>                            
                         </p:panel>
                     </h:panelGroup>
-
-
                     <h:panelGroup rendered="#{incomeExpensessBillController.printPreview}" >
                         <bi:expenses   bill="#{incomeExpensessBillController.bill}" billController="#{incomeExpensessBillController}" dup="false"/>
                     </h:panelGroup>
-
-
                 </h:form>                
             </ui:define>
         </ui:composition>

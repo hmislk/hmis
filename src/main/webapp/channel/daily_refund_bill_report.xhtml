@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:panelGroup>
@@ -43,7 +43,7 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
-                        <pe:exporter type="xlsx" target="tbl" fileName="refundOrCancelledBill_summery" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="refundOrCancelledBill_summery" />
                     </p:commandButton>
                     <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                         <p:dataTable id="tbl" value="#{channelReportTempController.bills}" var="b" rowIndexVar="i">

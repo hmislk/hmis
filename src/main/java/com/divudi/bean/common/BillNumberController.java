@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -74,15 +74,15 @@ public class BillNumberController {
         String suffix = "";
 
         if (bill instanceof BilledBill) {
-            suffix = "CHANN";
+            suffix = "C";
         }
 
         if (bill instanceof CancelledBill) {
-            suffix = "CHANNCAN";
+            suffix = "CC";
         }
 
         if (bill instanceof RefundBill) {
-            suffix = "CHANNREF";
+            suffix = "CF";
         }
 
         if (i != null) {

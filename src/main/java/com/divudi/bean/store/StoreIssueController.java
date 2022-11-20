@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
@@ -232,11 +232,11 @@ public class StoreIssueController implements Serializable {
 
     public void editQty(BillItem bi) {
         if (bi == null) {
-            //////// // System.out.println("No Bill Item to Edit Qty");
+            //////System.out.println("No Bill Item to Edit Qty");
             return;
         }
         if (editingQty == null) {
-            //////// // System.out.println("Editing qty is null");
+            //////System.out.println("Editing qty is null");
             return;
         }
 
@@ -358,7 +358,7 @@ public class StoreIssueController implements Serializable {
         }
         stockList = getStockFacade().findBySQL(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);
-        //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
     }
 
@@ -516,7 +516,7 @@ public class StoreIssueController implements Serializable {
     public boolean checkIssue(){
         if(getPreBill().getInvoiceNumber()==null || getPreBill().getInvoiceNumber().trim().equals("")){
             JsfUtil.addErrorMessage("Please Input Issue Number");
-            ////// // System.out.println("invoice number = " + getPreBill().getInvoiceNumber());
+            ////System.out.println("invoice number = " + getPreBill().getInvoiceNumber());
             return true;
         }
         
@@ -526,9 +526,9 @@ public class StoreIssueController implements Serializable {
     public void settleBill() {
 
         editingQty = null;
-        //   ////// // System.out.println("editingQty = " + editingQty);
+        //   ////System.out.println("editingQty = " + editingQty);
         errorMessage = null;
-        //   ////// // System.out.println("errorMessage = " + errorMessage);
+        //   ////System.out.println("errorMessage = " + errorMessage);
         
          if(checkIssue()){
             
@@ -536,17 +536,17 @@ public class StoreIssueController implements Serializable {
         }
         
         if (checkAllBillItem()) {
-            //   ////// // System.out.println("Check all bill Ietems");
+            //   ////System.out.println("Check all bill Ietems");
             return;
         }
 
         if (errorCheckForSaleBill()) {
-            //   ////// // System.out.println("Error for sale bill");
+            //   ////System.out.println("Error for sale bill");
             return;
         }
         
         if (errorCheckForSaleBill()) {
-               ////// // System.out.println("Error for sale bill");
+               ////System.out.println("Error for sale bill");
             return;
         }
        //storeIssueController.toDepartment
@@ -554,7 +554,7 @@ public class StoreIssueController implements Serializable {
         
         
         getPreBill().setPaidAmount(getPreBill().getTotal());
-        //   ////// // System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
+        //   ////System.out.println("getPreBill().getPaidAmount() = " + getPreBill().getPaidAmount());
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
 
@@ -594,8 +594,8 @@ public class StoreIssueController implements Serializable {
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-        ////// // System.out.println("toDepartment = " + toDepartment.getName());
-        ////// // System.out.println("sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment().getName());
+        ////System.out.println("toDepartment = " + toDepartment.getName());
+        ////System.out.println("sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment().getName());
         if (toDepartment.equals(sessionController.getLoggedUser().getDepartment())) {
             UtilityController.addErrorMessage("Please Select Deferent Department");
             errorMessage = "Please select Deferent Department to send items";
@@ -759,10 +759,10 @@ public class StoreIssueController implements Serializable {
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////// // System.out.println("calculateBillItemForEditing");
-        //////// // System.out.println("bi = " + bi);
+        //////System.out.println("calculateBillItemForEditing");
+        //////System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////// // System.out.println("calculateItemForEditingFailedBecause of null");
+            //////System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
 
@@ -782,7 +782,7 @@ public class StoreIssueController implements Serializable {
     }
 
     public void calculateAllRates() {
-        //////// // System.out.println("calculating all rates");
+        //////System.out.println("calculating all rates");
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
             calculateBillItemForEditing(tbi);
@@ -795,9 +795,9 @@ public class StoreIssueController implements Serializable {
     }
 
     public void calculateRates(BillItem bi) {
-        //   ////// // System.out.println("calculating rates");
+        //   ////System.out.println("calculating rates");
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////// // System.out.println("stock is null");
+            //////System.out.println("stock is null");
             return;
         }
         
@@ -828,22 +828,22 @@ public class StoreIssueController implements Serializable {
     }
 
     public double calculateBillItemAdditionToPurchaseRate(BillItem bi, IssueRateMargins issueRateMargins) {
-        //////// // System.out.println("bill item discount rate");
-        //////// // System.out.println("getPaymentScheme() = " + getPaymentScheme());
+        //////System.out.println("bill item discount rate");
+        //////System.out.println("getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
-            //////// // System.out.println("bi is null");
+            //////System.out.println("bi is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem() == null) {
-            //////// // System.out.println("pi is null");
+            //////System.out.println("pi is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////// // System.out.println("stock is null");
+            //////System.out.println("stock is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
-            //////// // System.out.println("batch is null");
+            //////System.out.println("batch is null");
             return 0.0;
         }
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());

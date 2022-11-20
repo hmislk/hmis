@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -13,7 +13,6 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
-import com.divudi.entity.LazyBill;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
@@ -29,7 +28,6 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.model.LazyDataModel;
 
 /**
@@ -94,37 +92,7 @@ public class VariantAdjustment implements Serializable {
         stockVarientBillItems = tmp;
     }
 
-    public void createAll() {
-        searchBills = null;
-        String sql = "";
-        HashMap tmp = new HashMap();
-
-        if (txtSearch == null || txtSearch.trim().equals("")) {
-            sql = "Select b From PreBill b where b.cancelledBill is null  "
-                    + " and b.createdAt between :fromDate and :toDate "
-                    + "and b.retired=false and b.billType= :bTp order by b.id desc ";
-        } else {
-            sql = "Select b From PreBill b where b.cancelledBill is null  "
-                    + " and b.createdAt between :fromDate and :toDate and"
-                    + " (upper(b.toInstitution.name) like :str "
-                    + " or upper(b.creater.webUserPerson.name) like :str "
-                    + "  or upper(b.referenceBill.creater.webUserPerson.name) like :str or "
-                    + " upper(b.referenceBill.deptId) like :str "
-                    + " or upper(b.netTotal) like :str ) "
-                    + "and b.retired=false and b.billType= :bTp order by b.id desc ";
-
-            tmp.put("str", "%" + txtSearch.toUpperCase() + "%");
-        }
-
-        tmp.put("toDate", getToDate());
-        tmp.put("fromDate", getFromDate());
-        tmp.put("bTp", BillType.PharmacyMajorAdjustment);
-        List<Bill> lst = getBillFacade().findBySQL(sql, tmp, TemporalType.TIMESTAMP);
-
-        searchBills = new LazyBill(lst);
-
-    }
-
+    
     public void clearList() {
         printPreview = false;
 //        billItems = null;

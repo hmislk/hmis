@@ -58,8 +58,8 @@
                             </h:panelGrid>
                             <p:dataTable id="tbl" value="#{itemController.investigationSampleComponents}" var="t" selection="#{itemController.sampleComponent}" 
                                          selectionMode="single" rowKey="#{t.id}">
-                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
-                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('actions')}" ></p:ajax>
+                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
                                 <p:column headerText="Name" filterBy="#{t.name}" sortBy="#{t.name}" >
                                     <p:outputLabel value="#{t.name}" ></p:outputLabel>
                                 </p:column>

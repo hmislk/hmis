@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -33,7 +33,6 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
@@ -142,6 +141,9 @@ public class Bill implements Serializable {
     double discount;
     double vat;
     double vatPlusNetTotal;
+    
+    @Transient
+    private double absoluteNetTotal;
 
     double discountPercent;
 
@@ -408,6 +410,8 @@ public class Bill implements Serializable {
         return claimableTotal;
     }
 
+    
+    
     public void setAdjustedTotal(double dbl) {
         claimableTotal = dbl;
     }
@@ -599,11 +603,11 @@ public class Bill implements Serializable {
     }
 
     public double getDiscountPercentPharmacy() {
-        ////// // System.out.println("getting discount percent");
-//        ////// // System.out.println("bill item"+getBillItems());
-//        ////// // System.out.println(getBillItems().get(0).getPriceMatrix());
+        ////System.out.println("getting discount percent");
+//        ////System.out.println("bill item"+getBillItems());
+//        ////System.out.println(getBillItems().get(0).getPriceMatrix());
         if (!getBillItems().isEmpty() && getBillItems().get(0).getPriceMatrix() != null) {
-            ////// // System.out.println("sys inside");
+            ////System.out.println("sys inside");
             discountPercent = getBillItems().get(0).getPriceMatrix().getDiscountPercent();
         }
 
@@ -1793,6 +1797,11 @@ public class Bill implements Serializable {
             referredInstituteOrDoctor = referredBy;
         }
         return referredInstituteOrDoctor;
+    }
+
+    public double getAbsoluteNetTotal() {
+        absoluteNetTotal = Math.abs(netTotal);
+        return absoluteNetTotal;
     }
 
 }
