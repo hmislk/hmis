@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.divudi</groupId>
-    <artifactId>sahana22</artifactId>
+    <artifactId>ohmis</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
 
-    <name>sahana22</name>
+    <name>ohmis</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
