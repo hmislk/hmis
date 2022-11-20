@@ -50,7 +50,7 @@ public class ApplicationController {
     private String subject;
     private String body;
     
-    private boolean hasAwebsiteAsFrontEnd=false;
+    private boolean hasAwebsiteAsFrontEnd=true;
     
     
 
