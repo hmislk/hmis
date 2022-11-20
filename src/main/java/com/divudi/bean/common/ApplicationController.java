@@ -50,15 +50,11 @@ public class ApplicationController {
     private String subject;
     private String body;
     
-    private boolean hasAwebsiteAsFrontEnd=false;
+    private boolean hasAwebsiteAsFrontEnd=true;
     
     
 
-    public void sendEmail() {
-        eejb.sendEmail("arogyafirst","arogya123@","arogyafirst@gmail.com","buddhika.ari@gmail.com", subject, body, null);
-        JsfUtil.addSuccessMessage("Check Mail");
-    }
-
+    
     public Date getStartTime() {
         return startTime;
     }

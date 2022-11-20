@@ -77,10 +77,10 @@
                 <p:commandButton value="Print Sale Bill" ajax="false" action="#" >
                     <p:printer target="gpBillPreview2" ></p:printer>
                 </p:commandButton>
-                <p:panel   id="gpBillPreview1"   >
+                <p:panel   id="gpBillPreview1">
                         <ph:returnBill bill="#{preReturnController.returnBill}"/>                
                 </p:panel>
-                    <p:panel   id="gpBillPreview2"   >
+                    <p:panel   id="gpBillPreview2">
                         <ph:saleBill  bill="#{preReturnController.bill}"/>                
                     </p:panel>
             </p:panel>

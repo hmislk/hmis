@@ -41,7 +41,7 @@
 
 
 
-                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"   >
+                        <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill">
                             <p:column>
                                 <p:commandButton ajax="false" value="View Bill" action="credit_company_bill_reprint" onclick="onSubmitButton();">
                                     <f:setPropertyActionListener value="#{bill}" target="#{creditCompanyBillSearch.bill}"/>
@@ -50,7 +50,7 @@
                             <p:column>
                                 <h:outputLabel  value="#{bill.insId}" />
                             </p:column>
-                            <p:column headerText="Credit Company"   >                               
+                            <p:column headerText="Credit Company">                               
                                 <h:outputLabel value="#{bill.fromInstitution.name}" />
                             </p:column>                          
 

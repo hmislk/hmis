@@ -99,7 +99,7 @@
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeIssueController.qty}" style="width: 80px!important;"   >
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeIssueController.qty}" style="width: 80px!important;">
                                                 <p:ajax event="keyup"  listener="#{storeIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                 <p:ajax event="blur"  listener="#{storeIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
@@ -287,7 +287,7 @@
 
                         </div>
                         <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
+                            <h:panelGroup   id="gpBillPreview"> 
                                 <st:issue bill="#{storeIssueController.printBill}"></st:issue>
                             </h:panelGroup>
                         </div>

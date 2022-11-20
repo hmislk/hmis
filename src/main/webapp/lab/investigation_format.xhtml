@@ -17,7 +17,7 @@
 
                         <h:panelGroup rendered="#{investigationItemController.editMode ne 'Move_Mode'}" >
 
-                            <p:panel header="Investigation"   >
+                            <p:panel header="Investigation">
                                 <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
                                                 value="#{investigationItemController.currentInvestigation}" 
                                                 completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
@@ -555,7 +555,7 @@
                         </h:panelGroup>
 
 
-                        <p:panel id="pPreview"   >
+                        <p:panel id="pPreview">
                             <f:facet name="header" >
                                 <p:panelGrid columns="5" >
                                     <p:commandLink ajax="false" value="Print" >

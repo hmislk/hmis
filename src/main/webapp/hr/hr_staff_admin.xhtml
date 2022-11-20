@@ -213,7 +213,7 @@
                                                                              rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Varchar' and myFiv.reportItem.retired eq false}"  
                                                                              value="#{myFiv.strValue}" 
                                                                              style="color: #{myFiv.reportItem.cssColor}"  >
-                                                                    <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                                                    <f:ajax event="blur" execute="txtValue" listener="#{staffController.updateFormItem(myFiv)}"></f:ajax>
                                                                 </h:inputText>
                                                                 <p:watermark for="txtValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
 
@@ -221,7 +221,7 @@
                                                                              rendered="#{myFiv.reportItem.ixItemType eq 'Value' and myFiv.reportItem.ixItemValueType eq 'Double' and myFiv.reportItem.retired eq false}"  
                                                                              value="#{myFiv.doubleValue}" 
                                                                              style="color: #{myFiv.reportItem.cssColor}"  >
-                                                                    <f:ajax event="blur" execute="txtdValue" listener="#{staffController.updateFormItem(myFiv)}"   ></f:ajax>
+                                                                    <f:ajax event="blur" execute="txtdValue" listener="#{staffController.updateFormItem(myFiv)}"></f:ajax>
                                                                 </h:inputText>
                                                                 <p:watermark for="txtdValue" rendered="#{myFiv.reportItem.retired ne true and myIi.ixItemType eq 'Value'}"  value="#{myIi.name}"  ></p:watermark>
 

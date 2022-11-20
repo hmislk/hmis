@@ -113,7 +113,7 @@
                                                             id="acSpeciality"
                                                             completeMethod="#{specialityController.completeSpeciality}" 
                                                             var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                            converter="specilityCon"   >
+                                                            converter="specilityCon">
 
                                                 <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
                                                 <f:ajax event="blur" execute="@this" render="scStaff"/>
@@ -123,7 +123,7 @@
                                                              value="#{admissionController.current.opdDoctor}" 
                                                              completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
                                                              var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                             converter="stfcon"   >
+                                                             converter="stfcon">
                                             </p:autoComplete>
 
                                         </h:panelGrid>
@@ -197,7 +197,7 @@
                                             <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.sex}" ></h:outputLabel>
                                             <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="DOB"  />
 
-                                            <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}"   >
+                                            <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}">
                                                 <f:convertDateTime pattern="dd/MM/yy" />
                                             </h:outputLabel>
 

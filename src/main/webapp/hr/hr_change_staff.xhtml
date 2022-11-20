@@ -21,7 +21,7 @@
                                          value="#{staffChangeController.staff}"
                                          completeMethod="#{staffController.completeStaffCode}"  
                                          var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                         converter="stfcon"   >   
+                                         converter="stfcon">   
                             <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic(commonController.currentDateTime)}" />
                             <p:column headerText="Name">
                                 #{mys.person.name}

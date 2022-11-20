@@ -63,7 +63,7 @@
                                         <p:outputLabel value="Speciality" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
                                         <autocomplete:completeSpeciality value="#{webUserController.speciality}" disable="#{webUserController.createOnlyUser}" rendered="#{!webUserController.createOnlyUserForExsistingUser}"/>
 
-                                        <p:outputLabel for="txtUsername" value="User Name"   ></p:outputLabel>
+                                        <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
                                         <p:inputText id="txtUsername"
                                                      autocomplete="off" required="true" maxlength="50" 
                                                      value="#{webUserController.current.name}" ></p:inputText>

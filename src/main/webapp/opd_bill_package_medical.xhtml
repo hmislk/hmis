@@ -78,7 +78,7 @@
                                                     <h:outputLabel rendered="#{billPackageMedicalController.searchedPatient!=null}" value="#{billPackageMedicalController.searchedPatient.person.sex}" ></h:outputLabel>
                                                     <h:outputLabel  rendered="#{billPackageMedicalController.searchedPatient!=null}" value="DOB"  />
 
-                                                    <h:outputLabel rendered="#{billPackageMedicalController.searchedPatient!=null}" value="#{billPackageMedicalController.searchedPatient.person.dob}"   >
+                                                    <h:outputLabel rendered="#{billPackageMedicalController.searchedPatient!=null}" value="#{billPackageMedicalController.searchedPatient.person.dob}">
                                                         <f:convertDateTime pattern="dd/MM/yy" />
                                                     </h:outputLabel>
 
@@ -351,7 +351,7 @@
                                                                            style="position:absolute;left:5.5cm; top:12.0cm;"  >
                                                             </h:outputLabel>
 
-                                                            <h:dataTable value="#{billPackageMedicalController.lstBillEntries}" var="bip" style="position: absolute;left:1.6cm; top:3.5cm; border: 0px; "   >
+                                                            <h:dataTable value="#{billPackageMedicalController.lstBillEntries}" var="bip" style="position: absolute;left:1.6cm; top:3.5cm; border: 0px; ">
                                                                 <h:column >
                                                                     <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                                                     </h:outputLabel>
