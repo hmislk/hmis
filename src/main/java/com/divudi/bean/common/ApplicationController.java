@@ -54,11 +54,7 @@ public class ApplicationController {
     
     
 
-    public void sendEmail() {
-        eejb.sendEmail("arogyafirst","arogya123@","arogyafirst@gmail.com","buddhika.ari@gmail.com", subject, body, null);
-        JsfUtil.addSuccessMessage("Check Mail");
-    }
-
+    
     public Date getStartTime() {
         return startTime;
     }
