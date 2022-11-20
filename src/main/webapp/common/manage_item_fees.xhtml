@@ -217,6 +217,11 @@
                                             <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:resolveFirstComponentWithId('lblTotalF',view).clientId}"></p:ajax>
                                         </p:inputText>
                                     </p:column>
+                                     <p:column headerText="Actions" >
+                                         <p:commandButton id="cmdRemove" value="Remove" ajax="false" action="#{itemFeeManager.removeFee()}" >
+                                             <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </p:column>
 
 
 

@@ -29,10 +29,10 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Phone' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.phone}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAge' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.age}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.ageOnBilledDate(cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt)}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                
-                
+
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.sample.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
@@ -65,11 +65,11 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedCode' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.code}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedPosition' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"      value="#{cc.attrs.patientReport.approveUser.staff.speciality.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedQualification' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}" value="#{cc.attrs.patientReport.approveUser.staff.qualification}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                
-                
+
+
                 <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }"    
                                 value="#{staffImageController.signatureFromPatientReport}" style="width: #{myCli.wtPix};overflow: visible; display: block;" 
-                                 height="#{myCli.htPix}" width="#{myCli.wtPix}">
+                                height="#{myCli.htPix}" width="#{myCli.wtPix}">
                 </p:graphicImage>
 
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
@@ -89,8 +89,12 @@
                     </div>
 
                 </h:panelGroup>
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true and myCli.ixItemValueType eq 'Image'}"  
                               layout="block" style=" #{myCli.description}"        ></h:panelGroup>
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css'  and myCli.retired ne true and myCli.ixItemValueType eq 'Image' }" >
+                    <h:graphicImage value="#{myCli.description}" ></h:graphicImage>
+                </h:panelGroup>
             </div>
         </ui:repeat>
 

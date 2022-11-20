@@ -24,14 +24,15 @@
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" disabled="#{bhtEditController.current.bhtNo ne null}"
                                         size="30"  style="width: 400px;">
-                            <p:ajax event="itemSelect" process="acPt" update="panSearch2 :#{p:resolveFirstComponentWithId('panPrint',view).clientId} @this"/>
                             <p:column>
                                 <h:outputLabel value="#{myItem.bhtNo}"/>
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{myItem.patient.person.name}"/>
                             </p:column>
-                        </p:autoComplete>   
+                        </p:autoComplete> 
+                        <p:commandButton ajax="false" value="Display Details"/>
+                            
                         <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();">
 
                         </p:commandButton>

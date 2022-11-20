@@ -12,11 +12,11 @@
 
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" styleClass="alignTop">
+                    <p:panelGrid columns="3" styleClass="alignTop">
                     <p:panel header="OPD Summaries" >
                         <p:tabView orientation="left">
                             <p:tab title="Common Reports">
-                                <h:panelGrid columns="1" styleClass="alignTop" >
+                                <p:panelGrid columns="1" styleClass="alignTop" >
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="Department All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
                                     
                                     
@@ -32,10 +32,10 @@
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="6) Bill List" action="/opd_search_user_bills.xhtml"/>
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="7) Cashier Service Count Report" action="report_cashier_item_count_by_user.xhtml"/>
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="8) Bill Type Summery" action="/reportIncome/bill_type_summery.xhtml"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="1) Cashier Reports">
-                                <h:panelGrid columns="1" styleClass="alignTop" >
+                                <p:panelGrid columns="1" styleClass="alignTop" >
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="1) Cashier Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="1.1) Cashier Report(Using Recipt No)" action="report_cashier_detailed_by_user_by_reciptno.xhtml" actionListener="#{commonReport.recreteModal2}"/>
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="2) Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
@@ -48,44 +48,44 @@
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="6) Bill List" action="/opd_search_user_bills.xhtml"/>
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="7) Cashier Service Count Report" action="report_cashier_item_count_by_user.xhtml"/>
                                     <p:commandButton styleClass="linkButton600" ajax="false" value="8) Bill Type Summery" action="/reportIncome/bill_type_summery.xhtml"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="2) Package Reports">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Package Detail Report- By Bill Items" 
                                                      action="report_opd_package" actionListener="#{billPackageMedicalController.makeNull}"/>     
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2) Package Detail Report- By Bill" 
                                                      action="report_opd_package_bill" actionListener="#{billPackageMedicalController.makeNull}"/>     
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="3) Medical Package Detail Report" action="report_opd_package_medical" actionListener="#{billPackageMedicalController.makeNull}"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                            <p:tab title="3) Payment Reports">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) OPD Doctor Payments and Due" action="/opd_search_professional_payment_due_1" actionListener="#{searchController.makeListNull2()}"/>                                
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD Doctor Payments(By Bill Item)" action="report_doctor_payment_opd" actionListener="#{searchController.makeListNull2()}"/>
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="3) OPD Doctor Payments(By Bill)" action="report_doctor_payment_opd_by_bill" actionListener="#{searchController.makeListNull2()}"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="3) Handover Reports">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Handover Report" action="/reportIncome/report_income_without_credit_by_institution"/>                                
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2)Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="5) Category Reports">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Summary By Bill Type" action="report_cashier_detailed_user_by_billType"/>                                
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="6) Bill Lists">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) List of Bills Raised" action="/opd_bill_report"/>   
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD payment scheme bills" action="/reportCashier/report_opd_bill_payment_sheame"/> 
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD VAT 15%" action="/reportCashier/report_opd_bills_for_vat"/> 
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="7) Cashier Reports(Bill Fee Payment)">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Cashier Report" action="/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}" />
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2) Cashier Summary" action="/reportCashierBillFeePayment/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}" />
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="3) All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
@@ -93,21 +93,21 @@
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{cashierReportController.recreteModal}" rendered="false"/>
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="6) Bill List" action="/reportCashierBillFeePayment/opd_search_user_bills.xhtml" rendered="false"/>
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="7) Department wise Income" action="/reportCashierBillFeePayment/report_cashier_summery_departmentwise.xhtml" rendered="true"/>
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                             <p:tab title="8) Cashier Reports(Payment)">
-                                <h:panelGrid columns="1" style="width: 400px; height: auto">
+                                <p:panelGrid columns="1" style="width: 400px; height: auto">
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Cashier Report" action="/reportCashierBillFeePayment/report_cashier_detailed_by_user_payment.xhtml" actionListener="#{opdPreBillReportController.makeNull}" />
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="2) Cashier Summary" action="/reportCashierBillFeePayment/report_cashier_summery_by_user_payment.xhtml" actionListener="#{opdPreBillReportController.makeNull}" />
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="3) All Cashier Report" action="/reportCashierBillFeePayment/report_cashier_summery_all.xhtml" actionListener="#{opdPreBillReportController.makeNull}"/>
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="4) All Cashier Summary " action="/reportCashierBillFeePayment/report_cashier_summery_all_total_only.xhtml" actionListener="#{opdPreBillReportController.makeNull}"/>
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{opdPreBillReportController.makeNull}" rendered="false"/>
                                     <p:commandButton styleClass="linkButton600600" ajax="false" value="6) Bill List" action="/reportCashierBillFeePayment/opd_search_user_bills.xhtml" rendered="false" />
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:tab>
                         </p:tabView>
                     </p:panel>
-                    </h:panelGrid>
+                    </p:panelGrid>
                 </h:form>
             </ui:define>
         </ui:composition>
