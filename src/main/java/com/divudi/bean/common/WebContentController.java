@@ -45,32 +45,32 @@ public class WebContentController implements Serializable {
     String page;
 
     public String toHome() {
-        page = "home";
+        page = "/index";
         return page;
     }
 
     public String toChannel() {
-        page = "channel";
+        page = "/channel";
         return page;
     }
 
     public String toReports() {
-        page = "reports";
+        page = "/reports";
         return page;
     }
     
     public String toServices() {
-        page = "services";
+        page = "/services";
         return page;
     }
 
     public String toContact() {
-        page = "contact";
+        page = "/contact";
         return page;
     }
 
     public String toAbout() {
-        page = "about";
+        page = "/about";
         return page;
     }
 
