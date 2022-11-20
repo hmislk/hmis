@@ -14,12 +14,12 @@
 
             <ui:define name="content">
                 <h:form  >
-                    <h:panelGroup  rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin }"  >
+                    <h:panelGroup  rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}"  >
                         <p:outputLabel value="YOU ARE NOT AUTHERIZED." ></p:outputLabel>
                     </h:panelGroup>
-                    <p:panelGrid columns="2"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >                   
+                    <p:panelGrid columns="2"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers')  or sessionController.firstLogin}" >                   
 
-                        <p:panel header="Manage User Privilages">
+                        <p:panel header="Manage User Privilages"   >
 
 
                             <f:facet name="header" >
@@ -27,7 +27,7 @@
                                 <p:commandButton value="Update User Privilage" 
                                                  action="#{userPrivilageController.savePrivileges()}"
                                                  ajax="false" 
-                                                 >  
+                                                  >  
                                 </p:commandButton>
 
 
@@ -48,27 +48,6 @@
 
                             <p:panel id="tree">
                                 <p:growl id="messages" showDetail="true" escape="false"/>  
-
-
-                                <p:dataTable value="#{userPrivilageController.allPrivileges}"
-                                             var="p" rowKey="#{p}"
-                                             selection="#{userPrivilageController.selectedPrivileges}"
-
-                                             rows="10"
-                                             paginator="true" paginatorPosition="both"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                             rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-
-                                             >
-                                    <p:column headerText="Select" selectionMode="multiple" >
-                                    </p:column>
-                                    <p:column headerText="Select" sortBy="#{p}" filterBy="#{p.label}" filterMatchMode="contains">
-                                        <p:outputLabel value="#{p.label}" ></p:outputLabel>
-                                    </p:column>
-
-                                </p:dataTable>
-
                                 <p:tree value="#{userPrivilageController.root}" var="node"  
                                         selectionMode="checkbox"
                                         selection="#{userPrivilageController.selectedNodes}"

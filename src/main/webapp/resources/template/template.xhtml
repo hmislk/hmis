@@ -69,5 +69,11 @@
             </h:panelGroup>
             <ez:footer/>
         </h:panelGroup>
+        <h:panelGroup rendered ="#{sessionController.firstLogin}"  >
+            <ez:menu_first_login ></ez:menu_first_login>
+            <ui:insert name="content">
+            </ui:insert>
+            <ez:footer/>
+        </h:panelGroup>
     </h:body>
 </html>
