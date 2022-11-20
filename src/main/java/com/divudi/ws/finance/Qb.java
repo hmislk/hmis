@@ -210,7 +210,7 @@ public class Qb {
         if (b.getToInstitution() != null) {
             supplierName += " " + b.getToInstitution().getName();
         }
-        headerJo.put("supplier", supplierName);
+        headerJo.put("SupplierName", supplierName);
 
         headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("billNo", b.getDeptId());
@@ -228,8 +228,8 @@ public class Qb {
             }
             bijo.put("qty", bi.getQty());
             bijo.put("amount", bi.getNetValue());
-            bijo.put("bit", "Pharmacy Item");
-            bijo.put("itemType", "Service");
+//            bijo.put("bit", "Pharmacy Item");
+//            bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
@@ -460,6 +460,17 @@ public class Qb {
         Date invoiceDate = new Date();
         String invoiceNo = "";
 
+        if (b.getPaymentMethod() != null) {
+            if (b.getPaymentMethod() == PaymentMethod.Cash) {
+                payMethod = b.getPaymentMethod().getLabel();
+                customerName = "Cash Customer";
+            } else if (b.getPaymentMethod() == PaymentMethod.Credit) {
+                payMethod = b.getPaymentMethod().getLabel();
+            } else {
+                payMethod = b.getPaymentMethod().getLabel();
+            }
+        }
+
         if (b.getPatient() != null && b.getPatient().getPerson() != null) {
             soldTo = b.getPatient().getPerson().getNameWithTitle();
         }
@@ -486,9 +497,8 @@ public class Qb {
 
         if (billItems != null && !billItems.isEmpty()) {
 
-            
-
             for (BillItem bi : billItems) {
+
                 JSONObject bijo = new JSONObject();
 
                 String invType = "invType";
@@ -507,6 +517,9 @@ public class Qb {
                     invClass = b.getDepartment().getName();
                 }
                 amount = Math.abs(bi.getAdjustedValue());
+                if (amount < 0.01) {
+                    continue;
+                }
                 bijo.put("id", bi.getId());
                 bijo.put("item", itemName);
                 bijo.put("qty", 1);
@@ -997,6 +1010,11 @@ public class Qb {
             @PathParam("last_invoice_id") String strLastIdInRequest,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
+        
+        
+        System.out.println("REST Request - cInvList - " + new Date());
+        
+        
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
         String key = requestContext.getHeader("Finance");
@@ -1053,6 +1071,232 @@ public class Qb {
 
         List<BillClassType> billClassTypes = new ArrayList<>();
         billClassTypes.add(BillClassType.BilledBill);
+        /**
+         * PharmacySale ChannelPaid OpdBill InwardPaymentBill ChannelCash
+         * PharmacyWholeSale
+         *
+         */
+        int maxNo = 500;
+
+        List<Bill> billsInpatient = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
+
+        int inpatientBillCount = 0;
+        if (billsInpatient != null && !billsInpatient.isEmpty()) {
+            inpatientBillCount = billsInpatient.size();
+        }
+
+        List<Bill> bills = billList(maxNo - inpatientBillCount, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
+
+        if (bills != null && !bills.isEmpty()) {
+            if (billsInpatient != null && !billsInpatient.isEmpty()) {
+                bills.addAll(billsInpatient);
+            }
+        } else {
+            if (billsInpatient != null && !billsInpatient.isEmpty()) {
+                bills = billsInpatient;
+            }
+        }
+
+        Long lastIdOfCurrentdata = null;
+        if (!bills.isEmpty()) {
+            Bill tbf = bills.get(bills.size() - 1);
+            if (tbf != null) {
+                lastIdOfCurrentdata = tbf.getId();
+            }
+        }
+
+//        System.out.println("bills.size() = " + bills.size());
+        array = invoiceBillsToJSONArray(bills);
+        jSONObjectOut.put("cInvList", array);
+        jSONObjectOut.put("lastInvoiceId", lastIdOfCurrentdata);
+        jSONObjectOut.put("status", successMessage());
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+    
+    @GET
+    @Path("/invList/{institution_code}/{last_invoice_id}/{last_date}")
+    @Produces("application/json")
+    public String invList(@Context HttpServletRequest requestContext,
+            @PathParam("last_invoice_id") String strLastIdInRequest,
+            @PathParam("institution_code") String strInstitutionCode,
+            @PathParam("last_date") String strLastDate) {
+        
+        
+        System.out.println("REST Request - cInvList - " + new Date());
+        
+        
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Long lastIdInRequest;
+        try {
+            lastIdInRequest = Long.valueOf(strLastIdInRequest);
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            System.out.println("e = " + e);
+            return json;
+        }
+        if (lastIdInRequest < 1) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Institution ins = findInstitutionByCode(strInstitutionCode);
+
+        if (ins == null) {
+            jSONObjectOut = errorMessageNotValidInstitution();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        if (strLastDate == null || strLastDate.trim().equals("")) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        Date lastDate;
+        try {
+            lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.ChannelPaid);
+        billTypes.add(BillType.OpdBill);
+        billTypes.add(BillType.InwardPaymentBill);
+        billTypes.add(BillType.ChannelCash);
+        billTypes.add(BillType.PharmacyWholeSale);
+        billTypes.add(BillType.InwardFinalBill);
+
+        List<BillClassType> billClassTypes = new ArrayList<>();
+        billClassTypes.add(BillClassType.BilledBill);
+        /**
+         * PharmacySale ChannelPaid OpdBill InwardPaymentBill ChannelCash
+         * PharmacyWholeSale
+         *
+         */
+        int maxNo = 500;
+
+        List<Bill> billsInpatient = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCreditPaymentMethods(), lastDate);
+
+        int inpatientBillCount = 0;
+        if (billsInpatient != null && !billsInpatient.isEmpty()) {
+            inpatientBillCount = billsInpatient.size();
+        }
+
+        List<Bill> bills = billList(maxNo - inpatientBillCount, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate);
+
+        if (bills != null && !bills.isEmpty()) {
+            if (billsInpatient != null && !billsInpatient.isEmpty()) {
+                bills.addAll(billsInpatient);
+            }
+        } else {
+            if (billsInpatient != null && !billsInpatient.isEmpty()) {
+                bills = billsInpatient;
+            }
+        }
+
+        Long lastIdOfCurrentdata = null;
+        if (!bills.isEmpty()) {
+            Bill tbf = bills.get(bills.size() - 1);
+            if (tbf != null) {
+                lastIdOfCurrentdata = tbf.getId();
+            }
+        }
+
+//        System.out.println("bills.size() = " + bills.size());
+        array = invoiceBillsToJSONArray(bills);
+        jSONObjectOut.put("cInvList", array);
+        jSONObjectOut.put("lastInvoiceId", lastIdOfCurrentdata);
+        jSONObjectOut.put("status", successMessage());
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+    
+    
+    @GET
+    @Path("/salesRetList/{institution_code}/{last_invoice_id}/{last_date}")
+    @Produces("application/json")
+    public String salesRetList(@Context HttpServletRequest requestContext,
+            @PathParam("last_invoice_id") String strLastIdInRequest,
+            @PathParam("institution_code") String strInstitutionCode,
+            @PathParam("last_date") String strLastDate) {
+        
+        
+        System.out.println("REST Request - cInvList - " + new Date());
+        
+        
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Long lastIdInRequest;
+        try {
+            lastIdInRequest = Long.valueOf(strLastIdInRequest);
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            System.out.println("e = " + e);
+            return json;
+        }
+        if (lastIdInRequest < 1) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Institution ins = findInstitutionByCode(strInstitutionCode);
+
+        if (ins == null) {
+            jSONObjectOut = errorMessageNotValidInstitution();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        if (strLastDate == null || strLastDate.trim().equals("")) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        Date lastDate;
+        try {
+            lastDate = CommonFunctions.parseDate(strLastDate, "yyyy-MM-dd");
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacySale);
+        billTypes.add(BillType.ChannelPaid);
+        billTypes.add(BillType.OpdBill);
+        billTypes.add(BillType.InwardPaymentBill);
+        billTypes.add(BillType.ChannelCash);
+        billTypes.add(BillType.PharmacyWholeSale);
+        billTypes.add(BillType.InwardFinalBill);
+
+        List<BillClassType> billClassTypes = new ArrayList<>();
+        billClassTypes.add(BillClassType.CancelledBill);
+        billClassTypes.add(BillClassType.RefundBill);
         /**
          * PharmacySale ChannelPaid OpdBill InwardPaymentBill ChannelCash
          * PharmacyWholeSale
@@ -1247,9 +1491,9 @@ public class Qb {
     }
 
     @GET
-    @Path("/grn/{institution_code}/{last_grn_id}")
+    @Path("/grnList/{institution_code}/{last_grn_id}")
     @Produces("application/json")
-    public String getGrn(@Context HttpServletRequest requestContext,
+    public String getGrnList(@Context HttpServletRequest requestContext,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_grn_id") String strLastIdInRequest) {
         JSONArray array;
@@ -1301,7 +1545,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 1000;
+        int maxNo = 500;
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, null);
         Long lastIdOfCurrentdata = null;
@@ -1323,9 +1567,9 @@ public class Qb {
     }
 
     @GET
-    @Path("/grnreturn/{institution_code}/{last_return_grn_id}")
+    @Path("/grnRetList/{institution_code}/{last_return_grn_id}")
     @Produces("application/json")
-    public String getGrnReturn(@Context HttpServletRequest requestContext,
+    public String getGrnRetList(@Context HttpServletRequest requestContext,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_return_grn_id") String strLastIdInRequest) {
         JSONArray array;
@@ -1392,7 +1636,164 @@ public class Qb {
 
 //        System.out.println("bills.size() = " + bills.size());
         array = invoiceBillsToJSONArray(bills);
-        jSONObjectOut.put("grnReturnList", array);
+        jSONObjectOut.put("grnRetList", array);
+        jSONObjectOut.put("lastReturnGrnId", lastIdOfCurrentdata);
+        jSONObjectOut.put("status", successMessage());
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+    
+    
+    @GET
+    @Path("/wcList/{institution_code}/{last_return_grn_id}")
+    @Produces("application/json")
+    public String getWcList(@Context HttpServletRequest requestContext,
+            @PathParam("institution_code") String strInstitutionCode,
+            @PathParam("last_return_grn_id") String strLastIdInRequest) {
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Long lastIdInRequest;
+        try {
+            lastIdInRequest = Long.valueOf(strLastIdInRequest);
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        if (lastIdInRequest == null || lastIdInRequest < 1) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Institution ins = findInstitutionByCode(strInstitutionCode);
+
+        if (ins == null) {
+            jSONObjectOut = errorMessageNotValidInstitution();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyGrnBill);
+        billTypes.add(BillType.PharmacyPurchaseBill);
+        billTypes.add(BillType.PharmacyGrnReturn);
+        billTypes.add(BillType.PharmacyReturnWithoutTraising);
+
+        billTypes.add(BillType.StoreGrnBill);
+        billTypes.add(BillType.StoreGrnReturn);
+        billTypes.add(BillType.StorePurchaseReturn);
+        billTypes.add(BillType.StorePurchase);
+
+        List<BillClassType> billClassTypes = new ArrayList<>();
+        billClassTypes.add(BillClassType.RefundBill);
+        billClassTypes.add(BillClassType.CancelledBill);
+
+        /**
+         * PharmacySale ChannelPaid OpdBill InwardPaymentBill ChannelCash
+         * PharmacyWholeSale
+         *
+         */
+        int maxNo = 1000;
+
+        List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, null);
+        Long lastIdOfCurrentdata = null;
+        if (!bills.isEmpty()) {
+            Bill tbf = bills.get(bills.size() - 1);
+            if (tbf != null) {
+                lastIdOfCurrentdata = tbf.getId();
+            }
+        }
+
+//        System.out.println("bills.size() = " + bills.size());
+        array = invoiceBillsToJSONArray(bills);
+        jSONObjectOut.put("grnRetList", array);
+        jSONObjectOut.put("lastReturnGrnId", lastIdOfCurrentdata);
+        jSONObjectOut.put("status", successMessage());
+
+        String json = jSONObjectOut.toString();
+        return json;
+    }
+    
+    @GET
+    @Path("/jurList/{institution_code}/{last_return_grn_id}")
+    @Produces("application/json")
+    public String getJurList(@Context HttpServletRequest requestContext,
+            @PathParam("institution_code") String strInstitutionCode,
+            @PathParam("last_return_grn_id") String strLastIdInRequest) {
+        JSONArray array;
+        JSONObject jSONObjectOut = new JSONObject();
+        String key = requestContext.getHeader("Finance");
+        if (!isValidKey(key)) {
+            jSONObjectOut = errorMessageNotValidKey();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Long lastIdInRequest;
+        try {
+            lastIdInRequest = Long.valueOf(strLastIdInRequest);
+        } catch (Exception e) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+        if (lastIdInRequest == null || lastIdInRequest < 1) {
+            jSONObjectOut = errorMessageNotValidPathParameter();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        Institution ins = findInstitutionByCode(strInstitutionCode);
+
+        if (ins == null) {
+            jSONObjectOut = errorMessageNotValidInstitution();
+            String json = jSONObjectOut.toString();
+            return json;
+        }
+
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyGrnBill);
+        billTypes.add(BillType.PharmacyPurchaseBill);
+        billTypes.add(BillType.PharmacyGrnReturn);
+        billTypes.add(BillType.PharmacyReturnWithoutTraising);
+
+        billTypes.add(BillType.StoreGrnBill);
+        billTypes.add(BillType.StoreGrnReturn);
+        billTypes.add(BillType.StorePurchaseReturn);
+        billTypes.add(BillType.StorePurchase);
+
+        List<BillClassType> billClassTypes = new ArrayList<>();
+        billClassTypes.add(BillClassType.RefundBill);
+        billClassTypes.add(BillClassType.CancelledBill);
+
+        /**
+         * PharmacySale ChannelPaid OpdBill InwardPaymentBill ChannelCash
+         * PharmacyWholeSale
+         *
+         */
+        int maxNo = 1000;
+
+        List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, null);
+        Long lastIdOfCurrentdata = null;
+        if (!bills.isEmpty()) {
+            Bill tbf = bills.get(bills.size() - 1);
+            if (tbf != null) {
+                lastIdOfCurrentdata = tbf.getId();
+            }
+        }
+
+//        System.out.println("bills.size() = " + bills.size());
+        array = invoiceBillsToJSONArray(bills);
+        jSONObjectOut.put("jurList", array);
         jSONObjectOut.put("lastReturnGrnId", lastIdOfCurrentdata);
         jSONObjectOut.put("status", successMessage());
 
@@ -1401,9 +1802,9 @@ public class Qb {
     }
 
     @GET
-    @Path("/payment/{institution_code}/{last_payment_id}")
+    @Path("/cusPayList/{institution_code}/{last_payment_id}")
     @Produces("application/json")
-    public String getPayment(@Context HttpServletRequest requestContext,
+    public String getCusPayList(@Context HttpServletRequest requestContext,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_payment_id") String strLastIdInRequest) {
         JSONArray array;
