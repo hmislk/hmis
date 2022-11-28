@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.divudi</groupId>
-    <artifactId>arogya2022</artifactId>
+    <artifactId>arogya22</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
 
-    <name>arogya2022</name>
+    <name>arogya22</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
