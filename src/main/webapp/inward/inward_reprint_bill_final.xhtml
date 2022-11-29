@@ -24,13 +24,13 @@
                                     <p:panel header="Bill Reprints"
                                              rendered="true">                            
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false"   >
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false">
                                                 <p:printer target="claimablePatientCopy2" ></p:printer>
                                             </p:commandButton>
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false"   >
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false">
                                                 <p:printer target="professionalAndFinaBill" ></p:printer>
                                             </p:commandButton>
-                                            <p:commandButton value="Final Bill &amp; Profesional Bill(Duplicate)" ajax="false"   >
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill(Duplicate)" ajax="false">
                                                 <p:printer target="professionalAndFinaBillDup" ></p:printer>
                                             </p:commandButton>
                                             <p:commandButton value="Print Credit Company Letter" ajax="false"  >
@@ -41,13 +41,13 @@
                                     <p:panel header="Claimable Bill Reprints" 
                                              rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Print Patient Copy" ajax="false"   >
+                                            <p:commandButton value="Print Patient Copy" ajax="false">
                                                 <p:printer target="claimablePatientCopy" ></p:printer>
                                             </p:commandButton>   
                                             <p:commandButton value="Print Patient Copy(Invoice)" ajax="false"  rendered="false" >
                                                 <p:printer target="claimablePatientCopy2" ></p:printer>
                                             </p:commandButton>   
-                                            <p:commandButton value="Print Patient Detailed Copy" ajax="false"   >
+                                            <p:commandButton value="Print Patient Detailed Copy" ajax="false">
                                                 <p:printer target="claimablePatientDetailCopy" ></p:printer>
                                             </p:commandButton>   
                                             <p:commandButton value="Print Duplicate Copy" ajax="false"  >
@@ -63,13 +63,13 @@
                                     </p:panel>
                                     <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Patient Copy without Professional" ajax="false"   >
+                                            <p:commandButton value="Patient Copy without Professional" ajax="false">
                                                 <p:printer target="notClaimablePatientCopy" ></p:printer>
                                             </p:commandButton>                              
-                                            <p:commandButton value="Duplicate wihout Professional" ajax="false"   >
+                                            <p:commandButton value="Duplicate wihout Professional" ajax="false">
                                                 <p:printer target="notClaimableDuplicate" ></p:printer>
                                             </p:commandButton>  
-                                            <p:commandButton value="Professional Fees" ajax="false"   >
+                                            <p:commandButton value="Professional Fees" ajax="false">
                                                 <p:printer target="professional" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>
@@ -83,10 +83,10 @@
                                     </p:panel>
                                     <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
-                                            <p:commandButton ajax="false" value="Green Sheet Print Without Professional"   >
+                                            <p:commandButton ajax="false" value="Green Sheet Print Without Professional">
                                                 <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
                                             </p:commandButton>
-                                            <p:commandButton value="Professional Fees" ajax="false"   >
+                                            <p:commandButton value="Professional Fees" ajax="false">
                                                 <p:printer target="professional" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>
@@ -100,7 +100,7 @@
                                             <p:commandButton value="Refresh" action="#" ajax="false" />
                                         </h:panelGrid>
                                         <h:panelGrid columns="1">
-                                            <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"   >
+                                            <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false">
                                                 <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
                                             </p:commandButton>
                                         </h:panelGrid>

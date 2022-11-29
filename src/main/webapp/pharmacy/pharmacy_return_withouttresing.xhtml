@@ -97,7 +97,7 @@
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacyReturnwithouttresing.qty}" style="width: 50px!important;"   >
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacyReturnwithouttresing.qty}" style="width: 50px!important;">
                                                 <p:ajax event="keyup"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                 <p:ajax event="blur"  listener="#{pharmacyReturnwithouttresing.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
@@ -308,7 +308,7 @@
 
                         </div>
                         <!--                        <div >
-                                                    <h:panelGroup   id="gpBillPreview"   > 
+                                                    <h:panelGroup   id="gpBillPreview"> 
                                                         <phi:issue bill="#{pharmacyReturnwithouttresing.printBill}"></phi:issue>
                                                     </h:panelGroup>
                                                 </div>-->

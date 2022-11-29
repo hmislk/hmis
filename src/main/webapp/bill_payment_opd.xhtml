@@ -201,7 +201,7 @@
 
 
                                                     <div class="items" >
-                                                        <h:dataTable value="#{billController.opdBill.referenceBill.billItems}" var="bip"   >
+                                                        <h:dataTable value="#{billController.opdBill.referenceBill.billItems}" var="bip">
                                                             <h:column >
                                                                 <h:outputLabel rendered="#{bip.item.department.id eq bill.toDepartment.id}" value="#{bip.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                                                 </h:outputLabel>

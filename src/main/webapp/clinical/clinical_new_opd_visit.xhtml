@@ -107,15 +107,8 @@
                                                     <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                 </p:commandButton>
                                             </p:column>
-
                                         </p:dataTable>
-
-
-
-
-
                                     </h:panelGrid>
-
                                 </p:panel>
 
                             </h:panelGroup>
@@ -342,14 +335,14 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column  headerText="Bill Type"   >
+                                            <p:column  headerText="Bill Type">
                                                 <h:outputLabel value="#{bill.billType}" ></h:outputLabel>
                                             </p:column>
                                             <p:column  headerText="Consultant"  >
                                                 <h:outputLabel value="#{bill.staff.person.name}" ></h:outputLabel>
                                             </p:column>
 
-                                            <p:column  headerText="Bill Fees"   >
+                                            <p:column  headerText="Bill Fees">
 
                                                 <table >
                                                     <ui:repeat value="#{bill.billFees}" var="tbi" >

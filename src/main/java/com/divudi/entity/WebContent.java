@@ -31,9 +31,14 @@ public class WebContent implements Serializable {
     @Lob
     private String english;
     private double orderNo;
-    
-    
-    
+
+    public String getIdStr() {
+        if (id == null) {
+            return "";
+        }
+        return id.toString();
+
+    }
 
     public Long getId() {
         return id;
@@ -42,9 +47,6 @@ public class WebContent implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
-    
 
     @Override
     public int hashCode() {
@@ -118,5 +120,5 @@ public class WebContent implements Serializable {
     public void setOrderNo(double orderNo) {
         this.orderNo = orderNo;
     }
-    
+
 }

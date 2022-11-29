@@ -18,7 +18,7 @@
                                         <p:outputLabel value="Speciality" />
                                         <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{channelStaffPaymentBillController.speciality}" id="acSpeciality"
                                                         completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                        converter="specilityCon"   >
+                                                        converter="specilityCon">
                                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
                                         </p:autoComplete>
 
@@ -28,7 +28,7 @@
                                                         value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
                                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                        converter="stfcon"   >                                            
+                                                        converter="stfcon">                                            
                                             <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
                                                     listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
                                         </p:autoComplete>

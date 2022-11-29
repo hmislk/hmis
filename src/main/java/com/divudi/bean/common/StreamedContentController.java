@@ -95,6 +95,48 @@ public class StreamedContentController {
             }
         }
     }
+    
+    public StreamedContent getImageByUpWebContentId() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        if (context.getRenderResponse()) {
+            return new DefaultStreamedContent();
+        } else {
+            String id = context.getExternalContext().getRequestParameterMap().get("id");
+            Long l;
+            try {
+                l = Long.valueOf(id);
+            } catch (NumberFormatException e) {
+                l = 0l;
+            }
+            String j = "select s from Upload s where s.webContent.id=:id";
+            Map m = new HashMap();
+            m.put("id", l);
+            Upload temImg = getUploadFacade().findFirstBySQL(j, m);
+            if (temImg != null) {
+                byte[] imgArr = null;
+                try {
+                    imgArr = temImg.getBaImage();
+                } catch (Exception e) {
+                    return new DefaultStreamedContent();
+                }
+                if (imgArr == null) {
+                    return new DefaultStreamedContent();
+                }
+                
+                InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
+                
+                StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
+
+                
+                return str;
+            } else {
+                return new DefaultStreamedContent();
+            }
+        }
+    }
+    
+    
+    
 //
 //    public StreamedContent imageByCodeInlineWithoutGet(String code) {
 //        FacesContext context = FacesContext.getCurrentInstance();

@@ -77,10 +77,10 @@
                 <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
                     <p:printer target="gpBillPreview1" ></p:printer>
                 </p:commandButton>
-                <p:commandButton value="Print Sale Bill" ajax="false" action="#"   >
+                <p:commandButton value="Print Sale Bill" ajax="false" action="#">
                     <p:printer target="gpBillPreview2" ></p:printer>
                 </p:commandButton>
-                <h:panelGroup   id="gpBillPreview1"   >
+                <h:panelGroup   id="gpBillPreview1">
 
 
                     <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}">
@@ -114,7 +114,7 @@
                 </h:panelGroup>
 
 
-                <p:panel   id="gpBillPreview2"   >
+                <p:panel   id="gpBillPreview2">
 <!--                    <ph:issueBill  bill="#{bhtIssueReturnController.bill}"/>-->
 
                     <h:panelGroup   id="gpBillPreviewSingle2" rendered="#{sessionController.currentPreference.pharmacyBillPaperType eq 'PosPaper'}">

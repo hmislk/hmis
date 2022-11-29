@@ -105,7 +105,7 @@
                 </h:panelGroup>
 
 
-                <p:panel id="pPreview"   >
+                <p:panel id="pPreview">
                     <f:facet name="header" >
                         <p:panelGrid columns="5" >
                             <p:commandLink ajax="false" value="Print" >
@@ -153,7 +153,7 @@
                                                      rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'Edit_mode'}"  
                                                      value="#{myIi.htmltext}" 
                                                      style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important;"  >
-                                            <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}"   ></f:ajax>
+                                            <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}"></f:ajax>
                                             <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" ></f:ajax>
                                         </p:inputText>
 

@@ -38,7 +38,7 @@
                     <div >
 
 
-                        <h:panelGroup   id="gpBillPreview"   >
+                        <h:panelGroup   id="gpBillPreview">
 
                             <div>
 
@@ -100,7 +100,7 @@
 
 
                                             <div class="itemsPrinting" >
-                                                <h:dataTable value="#{billController.lstBillEntriesPrint}" var="bip"   >
+                                                <h:dataTable value="#{billController.lstBillEntriesPrint}" var="bip">
                                                     <h:column >
                                                         <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                                         </h:outputLabel>

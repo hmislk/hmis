@@ -81,7 +81,7 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>       
-            <p:column headerText="Paymentmethod"   >
+            <p:column headerText="Paymentmethod">
                 <h:commandLink action="store_reprint_bill_pre" >
                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>

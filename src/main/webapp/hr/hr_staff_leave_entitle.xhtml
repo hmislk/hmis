@@ -67,7 +67,7 @@
                                 </p:calendar>
                                 
                                 <h:outputLabel value="Leave Type : "/>
-                                <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
+                                <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}">
                                     <f:selectItem itemLabel="Select Leave Type"/>
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu>
@@ -95,7 +95,7 @@
                             <h:outputLabel value="To Date : "/>
                             <p:calendar id="to" value="#{staffLeaveEntitleController.toDate}"/>
                             <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
+                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}">
                                 <f:selectItem itemLabel="Select Leave Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
                             </p:selectOneMenu>                                                       

@@ -36,7 +36,7 @@
                                         value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                        converter="stfcon" rendered="#{!channelReportTempController.paid}"   >                                            
+                                        converter="stfcon" rendered="#{!channelReportTempController.paid}">                                            
                         </p:autoComplete>
                         <h:outputLabel value="Specility" rendered="#{!channelReportTempController.paid}"/>
                         <au:completeSpeciality value="#{channelReportTempController.reportKeyWord.speciality}" rendered="#{!channelReportTempController.paid}" />

@@ -57,7 +57,7 @@
                                             action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}" />
                             <p:selectOneMenu id="s1"
                                              var="t"
-                                             value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}"   >
+                                             value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}">
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffLeaveApplicationFormController.staffShiftsLie}"
                                                var="itm" itemLabel="#{itm.shift.name}" 

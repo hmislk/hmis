@@ -14,10 +14,10 @@
 
             <ui:define name="content">
                 <h:form  >
-                    <h:panelGroup  rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin }"  >
+                    <h:panelGroup  rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and not sessionController.firstLogin}"  >
                         <p:outputLabel value="YOU ARE NOT AUTHERIZED." ></p:outputLabel>
                     </h:panelGroup>
-                    <p:panelGrid columns="2"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >                   
+                    <p:panelGrid columns="2"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers')  or sessionController.firstLogin}" >                   
 
                         <p:panel header="Manage User Privilages"   >
 
