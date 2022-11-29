@@ -24,8 +24,8 @@
 
 
                     <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" />
-<!--                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="PDF" 
-                                     action="#{patientReportController.createPDF()}" onclick="this.form.target = '_blank'" />-->
+                    <!--                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="PDF" 
+                                                         action="#{patientReportController.createPDF()}" onclick="this.form.target = '_blank'" />-->
                     <!--<p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back" action="/lab/search_for_reporting_ondemand"/>-->
 
 
@@ -310,6 +310,11 @@
 
                 </h:form>
 
+                <p:dataTable value="#{commonReportItemController.items}" var="myCli" >
+                    <p:column >
+                        #{myCli.cssStyle}
+                    </p:column>
+                </p:dataTable>
 
             </ui:define>
 
