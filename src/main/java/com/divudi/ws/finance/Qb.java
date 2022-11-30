@@ -255,15 +255,15 @@ public class Qb {
             supplierName += " " + b.getToInstitution().getName();
         }
 
-        String bank = "";
+        String bankAcc = "";
         String wcDate = "";
         String chqNo = "";
         if (b.getBank() != null) {
             if (b.getBank().getName() != null) {
-                bank = b.getBank().getName();
+                bankAcc = b.getBank().getName();
             }
             if (b.getBank().getAccountNo() != null) {
-                bank += b.getBank().getAccountNo();
+                bankAcc += b.getBank().getAccountNo();
             }
         }
         if (b.getChequeDate() != null) {
@@ -274,8 +274,8 @@ public class Qb {
         }
 
         headerJo.put("supplier", supplierName);
-        if (!bank.trim().equals("")) {
-            headerJo.put("bank", bank);
+        if (!bankAcc.trim().equals("")) {
+            headerJo.put("bankAcc", bankAcc);
         }
         if (!wcDate.trim().equals("")) {
             headerJo.put("wcDate", wcDate);
@@ -283,13 +283,13 @@ public class Qb {
         if (!chqNo.trim().equals("")) {
             headerJo.put("chqNo", chqNo);
         }
-        headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
 
-            String invClass = "invClass";
+            String invClass = "wcClass";
             String invType = "invType";
 
             if (b.getBillType() != null) {
@@ -301,16 +301,16 @@ public class Qb {
 
             JSONObject bijo = new JSONObject();
             if (bi.getItem() != null) {
-                bijo.put("item", bi.getItem().getName());
+                bijo.put("account", bi.getItem().getName());
             } else {
-                bijo.put("item", "item");
+                bijo.put("account", "account");
             }
             bijo.put("qty", bi.getQty());
             bijo.put("amount", bi.getNetValue());
             if (b.getBillType() != null) {
                 headerJo.put("billType", b.getBillType().toString());
             }
-            bijo.put("invClass", invClass);
+            bijo.put("wcClass", invClass);
             bijo.put("invType", invType);
             bija.put(bijo);
         }
