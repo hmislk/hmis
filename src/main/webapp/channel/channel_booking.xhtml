@@ -12,24 +12,14 @@
 
     <ui:define name="content">
 
-        <h:form id="form">
+        <h:form >
 
-            <h:panelGrid columns="4" id="gridSelections" styleClass="alignTop">
+            <h:panelGrid rendered="true" columns="4" id="gridSelections" styleClass="alignTop">
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
                     <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
                         <p:ajax  event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
                     </p:inputText>
-                    <h:outputScript>
-                        $(document.getElementById('form:txtSearch')).keypress(function (event) {
-                        var keycode = (event.keyCode ? event.keyCode : event.which);
-                        if (keycode == '13') {
-                        document.getElementById("form:txtSearch2").focus();
-                        return false;
-                        }
-
-                        });
-                    </h:outputScript>
                     <h:panelGroup id="acSpeciality" >
                         <p:dataTable  scrollable="true" scrollHeight="280"
                                       id="acSpeciality1"
@@ -57,16 +47,6 @@
                     <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextConsultant}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
                         <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblCon',view).clientId} :#{p:resolveFirstComponentWithId('panSpeciality',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffRowSelect}"/> 
                     </p:inputText>
-                    <h:outputScript>
-                        $(document.getElementById('form:txtSearch2')).keypress(function (event) {
-                        var keycode = (event.keyCode ? event.keyCode : event.which);
-                        if (keycode == '13') {
-                        document.getElementById("form:txtSearch3").focus();
-                        return false;
-                        }
-
-                        });
-                    </h:outputScript>
                     <h:panelGroup id="tblCon" >
                         <p:dataTable id="tblCon1" 
                                      rendered="#{bookingController.consultants ne null}"
@@ -97,22 +77,12 @@
                                  render=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" 
                                  listener="#{bookingController.listnerSessionRowSelect}"/> 
                     </p:inputText>
-                    <h:outputScript>
-                        $(document.getElementById('form:txtSearch3')).keypress(function (event) {
-                        var keycode = (event.keyCode ? event.keyCode : event.which);
-                        if (keycode == '13') {
-                        document.getElementById("form:cmbPs_focus").focus();
-                        return false;
-                        }
 
-                        });
-                    </h:outputScript>
-
-                    <h:panelGroup id="tblSessionsOfSelectedConsultant" >
+                    <h:panelGroup id="tblSessionsOfSelectedConsultant1" >
                         <p:dataTable 
                             rendered="#{bookingController.serviceSessions ne null}"
                             value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
-                            id="tblSessionsOfSelectedConsultant1" var="ses"
+                            id="tblSessionsOfSelectedConsultant" var="ses"
                             selectionMode="single" 
                             selection="#{bookingController.selectedServiceSession}"
                             scrollable="true" 
@@ -255,7 +225,7 @@
             </h:panelGrid>
 
 
-            <h:panelGrid id="gdManageBookings" columns="2" styleClass="alignTop">
+            <h:panelGrid rendered="true" id="gdManageBookings" columns="2" styleClass="alignTop">
 
                 <p:panel id="gpThisBookingDetails" style="min-width: 450px; max-width: 450px; min-height:400px;max-height: 520px;"  >
                     <f:facet name="header" >
@@ -287,17 +257,6 @@
                                                     creditCardTxt creditCardRef slipLblBank slipSelBank slipLblDate date staff autoStaff lblCheque chequNo lblBank agentOnCall agentOnCall2 
                                                     lblChequeDate ChequeDate bankSel :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} tabViewAgentBookDetails" event="change" listener="#{bookingController.generateSessionsOnlyIdNew}" />
                                         </p:selectOneMenu>
-                                        <h:outputScript>
-                                            $(document.getElementById('form:cmbPs_focus')).keypress(function (event) {
-                                            var keycode = (event.keyCode ? event.keyCode : event.which);
-                                            alert("sdf");
-                                            if (keycode == '13') {
-                                            document.getElementById("form:txtSearch3").focus();
-                                            return false;
-                                            }
-
-                                            });
-                                        </h:outputScript>
                                     </h:panelGroup>
                                     <h:outputLabel rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
                                     <p:autoComplete rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
@@ -444,7 +403,7 @@
                                     <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Name"/>
-                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:capitalize;">
+                                <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;">
                                 </p:inputText>
 
                                 <h:outputLabel value="Phone"/>
@@ -872,7 +831,7 @@
 
                         <p:panel id="panelBillPrint" >
 
-                            <h:panelGroup id="panelAddedBillPrint" styleClass="noBorder">
+                            <h:panelGroup id="panelAddedBillPrintFees" styleClass="noBorder">
                                 <ch:bill_fees bill="#{channelBillController.billSession.billItem.bill}"/>
                             </h:panelGroup>
 
@@ -1240,7 +1199,7 @@
                         </p:tab>
                     </p:tabView>
                 </p:panel>
-                <p:spacer width="100px"></p:spacer>
+                <!--<p:spacer width="100px"></p:spacer>-->
                 <h:panelGroup></h:panelGroup>
 
 
