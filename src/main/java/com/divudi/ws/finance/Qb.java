@@ -534,7 +534,7 @@ public class Qb {
 
         String soldTo = "Customer";
         String payMethod = "Cash";
-        Date payDate = new Date();
+        Date payDate;
         String invoiceNo = "";
         Double amount = 0.0;
 
@@ -551,12 +551,13 @@ public class Qb {
         } else {
             payDate = b.getCreatedAt();
         }
+        invoiceNo = b.getDeptId() + "-" + b.getId();
 
         headerJo.put("amount", amount);
         headerJo.put("customerName", soldTo);
         headerJo.put("payMethod", payMethod);
         headerJo.put("payDate", CommonFunctions.formatDate(payDate, "yyyy-MM-dd"));
-        headerJo.put("refNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("refNo",invoiceNo);
 
         JSONArray bija = new JSONArray();
 
