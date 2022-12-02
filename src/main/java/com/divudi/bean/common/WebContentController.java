@@ -86,6 +86,14 @@ public class WebContentController implements Serializable {
         }
         return "/webcontent/web_content";
     }
+    
+    public String toEditWebContentLong() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return "";
+        }
+        return "/webcontent/web_content_long";
+    }
 
     public String toDeleteWebContent() {
         if (selected == null) {
