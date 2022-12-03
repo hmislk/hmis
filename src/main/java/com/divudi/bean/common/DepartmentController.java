@@ -496,7 +496,6 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getItems() {
-        items = getFacade().findAll("name", true);
         return items;
     }
 
