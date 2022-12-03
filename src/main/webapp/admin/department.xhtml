@@ -17,6 +17,12 @@
                     <p:tabView id="gpDetail" >
                         <p:tab title="Basic Details" >
                             <h:panelGrid columns="1">
+
+                                <p:commandButton ajax="false" id="btnSave" value="Save" 
+                                                 action="#{departmentController.saveSelectedDepartment()}"
+                                                 style="float: right;">
+                                </p:commandButton>
+
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name"  ></h:outputText>
                                     <p:inputText autocomplete="off" 

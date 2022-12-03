@@ -16,10 +16,10 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form>
-            <nav class="bg-light">
-                <div class="container d-flex flex-wrap">
+            <nav class="bg-info text-white"  >
+                <div class="container d-flex flex-wrap text-white" >
                     <ul class="nav me-auto">
-                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2 " action="#{webContentController.toHome()}" >#{webContentController.findSingleText('home')}</h:commandLink></li>
+                        <li class="nav-item"><h:commandLink class="nav-link link-light px-2 " action="#{webContentController.toHome()}" >#{webContentController.findSingleText('home')}</h:commandLink></li>
                         <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
                         <li class="nav-item"><h:commandLink class="nav-link link-dark px-2"  action="#{webContentController.toChannel()}" >#{webContentController.findSingleText('channel')}</h:commandLink></li>
                         <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
