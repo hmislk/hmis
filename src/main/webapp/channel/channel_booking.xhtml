@@ -14,216 +14,233 @@
 
         <h:form >
 
+
+            <div class="row" >
+                <div class="col-md-3" >
+                    <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
+                        <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
+                            <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
+                            <p:ajax  event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
+                        </p:inputText>
+                        <h:panelGroup id="acSpeciality" >
+                            <p:dataTable  scrollable="true" scrollHeight="280"
+                                          id="acSpeciality1"
+                                          lazy="false"
+                                          rendered="#{doctorSpecialityController.selectedItems ne null}"
+                                          selection="#{bookingController.speciality}"
+                                          rowKey="#{spe.id}"
+                                          value="#{doctorSpecialityController.selectedItems}"  
+                                          var="spe" 
+                                          selectionMode="single" 
+                                          style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
+                                <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  
+                                         :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
+                                         :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
+                                         :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}" 
+                                         listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
+                                <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
+                                    <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
+                                    <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" ></p:tooltip>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </h:panelGrid>
+                </div>
+                <div class="col-md-3" >
+                    <h:panelGroup id="scStaff" >
+                        <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextConsultant}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
+                            <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblCon',view).clientId} :#{p:resolveFirstComponentWithId('panSpeciality',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffRowSelect}"/> 
+                        </p:inputText>
+                        <h:panelGroup id="tblCon" >
+                            <p:dataTable id="tblCon1" 
+                                         lazy="false"
+                                         rendered="#{bookingController.consultants ne null}"
+                                         var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
+                                         selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
+                                         style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
+                                         selectionMode="single" >
+                                <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
+                                    <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
+                                    <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" 
+                                               showDelay="0" hideDelay="0" 
+                                               ></p:tooltip>
+                                </p:column>
+                                <p:ajax  event="rowSelect" 
+                                         process="@this" 
+                                         update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
+                                         :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
+                                         :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}"  
+                                         listener="#{bookingController.listnerServiceSessionListForRowSelectNew}"/>
+                            </p:dataTable>
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </div>
+                <div class="col-md-3" >
+
+
+                    <h:panelGroup  >
+                        <p:inputText autocomplete="off" id="txtSearch3" value="#{bookingController.selectTextSession}" style="width: 176px;margin-left: 2px;" placeholder="Session" >
+                            <f:ajax  event="keyup" execute="@this" 
+                                     render=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" 
+                                     listener="#{bookingController.listnerSessionRowSelect}"/> 
+                        </p:inputText>
+
+                        <h:panelGroup id="tblSessionsOfSelectedConsultant1" >
+                            <p:dataTable 
+                                lazy="false"
+                                rendered="#{bookingController.serviceSessions ne null}"
+                                value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
+                                id="tblSessionsOfSelectedConsultant" var="ses"
+                                selectionMode="single" 
+                                selection="#{bookingController.selectedServiceSession}"
+                                scrollable="true" 
+                                scrollHeight="280" rowStyleClass="#{ses.deactivated ? 'redText':''}" styleClass="noBorder" 
+                                style="height: 300px; width: 420px; background-color: yellow;">
+
+                                <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
+                                        update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId} 
+                                        :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} 
+                                        :#{p:resolveFirstComponentWithId('tabViewPatientDetails',view).clientId} 
+                                        :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId}"
+                                        listener="#{bookingController.listnerBillSessionListForRowSelectNew}" />
+                                <p:column style="text-wrap: none;width: 30px!important;text-align: right;"  rendered="false">
+                                    <h:outputText value="* " rendered="#{ses.deactivated}" />
+                                    <h:outputText value="#{ses.sessionDate}" >
+                                        <f:convertDateTime pattern="E"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="false">
+                                    <h:outputText value="#{ses.sessionDate}" >
+                                        <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                    </h:outputText>
+                                    <h:outputText value=" &nbsp;&nbsp;" />
+                                    <h:outputText value="#{ses.startingTime}" >
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                    </h:outputText>
+                                    <h:outputText value=" &nbsp;&nbsp;" />
+                                    <h:outputText value="#{ses.totalFee}" >
+                                        <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value=" &nbsp;&nbsp;" />
+                                    <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" >
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value="(" />
+                                    <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}" >
+                                        <f:convertNumber pattern="000" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value=") &nbsp;&nbsp;#" /> 
+                                    <h:outputText value="#{ses.displayCount+1}" rendered="#{ses.startingNo eq 0}" style="color: red" >
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value="#{ses.displayCount+ses.startingNo}" rendered="#{ses.startingNo gt 0}" style="color: red" >
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value=" &nbsp;&nbsp;**" />
+                                    <h:outputText value="#{ses.transCreditBillCount}" >
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+                                    <h:outputText value="**" />
+                                    <h:outputText value=" In" rendered="#{ses.arival eq false}" style="color: green;"/>
+                                    <h:outputText value=" Out" rendered="#{ses.arival eq true}" style="color: red;"/>
+                                    <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
+                                </p:column>
+
+                                <p:column headerText="Session" style="text-wrap: none;"  >
+                                    <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
+                                    <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>
+                                    <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
+                                </p:column>
+                                <p:column headerText="Max" style="width: 20px!important; text-align: center;" >
+                                    <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Booked" style="width: 20px!important; text-align: center;" >
+                                    <h:outputText value="#{ses.displayCount}">
+                                        <f:convertNumber pattern="00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Date" style="width: 50px!important; text-align: center;" >
+                                    <h:outputText value="#{ses.sessionDate}">
+                                        <f:convertDateTime pattern="dd MMM"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
+                                    <h:outputText value="#{ses.startingTime}">
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
+                                    <h:outputText value="#{ses.totalFee}">
+                                        <f:convertNumber pattern="#,##0" ></f:convertNumber>
+                                    </h:outputText>                                                            
+                                </p:column>   
+                            </p:dataTable>
+                        </h:panelGroup>
+
+
+
+                    </h:panelGroup>
+                </div>
+                <div class="col-md-3" >
+
+                    <h:panelGroup >
+                        <p:spacer height="10px" />
+                        <h:panelGroup id="tblBookingsOfSelectedSession" >
+                            <p:dataTable 
+                                lazy="false"
+                                id="tblBookingsOfSelectedSession1" 
+                                style="height: 280px; width: 500px;"
+                                value="#{bookingController.billSessions}" 
+                                rendered="#{bookingController.billSessions ne null}"
+                                var='bs'
+                                selectionMode="single" rowKey="#{bs.id}" styleClass="noBorder" 
+                                rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
+                                selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
+                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
+                                        listener="#{channelBillController.createBillfees}" />
+                                <f:facet name="header">
+                                    <p:outputLabel value="Bookings" ></p:outputLabel>
+                                </f:facet>
+
+                                <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
+                                <p:column headerText="Name" style="width: 50px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
+                                <p:column headerText="Paid" style="width: 30px!important;">
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
+                                    <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
+                                </p:column>
+                                <p:column headerText="C/R" style="width: 20px!important;" >
+                                    <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
+                                    <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
+                                </p:column>   
+                                <p:column headerText="Agent" style="width: 10px!important;">
+                                    <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
+                                    <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
+                                </p:column> 
+                                <!--                        <p:column headerText="P/A" style="width: 10px!important;">                           
+                                                            <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
+                                                        </p:column> -->
+                            </p:dataTable>  
+                        </h:panelGroup>
+
+                    </h:panelGroup>
+                </div>
+            </div>
+
+
             <h:panelGrid rendered="true" columns="4" id="gridSelections" styleClass="alignTop">
-                <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
-                    <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
-                        <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
-                        <p:ajax  event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
-                    </p:inputText>
-                    <h:panelGroup id="acSpeciality" >
-                        <p:dataTable  scrollable="true" scrollHeight="280"
-                                      id="acSpeciality1"
-                                      lazy="false"
-                                      rendered="#{doctorSpecialityController.selectedItems ne null}"
-                                      selection="#{bookingController.speciality}"
-                                      rowKey="#{spe.id}"
-                                      value="#{doctorSpecialityController.selectedItems}"  
-                                      var="spe" 
-                                      selectionMode="single" 
-                                      style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                            <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  
-                                     :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
-                                     :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
-                                     :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}" 
-                                     listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
-                            <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
-                                <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                                <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" ></p:tooltip>
-                            </p:column>
-                        </p:dataTable>
-                    </h:panelGroup>
-                </h:panelGrid>
-
-                <h:panelGroup id="scStaff" >
-                    <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextConsultant}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
-                        <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblCon',view).clientId} :#{p:resolveFirstComponentWithId('panSpeciality',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffRowSelect}"/> 
-                    </p:inputText>
-                    <h:panelGroup id="tblCon" >
-                        <p:dataTable id="tblCon1" 
-                                     lazy="false"
-                                     rendered="#{bookingController.consultants ne null}"
-                                     var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
-                                     selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
-                                     style="height: 300px; width: 200px; padding: 2px; margin: auto;" 
-                                     selectionMode="single" >
-                            <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
-                                <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
-                                <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" 
-                                           showDelay="0" hideDelay="0" 
-                                           ></p:tooltip>
-                            </p:column>
-                            <p:ajax  event="rowSelect" 
-                                     process="@this" 
-                                     update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
-                                     :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
-                                     :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}"  
-                                     listener="#{bookingController.listnerServiceSessionListForRowSelectNew}"/>
-                        </p:dataTable>
-                    </h:panelGroup>
-
-                </h:panelGroup>
-
-                <h:panelGroup  >
-                    <p:inputText autocomplete="off" id="txtSearch3" value="#{bookingController.selectTextSession}" style="width: 176px;margin-left: 2px;" placeholder="Session" >
-                        <f:ajax  event="keyup" execute="@this" 
-                                 render=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" 
-                                 listener="#{bookingController.listnerSessionRowSelect}"/> 
-                    </p:inputText>
-
-                    <h:panelGroup id="tblSessionsOfSelectedConsultant1" >
-                        <p:dataTable 
-                            lazy="false"
-                            rendered="#{bookingController.serviceSessions ne null}"
-                            value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
-                            id="tblSessionsOfSelectedConsultant" var="ses"
-                            selectionMode="single" 
-                            selection="#{bookingController.selectedServiceSession}"
-                            scrollable="true" 
-                            scrollHeight="280" rowStyleClass="#{ses.deactivated ? 'redText':''}" styleClass="noBorder" 
-                            style="height: 300px; width: 420px; background-color: yellow;">
-
-                            <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                    update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId} 
-                                    :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} 
-                                    :#{p:resolveFirstComponentWithId('tabViewPatientDetails',view).clientId} 
-                                    :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId}"
-                                    listener="#{bookingController.listnerBillSessionListForRowSelectNew}" />
-                            <p:column style="text-wrap: none;width: 30px!important;text-align: right;"  rendered="false">
-                                <h:outputText value="* " rendered="#{ses.deactivated}" />
-                                <h:outputText value="#{ses.sessionDate}" >
-                                    <f:convertDateTime pattern="E"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="false">
-                                <h:outputText value="#{ses.sessionDate}" >
-                                    <f:convertDateTime pattern="MMM/dd/yyyy"/>
-                                </h:outputText>
-                                <h:outputText value=" &nbsp;&nbsp;" />
-                                <h:outputText value="#{ses.startingTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
-                                </h:outputText>
-                                <h:outputText value=" &nbsp;&nbsp;" />
-                                <h:outputText value="#{ses.totalFee}" >
-                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                </h:outputText>
-                                <h:outputText value=" &nbsp;&nbsp;" />
-                                <h:outputText value="#{ses.transDisplayCountWithoutCancelRefund}" style="color: green" >
-                                    <f:convertNumber pattern="00" ></f:convertNumber>
-                                </h:outputText>
-                                <h:outputText value="(" />
-                                <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}" >
-                                    <f:convertNumber pattern="000" ></f:convertNumber>
-                                </h:outputText>
-                                <h:outputText value=") &nbsp;&nbsp;#" /> 
-                                <h:outputText value="#{ses.displayCount+1}" rendered="#{ses.startingNo eq 0}" style="color: red" >
-                                    <f:convertNumber pattern="00" ></f:convertNumber>
-                                </h:outputText>
-                                <h:outputText value="#{ses.displayCount+ses.startingNo}" rendered="#{ses.startingNo gt 0}" style="color: red" >
-                                    <f:convertNumber pattern="00" ></f:convertNumber>
-                                </h:outputText>
-                                <h:outputText value=" &nbsp;&nbsp;**" />
-                                <h:outputText value="#{ses.transCreditBillCount}" >
-                                    <f:convertNumber pattern="00" ></f:convertNumber>
-                                </h:outputText>
-                                <h:outputText value="**" />
-                                <h:outputText value=" In" rendered="#{ses.arival eq false}" style="color: green;"/>
-                                <h:outputText value=" Out" rendered="#{ses.arival eq true}" style="color: red;"/>
-                                <h:outputText value=" Leave *" rendered="#{ses.deactivated}"/>
-                            </p:column>
-
-                            <p:column headerText="Session" style="text-wrap: none;"  >
-                                <h:outputText id="lblSesName" value="#{ses.name}" escape="false"></h:outputText>
-                                <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>
-                                <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
-                            </p:column>
-                            <p:column headerText="Max" style="width: 20px!important; text-align: center;" >
-                                <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
-                                    <f:convertNumber pattern="00" ></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Booked" style="width: 20px!important; text-align: center;" >
-                                <h:outputText value="#{ses.displayCount}">
-                                    <f:convertNumber pattern="00" ></f:convertNumber>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Date" style="width: 50px!important; text-align: center;" >
-                                <h:outputText value="#{ses.sessionDate}">
-                                    <f:convertDateTime pattern="dd MMM"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
-                                <h:outputText value="#{ses.startingTime}">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
-                                <h:outputText value="#{ses.totalFee}">
-                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                </h:outputText>                                                            
-                            </p:column>   
-                        </p:dataTable>
-                    </h:panelGroup>
 
 
 
-                </h:panelGroup>
 
-                <h:panelGroup >
-                    <p:spacer height="10px" />
-                    <h:panelGroup id="tblBookingsOfSelectedSession" >
-                        <p:dataTable 
-                            lazy="false"
-                            id="tblBookingsOfSelectedSession1" 
-                            style="height: 280px; width: 500px;"
-                            value="#{bookingController.billSessions}" 
-                            rendered="#{bookingController.billSessions ne null}"
-                            var='bs'
-                            selectionMode="single" rowKey="#{bs.id}" styleClass="noBorder" 
-                            rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
-                            selection="#{bookingController.selectedBillSession}" scrollable="true" scrollHeight="275">
-                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
-                                    listener="#{channelBillController.createBillfees}" />
-                            <f:facet name="header">
-                                <p:outputLabel value="Bookings" ></p:outputLabel>
-                            </f:facet>
-
-                            <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
-                            <p:column headerText="Name" style="width: 50px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                            <p:column headerText="Paid" style="width: 30px!important;">
-                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
-                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
-                                <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
-                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0}" value="Paid"/>
-                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Agent'}" value="-Agent"/>
-                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
-                                <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
-                            </p:column>
-                            <p:column headerText="C/R" style="width: 20px!important;" >
-                                <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
-                                <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
-                            </p:column>   
-                            <p:column headerText="Agent" style="width: 10px!important;">
-                                <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
-                                <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
-                            </p:column> 
-                            <!--                        <p:column headerText="P/A" style="width: 10px!important;">                           
-                                                        <p:outputLabel value="Absent"  rendered="#{bs.absent}"/>  
-                                                    </p:column> -->
-                        </p:dataTable>  
-                    </h:panelGroup>
-
-                </h:panelGroup>
 
 
             </h:panelGrid>
