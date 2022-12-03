@@ -3081,11 +3081,6 @@ public class ChannelReportController implements Serializable {
             hm.put("class", bill.getClass());
         }
 
-        if (reportKeyWord.getWebUser() != null) {
-            sql += " and b.creater=:user";
-            hm.put("user", reportKeyWord.getWebUser());
-        }
-
         sql += " order by b.createdAt ";
 
         hm.put("fDate", fd);
