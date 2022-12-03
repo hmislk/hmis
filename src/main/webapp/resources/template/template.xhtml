@@ -8,7 +8,7 @@
     <h:head class="">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-        <ui:insert name="title">
+        <ui:insert name="title"   >
             <title>
                 <h:panelGroup rendered="#{sessionController.logged}" >
                     <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
@@ -45,35 +45,37 @@
 
     </h:head>
 
-    <h:body>
-        <p:growl id="publicGrowl"/>
-        <h:panelGroup rendered ="#{not sessionController.logged}"  >
-            <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
-                <ez:webindex rendered="#{not sessionController.websiteUserGoingToLog}"/> 
-                <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
+    <h:body style="font-family: 'Roboto', sans-serif;">
+        <div  id="panelFullSpread" class="fullSpread ui-widget-content " >
+            <p:growl id="publicGrowl"/>
+            <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
+                    <ez:web_header/>
+                    <ez:web_title/>
+                    <ui:insert name="web">
+                        <ez:webindex rendered="#{not sessionController.websiteUserGoingToLog}"/> 
+                        <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
+                    </ui:insert>
+                    <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{not applicationController.hasAwebsiteAsFrontEnd}" >
+                    <ui:insert name="login">
+                        <ez:login/>
+                    </ui:insert>
+                </h:panelGroup>
             </h:panelGroup>
-            <h:panelGroup rendered="#{not applicationController.hasAwebsiteAsFrontEnd}" >
-                <ui:insert name="login">
-                    <ez:login/>
-                </ui:insert>
+            <h:panelGroup rendered ="#{sessionController.logged}"  >
+                <h:panelGroup rendered="#{sessionController.department ne null}" styleClass="nonPrintBlock" >
+                    <ez:menu/>
+                    <ui:insert name="content">
+                    </ui:insert>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{sessionController.department eq null}" styleClass="nonPrintBlock" >
+                    <ez:select_department/>
+                </h:panelGroup>
+                <ez:footer/>
             </h:panelGroup>
-        </h:panelGroup>
-        <h:panelGroup rendered ="#{sessionController.logged}"  >
-            <h:panelGroup rendered="#{sessionController.department ne null}" styleClass="nonPrintBlock" >
-                <ez:menu/>
-                <ui:insert name="content">
-                </ui:insert>
-            </h:panelGroup>
-            <h:panelGroup rendered="#{sessionController.department eq null}" styleClass="nonPrintBlock" >
-                <ez:select_department/>
-            </h:panelGroup>
-            <ez:footer/>
-        </h:panelGroup>
-        <h:panelGroup rendered ="#{sessionController.firstLogin}"  >
-            <ez:menu_first_login ></ez:menu_first_login>
-            <ui:insert name="content">
-            </ui:insert>
-            <ez:footer/>
-        </h:panelGroup>
+        </div>
+
     </h:body>
 </html>
