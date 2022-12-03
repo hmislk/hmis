@@ -4292,6 +4292,10 @@ public class SearchController implements Serializable {
         return fillUserPatientReport(true);
     }
 
+    public String toSearchReportsByBillNumber(){
+        return "/report_search_by_bill_number";
+    }
+    
     private String fillUserPatientReport(boolean web) {
         String jpql;
         Map m = new HashMap();
@@ -4323,7 +4327,7 @@ public class SearchController implements Serializable {
         userPatientInvestigations = patientInvestigationFacade.findBySQL(jpql, m, 20);
 
 //        return "/reports_list";
-        if (userPatientInvestigations.size() > 0) {
+        if (!userPatientInvestigations.isEmpty()) {
             if (web) {
                 return "/reports_list_new";
             } else {
