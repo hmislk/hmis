@@ -55,7 +55,7 @@ public class WebContentController implements Serializable {
     }
 
     public String toReports() {
-        page = "/reports";
+        page = "/report_search";
         return page;
     }
     

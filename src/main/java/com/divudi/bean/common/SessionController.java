@@ -154,6 +154,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setInstitution(null);
         return "/admin_mange_application_preferences";
     }
+    
+    public String toPublicLogin(){
+        return "/public_login";
+    }
 
     public String toManageIntitutionPreferences() {
         String jpql;
