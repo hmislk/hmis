@@ -39,6 +39,10 @@ public class UserPreference implements Serializable {
     @Lob
     String pharmacyBillFooter;
     @Lob
+    private String inwardDepositBillTemplate;
+    @Lob
+    private String inwardDepositCancelBillTemplate;
+    @Lob
     String opdBillHeader;
     @Lob
     String opdBillFooter;
@@ -110,6 +114,7 @@ public class UserPreference implements Serializable {
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
+    
     
     
     
@@ -684,6 +689,22 @@ public class UserPreference implements Serializable {
 
     public void setSendBulkSms(boolean sendBulkSms) {
         this.sendBulkSms = sendBulkSms;
+    }
+
+    public String getInwardDepositBillTemplate() {
+        return inwardDepositBillTemplate;
+    }
+
+    public void setInwardDepositBillTemplate(String inwardDepositBillTemplate) {
+        this.inwardDepositBillTemplate = inwardDepositBillTemplate;
+    }
+
+    public String getInwardDepositCancelBillTemplate() {
+        return inwardDepositCancelBillTemplate;
+    }
+
+    public void setInwardDepositCancelBillTemplate(String inwardDepositCancelBillTemplate) {
+        this.inwardDepositCancelBillTemplate = inwardDepositCancelBillTemplate;
     }
 
     
