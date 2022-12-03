@@ -30,7 +30,11 @@
                             <h:outputText value="#{u.orderNo}" ></h:outputText>
                         </p:column>
                         <p:column headerText="Actions" >
-                            <h:commandButton value="Edit" action="${webContentController.toEditWebContent()}" >
+                            <h:commandButton value="Edit Short Text" action="${webContentController.toEditWebContent()}" >
+                                <f:setPropertyActionListener value="#{u}" target="#{webContentController.selected}" >
+                                </f:setPropertyActionListener>
+                            </h:commandButton>
+                            <h:commandButton value="Edit Long Text" action="${webContentController.toEditWebContentLong()}" >
                                 <f:setPropertyActionListener value="#{u}" target="#{webContentController.selected}" >
                                 </f:setPropertyActionListener>
                             </h:commandButton>
