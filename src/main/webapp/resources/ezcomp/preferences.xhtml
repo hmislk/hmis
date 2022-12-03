@@ -135,6 +135,81 @@
                 <p:tab title="In-ward" >
                     <p:panel header="Inward" >
                         <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:panelGroup >
+                                <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
+                                Available Fields
+                                {ins_id}<br/>
+                                {dept_id}<br/>
+                                {from_institution}<br/>
+                                {from_department}<br/>
+                                {to_institution}<br/>
+                                {to_department}<br/>
+                                {patient_name}<br/>
+                                {patient_age}<br/>
+                                {patient_sex}<br/>
+                                {patient_address}<br/>
+                                {patient_phone}<br/>
+                                {patient_phn_number}<br/>
+                                {admission_number}
+                                {admission_date}
+                                
+                                {payment_method}
+                                {gross_total}
+                                {discount}
+                                {net_total}
+                                
+                                {table_class}<br/>
+                                {table_style}<br/>
+                                {serial_class}<br/>
+                                {serial_style}<br/>
+                                
+                                {cancelled}
+                                {returned}
+                                
+                                {cashier_username}
+                                {bill_date}
+                                {bill_time}
+                            </h:panelGroup>
+                            <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" />
+                            
+                            <h:panelGroup >
+                                <h:outputLabel value="Inward Deposit Cancel Bill Template" ></h:outputLabel>
+                                Available Fields
+                                {ins_id}<br/>
+                                {dept_id}<br/>
+                                {from_institution}<br/>
+                                {from_department}<br/>
+                                {to_institution}<br/>
+                                {to_department}<br/>
+                                {patient_name}<br/>
+                                {patient_age}<br/>
+                                {patient_sex}<br/>
+                                {patient_address}<br/>
+                                {patient_phone}<br/>
+                                {patient_phn_number}<br/>
+                                {admission_number}
+                                {admission_date}
+                                
+                                {payment_method}
+                                {gross_total}
+                                {discount}
+                                {net_total}
+                                
+                                {table_class}<br/>
+                                {table_style}<br/>
+                                {serial_class}<br/>
+                                {serial_style}<br/>
+                                
+                                {cancelled}
+                                {returned}
+                                
+                                {cashier_username}
+                                {bill_date}
+                                {bill_time}
+                            </h:panelGroup>
+                            <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}" />
+                            
+                            
                             <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
 
