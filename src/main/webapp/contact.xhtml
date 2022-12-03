@@ -27,20 +27,15 @@
                     <div class="card m-4"  >
                         <div class="card-header" >
                             <h2>
-                                <h:outputText value="#{webContentController.findSingleText('service_opd_title')}" escape="false"></h:outputText>
+                                <h:outputText value="#{webContentController.findSingleText('contact_us')}" escape="false"></h:outputText>
                             </h2>
                         </div>
                         <div class="card-body" >
                             <div class="row" >
                                 <div class="col-md-6" >
-                                    <p:imageSwitch effect="fade" slideshowSpeed="4723" >
-                                        <ui:repeat value="#{webContentController.findMultipleWebContent('service_opd_image')}" var="i">
-                                            <p:graphicImage class="w-100" style="height: 20rem;"
-                                                            cache="false"  value="#{streamedContentController.imageByUpWebContentId}"  >
-                                                <f:param name="id" value="#{i.idStr}" />
-                                            </p:graphicImage>
-                                        </ui:repeat>
-                                    </p:imageSwitch>
+                                    <p:gmap center="" type="" zoom="" >
+                                        
+                                    </p:gmap>
                                 </div>
                                 <div class="col-md-6 card card-body bg-secondary text-white" >
                                     <h:outputText value="#{webContentController.findSingleText('service_opd_details')}" escape="false"></h:outputText>
@@ -69,31 +64,6 @@
                                 </div>
                                 <div class="col-md-6 card card-body bg-secondary text-white" >
                                     <h:outputText value="#{webContentController.findSingleText('service_lab_details')}" escape="false"></h:outputText>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="card m-4"  >
-                        <div class="card-header" >
-                            <h2>
-                                <h:outputText value="#{webContentController.findSingleText('service_xray')}" escape="false"></h:outputText>
-                            </h2>
-                        </div>
-                        <div class="card-body" >
-                            <div class="row" >
-                                <div class="col-md-6" >
-                                    <p:imageSwitch effect="fade" slideshowSpeed="5657" >
-                                        <ui:repeat value="#{webContentController.findMultipleWebContent('service_xray_image')}" var="i">
-                                            <p:graphicImage class="w-100" style="height: 20rem;"
-                                                            cache="false"  value="#{streamedContentController.imageByUpWebContentId}"  >
-                                                <f:param name="id" value="#{i.idStr}" />
-                                            </p:graphicImage>
-                                        </ui:repeat>
-                                    </p:imageSwitch>
-                                </div>
-                                <div class="col-md-6 card card-body bg-secondary text-white" >
-                                    <h:outputText value="#{webContentController.findSingleText('service_xray_details')}" escape="false"></h:outputText>
                                 </div>
                             </div>
                         </div>
