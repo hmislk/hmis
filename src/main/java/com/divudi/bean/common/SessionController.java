@@ -906,6 +906,20 @@ public class SessionController implements Serializable, HttpSessionListener {
         return "/home";
     }
 
+    private void loadApplicationPreferances() {
+        String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+        applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
+        if (applicationPreference == null) {
+            applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
+            getUserPreferenceFacade().create(applicationPreference);
+        }
+    }
+    
+    
+
     //get Current hour
     public int getCurrentHour() {
         Date date = new Date();
@@ -1459,15 +1473,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public UserPreference getApplicationPreference() {
         if (applicationPreference == null) {
-            String sql = "";
-            sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-            applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
-            if (applicationPreference == null) {
-                applicationPreference = new UserPreference();
-                getUserPreferenceFacade().create(applicationPreference);
-            }
+           loadApplicationPreferances();
         }
-
         return applicationPreference;
     }
 

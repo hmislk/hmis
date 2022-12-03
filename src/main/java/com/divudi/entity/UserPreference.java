@@ -82,6 +82,7 @@ public class UserPreference implements Serializable {
     boolean channelSettleWithoutPatientPhoneNumber=false;
     boolean opdSettleWithoutPatientPhoneNumber=false;
     boolean channelBillDouble=false;
+    private boolean hasAwebsiteAsFrontEnd = false;
     private boolean channelDoctorArivalMsgSend=false;
     String microBiologyFont;
     String logoName;
@@ -705,6 +706,14 @@ public class UserPreference implements Serializable {
 
     public void setInwardDepositCancelBillTemplate(String inwardDepositCancelBillTemplate) {
         this.inwardDepositCancelBillTemplate = inwardDepositCancelBillTemplate;
+    }
+
+    public boolean isHasAwebsiteAsFrontEnd() {
+        return hasAwebsiteAsFrontEnd;
+    }
+
+    public void setHasAwebsiteAsFrontEnd(boolean hasAwebsiteAsFrontEnd) {
+        this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
     }
 
     
