@@ -71,6 +71,13 @@
                         <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
+
+                            <p:commandButton id="btnWeb" 
+                                             ajax="false" 
+                                             value="Save" 
+                                             action="#{applicationController.setHasAwebsiteAsFrontEnd(null)}" ></p:commandButton>
+
+
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>

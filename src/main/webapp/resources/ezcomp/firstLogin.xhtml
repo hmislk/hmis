@@ -17,16 +17,19 @@
             <f:facet name="header" >
                 <h:outputLabel value="#{labels.topic}" />
             </f:facet>
-            <p:menubar styleClass="nonPrintBlock" style=" border: 0px;" >
-                <p:submenu label="Administration"  >
-                    <p:menuitem  ajax="false"  action="/admin_manage_users" value="Manage Users"></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/admin_mange_institutions_index" value="Manage Institutions"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff"></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/admin_items" value="Manage Items/Services" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages"></p:menuitem>
-                    <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" ></p:menuitem>
-                </p:submenu>
-            </p:menubar>
+            <h:form >
+                <p:menubar styleClass="nonPrintBlock" style=" border: 0px;" >
+                    <p:submenu label="Administration"  >
+                        <p:menuitem  ajax="false"  action="/admin_manage_users" value="Manage Users"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/admin_mange_institutions_index" value="Manage Institutions"  ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/admin_items" value="Manage Items/Services" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages"></p:menuitem>
+                        <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" ></p:menuitem>
+                    </p:submenu>
+                </p:menubar>
+            </h:form>
+
         </h:panelGroup>
 
     </cc:implementation>

@@ -122,6 +122,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     Bill bill;
     private DashboardModel dashboardModel;
     String loginRequestResponse;
+    private Boolean firstLogin;
 
     private boolean websiteUserGoingToLog = false;
 
@@ -537,7 +538,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean isFirstVisit() {
-        if (getFacede().count() <= 0) {
+        if (getFacede().count() <= 2) {
             UtilityController.addSuccessMessage("First Visit");
             return true;
         } else {
@@ -547,14 +548,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     }
 
-    public boolean isFirstLogin() {
-        if (getFacede().count() <= 1) {
-            return true;
-        } else {
-            return false;
-        }
-
-    }
 
     private boolean checkUsers() {
         String temSQL;
@@ -1515,5 +1508,18 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setDepartmentPreference(UserPreference departmentPreference) {
         this.departmentPreference = departmentPreference;
     }
+
+    public Boolean getFirstLogin() {
+        if(firstLogin==null){
+            firstLogin = isFirstVisit();
+        }
+        return firstLogin;
+    }
+
+    public void setFirstLogin(Boolean firstLogin) {
+        this.firstLogin = firstLogin;
+    }
+    
+    
 
 }
