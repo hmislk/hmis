@@ -23,6 +23,7 @@
                     <h:panelGroup id="acSpeciality" >
                         <p:dataTable  scrollable="true" scrollHeight="280"
                                       id="acSpeciality1"
+                                      lazy="false"
                                       rendered="#{doctorSpecialityController.selectedItems ne null}"
                                       selection="#{bookingController.speciality}"
                                       rowKey="#{spe.id}"
@@ -49,6 +50,7 @@
                     </p:inputText>
                     <h:panelGroup id="tblCon" >
                         <p:dataTable id="tblCon1" 
+                                     lazy="false"
                                      rendered="#{bookingController.consultants ne null}"
                                      var="mys" rowKey="#{mys.id}" value="#{bookingController.consultants}"
                                      selection="#{bookingController.staff}" scrollable="true" scrollHeight="280"
@@ -80,6 +82,7 @@
 
                     <h:panelGroup id="tblSessionsOfSelectedConsultant1" >
                         <p:dataTable 
+                            lazy="false"
                             rendered="#{bookingController.serviceSessions ne null}"
                             value="#{bookingController.serviceSessions}" rowKey="#{ses.transRowNumber}"
                             id="tblSessionsOfSelectedConsultant" var="ses"
@@ -180,6 +183,7 @@
                     <p:spacer height="10px" />
                     <h:panelGroup id="tblBookingsOfSelectedSession" >
                         <p:dataTable 
+                            lazy="false"
                             id="tblBookingsOfSelectedSession1" 
                             style="height: 280px; width: 500px;"
                             value="#{bookingController.billSessions}" 
@@ -229,7 +233,7 @@
 
                 <p:panel id="gpThisBookingDetails" style="min-width: 450px; max-width: 450px; min-height:400px;max-height: 520px;"  >
                     <f:facet name="header" >
-                        <p:tabView id="tabViewAgentBookDetails">
+                        <p:tabView id="tabViewAgentBookDetails" rendered="false">
                             <p:tab title="Payemnet Details">
                                 <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
                                     <p:outputLabel value="Amount" style="width: 200px!important;"/>
@@ -343,6 +347,7 @@
 
                                     <h:panelGroup id="tblAgentBooks" >
                                         <p:dataTable emptyMessage="No Book" 
+                                                     lazy="false"
                                                      rendered="#{channelBillController.institution.agentReferenceBooks ne null}"
                                                      style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ; width: 100px!important;" id="tblAgentBooksTable" 
                                                      value="#{channelBillController.institution.agentReferenceBooks}" var="a">
@@ -359,6 +364,7 @@
 
                                     <h:panelGroup id="tblAgentBooks2" >
                                         <p:dataTable emptyMessage="No Book"
+                                                     lazy="false"
                                                      rendered="#{channelBillController.institution.agentReferenceBooks ne null}"
                                                      style="display: #{channelBillController.paymentMethod eq 'Agent'? 'block' : 'none'} ;width: 100px!important; " 
                                                      id="tblAgentBooks2Table" 
@@ -393,7 +399,8 @@
 
 
                     </f:facet>
-                    <p:tabView id="tabViewPatientDetails" activeIndex="#{channelBillController.patientSearchTab}" >
+                    <p:tabView id="tabViewPatientDetails" rendered="false"
+                               activeIndex="#{channelBillController.patientSearchTab}" >
                         <p:ajax event="tabChange"  process="@this" listener="#{channelBillController.onTabChange}" />
                         <p:tab id="tabNewPt" title="New Pateint">
                             <h:panelGrid columns="2">
@@ -475,6 +482,7 @@
                         </p:tab>
                         <p:tab  id="tabFees" title="Fees" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' and bookingController.selectedServiceSession.originatingSession.forBillType eq 'XrayScan'}" >
                             <p:dataTable 
+                                lazy="false"
                                 rendered="#{bookingController.selectedServiceSession.originatingSession.itemFees ne null}"
                                 value="#{bookingController.selectedServiceSession.originatingSession.itemFees}" 
                                 var="f" rowStyleClass="#{(f.name.equals('Doctor Fee') or f.name.equals('Hospital Fee')) ? '':'noDisplayRow'}" >
@@ -555,8 +563,9 @@
                 </p:panel>
 
                 <p:panel id="panelSelectedBookinDetails">
-                    <p:tabView id="detail" style="width: 800px!important;height: 450px!important;">
-                        <p:tab title="Booking" id="booking" rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
+                    <p:tabView id="detail" rendered="true" style="width: 800px!important;height: 450px!important;">
+                        <p:tab title="Booking" id="booking" 
+                               rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                             <h:panelGrid columns="2" >
 
                                 <p:panel header="Booking" rendered="#{bookingController.selectedBillSession.bill.paidBill eq null and bookingController.selectedBillSession.bill.balance ne 0.0}">
@@ -901,7 +910,11 @@
                                         <f:convertNumber pattern="#,###0.00"  />
                                     </h:outputLabel>
                                 </h:panelGrid>
-                                <p:dataTable rendered="#{channelBillController.billSession.bill.billFees ne null}" value="#{channelBillController.billSession.bill.billFees}" var="bi">
+                                <p:dataTable 
+                                    rendered="#{channelBillController.billSession.bill.billFees ne null}"
+                                    value="#{channelBillController.billSession.bill.billFees}" 
+                                    var="bi"
+                                    lazy="false">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
                                     </p:column>
@@ -1091,7 +1104,9 @@
 
 
                             <h:panelGroup id="bSessionSearch" >
-                                <p:dataTable id="bSessionSearchTable" value="#{channelSearchController.searchedBillSessions}"
+                                <p:dataTable id="bSessionSearchTable" 
+                                             lazy="false"
+                                             value="#{channelSearchController.searchedBillSessions}"
                                              rendered="#{channelSearchController.searchedBillSessions ne null}"
                                              var="bs"
                                              styleClass="noBorder" style="width: 780px!important;height: 270px!important;overflow:scroll!important;">
