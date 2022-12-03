@@ -17,11 +17,12 @@
 
 
                         <h:form>
-                            <h1><h:outputText value="List"/></h1>
+     
                             <p:dataTable 
                                 value="#{institutionController.items}" var="item"
                                 rowKey="#{item.id}"
-
+                                class="w-100"
+                                
                                 rows="10"
                                 paginator="true" paginatorPosition="both"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -82,20 +83,20 @@
                                     <f:facet name="header">
                                         <h:outputText value="Actions"/>
                                     </f:facet>
-                                    <p:commandButton class="btn btn-success" ajax="false" value="Edit" 
+                                    <h:commandButton class="btn btn-success" value="Edit" 
                                                      action="#{institutionController.toEditInstitution()}" 
                                                      >
                                         <f:setPropertyActionListener value="#{item}" target="#{institutionController.current}" >
                                         </f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton class="btn btn-danger" ajax="false" value="Delete" 
+                                    </h:commandButton>
+                                    <h:commandButton class="btn btn-danger" value="Delete" 
                                                      action="#{institutionController.deleteInstitution()}" 
                                                      onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                                  return false;"
                                                      >
                                         <f:setPropertyActionListener value="#{item}" target="#{institutionController.current}" >
                                         </f:setPropertyActionListener>
-                                    </p:commandButton>
+                                    </h:commandButton>
                                 </p:column>
 
 
