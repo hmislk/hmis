@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <div class="row" >
+                    <div class="col-md-3" >
+                        <h:form>
+                            <p:accordionPanel  >
+                                <p:tab title="Manage" >
+
+                                    <h:commandLink class="btn btn-primary w-100 mb-3"
+                                                   action="#{institutionController.toAddNewInstitution()}" 
+                                                   >
+                                        <i class="bi bi-building-add float-left"></i>
+                                        <span class="float-right">Add New Institution </span>
+                                    </h:commandLink>
+                                    <h:commandLink class="btn btn-primary w-100 mb-3"  
+                                                   action="#{institutionController.toListInstitutions()}" 
+                                                   >
+                                        <i class="bi bi-building-check"></i>
+                                        List Institutions
+                                    </h:commandLink>
+
+
+                                    <h:commandLink class="btn btn-primary w-100 mb-3"  
+                                                   action="#{departmentController.toAddNewDepartment()}" 
+                                                   >
+                                        <i class="bi bi-building-fill-add"></i>
+                                        Add New Department
+                                    </h:commandLink>
+                                    <h:commandLink class="btn btn-primary w-100 mb-3"  
+                                                   action="#{departmentController.toListDepartments()}" 
+                                                   >
+                                        <i class="bi bi-building-fill "></i>
+                                        List Departments
+                                    </h:commandLink>
+
+
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Branch" action="/lab/institution_branch" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" onclick="onSubmitButton();"/>
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" onclick="onSubmitButton();"/>
+
+                                </p:tab>
+                                <p:tab title="Preferences" >
+
+                                    <p:panelGrid columns="1">
+
+
+
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" onclick="onSubmitButton();"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" onclick="onSubmitButton();"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" onclick="onSubmitButton();"/>
+
+                                    </p:panelGrid>                     
+                                </p:tab>
+                                <p:tab title="Developer" >
+
+                                    <p:panelGrid columns="1">
+
+
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
+
+                                    </p:panelGrid>                     
+                                </p:tab>
+                            </p:accordionPanel>
+                        </h:form>
+                    </div>
+                    <div class="col-md-9" >
+                        <ui:insert name="admin" >
+
+                        </ui:insert>
+
+                    </div>
+                </div>
+
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

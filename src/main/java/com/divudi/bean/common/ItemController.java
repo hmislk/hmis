@@ -101,6 +101,60 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
 
     ReportKeyWord reportKeyWord;
+    
+    public void fillInvestigations() {
+        String j;
+        j = "select i from Investigation i where i.retired=false order by i.name";
+        items = getFacade().findBySQL(j);
+    }
+    
+    public String toManageItemdIndex(){
+        return "/admin/admin_items_index";
+    }
+    
+    public String toListInvestigations() {
+        fillInvestigations();
+        return "/admin/investigations";
+    }
+
+    public String toAddNewInvestigation() {
+        current = new Investigation();
+        return "/admin/investigation";
+    }
+
+    public String toEditInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/institution";
+    }
+
+    public String deleteInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        return toListInvestigations();
+    }
+    
+    public String saveSelectedInvestigation(){
+         if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+         if(current.getId()==null){
+             getFacade().create(current);
+         }else{
+             getFacade().edit(current);
+         }
+         return toListInvestigations();
+    }
+    
+    
+    
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {

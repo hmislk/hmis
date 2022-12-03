@@ -9,8 +9,10 @@ import com.divudi.entity.AppEmail;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
 import com.divudi.entity.Sms;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PatientFacade;
+import com.divudi.facade.UserPreferenceFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -35,6 +37,10 @@ public class ApplicationController {
     private PatientFacade patientFacade;
     @EJB
     private EmailManagerEjb eejb;
+    @EJB
+    UserPreferenceFacade userPreferenceFacade;
+
+    private UserPreference applicationPreference;
 
     String personalHealthNumber;
     Long personalHealthNumberCount;
@@ -49,12 +55,21 @@ public class ApplicationController {
 
     private String subject;
     private String body;
-    
-    private boolean hasAwebsiteAsFrontEnd=false;
-    
-    
 
-    
+    private boolean hasAwebsiteAsFrontEnd = false;
+
+    private void loadApplicationPreferances() {
+        String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
+        applicationPreference = userPreferenceFacade.findFirstBySQL(sql);
+        if (applicationPreference == null) {
+            applicationPreference = new UserPreference();
+            applicationPreference.setWebUser(null);
+            applicationPreference.setDepartment(null);
+            applicationPreference.setInstitution(null);
+            userPreferenceFacade.create(applicationPreference);
+        }
+    }
+
     public Date getStartTime() {
         return startTime;
     }
@@ -268,11 +283,25 @@ public class ApplicationController {
     }
 
     public boolean isHasAwebsiteAsFrontEnd() {
+        boolean w = getApplicationPreference().isHasAwebsiteAsFrontEnd();
+        hasAwebsiteAsFrontEnd=w;
         return hasAwebsiteAsFrontEnd;
     }
 
     public void setHasAwebsiteAsFrontEnd(boolean hasAwebsiteAsFrontEnd) {
+        getApplicationPreference().setHasAwebsiteAsFrontEnd(hasAwebsiteAsFrontEnd);
         this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
+    }
+
+    public UserPreference getApplicationPreference() {
+        if (applicationPreference == null) {
+            loadApplicationPreferances();
+        }
+        return applicationPreference;
+    }
+
+    public void setApplicationPreference(UserPreference applicationPreference) {
+        this.applicationPreference = applicationPreference;
     }
 
     class InstitutionLastPhn {

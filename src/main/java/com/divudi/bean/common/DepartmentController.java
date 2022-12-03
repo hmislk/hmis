@@ -12,6 +12,7 @@ import com.divudi.data.DepartmentType;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -52,6 +53,55 @@ public class DepartmentController implements Serializable {
 
     List<Department> itemsToRemove;
 
+    
+    public void fillItems() {
+        String j;
+        j = "select i from Department i where i.retired=false order by i.name";
+        items = getFacade().findBySQL(j);
+    }
+    
+    public String toListDepartments() {
+        fillItems();
+        return "/admin/departments";
+    }
+
+    public String toAddNewDepartment() {
+        current = new Department();
+        return "/admin/department";
+    }
+
+    public String toEditDepartment() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/department";
+    }
+
+    public String deleteDepartment() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        return toListDepartments();
+    }
+    
+    public String saveSelectedDepartment(){
+         if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+         if(current.getId()==null){
+             getFacade().create(current);
+         }else{
+             getFacade().edit(current);
+         }
+         return toListDepartments();
+    }
+    
+    
     public List<Department> getSearchItems() {
         return searchItems;
     }
@@ -446,7 +496,6 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getItems() {
-        items = getFacade().findAll("name", true);
         return items;
     }
 

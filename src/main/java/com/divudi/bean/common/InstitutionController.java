@@ -6,6 +6,7 @@ import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Institution;
 import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.InstitutionFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -25,8 +26,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -66,6 +67,51 @@ public class InstitutionController implements Serializable {
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
+
+    public String toAdminManageInstitutions() {
+        return "/admin/admin_institutions_index";
+    }
+
+    public String toListInstitutions() {
+        fillItems();
+        return "/admin/institutions";
+    }
+
+    public String toAddNewInstitution() {
+        current = new Institution();
+        return "/admin/institution";
+    }
+
+    public String toEditInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/institution";
+    }
+
+    public String deleteInstitution() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        return toListInstitutions();
+    }
+    
+    public String saveSelectedInstitution(){
+         if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+         if(current.getId()==null){
+             getFacade().create(current);
+         }else{
+             getFacade().edit(current);
+         }
+         return toListInstitutions();
+    }
 
     public List<Institution> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -332,8 +378,7 @@ public class InstitutionController implements Serializable {
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        recreateModel();
-        getItems();
+        fillItems();
     }
 
     public void saveSelectedAgency() {
@@ -511,12 +556,13 @@ public class InstitutionController implements Serializable {
     }
 
     public List<Institution> getItems() {
-        if (items == null) {
-            String j;
-            j = "select i from Institution i where i.retired=false order by i.name";
-            items = getFacade().findBySQL(j);
-        }
         return items;
+    }
+
+    public void fillItems() {
+        String j;
+        j = "select i from Institution i where i.retired=false order by i.name";
+        items = getFacade().findBySQL(j);
     }
 
     public void formatAgentSerial() {
@@ -524,8 +570,8 @@ public class InstitutionController implements Serializable {
         selectedAgencies = completeInstitution(null, types);
         for (Institution a : selectedAgencies) {
 //            //// // System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
-            DecimalFormat df=new DecimalFormat("000");
-            double d=Double.parseDouble(a.getInstitutionCode());
+            DecimalFormat df = new DecimalFormat("000");
+            double d = Double.parseDouble(a.getInstitutionCode());
 //            //// // System.out.println("d = " + d);
             a.setInstitutionCode(df.format(d));
 //            //// // System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());

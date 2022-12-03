@@ -6,6 +6,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.FeeType;
@@ -56,6 +57,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -104,6 +106,13 @@ public class InwardBeanController implements Serializable {
     InwardReportControllerBht inwardReportControllerBht;
     @Inject
     SessionController sessionController;
+    
+    
+    public String inwardDepositBillText(Bill b){
+        String template = sessionController.getDepartmentPreference().getInwardDepositBillTemplate();
+        Map<String,String> replaceables = CommonFunctions.getReplaceables(b);
+        return CommonFunctions.replaceText(replaceables, template);
+    }
 
     public List<BillItem> createBillItems(Item item, PatientEncounter patientEncounter) {
         String sql = "SELECT  b FROM BillItem b "
