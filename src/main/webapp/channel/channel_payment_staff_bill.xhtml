@@ -154,7 +154,7 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Paying This time" ></h:outputLabel>
-                                        <h:outputLabel id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
+                                        <h:outputLabel id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
                                     </h:panelGrid>
@@ -163,12 +163,13 @@
 
                                     <h:outputLabel value="Payment Method" ></h:outputLabel>
                                     <p:selectOneMenu  id="cmbPay" style="width: 400px;" value="#{channelStaffPaymentBillController.paymentMethod}" >
-                                        <!--<f:selectItem itemLabel="Please select a Payment method" />-->
+                                        <f:selectItem itemLabel="Please select a Payment method" />
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBill()}" onclick="onSubmitButton();" >
-                                        <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
+                                    <p:commandButton value="Pay" action="#{channelStaffPaymentBillController.settleBill()}" 
+                                                     onclick="onSubmitButton();" >
+                                        <f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />
                                     </p:commandButton>
                                 </h:panelGroup>
                             </h:panelGrid>
