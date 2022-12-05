@@ -435,30 +435,35 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void calculateTotalDue() {
+        System.out.println("calculateTotalDue");
+        System.out.println("dueBillFees = " + dueBillFees);
         if (dueBillFees != null) {
             totalDue = 0;
             for (BillFee f : dueBillFees) {
+                System.out.println("f.getFeeValue() = " + f.getFeeValue());
                 totalDue = totalDue + f.getFeeValue() - f.getPaidValue();
             }
         }
     }
 
     public void performCalculations() {
+        System.out.println("performCalculations");
         calculateTotalDue();
         calculateTotalPay();
     }
 
     public void calculateTotalPay() {
+        System.out.println("calculateTotalPay");
         totalPaying = 0;
-
+        System.out.println("payingBillFees = " + payingBillFees);
         for (BillFee f : payingBillFees) {
-            //////// // System.out.println("totalPaying before " + totalPaying);
-            //////// // System.out.println("fee val is " + f.getFeeValue());
-            //////// // System.out.println("paid val is " + f.getPaidValue());
+            System.out.println("totalPaying before " + totalPaying);
+            System.out.println("fee val is " + f.getFeeValue());
+            System.out.println("paid val is " + f.getPaidValue());
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            //////// // System.out.println("totalPaying after " + totalPaying);
+            System.out.println("totalPaying after " + totalPaying);
         }
-        //////// // System.out.println("total pay is " + totalPaying);
+        System.out.println("total pay is " + totalPaying);
     }
 
     public List<ServiceSession> getServiceSessions() {
@@ -497,7 +502,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void setPayingBillFees(List<BillFee> payingBillFees) {
-        //////// // System.out.println("setting paying bill fees " + payingBillFees.size());
+        System.out.println("setting paying bill fees " + payingBillFees.size());
         this.payingBillFees = payingBillFees;
     }
 
@@ -593,8 +598,11 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     private boolean checkBillFeeValue() {
+        System.out.println("checkBillFeeValue");
         for (BillFee f : payingBillFees) {
+            System.out.println("f = " + f);
             if (f.getFeeValue() == 0.0) {
+                System.out.println("returning false");
                 return true;
             }
         }
@@ -602,6 +610,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     private boolean errorCheck() {
+        System.out.println("error check");
         if (currentStaff == null) {
             UtilityController.addErrorMessage("Please select a Staff Memeber");
             return true;
@@ -614,7 +623,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
         performCalculations();
         if (totalPaying == 0) {
-            UtilityController.addErrorMessage("Please select payments to update");
+            UtilityController.addErrorMessage("Total Paying Amount is zero. Please select payments to update");
             return true;
         }
         if (paymentMethod == null) {
@@ -650,9 +659,14 @@ public class ChannelStaffPaymentBillController implements Serializable {
     }
 
     public void settleBill() {
+        System.out.println("settleBill");
+        System.out.println("dueBillFees = " + dueBillFees);
+        System.out.println("payingBillFees = " + payingBillFees);
         if (errorCheck()) {
             return;
         }
+        System.out.println("dueBillFees = " + dueBillFees);
+        System.out.println("payingBillFees = " + payingBillFees);
         calculateTotalPay();
         Bill b = createPaymentBill();
         current = b;

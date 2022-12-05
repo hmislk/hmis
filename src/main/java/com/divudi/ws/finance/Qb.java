@@ -24,7 +24,6 @@ import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.mysql.cj.conf.PropertyKey;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1836,7 +1835,7 @@ public class Qb {
     @GET
     @Path("/jurList/{institution_code}/{last_return_grn_id}/{last_date}")
     @Produces("application/json")
-    public String getJurList(@Context HttpServletRequest requestContext,
+    public String jurList(@Context HttpServletRequest requestContext,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_return_grn_id") String strLastIdInRequest,
             @PathParam("last_date") String strLastDate) {
