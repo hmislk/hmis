@@ -9,9 +9,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.Language;
-import com.divudi.data.WebContentType;
-import com.divudi.entity.WebContent;
-import com.divudi.facade.WebContentFacade;
+import com.divudi.entity.WebLanguage;
+import com.divudi.facade.WebLanguageFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,15 +32,15 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class WebContentController implements Serializable {
+public class WebLanguageController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
-    private WebContentFacade ejbFacade;
-    private WebContent selected;
-    private List<WebContent> items = null;
+    private WebLanguageFacade ejbFacade;
+    private WebLanguage selected;
+    private List<WebLanguage> items = null;
     private Language language = Language.English;
     String page;
 
@@ -59,7 +58,7 @@ public class WebContentController implements Serializable {
         page = "/report_search";
         return page;
     }
-
+    
     public String toServices() {
         page = "/services";
         return page;
@@ -75,55 +74,20 @@ public class WebContentController implements Serializable {
         return page;
     }
 
-    public String toAddNewWebContent() {
+    public String toAddNewWebLanguage() {
         selected = null;
         return "/webcontent/web_content";
     }
 
-    public String toAddNewShortWebContent() {
-        selected = null;
-        selected.setType(WebContentType.ShortText);
-        return toEditWebContent();
-    }
-
-    public String toAddNewLongWebContent() {
-        selected = null;
-        selected.setType(WebContentType.LongText);
-        return toEditWebContent();
-    }
-
-    public String toAddNewListWebContent() {
-        selected = null;
-        selected.setType(WebContentType.List);
-        return toEditWebContent();
-    }
-
-    public String toAddNewImageWebContent() {
-        selected = null;
-        selected.setType(WebContentType.Image);
-        return toEditWebContent();
-    }
-
-    public String toEditWebContent() {
+    public String toEditWebLanguage() {
         if (selected == null) {
-            JsfUtil.addErrorMessage("Nothing selected");
+            JsfUtil.addErrorMessage("Please select");
             return "";
         }
-        switch (selected.getType()) {
-            case Image:
-                return "/webcontent/image";
-            case List:
-                return "/webcontent/list";
-            case LongText:
-                return "/webcontent/long";
-            case ShortText:
-                return "/webcontent/short";
-            default:
-                return "/webcontent/web_content";
-        }
+        return "/webcontent/web_content";
     }
-
-    public String toEditWebContentLong() {
+    
+    public String toEditWebLanguageLong() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select");
             return "";
@@ -131,7 +95,7 @@ public class WebContentController implements Serializable {
         return "/webcontent/web_content_long";
     }
 
-    public String toDeleteWebContent() {
+    public String toDeleteWebLanguage() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select");
             return "";
@@ -140,19 +104,19 @@ public class WebContentController implements Serializable {
         getFacade().edit(selected);
         selected = null;
         listItems();
-        return toListWebContent();
+        return toListWebLanguage();
     }
 
-    public String toListWebContent() {
+    public String toListWebLanguage() {
         listItems();
         return "/webcontent/web_contents";
     }
 
-    public WebContent findSingleWebContent(String word) {
-        WebContent list;
+    public WebLanguage findSingleWebLanguage(String word) {
+        WebLanguage list;
         String sql;
         HashMap hm = new HashMap();
-        sql = "select c from WebContent c "
+        sql = "select c from WebLanguage c "
                 + " where c.retired=:ret "
                 + " and c.name = :q "
                 + " order by c.id desc";
@@ -162,22 +126,7 @@ public class WebContentController implements Serializable {
         return list;
     }
 
-    public String findSingleText(String word) {
-        WebContent wc = findSingleWebContent(word);
-        if (wc == null || getLanguage() == null) {
-            return word;
-        }
-        switch (language) {
-            case English:
-                return wc.getEnglish();
-            case Sinhala:
-                return wc.getSinhala();
-            case Tamil:
-                return wc.getTamil();
-            default:
-                return word;
-        }
-    }
+   
 
     public Language[] getLanguages() {
         return Language.values();
@@ -207,50 +156,13 @@ public class WebContentController implements Serializable {
         language = Language.English;
     }
 
-    public List<String> findMultipleWebText(String word) {
-        List<WebContent> wcs = findMultipleWebContent(word);
-        List<String> strs = new ArrayList<>();
-        if (wcs == null || language == null) {
-            return strs;
-        }
-        for (WebContent wc : wcs) {
-            switch (language) {
-                case English:
-                    strs.add(wc.getEnglish());
-                    break;
-                case Sinhala:
-                    strs.add(wc.getSinhala());
-                    break;
-                case Tamil:
-                    strs.add(wc.getTamil());
-                    break;
-            }
-        }
+    
 
-        return strs;
-    }
-
-    public List<WebContent> findMultipleWebContent(String word) {
-        List<WebContent> list;
+    public List<WebLanguage> completeWebLanguage(String qry) {
+        List<WebLanguage> list;
         String sql;
         HashMap hm = new HashMap();
-        sql = "select c from WebContent c "
-                + " where c.retired=false "
-                + " and c.name = :q "
-                + " order by c.name";
-        hm.put("q", word);
-        list = getFacade().findBySQL(sql, hm);
-        if (list == null) {
-            list = new ArrayList<>();
-        }
-        return list;
-    }
-
-    public List<WebContent> completeWebContent(String qry) {
-        List<WebContent> list;
-        String sql;
-        HashMap hm = new HashMap();
-        sql = "select c from WebContent c "
+        sql = "select c from WebLanguage c "
                 + " where c.retired=false "
                 + " and c.name like :q "
                 + " order by c.name";
@@ -263,15 +175,15 @@ public class WebContentController implements Serializable {
         return list;
     }
 
-    public void prepwebContentdd() {
-        selected = new WebContent();
+    public void prepwebLanguagedd() {
+        selected = new WebLanguage();
     }
 
     private void recreateModel() {
         items = null;
     }
 
-    public void saveWebContent(WebContent w) {
+    public void saveWebLanguage(WebLanguage w) {
         if (w == null) {
             return;
         }
@@ -283,16 +195,16 @@ public class WebContentController implements Serializable {
     }
 
     public void saveSelected() {
-        saveWebContent(selected);
+        saveWebLanguage(selected);
         recreateModel();
         listItems();
     }
 
-    public WebContentFacade getEjbFacade() {
+    public WebLanguageFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(WebContentFacade ejbFacade) {
+    public void setEjbFacade(WebLanguageFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -304,17 +216,17 @@ public class WebContentController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public WebContentController() {
+    public WebLanguageController() {
     }
 
-    public WebContent getSelected() {
+    public WebLanguage getSelected() {
         if (selected == null) {
-            selected = new WebContent();
+            selected = new WebLanguage();
         }
         return selected;
     }
 
-    public void setSelected(WebContent selected) {
+    public void setSelected(WebLanguage selected) {
         this.selected = selected;
     }
 
@@ -332,20 +244,20 @@ public class WebContentController implements Serializable {
         getSelected();
     }
 
-    private WebContentFacade getFacade() {
+    private WebLanguageFacade getFacade() {
         return ejbFacade;
     }
 
     public void listItems() {
         String j;
         j = "select a "
-                + " from WebContent a "
+                + " from WebLanguage a "
                 + " where a.retired=false "
                 + " order by a.name";
         items = getFacade().findBySQL(j);
     }
 
-    public List<WebContent> getItems() {
+    public List<WebLanguage> getItems() {
         return items;
     }
 
@@ -363,16 +275,16 @@ public class WebContentController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = WebContent.class)
-    public static class WebContentConverter implements Converter {
+    @FacesConverter(forClass = WebLanguage.class)
+    public static class WebLanguageConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            WebContentController controller = (WebContentController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "webContentController");
+            WebLanguageController controller = (WebLanguageController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "webLanguageController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
@@ -393,26 +305,26 @@ public class WebContentController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof WebContent) {
-                WebContent o = (WebContent) object;
+            if (object instanceof WebLanguage) {
+                WebLanguage o = (WebLanguage) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + WebContentController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + WebLanguageController.class.getName());
             }
         }
     }
 
-    @FacesConverter("webContentCon")
-    public static class WebContentControllerConverter implements Converter {
+    @FacesConverter("webLanguageCon")
+    public static class WebLanguageControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            WebContentController controller = (WebContentController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "webContentController");
+            WebLanguageController controller = (WebLanguageController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "webLanguageController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
@@ -433,12 +345,12 @@ public class WebContentController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof WebContent) {
-                WebContent o = (WebContent) object;
+            if (object instanceof WebLanguage) {
+                WebLanguage o = (WebLanguage) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + WebContentController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + WebLanguageController.class.getName());
             }
         }
     }
