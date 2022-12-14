@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
+ * Dr M H B Ariyaratne
  Genealogical, Clinical, Storeoratory and Genetic Data
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Institution;
@@ -29,7 +29,7 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -170,11 +170,11 @@ public  class UserPaymentSchemeController implements Serializable {
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + getSessionController().getLoggedUser().getId();
         items = getEjbFacade().findBySQL(sql);
-        //////System.out.println("33");
+        //////// // System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserPaymentScheme>();
-            //////System.out.println("44");
+            //////// // System.out.println("44");
         }
         return items;
     }
@@ -188,11 +188,11 @@ public  class UserPaymentSchemeController implements Serializable {
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + selectedUser.getId();
         items = getEjbFacade().findBySQL(sql);
-        //////System.out.println("33");
+        //////// // System.out.println("33");
 
         if (items == null) {
             items = new ArrayList<WebUserPaymentScheme>();
-            //////System.out.println("44");
+            //////// // System.out.println("44");
         }
         return items;
     }
@@ -210,7 +210,7 @@ public  class UserPaymentSchemeController implements Serializable {
     }
 
     public void setSelectedUser(WebUser selectedUser) {
-        //////System.out.println("Setting user");
+        //////// // System.out.println("Setting user");
         items=null;
         this.selectedUser = selectedUser;
         

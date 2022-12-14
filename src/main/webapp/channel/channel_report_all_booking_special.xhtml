@@ -8,12 +8,9 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
-
-
     <ui:define name="content">
-
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -44,7 +41,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Channel_Appointment_list"  />
+                            <p:dataExporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Channel_Appointment_list"  />
                         </p:commandButton>
                     </h:panelGrid>
 

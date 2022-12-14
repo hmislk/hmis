@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -5294,7 +5294,7 @@ public class CommonReport implements Serializable {
         tmp5.setValue(getFinalCashTotal(list));
 
         String1Value1 tmp6 = new String1Value1();
-        tmp6.setString("Grant Total");
+        tmp6.setString("Grand Total");
         tmp6.setValue(getFinalCreditTotal(list) + getFinalCreditCardTotal(list) + getFinalChequeTot(list) + getFinalSlipTot(list) + getFinalCashTotal(list));
 
         data.add(tmp1);

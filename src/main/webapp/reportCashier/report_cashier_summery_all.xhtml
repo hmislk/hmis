@@ -4,7 +4,7 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
@@ -57,7 +57,7 @@
                             </p:commandButton>  
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;">
-                                <pe:exporter type="xlsx" target="tbl" fileName="All_Cashier_Summery" subTable="true"/>
+                                <p:dataExporter type="xlsx" target="tbl" fileName="All_Cashier_Summery" />
                             </p:commandButton>  
 
 
@@ -129,7 +129,7 @@
                             <p:columnGroup type="footer">
                                 <p:row>
 
-                                    <p:column footerText="Grant Total">
+                                    <p:column footerText="Grand Total">
 
                                     </p:column>
 

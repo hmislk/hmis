@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * and
- * a Set of Related Tools
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -603,11 +603,14 @@ public class UserPrivilageController implements Serializable {
     private TreeNode tmpNode;
 
     private void unselectNode() {
-        for (TreeNode n : root.getChildren()) {
+        for (Object o : root.getChildren()) {
+            TreeNode n = (TreeNode) o;
             n.setSelected(false);
-            for (TreeNode n1 : n.getChildren()) {
+            for (Object o1 : n.getChildren()) {
+                TreeNode n1 = (TreeNode) o1;
                 n1.setSelected(false);
-                for (TreeNode n2 : n1.getChildren()) {
+                for (Object o2 : n1.getChildren()) {
+                    TreeNode n2 = (TreeNode) o2;
                     n2.setSelected(false);
                 }
             }
@@ -635,15 +638,18 @@ public class UserPrivilageController implements Serializable {
 
         root = createTreeNode();
         for (WebUserPrivilege wup : items) {
-            for (TreeNode n : root.getChildren()) {
+            for (Object o : root.getChildren()) {
+                TreeNode n =(TreeNode) o;
                 if (wup.getPrivilege() == ((PrivilageNode) n).getP()) {
                     n.setSelected(true);
                 }
-                for (TreeNode n1 : n.getChildren()) {
+                for (Object o1 : n.getChildren()) {
+                    TreeNode n1 =(TreeNode) o1;
                     if (wup.getPrivilege() == ((PrivilageNode) n1).getP()) {
                         n1.setSelected(true);
                     }
-                    for (TreeNode n2 : n1.getChildren()) {
+                    for (Object o2 : n1.getChildren()) {
+                        TreeNode n2 =(TreeNode) o2;
                         if (wup.getPrivilege() == ((PrivilageNode) n2).getP()) {
                             n2.setSelected(true);
                         }
@@ -713,6 +719,10 @@ public class UserPrivilageController implements Serializable {
 
     public void setRoot(TreeNode root) {
         this.root = root;
+    }
+
+    void createSelectedPrivilegesForUser() {
+        
     }
 
     /**

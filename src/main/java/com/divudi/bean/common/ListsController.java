@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -83,7 +83,7 @@ public class ListsController {
             String sql;
             HashMap tmpMap = new HashMap();
             sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)= :ampp or type(c)= :vmp or type(c)= :vmpp) order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", Ampp.class);
             tmpMap.put("vmp", Vmp.class);

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -214,10 +214,10 @@ public class PreReturnController implements Serializable {
         getBillFacade().edit(getBill());
 
 //        if (getReturnBill().getPaymentMethod() == PaymentMethod.Credit) {
-//            //   ////System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-//            //   ////System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+//            //   ////// // System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+//            //   ////// // System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
 //            if (getBill().getToStaff() != null) {
-//                //   ////System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+//                //   ////// // System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
 //                staffBean.updateStaffCredit(getBill().getToStaff(), getReturnBill().getNetTotal());
 //                UtilityController.addSuccessMessage("Staff Credit Updated");
 //                getReturnBill().setFromStaff(getBill().getToStaff());

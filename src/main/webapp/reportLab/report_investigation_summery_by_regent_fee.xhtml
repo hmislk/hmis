@@ -7,7 +7,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
                 xmlns:lab="http://java.sun.com/jsf/composite/lab" 
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
@@ -44,10 +44,10 @@
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                        <pe:exporter type="xlsx" target="opd_new:opd_new"
+                        <p:dataExporter type="xlsx" target="opd_new:opd_new"
                                      fileName="Book_Keeping_Summery_without_pro_day"
-                                     facetFontStyle="BOLD"   cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
+                                          
+                                       />
                     </p:commandButton>
                 </h:panelGrid>
 

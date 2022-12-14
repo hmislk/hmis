@@ -48,7 +48,7 @@
                                         <p:column headerText="Institution Name">
                                             #{w.institution.name}
                                         </p:column>
-                                        <p:ajax process="acDept" update=":#{p:component('pBillDetails')}" 
+                                        <p:ajax process="acDept" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                 event="itemSelect"  listener="#{storeIssueController.calculateAllRates}" />
                                     </p:autoComplete>
                                     
@@ -90,7 +90,7 @@
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="focus" process="acStock :#{p:component('acDept')}"  ></p:ajax>
+                                                <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('acDept',view).clientId}"  ></p:ajax>
                                                 <p:ajax event="itemSelect"   
                                                         listener="#{storeIssueController.handleSelect}" 
                                                         update="txtQty txtRate focusQty" ></p:ajax>
@@ -99,9 +99,9 @@
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeIssueController.qty}" style="width: 50px!important;"   >
-                                                <p:ajax event="keyup"  listener="#{storeIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:component('acDept')}" update="txtRate txtVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{storeIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:component('acDept')}" update="txtRate txtVal" ></p:ajax>
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeIssueController.qty}" style="width: 50px!important;">
+                                                <p:ajax event="keyup"  listener="#{storeIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{storeIssueController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
@@ -119,8 +119,8 @@
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                          action="#{storeIssueController.addBillItem}"
                                                           onclick="onSubmitButton();"
-                                                          process="@this acStock txtQty :#{p:component('acDept')}" 
-                                                          update=":#{p:component('pBillDetails')} :#{p:component('panelError')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
+                                                          process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
+                                                          update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -151,8 +151,8 @@
                                                     <p:dataTable id="tblBillItem" value="#{storeIssueController.preBill.billItems}"
                                                                  var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
 
-                                                        <p:ajax event="rowEdit" listener="#{storeIssueController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" />  
-                                                        <p:ajax event="rowEditCancel" listener="#{storeIssueController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" /> 
+                                                        <p:ajax event="rowEdit" listener="#{storeIssueController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                                        <p:ajax event="rowEditCancel" listener="#{storeIssueController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
                                                         <p:column headerText="Item">
@@ -284,7 +284,7 @@
 
                         </div>
                         <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
+                            <h:panelGroup   id="gpBillPreview"> 
                                 <phi:saleBill bill="#{storeIssueController.printBill}"></phi:saleBill>
                             </h:panelGroup>
                         </div>

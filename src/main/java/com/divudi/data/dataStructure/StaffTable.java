@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.dataStructure;
 
@@ -49,9 +49,9 @@ public class StaffTable {
             this.repeatedDay = repeatedDay--;
         }
 
-        //   //////System.out.println("Staff : " + this.staff.getPerson().getName());
-        //  //////System.out.println("Settin : " + this.shift.getName());
-        //  //////System.out.println("Settin : " + this.repeatedDay);
+        //   //////// // System.out.println("Staff : " + this.staff.getPerson().getName());
+        //  //////// // System.out.println("Settin : " + this.shift.getName());
+        //  //////// // System.out.println("Settin : " + this.repeatedDay);
     }
 
     public boolean isDayOff() {

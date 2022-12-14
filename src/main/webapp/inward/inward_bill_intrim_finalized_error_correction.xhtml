@@ -8,7 +8,7 @@
                 xmlns:in="http://java.sun.com/jsf/composite/inward"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
 
 
@@ -64,11 +64,11 @@
                                 <p:commandButton value="Export Excel" ajax="false" 
                                                  styleClass="noPrintButton" onclick="onSubmitButton();" 
                                                  >
-                                    <pe:exporter type="xlsx"
+                                    <p:dataExporter type="xlsx"
                                                  target="serv" fileName="Service_Detail_BillItem"
-                                                 facetFontStyle="BOLD"  
-                                                 cellFontStyle="NORMAL"  
-                                                 fontName="Courier New"  />
+                                                   
+                                                   
+                                                   />
                                 </p:commandButton>
 
                                 <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateService()}"/>
@@ -260,11 +260,11 @@
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="pharmacy" fileName="Madicine_Issue"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculatePharmacy()}"/>
@@ -363,11 +363,11 @@
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="pharmacy" fileName="Madicine_Issue"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Calculate" action="#{bhtSummeryFinalizedController.calculateStore()}"/>
@@ -453,11 +453,11 @@
                         <p:tab id="tabTimed" title="Timed Service Detail"  >           
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="timed" fileName="Timed_Service_Detail"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
 
                             <p:dataTable id="timed"  value="#{bhtSummeryFinalizedController.patientItems}" var="pt">
@@ -529,11 +529,11 @@
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="outSide" fileName="Out_Side_Charge_Detail"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
                             <p:dataTable  id="outSide"   
                                           scrollable="true" scrollHeight="300" 
@@ -587,11 +587,11 @@
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="pro" fileName="Professional_Fee"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
                             <p:dataTable id="pro"  scrollable="true" scrollHeight="300"  
                                          value="#{bhtSummeryFinalizedController.proBillFee}" var="pf"
@@ -625,11 +625,11 @@
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="ass" fileName="Assisting_Fee"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
                             <p:dataTable id="ass" 
                                          value="#{bhtSummeryFinalizedController.assistBillFee}" var="pf"
@@ -662,11 +662,11 @@
                             <p:commandButton value="Export Excel" ajax="false" 
                                              styleClass="noPrintButton" onclick="onSubmitButton();" 
                                              >
-                                <pe:exporter type="xlsx"
+                                <p:dataExporter type="xlsx"
                                              target="pay" fileName="Payments"
-                                             facetFontStyle="BOLD"  
-                                             cellFontStyle="NORMAL"  
-                                             fontName="Courier New"  />
+                                               
+                                               
+                                               />
                             </p:commandButton>
                             <p:dataTable id="pay" scrollable="true" scrollHeight="300"  
                                          value="#{bhtSummeryFinalizedController.paymentBills}" 

@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -45,7 +45,7 @@
                         <p:commandButton ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCounts}" />
                         <p:commandButton value="Excel" ajax="false">
-                            <pe:exporter type="xlsx" 
+                            <p:dataExporter type="xlsx" 
                                          target="tbl" 
                                          fileName="pharmacy_item_transaction_report"
                                          />
@@ -54,7 +54,7 @@
                         <h:panelGroup styleClass="noBorder normalFont">
                             <p:dataTable id="tbl"  value="#{reportsTransfer.itemCounts}"
                                          stickyHeader="true"
-                                         var="i"   >
+                                         var="i">
                                 <f:facet name="header">
                                     <h:outputLabel value="Unit Issue By Item(Batch)"/>
                                     &#13;&nbsp;

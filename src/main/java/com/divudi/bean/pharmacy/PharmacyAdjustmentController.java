@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -17,7 +17,6 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
-import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.PreBill;
@@ -45,6 +44,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -110,16 +110,55 @@ public class PharmacyAdjustmentController implements Serializable {
     private Double rsr;
     private Double wsr;
     Date exDate;
+    
+    private Date fromDate;
+    private Date toDate;
 
     private YearMonthDay yearMonthDay;
 
     List<BillItem> billItems;
     List<Stock> stocks;
     List<Bill> bills;
+    
     private boolean printPreview;
 
     public Department getFromDepartment() {
         return fromDepartment;
+    }
+    
+    public void fillDepartmentAdjustmentByBillItem() {
+        Date startTime = new Date();
+        billItems = fetchBillItems(BillType.PharmacyAdjustment);
+    }
+
+    public List<BillItem> fetchBillItems(BillType bt) {
+        List<BillItem> billItems = new ArrayList<>();
+
+        Map m = new HashMap();
+        String sql;
+        sql = "select bi from BillItem bi where "
+                + " bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billType=:bt ";
+
+        if (bt == BillType.PharmacyAdjustment) {
+            if (fromDepartment != null) {
+                sql += " and bi.bill.department=:fdept ";
+                m.put("fdept", fromDepartment);
+            }
+        }
+        
+       
+
+        sql += " order by bi.id";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bt", bt);
+
+        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+
+
+        return billItems;
     }
 
     public void setFromDepartment(Department fromDepartment) {
@@ -1299,5 +1338,23 @@ public class PharmacyAdjustmentController implements Serializable {
     public void setManualAdjust(boolean manualAdjust) {
         this.manualAdjust = manualAdjust;
     }
+
+    public Date getFromDate() {
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+    
+    
 
 }

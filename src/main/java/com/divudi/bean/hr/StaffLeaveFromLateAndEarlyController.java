@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
@@ -198,7 +198,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
                 + " order by ss.shiftDate ";
         hm.put("frmTime", from);
         hm.put("toTime", to);
-        //System.out.println("sql = " + sql);
+        //// // System.out.println("sql = " + sql);
 
         return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
     }
@@ -252,7 +252,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("frmTime", from);
         hm.put("toTime", to);
 
-        //System.out.println("sql = " + sql);
+        //// // System.out.println("sql = " + sql);
 
         return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
     }

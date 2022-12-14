@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -24,7 +24,7 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createBillItemTableByKeyword()}"/>
                                 <p:commandButton id="btnSearchAll" ajax="false" value="SearchAll" action="#{searchController.createBillItemTableByKeywordAll()}" rendered="#{webUserController.hasPrivilege('SearchAll')}"/>
                                 <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
+                                    <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Item Report" />
                                 </p:commandButton>
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
                             </h:panelGrid>
@@ -130,7 +130,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column headerText="Payment Method"   >
+                            <p:column headerText="Payment Method">
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.paymentMethod}" ></h:outputLabel>
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
@@ -142,7 +142,7 @@
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Gross Value"   >
+                            <p:column headerText="Gross Value">
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -150,7 +150,7 @@
                                     <f:setPropertyActionListener value="#{pi.bill}" target="#{billSearch.billSearch}"/>
                                 </h:commandLink>
                             </p:column>
-                            <p:column headerText="Discount"   >
+                            <p:column headerText="Discount">
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{pi.bill.discount}" >
                                         <f:convertNumber pattern="#,##0.00"/>

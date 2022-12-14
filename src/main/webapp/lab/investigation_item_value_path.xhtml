@@ -36,8 +36,8 @@
                                                  update="@form"
                                                  value="Save Template" action="#{investigationItemController.saveTemplate()}" ></p:commandButton>
                             </p:panelGrid>
-                            <p:editor id="editor" value="#{investigationItemController.current.htmltext}" widgetVar="editor" height="650" style="height: 90%;min-height: 650px;"
-                                      rendered="#{investigationItemController.current ne null}" ></p:editor>
+                            <p:textEditor secure="false" id="editor" value="#{investigationItemController.current.htmltext}" widgetVar="editor" height="650" style="height: 90%;min-height: 650px;"
+                                      rendered="#{investigationItemController.current ne null}" ></p:textEditor>
                            
                         </h:panelGroup>
                         <a href="https://html-online.com/editor/"  target="_blank"  >An external link to remove un-necessary formatings</a>

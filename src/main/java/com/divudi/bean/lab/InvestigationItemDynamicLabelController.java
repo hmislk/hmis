@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
@@ -38,8 +38,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -285,7 +285,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
     }
 
     public void saveSelected() {
-        //////System.out.println("going to save");
+        //////// // System.out.println("going to save");
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -417,22 +417,22 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItemValueFlag> getDynamicLabels() {
         String sql;
-        //////System.out.println("getting dynamic labels");
+        //////// // System.out.println("getting dynamic labels");
         if (dynamicLabels == null) {
             if (investigation != null && investigationItemofDynamicLabelType != null) {
 
                 sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
                         + " i.investigationItemOfLabelType.id = " + investigationItemofDynamicLabelType.getId();
-                //////System.out.println("sql is " + sql);
+                //////// // System.out.println("sql is " + sql);
                 dynamicLabels = getFacade().findBySQL(sql);
-                //////System.out.println("size is " + dynamicLabels.size());
+                //////// // System.out.println("size is " + dynamicLabels.size());
             } else {
-                //////System.out.println("no sql");
+                //////// // System.out.println("no sql");
                 dynamicLabels = null;
             }
         }
         if (dynamicLabels == null) {
-            //////System.out.println("null");
+            //////// // System.out.println("null");
             dynamicLabels = new ArrayList<InvestigationItemValueFlag>();
         }
         return dynamicLabels;

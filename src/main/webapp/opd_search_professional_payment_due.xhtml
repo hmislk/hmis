@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -23,7 +23,7 @@
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTable}"/>
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createDueFeeTableAll()}"/>                                
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                    <pe:exporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
+                                    <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>  
                                 <h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/> <h:outputLabel/>
@@ -47,7 +47,7 @@
 
                         <p:defaultCommand target="btnSearch" />
 
-                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
                             <f:facet name="header">
                                 #{searchController.total}
                             </f:facet>

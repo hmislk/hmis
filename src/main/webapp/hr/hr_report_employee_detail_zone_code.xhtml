@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -38,7 +38,7 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{hrReportController.createStaffList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl2" fileName="hr_report_employee_detail_zone_code"  />
+                                <p:dataExporter type="xlsx" target="tbl2" fileName="hr_report_employee_detail_zone_code"  />
                             </p:commandButton> 
                         </h:panelGrid>
 

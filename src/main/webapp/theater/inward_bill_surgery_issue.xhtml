@@ -39,7 +39,7 @@
                                         <h:panelGrid columns="20"  >
                                             <p:commandButton ajax= "false" accesskey="s" value="Settle" 
                                                             action="#{pharmacySaleBhtController.settleSurgeryBhtIssue()}" 
-                                                             update=":#{p:component('tblBillItem')} :#{p:component('txtQty')} "  actionListener="#{pharmacySaleBhtController.calculateAllRates}" onclick="onSubmitButton();">
+                                                             update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "  actionListener="#{pharmacySaleBhtController.calculateAllRates}" onclick="onSubmitButton();">
                                                 <f:facet name="title" >
                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                     <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -135,14 +135,14 @@
                                                 <p:inputText autocomplete="off"  accesskey="q"   
                                                              id="txtQty" 
                                                              value="#{pharmacySaleBhtController.qty}" 
-                                                             style="width: 50px!important;"   >
+                                                             style="width: 50px!important;">
                                                     <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                     <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                 </p:inputText>
                                             </h:panelGrid>
 
                                             <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                             action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
+                                                             action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
 
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
                                             <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -255,7 +255,7 @@
 
                         </div>
                         <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
+                            <h:panelGroup   id="gpBillPreview"> 
                                 <phi:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                             </h:panelGroup>
                         </div>

@@ -49,8 +49,8 @@
                                          action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
-                    <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" />  
-                    <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" /> 
+                    <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
+                    <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
                     <p:column style="width:6%">  
                         <p:rowEditor />  
@@ -64,7 +64,7 @@
                         </h:outputText>
 
                     </p:column>  
-                    <p:column headerText="Code"   > 
+                    <p:column headerText="Code"> 
 
                         <h:outputText id="code" value="#{bi.item.code}" >                                   
                         </h:outputText>
@@ -86,7 +86,7 @@
                         </p:cellEditor>
                     </p:column>  
 
-                    <p:column headerText="Free"   >   
+                    <p:column headerText="Free">   
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
@@ -97,7 +97,7 @@
                         </p:cellEditor>                        
                     </p:column> 
 
-                    <p:column headerText="Purchase Rate"   >  
+                    <p:column headerText="Purchase Rate">  
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:panelGroup id="purchase">

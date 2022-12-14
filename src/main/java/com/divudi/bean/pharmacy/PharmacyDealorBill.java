@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -201,7 +201,7 @@ public class PharmacyDealorBill implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void calTotalBySelectedBillTems() {
@@ -215,7 +215,7 @@ public class PharmacyDealorBill implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void calTotalWithResetingIndex() {
@@ -226,7 +226,7 @@ public class PharmacyDealorBill implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(0 - n);
-        // //////System.out.println("AAA : " + n);
+        // //////// // System.out.println("AAA : " + n);
     }
 
     public void removeAll() {

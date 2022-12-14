@@ -43,8 +43,8 @@
                         <h:outputLabel  value="Ordered Bill Item"/>                        
                     </f:facet>  
 
-                    <p:ajax event="rowEdit" listener="#{storeGrnController.onEdit}" update=":#{p:component('tot')}" />  
-                    <p:ajax event="rowEditCancel" listener="#{storeGrnController.onEdit}" update=":#{p:component('tot')}" /> 
+                    <p:ajax event="rowEdit" listener="#{storeGrnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" />  
+                    <p:ajax event="rowEditCancel" listener="#{storeGrnController.onEdit}" update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" /> 
 
                     <p:column style="width:6%">  
                         <p:rowEditor />  
@@ -53,7 +53,7 @@
                     <p:column >
                         <p:commandButton   value="Add Detail"
                                            process="@this" 
-                                           update=":#{p:component('dialogChannelDetail')}"
+                                           update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
                                            style="float: right;" 
                                            actionListener="#{storeGrnController.addDetailItemListener(bi)}"
                                            oncomplete="PF('dlgDetail').show();">                        
@@ -62,7 +62,7 @@
 
                     <p:column >
                         <p:commandButton   value="Add Accessories" process="@this" 
-                                           update=":#{p:component('dialogChannelDetail')}"
+                                           update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
                                            style="float: right;"                                            
                                            actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
@@ -101,7 +101,7 @@
                         </p:cellEditor>
                     </p:column>  
 
-                    <p:column headerText="Free"   >   
+                    <p:column headerText="Free">   
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:outputLabel id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}"/>
@@ -112,7 +112,7 @@
                         </p:cellEditor>                        
                     </p:column> 
 
-                    <p:column headerText="Purchase Rate"   >  
+                    <p:column headerText="Purchase Rate">  
                         <p:cellEditor>  
                             <f:facet name="output">  
                                 <h:panelGroup id="purchase">
@@ -318,7 +318,7 @@
                                 <p:inputText id="tmpRetail" autocomplete="off" styleClass="numericTxt" 
                                              value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
                                 <h:outputLabel value="DOE(dd mm yy)/Warrenty Date"/>
-                                <p:calendar navigator="true" pattern="dd MM yy" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.doe}"   >
+                                <p:calendar navigator="true" pattern="dd MM yy" value="#{storeGrnController.currentBillItem.pharmaceuticalBillItem.doe}">
                                     <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storeGrnController.batchListener()}"/>
                                 </p:calendar> 
                                 <h:outputLabel value="Bathch No"/>
@@ -445,7 +445,7 @@
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
-                <p:panel   id="gpBillPreview"   >
+                <p:panel   id="gpBillPreview">
 
                     <st:grn bill="#{storeGrnController.grnBill}"/>
 

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -14,7 +14,6 @@ import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
-import com.divudi.entity.LazyBillItem;
 import com.divudi.entity.RefundBill;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.facade.BillFacade;
@@ -130,70 +129,6 @@ public class OpdBillItemSearchController implements Serializable {
         fromDate = null;
         toDate = null;
     }
-
-    public void createTable() {
-        searchBillItems = null;
-        String sql;
-        Map m = new HashMap();
-        m.put("toDate", toDate);
-        m.put("fromDate", fromDate);
-        m.put("bType", BillType.OpdBill);
-        m.put("ins", getSessionController().getInstitution());
-
-        if (txtSearch == null || txtSearch.trim().equals("")) {
-            sql = "select bi from "
-                    + " BillItem bi join bi.bill b join b.patient.person p "
-                    + " where b.institution=:ins and b.billType=:bType "
-                    + " and b.createdAt between :fromDate and :toDate order by bi.id desc";
-        } else {
-            sql = "select bi from BillItem bi join bi.bill b join b.patient.person"
-                    + " p where b.institution=:ins and b.billType=:bType and"
-                    + "  (upper(b.patient.person.name) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.patient.person.phone) like '%" + txtSearch.toUpperCase() + "%' "
-                    + "  or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%' or "
-                    + " upper(b.toInstitution.name) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.paymentMethod) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.paymentScheme.name) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.netTotal) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.total) like '%" + txtSearch.toUpperCase() + "%' ) "
-                    + " and b.createdAt between :fromDate and :toDate order by bi.id desc";
-        }
-        List<BillItem> tmp = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
-        searchBillItems = new LazyBillItem(tmp);
-
-    }
-
-    public void createTableByKeyword2() {
-        searchBillItems = null;
-        String sql;
-        Map m = new HashMap();
-        m.put("toDate", toDate);
-        m.put("fromDate", fromDate);
-        m.put("bType", BillType.OpdBill);
-        m.put("ins", getSessionController().getInstitution());
-        m.put("str", "%" + txtSearch.toUpperCase() + "%");
-
-        if (txtSearch == null || txtSearch.trim().equals("")) {
-            UtilityController.addErrorMessage("Please enter Patient name,Phone No,Bill No,Bill Total");
-            return;
-        }
-        sql = "select bi from BillItem bi join bi.bill b join b.patient.person"
-                + " p where b.institution=:ins and b.billType=:bType and"
-                + "  (upper(b.patient.person.name) like :str "
-                + " or upper(b.patient.person.phone) like :str "
-                + "  or upper(b.insId) like :str or "
-                + " or upper(b.netTotal) like :str "
-                + " or upper(b.total) like :str ) "
-                + " and b.createdAt between :fromDate and :toDate order by bi.id desc";
-
-        List<BillItem> tmp = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
-        searchBillItems = new LazyBillItem(tmp);
-
-    }
-
-   
 
     public List<BillItem> getBillItemsOwn() {
         return billItemsOwn;

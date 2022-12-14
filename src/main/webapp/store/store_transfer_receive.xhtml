@@ -52,7 +52,7 @@
                             </f:facet>                        
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
-                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{storeTransferReceiveController.onFocus(ph)}"/>
+                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferReceiveController.onFocus(ph)}"/>
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
@@ -70,7 +70,7 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
-                <p:panel   id="gpBillPreview"   >
+                <p:panel   id="gpBillPreview">
 
                     <st:transferReceive bill="#{storeTransferReceiveController.receivedBill}" />
 

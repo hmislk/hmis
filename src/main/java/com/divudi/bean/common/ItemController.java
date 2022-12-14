@@ -3,7 +3,6 @@ package com.divudi.bean.common;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
 import com.divudi.entity.Category;
@@ -47,12 +46,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.ClassUtils;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -103,6 +101,60 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
 
     ReportKeyWord reportKeyWord;
+    
+    public void fillInvestigations() {
+        String j;
+        j = "select i from Investigation i where i.retired=false order by i.name";
+        items = getFacade().findBySQL(j);
+    }
+    
+    public String toManageItemdIndex(){
+        return "/admin/admin_items_index";
+    }
+    
+    public String toListInvestigations() {
+        fillInvestigations();
+        return "/admin/investigations";
+    }
+
+    public String toAddNewInvestigation() {
+        current = new Investigation();
+        return "/admin/investigation";
+    }
+
+    public String toEditInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/institution";
+    }
+
+    public String deleteInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        current.setRetired(true);
+        getFacade().edit(current);
+        return toListInvestigations();
+    }
+    
+    public String saveSelectedInvestigation(){
+         if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+         if(current.getId()==null){
+             getFacade().create(current);
+         }else{
+             getFacade().edit(current);
+         }
+         return toListInvestigations();
+    }
+    
+    
+    
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {
@@ -391,7 +443,7 @@ public class ItemController implements Serializable {
     }
 
     public void createNewItemsFromMasterItems() {
-        ////System.out.println("createNewItemsFromMasterItems");
+        ////// // System.out.println("createNewItemsFromMasterItems");
         if (instituion == null) {
             JsfUtil.addErrorMessage("Select institution");
             return;
@@ -405,7 +457,7 @@ public class ItemController implements Serializable {
             return;
         }
         for (Item i : selectedList) {
-            ////System.out.println("i.getName() = " + i.getName());
+            ////// // System.out.println("i.getName() = " + i.getName());
             Item ni = null;
             if (i instanceof Investigation) {
                 try {
@@ -434,13 +486,13 @@ public class ItemController implements Serializable {
             ni.setItemFee(null);
             getFacade().create(ni);
             i.setItemFees(itemFeeManager.fillFees(i));
-            ////System.out.println("ni = " + ni);
-            ////System.out.println("i.getItemFees() = " + i.getItemFees());
-            ////System.out.println("ni.getItemFees() = " + ni.getItemFees());
+            ////// // System.out.println("ni = " + ni);
+            ////// // System.out.println("i.getItemFees() = " + i.getItemFees());
+            ////// // System.out.println("ni.getItemFees() = " + ni.getItemFees());
 
             for (ItemFee f : i.getItemFees()) {
                 ItemFee nf = new ItemFee();
-                ////System.out.println("f = " + f);
+                ////// // System.out.println("f = " + f);
                 try {
                     BeanUtils.copyProperties(nf, f);
                 } catch (IllegalAccessException | InvocationTargetException ex) {
@@ -456,7 +508,7 @@ public class ItemController implements Serializable {
                 nf.setItem(ni);
                 ni.getItemFees().add(nf);
                 getItemFeeFacade().create(nf);
-                ////System.out.println("nf = " + nf);
+                ////// // System.out.println("nf = " + nf);
             }
             getFacade().edit(ni);
             List<Item> ifis = itemForItemController.getItemsForParentItem(i);
@@ -469,7 +521,7 @@ public class ItemController implements Serializable {
                     ifin.setCreater(getSessionController().getLoggedUser());
                 }
             }
-            ////System.out.println("ni.getItemFees() = " + ni.getItemFees());
+            ////// // System.out.println("ni.getItemFees() = " + ni.getItemFees());
         }
     }
 
@@ -544,7 +596,7 @@ public class ItemController implements Serializable {
                     + " upper(c.item.barcode) like :q or upper(c.item.code) like :q )order by c.item.name";
             hm.put("ins", getInstituion());
             hm.put("q", "%" + query + "%");
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, hm, 20);
         }
         return suggestions;
@@ -561,7 +613,7 @@ public class ItemController implements Serializable {
                 + " order by c.item.name";
         hm.put("ins", getInstituion());
 
-        //////System.out.println(sql);
+        //////// // System.out.println(sql);
         suggestions = getFacade().findBySQL(sql, hm);
 
         return suggestions;
@@ -618,7 +670,7 @@ public class ItemController implements Serializable {
 //                    + "  or upper(c.code) like :q )"
 //                    + " order by c.name";
 //            hm.put("q", "%" + query.toUpperCase() + "%");
-////////System.out.println(sql);
+////////// // System.out.println(sql);
 //            suggestions = getFacade().findBySQL(sql, hm, 20);
 //        }
 //        return suggestions;
@@ -655,7 +707,7 @@ public class ItemController implements Serializable {
                     + " ( c.departmentType is null or c.departmentType!=:dep ) "
                     + " and (upper(c.name) like :str or upper(c.code) like :str or"
                     + " upper(c.barcode) like :str ) order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
@@ -680,7 +732,7 @@ public class ItemController implements Serializable {
                     + " ( c.departmentType is null or c.departmentType!=:dep ) "
                     + " and (upper(c.name) like :str or upper(c.code) like :str or"
                     + " upper(c.barcode) like :str ) order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
@@ -708,7 +760,7 @@ public class ItemController implements Serializable {
 //                    + "upper(c.code) like :str or "
 //                    + "upper(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Store);
 //            tmpMap.put("inven", DepartmentType.Inventry);
@@ -737,7 +789,7 @@ public class ItemController implements Serializable {
 //                    + "upper(c.code) like :str or "
 //                    + "upper(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Inventry);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
@@ -765,7 +817,7 @@ public class ItemController implements Serializable {
 //                    + "upper(c.code) like :str or "
 //                    + "upper(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Store);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
@@ -790,7 +842,7 @@ public class ItemController implements Serializable {
 //                    + "upper(c.code) like :str or "
 //                    + "upper(c.barcode) like :str) "
 //                    + "order by c.name";
-//            //////System.out.println(sql);
+//            //////// // System.out.println(sql);
 //            tmpMap.put("amp", BillExpense.class);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
 //            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
@@ -808,7 +860,7 @@ public class ItemController implements Serializable {
                 + " (type(c)= :amp) "
                 + " and c.departmentType=:dep "
                 + " order by c.name";
-        //////System.out.println(sql);
+        //////// // System.out.println(sql);
         tmpMap.put("amp", Amp.class);
         tmpMap.put("dep", DepartmentType.Store);
 
@@ -831,7 +883,7 @@ public class ItemController implements Serializable {
                 sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and (upper(c.name) like '%" + query.toUpperCase() + "%' or upper(c.code) like '%" + query.toUpperCase() + "%') order by c.name";
             }
 
-//////System.out.println(sql);
+//////// // System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", Ampp.class);
             suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
@@ -850,7 +902,7 @@ public class ItemController implements Serializable {
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=Packege "
                     + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -933,7 +985,7 @@ public class ItemController implements Serializable {
                     + " and (c.inactive=false or c.inactive is null) "
                     + "and type(c)=MedicalPackage "
                     + "and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -962,7 +1014,7 @@ public class ItemController implements Serializable {
             m.put("ward", InwardService.class);
             m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////System.out.println(sql);
+            //    //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, m, 20);
         }
         return suggestions;
@@ -989,7 +1041,7 @@ public class ItemController implements Serializable {
 //            m.put("inv", Investigation.class);
             m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////System.out.println(sql);
+            //    //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, m, 20);
         }
         return suggestions;
@@ -1172,10 +1224,10 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
-//        //System.out.println(sql);
-//        //System.out.println("m = " + m);
+//        //// // System.out.println(sql);
+//        //// // System.out.println("m = " + m);
         mySuggestions = getFacade().findBySQL(sql, m, 20);
-//        //System.out.println("mySuggestions = " + mySuggestions);
+//        //// // System.out.println("mySuggestions = " + mySuggestions);
         return mySuggestions;
     }
 
@@ -1199,7 +1251,7 @@ public class ItemController implements Serializable {
             m.put("ser", Service.class);
             m.put("inv", Investigation.class);
             m.put("q", "%" + query.toUpperCase() + "%");
-            //    //////System.out.println(sql);
+            //    //////// // System.out.println(sql);
             mySuggestions = getFacade().findBySQL(sql, m, 20);
         }
         return mySuggestions;
@@ -1212,7 +1264,7 @@ public class ItemController implements Serializable {
             suggestions = new ArrayList<Item>();
         } else {
             sql = "select c from Item c where c.institution.id = " + getSessionController().getInstitution().getId() + " and c.retired=false and type(c)!=Packege and type(c)!=TimedItem and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -1220,9 +1272,9 @@ public class ItemController implements Serializable {
 
     public void makeSelectedAsMasterItems() {
         for (Item i : selectedList) {
-            ////System.out.println("i = " + i.getInstitution());
+            ////// // System.out.println("i = " + i.getInstitution());
             if (i.getInstitution() != null) {
-                ////System.out.println("i = " + i.getInstitution().getName());
+                ////// // System.out.println("i = " + i.getInstitution().getName());
                 i.setInstitution(null);
                 getFacade().edit(i);
             }
@@ -1251,7 +1303,7 @@ public class ItemController implements Serializable {
         m.put("inw", InwardService.class);
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
-        ////System.out.println(sql);
+        ////// // System.out.println(sql);
         items = getFacade().findBySQL(sql, m);
         return items;
     }
@@ -1283,7 +1335,7 @@ public class ItemController implements Serializable {
         m.put("inw", InwardService.class);
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
-        ////System.out.println(sql);
+        ////// // System.out.println(sql);
         itemFees = getItemFeeFacade().findBySQL(sql, m);
         return itemFees;
     }

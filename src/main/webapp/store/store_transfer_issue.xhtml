@@ -13,7 +13,7 @@
             <p:panel rendered="#{!storeTransferIssueController.printPreview}">
 
                 <f:facet name="header" >                                  
-                    <h:panelGrid columns="4"   >
+                    <h:panelGrid columns="4">
                         <f:facet name="header">
                             <h:outputLabel value="Department :#{storeTransferIssueController.requestedBill.department.name}" />
                         </f:facet>
@@ -65,7 +65,7 @@
                             </f:facet>                        
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
-                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
+                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{storeTransferIssueController.onFocus(bItm)}"/>
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>
@@ -87,7 +87,7 @@
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
-                <p:panel   id="gpBillPreview"   >
+                <p:panel   id="gpBillPreview">
 
                     <ph:transferIssue bill="#{storeTransferIssueController.issuedBill}"/>
 

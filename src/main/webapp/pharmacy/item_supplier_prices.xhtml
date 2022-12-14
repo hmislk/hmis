@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
@@ -15,7 +15,7 @@
                 <h:form>
                     <p:panel header="Item List with Suppliers and Latest Rates" >
                         <p:commandButton ajax="false" value="Excel">
-                            <pe:exporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
+                            <p:dataExporter type="xlsx" target="tblItem" fileName="report_grn_detail"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Fill Items"
                                          action="#{ampController.fillItemsForItemSupplierPrices}"/>

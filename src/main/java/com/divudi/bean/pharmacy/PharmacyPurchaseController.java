@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -384,10 +384,10 @@ public class PharmacyPurchaseController implements Serializable {
         double grossTotal = 0.0;
         if (getBill().getDiscount() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount();
-            ////System.out.println("gross" + grossTotal);
-            ////System.out.println("net1" + getBill().getNetTotal());
+            ////// // System.out.println("gross" + grossTotal);
+            ////// // System.out.println("net1" + getBill().getNetTotal());
             getBill().setNetTotal(grossTotal);
-            ////System.out.println("net2" + getBill().getNetTotal());
+            ////// // System.out.println("net2" + getBill().getNetTotal());
         }
 
     }

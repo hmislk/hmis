@@ -63,14 +63,14 @@
                                         <h:outputLabel  value="Select Speciality" ></h:outputLabel>
                                         <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardProfessionalBillController.currentBillFee.speciality}" id="acSpeciality"
                                                         completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                        converter="specilityCon"   >
+                                                        converter="specilityCon">
                                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff pIxAdd  pBillDetails" />
                                         </p:autoComplete>
 
                                         <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
                                         <p:autoComplete  style="width: 400px;" forceSelection="true" value="#{inwardProfessionalBillController.currentBillFee.staff}" id="scStaff"
                                                          completeMethod="#{inwardProfessionalBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                         converter="stfcon"   >
+                                                         converter="stfcon">
                                             <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails"  />
                                         </p:autoComplete>
                                         <h:outputLabel value="Professional Fee"/>
@@ -106,7 +106,7 @@
                                         <f:facet name="header">Fee</f:facet>
                                         <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}">
                                             <p:ajax event="blur" process="txtFeeVal"
-                                                    update=":#{p:component('pBillDetails')}"
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                     listener="#{inwardProfessionalBillController.feeChanged(bif)}" />
                                         </h:inputText>
                                     </p:column>

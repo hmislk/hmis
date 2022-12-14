@@ -1,14 +1,13 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.PersonInstitutionType;
-import com.divudi.entity.BillSession;
 import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.Speciality;
@@ -193,9 +192,9 @@ public class ServiceSessionLeaveController implements Serializable {
         hm.put("st", getCurrentStaff());
 
         serviceSessionLeaves = getFacade().findBySQL(slq, hm, TemporalType.DATE);
-//        //System.out.println("hm = " + hm);
-//        //System.out.println("slq = " + slq);
-//        //System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
+//        //// // System.out.println("hm = " + hm);
+//        //// // System.out.println("slq = " + slq);
+//        //// // System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
         bookingController.generateSessionsOnlyId();
     }
 

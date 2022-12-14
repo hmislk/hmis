@@ -8,7 +8,7 @@
                 xmlns:in="http://java.sun.com/jsf/composite/inward"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
 
 
@@ -110,7 +110,7 @@
                                 <h:outputLabel value="#{c.inwardChargeType.label}"/>
                             </p:column>
                             <p:column  style="text-align: right;" headerText="Total">
-                                <h:outputLabel value="#{c.total}"   >
+                                <h:outputLabel value="#{c.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>

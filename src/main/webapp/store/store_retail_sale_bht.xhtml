@@ -39,7 +39,7 @@
                                         <h:panelGrid columns="20"  >
                                             <p:commandButton ajax= "false" accesskey="s" value="Settle" 
                                                             action="#{storeSaleBhtController.settleStoreBhtIssue()}" 
-                                                             update=":#{p:component('tblBillItem')} :#{p:component('txtQty')} "  actionListener="#{storeSaleBhtController.calculateAllRates}">
+                                                             update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} "  actionListener="#{storeSaleBhtController.calculateAllRates}">
                                                 <f:facet name="title" >
                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
                                                     <h:outputLabel value="ettle"  ></h:outputLabel>
@@ -71,7 +71,7 @@
                                             <p:column >
                                                 <h:outputLabel value="#{apt2.patient.person.name}"/> 
                                             </p:column>
-                                            <p:ajax event="itemSelect" process="acPt2" update="#{p:component('gpDetail')}" />
+                                            <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                                         </p:autoComplete>  
 
                                     </p:panel>
@@ -131,14 +131,14 @@
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeSaleBhtController.qty}" style="width: 50px!important;"   >
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{storeSaleBhtController.qty}" style="width: 50px!important;">
                                                 <p:ajax event="keyup"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                 <p:ajax event="blur"  listener="#{storeSaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                         action="#{storeSaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} :#{p:component('txtQty')} acStock focusItem " ></p:commandButton>
+                                                         action="#{storeSaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('txtQty',view).clientId} acStock focusItem " ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -227,7 +227,7 @@
 
                         </div>
                         <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
+                            <h:panelGroup   id="gpBillPreview"> 
                                 <st:issueBill bill="#{storeSaleBhtController.printBill}"/>
                             </h:panelGroup>
                         </div>

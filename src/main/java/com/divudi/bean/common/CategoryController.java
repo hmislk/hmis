@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -20,7 +20,6 @@ import com.divudi.entity.pharmacy.AssetCategory;
 import com.divudi.entity.pharmacy.ConsumableCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalCategory;
 import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
@@ -41,8 +40,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -74,7 +73,7 @@ public class CategoryController implements Serializable {
         }
         List<Item> cis = itemController.getItems(fromCategory);
         for (Item i : cis) {
-            ////System.out.println("i.getName() = " + i.getName());
+            ////// // System.out.println("i.getName() = " + i.getName());
             i.setCategory(toCategory);
             itemController.saveSelected(i);
         }
@@ -124,7 +123,7 @@ public class CategoryController implements Serializable {
         } else {
 
             sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub) and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             tmpMap.put("sup", ServiceCategory.class);
             tmpMap.put("sub", ServiceSubCategory.class);
             suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
@@ -141,7 +140,7 @@ public class CategoryController implements Serializable {
         } else {
 
             sql = "select c from Category c where c.retired=false and type(c)= :cat and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             tmpMap.put("cat", InvestigationCategory.class);
             suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
         }
@@ -157,7 +156,7 @@ public class CategoryController implements Serializable {
         } else {
 
             sql = "select c from Category c where c.retired=false and (type(c)= :sup or type(c)= :sub or type(c)= :inv) and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             tmpMap.put("sup", ServiceCategory.class);
             tmpMap.put("sub", ServiceSubCategory.class);
             tmpMap.put("inv", InvestigationCategory.class);
@@ -559,7 +558,7 @@ public class CategoryController implements Serializable {
 
     public void updateCategory(Category cat) {
         if (cat == null) {
-            ////System.out.println("cat = " + cat);
+            ////// // System.out.println("cat = " + cat);
             return;
         }
         getFacade().edit(cat);

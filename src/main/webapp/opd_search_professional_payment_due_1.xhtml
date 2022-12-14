@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -24,13 +24,13 @@
                                 <h:outputLabel value="Speciality"/> 
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
+                                                converter="specilityCon">
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Doctor Name"/>      
                                 <p:autoComplete style="width: 400px;" forceSelection="true" value="#{searchController.staff}" id="scStaff"
                                                 completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon"   >
+                                                converter="stfcon">
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Service Name"/>
@@ -57,7 +57,7 @@
                                     <p:spacer width="90" height="0"/>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                    <pe:exporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
+                                    <p:dataExporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
                                 </p:commandButton>
                                 <p:commandButton value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
@@ -73,7 +73,7 @@
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder">
                             <p:panel header="OPD Doctor Payments And Due">
 
-                                <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                                <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
                                     <f:facet name="header">
                                          <p:outputLabel value="Due Payments" /><br/>
                                         <h:outputLabel value="From : "/>
@@ -162,7 +162,7 @@
 
                             <p:panel>
 
-                                <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf"   >
+                                <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{searchController.billFeesDone}" var="bf">
                                     <f:facet name="header">
                                          <p:outputLabel value="Done Payments" /><br/>
                                         <h:outputLabel value="From : "/>

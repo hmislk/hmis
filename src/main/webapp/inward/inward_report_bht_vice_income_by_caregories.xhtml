@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core"
       >
 
@@ -29,7 +29,7 @@
                         <p:panelGrid columns="2">
                             <p:commandButton ajax="false" value="Process" action="#{inwardReportController.listBhtViceIncome()}" onclick="onSubmitButton();"  />
                             <p:commandButton ajax="false" value="Export to Excel" onclick="onSubmitButton();"  >
-                                <pe:exporter target="tbl" type="xlsx" fileName="BHT Vice Income by Categories" />
+                                <p:dataExporter target="tbl" type="xlsx" fileName="BHT Vice Income by Categories" />
                             </p:commandButton>
                         </p:panelGrid>
 

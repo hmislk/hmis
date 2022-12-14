@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -98,7 +98,7 @@ public class PatientReportItemValue implements Serializable {
     }
 
     public Patient getPatient() {
-        //////System.out.println("");
+        //////// // System.out.println("");
         return patient;
     }
 
@@ -164,6 +164,9 @@ public class PatientReportItemValue implements Serializable {
     }
 
     public String getValue() {
+        if(this.investigationItem==null || this.investigationItem.ixItemValueType==null){
+            return "";
+        }
         switch (this.investigationItem.ixItemValueType) {
             case Double:
             case Long:

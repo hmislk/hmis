@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -44,7 +44,7 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
+                                <p:dataExporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
                         </h:panelGrid>
 
@@ -69,7 +69,7 @@
                                     <h:outputLabel value="#{b.insId}" >
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Time"   >
+                                <p:column headerText="Time">
                                     <f:facet name="header">  
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 

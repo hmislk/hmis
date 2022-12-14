@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -100,7 +100,7 @@
                         <p:commandButton ajax="false" value="Fill Deleted" action="#{staffLoanController.createLonesDeleted()}" />
                         <p:commandButton ajax="false" value="Fill For Paid" action="#{staffLoanController.createsheduleForPaidLones()}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb5" fileName="hr_staff_loan_installment"  />
+                            <p:dataExporter type="xlsx" target="tb5" fileName="hr_staff_loan_installment"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="loaninstall" ></p:printer>

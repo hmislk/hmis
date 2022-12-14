@@ -52,7 +52,7 @@
                                             <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
                                         </p:column>
                                         <p:ajax event="itemSelect" process="acPt" 
-                                                update=":#{p:component('dtbItem')}"/>
+                                                update=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId}"/>
                                     </p:autoComplete> 
 
                                     <h:outputLabel value="Test" ></h:outputLabel>

@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -53,7 +53,7 @@
                                          style="float: right;" />  
 
                         <p:commandButton actionListener="#{commonReport.createGrnExpensTableStore()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <pe:exporter type="xlsx" target="billed,cancelled,sum" fileName="report_grn_detail_expenses"  />
+                            <p:dataExporter type="xlsx" target="billed,cancelled,sum" fileName="report_grn_detail_expenses"  />
                         </p:commandButton>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
@@ -223,7 +223,7 @@
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Cancelled At"   >
+                        <p:column headerText="Cancelled At">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled At"/>
                             </f:facet> 
@@ -376,7 +376,7 @@
                         </p:column>
 
 
-                        <p:column headerText="Cancelled At"   >
+                        <p:column headerText="Cancelled At">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cancelled At"/>
                             </f:facet> 

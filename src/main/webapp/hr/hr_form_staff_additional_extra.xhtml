@@ -22,7 +22,7 @@
                             <p:calendar value="#{staffAdditionalFormController.date}"
                                         navigator="true"
                                         pattern="yyyy MM dd">
-                                <f:ajax execute="@this" render=":#{p:component('fromDate')} :#{p:component('toDate')} " event="dateSelect" 
+                                <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('fromDate',view).clientId} :#{p:resolveFirstComponentWithId('toDate',view).clientId} " event="dateSelect" 
                                         listener="#{staffAdditionalFormController.onDateSelect}"/>
                             </p:calendar> 
                             <p:commandButton ajax="false" value="Process Staff Shift" action="#{staffAdditionalFormController.fetchStaffShift()}" />
@@ -35,7 +35,7 @@
                                     <h:outputText value="#{t.shift.name}" />
                                 </p:column>
                                 <h:outputLabel value="Time Type"/>
-                                <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
+                                <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}">
                                     <f:selectItem itemLabel="Select Time Type"/>
                                     <f:selectItems value="#{enumController.timeses}" />
                                     <f:ajax event="change" execute="@this staffShift" render="fromDate toDate"/>
@@ -53,7 +53,7 @@
 
                             </p:selectOneMenu>
                             <h:outputLabel value="Time Type"/>
-                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}"   >
+                            <p:selectOneMenu value="#{staffAdditionalFormController.currentAdditionalForm.times}">
                                 <f:selectItem itemLabel="Select Time Type"/>
                                 <f:selectItems value="#{enumController.timeses}" />
                                 <f:ajax event="change" execute="@this staffShift" render="fromDate toDate" 

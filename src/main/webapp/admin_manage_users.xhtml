@@ -9,16 +9,16 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <h:panelGrid columns="3" columnClasses="grid1 grid1">
+                    <p:panelGrid columns="3" columnClasses="grid1 grid1">
                         <p:panel header="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
-                            <h:panelGrid columns="1" >
+                            <p:panelGrid columns="1" >
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Add New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser}" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="View Users" action="admin_view_user" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="View User Login Details" action="admin_logins_all" onclick="onSubmitButton();"/>
 
-                            </h:panelGrid>
+                            </p:panelGrid>
                         </p:panel>
-                    </h:panelGrid>
+                    </p:panelGrid>
 
 
                     <h:panelGroup rendered="false" >

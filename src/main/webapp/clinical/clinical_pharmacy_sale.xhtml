@@ -60,16 +60,16 @@
                                                         <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="focus" process="acStock :#{p:component('cmbPs')}"  ></p:ajax>
+                                                <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}"  ></p:ajax>
                                                 <p:ajax event="itemSelect"   listener="#{pharmacySaleController.handleStockSelect}"  update="txtQty txtRate focusQty" ></p:ajax>
                                             </p:autoComplete>
 
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quentity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"  id="txtQty" value="#{pharmacySaleController.qty}" style="width: 50px!important;"   >
-                                                <p:ajax event="keyup"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:component('cmbPs')}" update="txtRate txtVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:component('cmbPs')}" update="txtRate txtVal" ></p:ajax>
+                                            <p:inputText autocomplete="off"  accesskey="q"  id="txtQty" value="#{pharmacySaleController.qty}" style="width: 50px!important;">
+                                                <p:ajax event="keyup"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{pharmacySaleController.handleQuentityEntryListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
                                         <h:panelGrid columns="1" >
@@ -85,7 +85,7 @@
                                             </p:outputLabel>
                                         </h:panelGrid>
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                         action="#{pharmacySaleController.addBillItem}" process="@this acStock txtQty :#{p:component('cmbPs')}" update=":#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
+                                                         action="#{pharmacySaleController.addBillItem}" process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" onclick="onSubmitButton();" ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -116,8 +116,8 @@
                                                     <p:dataTable id="tblBillItem" value="#{pharmacySaleController.preBill.billItems}"
                                                                  var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
 
-                                                        <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:component('pBillDetails')}" />  
-                                                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdt}" update="@this gros :#{p:component('pBillDetails')}" /> 
+                                                        <p:ajax event="rowEdit" listener="#{pharmacySaleController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                                        <p:ajax event="rowEditCancel" listener="#{pharmacySaleController.onEdt}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
                                                         <p:column headerText="Item">
@@ -271,7 +271,7 @@
                                     
                                     <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacySaleController.patientSearchTab}" >
                                         <p:ajax event="tabChange"  process="@this"
-                                                update=":#{p:component('cmbPs')} :#{p:component('pBillDetails')}"
+                                                update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                 listener="#{pharmacySaleController.onTabChange}" />
 
                                         <p:tab id="tabNewPt" title="New Patient"  >
@@ -290,7 +290,7 @@
                                                 itemValue="#{apt}" size="30"  
                                                 style="width: 400px;"
                                                 disabled="#{pharmacySaleController.fromOpdEncounter}">
-                                                <p:ajax event="itemSelect" process="@this" update=":#{p:component('cmbPs')} :#{p:component('pBillDetails')} panSearch"
+                                                <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"
                                                         listener="#{pharmacySaleController.searchPatientListener}"/>
                                             </p:autoComplete>  
                                             <h:panelGroup id="panSearch">
@@ -315,7 +315,7 @@
                                                                  converter="institutionConverter" 
                                                                  disabled="#{pharmacySaleController.paymentMethod ne 'Credit' }">
 
-                                                    <p:ajax process="scCreditCompany" update=":#{p:component('pBillDetails')}" 
+                                                    <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                             event="itemSelect"  listener="#{pharmacySaleController.paymentSchemeChanged}" />
 
                                                 </p:autoComplete>
@@ -346,7 +346,7 @@
                                                         </h:outputLabel>
                                                     </p:column>
 
-                                                    <p:ajax process="scStaff" update=":#{p:component('pBillDetails')}" 
+                                                    <p:ajax process="scStaff" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                             event="itemSelect"  listener="#{pharmacySaleController.paymentSchemeChanged}" />
 
                                                 </p:autoComplete>
@@ -391,7 +391,7 @@
 
                         </div>
                         <div >
-                            <h:panelGroup   id="gpBillPreview"   > 
+                            <h:panelGroup   id="gpBillPreview"> 
                                 <phi:clinical_pharmacy_sale_bill bill="#{pharmacySaleController.printBill}"></phi:clinical_pharmacy_sale_bill>
                             </h:panelGroup>
                         </div>

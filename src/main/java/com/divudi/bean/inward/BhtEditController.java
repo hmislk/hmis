@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.inward;
 
@@ -44,8 +44,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -153,7 +153,7 @@ public class BhtEditController implements Serializable {
         }
 
         if (getComment() == null || getComment().trim().equals("")) {
-            ////System.out.println("comment = " + comment);
+            ////// // System.out.println("comment = " + comment);
             UtilityController.addErrorMessage("Type a Comment");
             return;
         }
@@ -205,7 +205,7 @@ public class BhtEditController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select c from Admission c where c.retired=false and c.discharged=false and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -222,7 +222,7 @@ public class BhtEditController implements Serializable {
                     //                    + " and c.discharged=false "
                     + " and (upper(c.bhtNo) like '%" + query.toUpperCase() + "%' or upper(c.patient.person.name) like '%" + query.toUpperCase() + "%') "
                     + " order by c.bhtNo ";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;

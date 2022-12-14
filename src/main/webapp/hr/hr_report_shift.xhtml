@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -25,7 +25,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createShiftTable()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>

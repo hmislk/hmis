@@ -35,7 +35,8 @@
                 </p:panelGrid>
                 <p:dataTable styleClass="noBorder" var="bi"  scrollable="true" 
                              scrollHeight="250"  value="#{transferRequestController.billItems}"
-                             sortOrder="#{bi.searialNo}" id="itemList" editable="true" >  
+                             
+                             id="itemList" editable="true" >  
 
                     <f:facet name="header">  
                         Bill Item 
@@ -47,8 +48,8 @@
 
                     <p:column headerText="Qty" >                          
                         <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" label="Qty">                         
-                            <f:ajax event="blur" render=":#{p:component('tab')} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
-                            <f:ajax event="focus" render=":#{p:component('tab')} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
+                            <f:ajax event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
+                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
                         </p:inputText>
                     </p:column>  
 

@@ -30,7 +30,7 @@
                                       completeMethod="#{channellingFeeController.completeDoctors}" 
                                       var="mys" itemLabel="#{mys.person.nameWithTitle}" 
                                       itemValue="#{mys}"
-                                      converter="stfcon"   >   
+                                      converter="stfcon">   
                         <f:ajax event="itemSelect" execute="acDoc" 
                                 render="lstSelect gpDetail gpList" listener="#{channellingFeeController.fillSessions()}"/>
                     </p:autoComplete>  
@@ -175,7 +175,7 @@
                             </p:column>
 
                             <p:column headerText="Remove">
-                                <p:commandButton value="Remove" action="#{channellingFeeController.delete()}" process="tbl" update=":#{p:component('gpList')}" >
+                                <p:commandButton value="Remove" action="#{channellingFeeController.delete()}" process="tbl" update=":#{p:resolveFirstComponentWithId('gpList',view).clientId}" >
                                     <f:setPropertyActionListener value="#{i}" target="#{channellingFeeController.removingFee}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                             </p:column>

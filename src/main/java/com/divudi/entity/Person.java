@@ -1,8 +1,8 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * MO(Health Information), Department of Health Services, Southern Province
- * and
+ * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
 package com.divudi.entity;
@@ -35,8 +35,8 @@ import org.joda.time.PeriodType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Entity
 @XmlRootElement
@@ -78,10 +78,10 @@ public class Person implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    @ManyToOne
-    WebUser editer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date editedAt;
+//    @ManyToOne
+//    WebUser editer;
+//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+//    Date editedAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -231,21 +231,21 @@ public class Person implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
+//    public WebUser getEditer() {
+//        return editer;
+//    }
+//
+//    public void setEditer(WebUser editer) {
+//        this.editer = editer;
+//    }
+//
+//    public Date getEditedAt() {
+//        return editedAt;
+//    }
+//
+//    public void setEditedAt(Date editedAt) {
+//        this.editedAt = editedAt;
+//    }
 
     public WebUser getCreater() {
         return creater;

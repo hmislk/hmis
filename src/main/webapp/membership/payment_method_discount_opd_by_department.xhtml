@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -44,7 +44,7 @@
                             </p:panelGrid>
                             <p:panelGrid columns="3" >   
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <pe:exporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
+                                <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill" 
                                             action="#{opdMemberShipDiscountController.createItemsDepartmentsPaymentMethod}" />
@@ -82,7 +82,7 @@
                                       <f:facet name="header">
                                     <h:outputLabel value="Payment Method"  />
                                 </f:facet>
-                                    <h:inputHidden value="#{a.paymentMethod}"   >   </h:inputHidden>
+                                    <h:inputHidden value="#{a.paymentMethod}">   </h:inputHidden>
                                     <p:selectOneMenu  value="#{a.paymentMethod}"  >
                                         <f:selectItem itemLabel="Select" />                           
                                         <f:selectItems value="#{enumController.paymentMethods}" />                                    

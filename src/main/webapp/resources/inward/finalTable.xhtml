@@ -4,7 +4,7 @@
       xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:f="http://java.sun.com/jsf/core">
 
     <!-- INTERFACE -->
@@ -15,7 +15,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-            <pe:exporter type="xlsx" target="tb1" fileName="bht_details"  />
+            <p:dataExporter type="xlsx" target="tb1" fileName="bht_details"  />
         </p:commandButton>
         <p:dataTable id="tb1" value="#{cc.attrs.bill.billItems}" var="bip"
                      rowStyleClass="#{bip.netValue !=0 or bip.adjustedValue!=0 ?bip.inwardChargeType.label eq 'Linen Charges' ?'redText':'':'noDisplayRow' }">

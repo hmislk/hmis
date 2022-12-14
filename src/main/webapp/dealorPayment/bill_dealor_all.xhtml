@@ -93,7 +93,7 @@
                             </f:facet>
 
                             <p:ajax event="rowSelect"  process="@this" 
-                                    update=":#{p:component('total')}"
+                                    update=":#{p:resolveFirstComponentWithId('total',view).clientId}"
                                     listener="#{pharmacyDealorBill.calTotalBySelectedBillTems()}" />  
 
 
@@ -148,7 +148,7 @@
             </p:commandButton>
             <p:commandButton value="New Bill" ajax="false" action="#{pharmacyDealorBill.makeNull()}" >
                     </p:commandButton>
-            <p:panel   id="gpBillPreview"   >
+            <p:panel   id="gpBillPreview">
 
                 <bi:grn_payment billItems="#{pharmacyDealorBill.selectedBillItems}" bill="#{pharmacyDealorBill.current}"/>
                 

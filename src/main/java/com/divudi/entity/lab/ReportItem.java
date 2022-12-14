@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -730,7 +730,7 @@ public class ReportItem implements Serializable {
 //                + "clip:" + cssClip + ";font-family: " + cssFontFamily + ";font-variant:" + cssFontVariant + ";"
 //                + "font-weight: " + cssFontWeight + ":border-radius: " + cssBorderRadius + ";";
         //TODO (Later) to add cssHeight, font styles, etc, Now 12
-//        //System.out.println("cssStyle = " + cssStyle);
+//        //// // System.out.println("cssStyle = " + cssStyle);
         return cssStyle;
     }
 

@@ -26,7 +26,7 @@
                         <p:autoComplete   forceSelection="true" value="#{channelSessionWizard.currentStaff}" id="scStaff"
                                           completeMethod="#{channelSessionWizard.completeStaff}" var="mys"
                                           itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                          converter="stfcon"   >   
+                                          converter="stfcon">   
                             <!--<f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail"  />-->
                         </p:autoComplete>
                     </p:tab>
@@ -64,12 +64,12 @@
                                     <p:outputLabel value="Before Session" rendered="false"/>
                                     <p:autoComplete rendered="false" forceSelection="true" value="#{channelSessionWizard.current.beforeSession}" 
                                                     completeMethod="#{channelSessionWizard.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                    converter="sscon"   >                            
+                                                    converter="sscon">                            
                                     </p:autoComplete>
                                     <p:outputLabel value="After Session" rendered="false"/>
                                     <p:autoComplete  rendered="false" forceSelection="true" value="#{channelSessionWizard.current.afterSession}" 
                                                      completeMethod="#{channelSessionWizard.completeSession}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                     converter="sscon"   >                            
+                                                     converter="sscon">                            
                                     </p:autoComplete>
                                     <p:outputLabel value="Displaying Count"/>
                                     <p:inputText autocomplete="off" value="#{channelSessionWizard.current.displayCount}"/>

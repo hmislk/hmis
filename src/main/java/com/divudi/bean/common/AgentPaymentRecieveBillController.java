@@ -1,6 +1,6 @@
 /*
  * To change this currentlate, choose Tools | currentlates
- * and open the currentlate in the editor.
+ * (94) 71 5812399 open the currentlate in the editor.
  */
 package com.divudi.bean.common;
 
@@ -24,7 +24,6 @@ import com.divudi.facade.AgentHistoryFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

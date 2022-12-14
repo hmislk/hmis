@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -39,17 +39,10 @@
                         </p:calendar>
 
                         <p:commandButton value="Excel" ajax="false">
-                            <pe:exporter type="xlsx" 
+                            <p:dataExporter type="xlsx" 
                                          target="tbl" 
                                          fileName="pharmacy_item_transaction_report"
-                                         facetBackground="#008000" 
-                                         facetFontSize="13" 
-                                         facetFontColor="#FFFFFF" 
-                                         facetFontStyle="BOLD"
-                                         cellFontColor="#0000FF"
-                                         cellFontSize="12"  
-                                         cellFontStyle="NORMAL"  
-                                         fontName="Courier New"  />
+                                         />
                         </p:commandButton>
                     </h:panelGrid>
                     <p:dataTable id="tbl" value="#{pharmacyController.itemTransactionSummeryRows}" var="r" 
@@ -64,7 +57,7 @@
 
                         <p:columnGroup type="header" >
                             <p:row >
-                                <p:column headerText="Item"   ></p:column>
+                                <p:column headerText="Item"></p:column>
                                 <p:column rendered="#{pharmacyController.hasSale}" colspan="2"
                                           headerText="Sale"  >
                                 </p:column>

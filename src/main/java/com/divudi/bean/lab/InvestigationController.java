@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.lab;
 
@@ -28,7 +28,6 @@ import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.WorksheetItem;
@@ -59,8 +58,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -336,7 +335,7 @@ public class InvestigationController implements Serializable {
             s.setRetiredAt(null);
             s.setRetirer(null);
             getFacade().edit(s);
-            ////System.out.println("undeleted = " + s);
+            ////// // System.out.println("undeleted = " + s);
         }
         selectedIxs = null;
         listDeletedIxs();
@@ -521,7 +520,7 @@ public class InvestigationController implements Serializable {
 
     public void reportItemsToWorksheetItems() {
         for (WorksheetItem wi : getWorksheetItemFacade().findAll()) {
-            //////System.out.println("item removing is " + wi);
+            //////// // System.out.println("item removing is " + wi);
             getWorksheetItemFacade().remove(wi);
         }
         for (Investigation i : getItems()) {
@@ -531,7 +530,7 @@ public class InvestigationController implements Serializable {
                     wi.setItem(i);
                     wi.setName(ri.getName());
                     i.getWorksheetItems().add(wi);
-                    //////System.out.println("Worksheet added " + wi);
+                    //////// // System.out.println("Worksheet added " + wi);
                 }
             }
             getItemFacade().edit(i);
@@ -641,7 +640,7 @@ public class InvestigationController implements Serializable {
                 + " and (upper(c.name) like :n or "
                 + " upper(c.fullName) like :n or "
                 + " upper(c.code) like :n or upper(c.printName) like :n ) ";
-        //////System.out.println(sql);
+        //////// // System.out.println(sql);
 
         m.put("n", "%" + query.toUpperCase() + "%");
 
@@ -675,7 +674,7 @@ public class InvestigationController implements Serializable {
                 + " and (upper(c.name) like :n or "
                 + " upper(c.fullName) like :n or "
                 + " upper(c.code) like :n or upper(c.printName) like :n ) ";
-        //////System.out.println(sql);
+        //////// // System.out.println(sql);
 
         m.put("n", "%" + query.toUpperCase() + "%");
 
@@ -710,7 +709,7 @@ public class InvestigationController implements Serializable {
         } else {
             // sql = "select c from Investigation c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;
@@ -1009,7 +1008,7 @@ public class InvestigationController implements Serializable {
                 String ix = w.get(1);
                 String ic = w.get(2);
                 String f = w.get(4);
-                //////System.out.println(code + " " + ix + " " + ic + " " + f);
+                //////// // System.out.println(code + " " + ix + " " + ic + " " + f);
 
                 Investigation tix = new Investigation();
                 tix.setCode(code);
@@ -1062,30 +1061,30 @@ public class InvestigationController implements Serializable {
         }
 //        getCurrent().setInstitution(institution);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            //////System.out.println("1");
+            //////// // System.out.println("1");
             if (billedAs == false) {
-                //////System.out.println("2");
+                //////// // System.out.println("2");
                 getCurrent().setBilledAs(getCurrent());
 
             }
             if (reportedAs == false) {
-                //////System.out.println("3");
+                //////// // System.out.println("3");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            //////System.out.println("4");
+            //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
 
             getFacade().create(getCurrent());
             if (billedAs == false) {
-                //////System.out.println("5");
+                //////// // System.out.println("5");
                 getCurrent().setBilledAs(getCurrent());
             }
             if (reportedAs == false) {
-                //////System.out.println("6");
+                //////// // System.out.println("6");
                 getCurrent().setReportedAs(getCurrent());
             }
             getFacade().edit(getCurrent());

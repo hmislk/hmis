@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./admin_institutions_index.xhtml">
+
+            <ui:define name="admin">
+
+                <h:form >
+                    <h:panelGrid id="gpDetail" columns="1">
+                        <p:commandButton ajax="false" id="btnSave" value="Save" 
+                                         action="#{institutionController.saveSelectedInstitution()}"
+                                         style="float: right;">
+                        </p:commandButton>
+                        <p:tabView >
+                            <p:tab title="Basic Details" >
+                                <h:panelGrid id="gpDetailText" columns="2">
+
+
+                                    <h:outputText id="lblName" value="Name"  ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtName" 
+                                                 styleClass="longText"
+                                                 value="#{institutionController.current.name}"  ></p:inputText>
+
+                                    <h:outputText id="lblChqPrnName" value="Printi Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtChqPrnName" 
+                                                 styleClass="longText"
+                                                 value="#{institutionController.current.chequePrintingName}"  ></p:inputText>
+
+                                    <h:outputText value="Code" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{institutionController.current.code}"  >
+                                    </p:inputText> 
+                                    <h:outputText value="Point of Issue No" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{institutionController.current.pointOfIssueNo}"  >
+                                    </p:inputText> 
+                                    <h:outputText value="Descreption" >                                        
+                                    </h:outputText>
+                                    <p:inputTextarea styleClass="longText" value="#{institutionController.current.descreption}"  >
+                                    </p:inputTextarea> 
+
+                                    <h:outputText id="lblType" value="Type" ></h:outputText>
+                                    <p:selectOneMenu value="#{institutionController.current.institutionType}">
+                                        <f:selectItem itemLabel="Select Institution Type"/>
+                                        <f:selectItems value="#{institutionController.institutionTypes}"/>
+                                    </p:selectOneMenu>
+                                    <h:outputText value="Credit Limit" >                                        
+                                    </h:outputText>
+                                    <p:inputText autocomplete="off"  value="#{institutionController.current.allowedCredit}"  >
+                                    </p:inputText>
+
+                                    <h:outputText id="lblPhone" value="Phone" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtPhone" value="#{institutionController.current.phone}"  ></p:inputText>
+
+                                    <h:outputText id="lblFax" value="Fax" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtFax" value="#{institutionController.current.fax}"  ></p:inputText>
+
+                                    <h:outputText id="lblEMail" value="Email" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtEmail" value="#{institutionController.current.email}"  ></p:inputText>
+
+                                    <h:outputText id="lblEMailOwner" value="Owner Email" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtOwnerEmail" value="#{institutionController.current.ownerEmail}"  ></p:inputText>
+
+
+                                    <h:outputText id="lblAdress" value="Address" ></h:outputText>
+                                    <p:inputTextarea id="txtAdress" value="#{institutionController.current.address}" styleClass="longText" ></p:inputTextarea>
+
+                                    <h:outputText id="lblWeb" value="Web" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtWeb" value="#{institutionController.current.web}"  ></p:inputText>
+
+                                    <h:outputText id="lblBank" value="Bank" ></h:outputText>
+                                    <au:completeBank_Branch value="#{institutionController.current.bankBranch}" />
+
+                                    <h:outputText id="lblAcc" value="Account No" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtAcc" value="#{institutionController.current.accountNo}"  ></p:inputText>
+
+                                </h:panelGrid>
+                            </p:tab>
+                            <p:tab title="Advanced" >
+                                <h:panelGrid columns="2" >
+                                    <h:outputText  value="Email Sending Account" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtEmUn" value="#{institutionController.current.emailSendingUsername}"  ></p:inputText>
+
+                                    <h:outputText  value="Email Sending Password" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtEmPs" value="#{institutionController.current.emailSendingPassword}"  ></p:inputText>
+
+                                    <h:outputText  value="SMS Sending Username" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtSmsUn" value="#{institutionController.current.smsSendingUsername}"  ></p:inputText>
+
+                                    <h:outputText  value="SMS Sending Password" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtSmsPs" value="#{institutionController.current.smsSendingPassword}"  ></p:inputText>
+
+                                    <h:outputText  value="SMS Alias" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtSmsAlias" value="#{institutionController.current.smsSendingAlias}"  ></p:inputText>
+
+
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:tabView>
+
+
+
+                    </h:panelGrid>
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

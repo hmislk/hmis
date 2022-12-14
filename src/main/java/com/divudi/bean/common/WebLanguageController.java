@@ -1,0 +1,357 @@
+/*
+ * Open Hospital Management Information System
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
+ */
+package com.divudi.bean.common;
+
+import com.divudi.data.Language;
+import com.divudi.entity.WebLanguage;
+import com.divudi.facade.WebLanguageFacade;
+import com.divudi.facade.util.JsfUtil;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
+import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+/**
+ *
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
+ */
+@Named
+@SessionScoped
+public class WebLanguageController implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+    @Inject
+    SessionController sessionController;
+    @EJB
+    private WebLanguageFacade ejbFacade;
+    private WebLanguage selected;
+    private List<WebLanguage> items = null;
+    private Language language = Language.English;
+    String page;
+
+    public String toHome() {
+        page = "/index";
+        return page;
+    }
+
+    public String toChannel() {
+        page = "/channel";
+        return page;
+    }
+
+    public String toReports() {
+        page = "/report_search";
+        return page;
+    }
+    
+    public String toServices() {
+        page = "/services";
+        return page;
+    }
+
+    public String toContact() {
+        page = "/contact";
+        return page;
+    }
+
+    public String toAbout() {
+        page = "/about";
+        return page;
+    }
+
+    public String toAddNewWebLanguage() {
+        selected = null;
+        return "/webcontent/web_content";
+    }
+
+    public String toEditWebLanguage() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return "";
+        }
+        return "/webcontent/web_content";
+    }
+    
+    public String toEditWebLanguageLong() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return "";
+        }
+        return "/webcontent/web_content_long";
+    }
+
+    public String toDeleteWebLanguage() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select");
+            return "";
+        }
+        selected.setRetired(true);
+        getFacade().edit(selected);
+        selected = null;
+        listItems();
+        return toListWebLanguage();
+    }
+
+    public String toListWebLanguage() {
+        listItems();
+        return "/webcontent/web_contents";
+    }
+
+    public WebLanguage findSingleWebLanguage(String word) {
+        WebLanguage list;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from WebLanguage c "
+                + " where c.retired=:ret "
+                + " and c.name = :q "
+                + " order by c.id desc";
+        hm.put("q", word);
+        hm.put("ret", false);
+        list = getFacade().findFirstBySQL(sql, hm);
+        return list;
+    }
+
+   
+
+    public Language[] getLanguages() {
+        return Language.values();
+    }
+
+    public boolean isSinhala() {
+        return language.equals(Language.Sinhala);
+    }
+
+    public boolean isEnglish() {
+        return language.equals(Language.English);
+    }
+
+    public boolean isTamil() {
+        return language.equals(Language.Tamil);
+    }
+
+    public void makeLanguageSinhala() {
+        language = Language.Sinhala;
+    }
+
+    public void makeLanguageTamil() {
+        language = Language.Tamil;
+    }
+
+    public void makeLanguageEnglish() {
+        language = Language.English;
+    }
+
+    
+
+    public List<WebLanguage> completeWebLanguage(String qry) {
+        List<WebLanguage> list;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from WebLanguage c "
+                + " where c.retired=false "
+                + " and c.name like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        list = getFacade().findBySQL(sql, hm);
+
+        if (list == null) {
+            list = new ArrayList<>();
+        }
+        return list;
+    }
+
+    public void prepwebLanguagedd() {
+        selected = new WebLanguage();
+    }
+
+    private void recreateModel() {
+        items = null;
+    }
+
+    public void saveWebLanguage(WebLanguage w) {
+        if (w == null) {
+            return;
+        }
+        if (w.getId() != null && w.getId() > 0) {
+            getFacade().edit(w);
+        } else {
+            getFacade().create(w);
+        }
+    }
+
+    public void saveSelected() {
+        saveWebLanguage(selected);
+        recreateModel();
+        listItems();
+    }
+
+    public WebLanguageFacade getEjbFacade() {
+        return ejbFacade;
+    }
+
+    public void setEjbFacade(WebLanguageFacade ejbFacade) {
+        this.ejbFacade = ejbFacade;
+    }
+
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
+        this.sessionController = sessionController;
+    }
+
+    public WebLanguageController() {
+    }
+
+    public WebLanguage getSelected() {
+        if (selected == null) {
+            selected = new WebLanguage();
+        }
+        return selected;
+    }
+
+    public void setSelected(WebLanguage selected) {
+        this.selected = selected;
+    }
+
+    public void delete() {
+        if (selected != null) {
+            selected.setRetired(true);
+            getFacade().edit(selected);
+            UtilityController.addSuccessMessage("Deleted Successfully");
+        } else {
+            UtilityController.addSuccessMessage("Nothing to Delete");
+        }
+        recreateModel();
+        getItems();
+        selected = null;
+        getSelected();
+    }
+
+    private WebLanguageFacade getFacade() {
+        return ejbFacade;
+    }
+
+    public void listItems() {
+        String j;
+        j = "select a "
+                + " from WebLanguage a "
+                + " where a.retired=false "
+                + " order by a.name";
+        items = getFacade().findBySQL(j);
+    }
+
+    public List<WebLanguage> getItems() {
+        return items;
+    }
+
+    public Language getLanguage() {
+        if (language == null) {
+            language = Language.English;
+        }
+        return language;
+    }
+
+    public void setLanguage(Language language) {
+        this.language = language;
+    }
+
+    /**
+     *
+     */
+    @FacesConverter(forClass = WebLanguage.class)
+    public static class WebLanguageConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            WebLanguageController controller = (WebLanguageController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "webLanguageController");
+            return controller.getEjbFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof WebLanguage) {
+                WebLanguage o = (WebLanguage) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + WebLanguageController.class.getName());
+            }
+        }
+    }
+
+    @FacesConverter("webLanguageCon")
+    public static class WebLanguageControllerConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
+            if (value == null || value.length() == 0) {
+                return null;
+            }
+            WebLanguageController controller = (WebLanguageController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "webLanguageController");
+            return controller.getEjbFacade().find(getKey(value));
+        }
+
+        java.lang.Long getKey(String value) {
+            java.lang.Long key;
+            key = Long.valueOf(value);
+            return key;
+        }
+
+        String getStringKey(java.lang.Long value) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(value);
+            return sb.toString();
+        }
+
+        @Override
+        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
+            if (object == null) {
+                return null;
+            }
+            if (object instanceof WebLanguage) {
+                WebLanguage o = (WebLanguage) object;
+                return getStringKey(o.getId());
+            } else {
+                throw new IllegalArgumentException("object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + WebLanguageController.class.getName());
+            }
+        }
+    }
+}

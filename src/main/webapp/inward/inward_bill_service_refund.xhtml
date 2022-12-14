@@ -63,13 +63,13 @@
 
 
                                     <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:component('txtTotal')}" process="colSelect dtF"      />  
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"      />  
                                     <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:component('txtTotal')}" process="colSelect dtF"      />  
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"      />  
                                     <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:component('txtTotal')}" process="colSelect dtF"      />  
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"      />  
 
-                                    <p:column id="colSelect"   selectionMode="multiple"  disabledSelection="#{b.refunded==true}"  >
+                                    <p:column id="colSelect"   selectionMode="multiple"    >
                                     </p:column>
 
                                     <p:column >
@@ -143,7 +143,7 @@
 
 
 
-                                                    <h:dataTable value="#{billSearch.refundingItems}" var="bip" styleClass="itemsPrinting"   >
+                                                    <h:dataTable value="#{billSearch.refundingItems}" var="bip" styleClass="itemsPrinting">
                                                         <h:column >
                                                             <h:outputLabel value="#{bip.item.printName}" style="margin: 4px; font-size: 11px;" />
                                                         </h:column>

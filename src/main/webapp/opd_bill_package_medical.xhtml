@@ -78,7 +78,7 @@
                                                     <h:outputLabel rendered="#{billPackageMedicalController.searchedPatient!=null}" value="#{billPackageMedicalController.searchedPatient.person.sex}" ></h:outputLabel>
                                                     <h:outputLabel  rendered="#{billPackageMedicalController.searchedPatient!=null}" value="DOB"  />
 
-                                                    <h:outputLabel rendered="#{billPackageMedicalController.searchedPatient!=null}" value="#{billPackageMedicalController.searchedPatient.person.dob}"   >
+                                                    <h:outputLabel rendered="#{billPackageMedicalController.searchedPatient!=null}" value="#{billPackageMedicalController.searchedPatient.person.dob}">
                                                         <f:convertDateTime pattern="dd/MM/yy" />
                                                     </h:outputLabel>
 
@@ -146,7 +146,7 @@
                                         <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
                                         </p:commandButton>
 
                                     </h:panelGrid>  
@@ -160,7 +160,7 @@
                                         <p:tab title="Refering Doctor">
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billPackageMedicalController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                         </p:tab>
 
                                         <p:tab title="Staff">
@@ -199,7 +199,7 @@
                                                 <p:column>
                                                     <h:commandButton id="btnRemove" value="X" action="#{billPackageMedicalController.removeBillItem}" >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{billPackageMedicalController.index}" />
-                                                        <p:ajax  process="btnRemove" update=":#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" />
+                                                        <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
                                                     </h:commandButton>
                                                 </p:column>
 
@@ -231,7 +231,7 @@
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                         <f:convertNumber pattern="#,##0.00" />
-                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:component('tblRequests')}  :#{p:component('pBillDetails')}" listener="#{billPackageMedicalController.feeChanged}" />
+                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{billPackageMedicalController.feeChanged}" />
                                                     </h:inputText>
                                                 </p:column>
 
@@ -351,7 +351,7 @@
                                                                            style="position:absolute;left:5.5cm; top:12.0cm;"  >
                                                             </h:outputLabel>
 
-                                                            <h:dataTable value="#{billPackageMedicalController.lstBillEntries}" var="bip" style="position: absolute;left:1.6cm; top:3.5cm; border: 0px; "   >
+                                                            <h:dataTable value="#{billPackageMedicalController.lstBillEntries}" var="bip" style="position: absolute;left:1.6cm; top:3.5cm; border: 0px; ">
                                                                 <h:column >
                                                                     <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                                                     </h:outputLabel>

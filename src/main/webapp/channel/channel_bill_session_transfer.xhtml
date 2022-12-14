@@ -27,8 +27,7 @@
                     <h:panelGrid columns="1">
                         <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
-                            <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
-                            <p:ajax  event="click" process="@this scStaff" update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                            <p:ajax  event="click" process="@this scStaff" update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}"  
                                      listener="#{bookingController.generateSessions}"/> 
                         </p:selectOneListbox>
                     </h:panelGrid>
@@ -41,7 +40,7 @@
                                  selection="#{bookingController.selectedServiceSession}" scrollable="true" scrollHeight="282">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:component('tblBookingsOfSelectedSession')} "
+                                update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId} "
                                 listener="#{bookingController.fillAbsentBillSessions}" />  
 
 

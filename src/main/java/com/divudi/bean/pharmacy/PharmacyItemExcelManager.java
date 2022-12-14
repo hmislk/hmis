@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.pharmacy;
 
@@ -91,7 +91,7 @@ import jxl.Cell;
 import jxl.Sheet;
 import jxl.Workbook;
 import jxl.read.biff.BiffException;
-import org.primefaces.model.UploadedFile;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -1221,7 +1221,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1506,7 +1506,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1626,7 +1626,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1740,7 +1740,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1827,7 +1827,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -1907,7 +1907,7 @@ public class PharmacyItemExcelManager implements Serializable {
 //        UtilityController.addSuccessMessage(file.getFileName());
 //        try {
 //            UtilityController.addSuccessMessage(file.getFileName());
-//            in = file.getInputstream();
+//            in = file.getInputStream();
 //            File f;
 //            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
 //            FileOutputStream out = new FileOutputStream(f);
@@ -2005,7 +2005,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -2108,7 +2108,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -2309,7 +2309,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -2407,7 +2407,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -2522,7 +2522,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);
@@ -2602,7 +2602,7 @@ public class PharmacyItemExcelManager implements Serializable {
         UtilityController.addSuccessMessage(file.getFileName());
         try {
             UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputstream();
+            in = file.getInputStream();
             File f;
             f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
             FileOutputStream out = new FileOutputStream(f);

@@ -41,7 +41,7 @@
                                         <p:commandButton id="btnDeletePt" 
                                                          style="float: right;" 
                                                          value="Delete" process="btnDeletePt" 
-                                                         update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
+                                                         update="acPt :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('patientDetail',view).clientId} " 
                                                          action="#{patientController.delete()}" onclick="onSubmitButton();" 
                                                          rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
@@ -86,7 +86,7 @@
                                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:component('panelDetails')}" 
+                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:resolveFirstComponentWithId('panelDetails',view).clientId}" 
                                                     listener="#{patientController.patientSelected}"/>
                                         </p:autoComplete>
 
@@ -96,7 +96,7 @@
 
                             </h:panelGroup>
 
-                            <p:panel id="panelDetails"   >
+                            <p:panel id="panelDetails">
                                 <f:facet name="header" >
                                     <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
@@ -105,7 +105,7 @@
                                     <p:commandButton id="btnAddPt" 
                                                      style="float: right;" 
                                                      value="Add New Patient" process="btnAddPt" 
-                                                     update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail') } :#{p:component('pan1') } " 
+                                                     update="acPt :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('patientDetail',view).clientId} :#{p:resolveFirstComponentWithId('pan1',view).clientId} " 
                                                      action="#{patientController.prepareAddReg()}" onclick="onSubmitButton();" 
                                                      >
                                     </p:commandButton>
@@ -300,7 +300,7 @@
                                 <h:outputLabel value="Date of Birth"/>
                                 <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="dd/MM/yyyy"  requiredMessage="please enter date of birth"/>
 
-                                <p:commandButton value=" Add Member" actionListener="#{patientController.createFamilymembers}" update=":#{p:component('familyDetails')} pan2" oncomplete="handleLoginRequest(xhr, status, args)"/>
+                                <p:commandButton value=" Add Member" actionListener="#{patientController.createFamilymembers}" update=":#{p:resolveFirstComponentWithId('familyDetails',view).clientId} pan2" oncomplete="handleLoginRequest(xhr, status, args)"/>
                                 <p:commandButton value="Cancel" onclick="PF('dlg').hide()" actionListener="#{patientController.listnerFamilyMember()}" ajax="false"/>
                                 <p:commandButton value="CLEAR" actionListener="#{patientController.listnerFamilyMember()}" update="pan2"/>
                             </p:panelGrid>

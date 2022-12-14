@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
@@ -38,7 +38,6 @@ import com.divudi.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -48,7 +47,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -241,7 +239,7 @@ public class BookingPastController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
         }
-//        ////System.out.println("consultants = " + consultants);
+//        ////// // System.out.println("consultants = " + consultants);
         setStaff(null);
     }
 
@@ -256,7 +254,7 @@ public class BookingPastController implements Serializable {
     public boolean errorCheckForSerial() {
         boolean alreadyExists = false;
         for (BillSession bs : billSessions) {
-            ////System.out.println("billSessions" + bs.getId());
+            ////// // System.out.println("billSessions" + bs.getId());
 
             if (selectedBillSession.equals(bs)) {
 
@@ -317,7 +315,7 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        ////System.out.println(getSelectedBillSession().getBill().getPatient());
+        ////// // System.out.println(getSelectedBillSession().getBill().getPatient());
         if (getSelectedBillSession().isAbsent()) {
             UtilityController.addSuccessMessage("Mark As Absent");
             if (getSelectedBillSession().getBill().getPaidBill()!=null) {
@@ -347,7 +345,7 @@ public class BookingPastController implements Serializable {
         }
 
         getBillSessionFacade().edit(getSelectedBillSession());
-        ////System.out.println(getSelectedBillSession().getBill().getPatient());
+        ////// // System.out.println(getSelectedBillSession().getBill().getPatient());
         UtilityController.addSuccessMessage("Serial Updated");
     }
 
@@ -544,7 +542,7 @@ public class BookingPastController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-//        ////System.out.println("consultants = " + consultants);
+//        ////// // System.out.println("consultants = " + consultants);
         if (selectTextConsultant == null || selectTextConsultant.trim().equals("")) {
             m.put("sp", getSpeciality());
             if (getSpeciality() != null) {
@@ -572,7 +570,7 @@ public class BookingPastController implements Serializable {
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and pi.staff.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by pi.staff.person.name ";
 
                     m.put("ins", getSessionController().getInstitution());
@@ -581,7 +579,7 @@ public class BookingPastController implements Serializable {
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
-                            + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                            + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
                     consultants = getStaffFacade().findBySQL(sql);
                 }
@@ -595,7 +593,7 @@ public class BookingPastController implements Serializable {
                                 + " and pi.type=:typ "
                                 + " and pi.institution=:ins "
                                 + " and pi.staff.speciality=:sp "
-                                + " and upper(pi.staff.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and pi.staff.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by pi.staff.person.name ";
 
                         m.put("ins", getSessionController().getInstitution());
@@ -603,7 +601,7 @@ public class BookingPastController implements Serializable {
 
                     } else {
                         sql = "select p from Staff p where p.retired=false and p.speciality=:sp"
-                                + " and upper(p.person.name) like '%" + getSelectTextConsultant().toUpperCase() + "%' "
+                                + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
                     consultants = getStaffFacade().findBySQL(sql, m);

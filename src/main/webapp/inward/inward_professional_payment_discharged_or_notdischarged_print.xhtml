@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -33,7 +33,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}">
-                                <pe:exporter type="xlsx" target="tblFee1,
+                                <p:dataExporter type="xlsx" target="tblFee1,
                                              tblFee2,
                                              tblFee3,
                                              tblFee4" fileName="BHT_payment_For_Doctor"  />
@@ -45,7 +45,7 @@
                         <br/><br/>
 
                         <p:defaultCommand target="btnSearch" />
-                        <p:dataTable rowIndexVar="i"  id="tblFee1" value="#{inwardStaffPaymentBillController.docPayDischarged}" var="bi"   >
+                        <p:dataTable rowIndexVar="i"  id="tblFee1" value="#{inwardStaffPaymentBillController.docPayDischarged}" var="bi">
 
                             <f:facet name="header">
                                 <h:outputLabel value="Doctor Payments For Discharged patients"/>
@@ -123,7 +123,7 @@
 
                         </p:dataTable>
                         <p:spacer width="30px"></p:spacer>
-                        <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{inwardStaffPaymentBillController.docPayNotDischarged}" var="bi"   >
+                        <p:dataTable rowIndexVar="i"  id="tblFee2" value="#{inwardStaffPaymentBillController.docPayNotDischarged}" var="bi">
 
                             <f:facet name="header">
                                 <h:outputLabel value="Doctor Payments For Not Discharged patients"/>
@@ -201,7 +201,7 @@
 
                         </p:dataTable>
                         <p:spacer width="30px"></p:spacer>
-                        <p:dataTable rowIndexVar="i"  id="tblFee3" value="#{inwardStaffPaymentBillController.billFeeDueDischarged}" var="bf"   >
+                        <p:dataTable rowIndexVar="i"  id="tblFee3" value="#{inwardStaffPaymentBillController.billFeeDueDischarged}" var="bf">
 
                             <f:facet name="header">
                                 <h:outputLabel value="Doctor Due Payments For Discharged patients"/>
@@ -303,7 +303,7 @@
 
                         </p:dataTable>
                         <p:spacer width="30px"></p:spacer>
-                        <p:dataTable rowIndexVar="i"  id="tblFee4" value="#{inwardStaffPaymentBillController.billFeeDueNotDischarged}" var="bf"   >
+                        <p:dataTable rowIndexVar="i"  id="tblFee4" value="#{inwardStaffPaymentBillController.billFeeDueNotDischarged}" var="bf">
 
                             <f:facet name="header">
                                 <h:outputLabel value="Doctor Due Payments For Not Discharged patients"/>

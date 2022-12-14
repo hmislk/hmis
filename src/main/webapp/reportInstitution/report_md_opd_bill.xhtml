@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 >
 
     <ui:define name="content">
@@ -36,10 +36,10 @@
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float:right;">
-                        <pe:exporter type="xlsx" target="tbl" fileName="Report_by_Bill_OPD_From_#{mdReportController.fromDate} To #{mdReportController.toDate}"
-                                     facetBackground="#008000" facetFontSize="15" 
-                                     facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL"  
-                                     fontName="Courier New"  />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="Report_by_Bill_OPD_From_#{mdReportController.fromDate} To #{mdReportController.toDate}"
+                                       
+                                            
+                                       />
                     </p:commandButton>
 
 

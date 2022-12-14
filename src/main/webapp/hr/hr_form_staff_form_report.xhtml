@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -55,7 +55,7 @@
                         <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />                           
                         <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />      
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_form_staff_form_report"  />
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_form_report"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.channel;
 
@@ -122,10 +122,10 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        //System.out.println("getFromDate() = " + getFromDate());
-        //System.out.println("getToDate() = " + getToDate());
-        //System.out.println("txtSearch = " + txtSearch);
-        //System.out.println("txtSearchRef = " + txtSearchRef);
+        //// // System.out.println("getFromDate() = " + getFromDate());
+        //// // System.out.println("getToDate() = " + getToDate());
+        //// // System.out.println("txtSearch = " + txtSearch);
+        //// // System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null 
                 && (txtSearch == null || txtSearch.trim().equals("")) 
                 && (txtSearchRef == null || txtSearchRef.trim().equals("")) 
@@ -153,18 +153,18 @@ public class ChannelSearchController implements Serializable {
                 + " and type(bs.bill)=:class ";
 
         if (txtSearch != null && !txtSearch.trim().equals("")) {
-            sql += " and  ((upper(bs.bill.insId) like :ts ) "
-                    + " or (upper(bs.bill.deptId) like :ts ))";
+            sql += " and  ((bs.bill.insId like :ts ) "
+                    + " or (bs.bill.deptId like :ts ))";
             m.put("ts", "%" + txtSearch.trim().toUpperCase() + "%");
         }
 
         if (txtSearchRef != null && !txtSearchRef.trim().equals("")) {
-            sql += " and upper(bs.billItem.agentRefNo) like :ts2 ";
+            sql += " and bs.billItem.agentRefNo like :ts2 ";
             m.put("ts2", "%" + txtSearchRef.trim().toUpperCase() + "%");
         }
         
         if (txtSearchPhone != null && !txtSearchPhone.trim().equals("")) {
-            sql += " and upper(bs.bill.patient.person.phone) like :ts3";
+            sql += " and bs.bill.patient.person.phone like :ts3";
             m.put("ts3", "%" + txtSearchPhone.trim().toUpperCase() + "%");
         }
 
@@ -260,7 +260,7 @@ public class ChannelSearchController implements Serializable {
 //        }
 //        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 //
-//            ////System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+//            ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
 //            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
 //                UtilityController.addErrorMessage("Sample Already collected can't cancel");
 //                return true;

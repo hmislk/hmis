@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h:form >
+                    <p:dataTable class="table table-striped " value="#{webContentController.items}" var="u" >
+                        <p:column headerText="Name" >
+                            <h:outputText value="#{u.name}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Sinhala" >
+                            <h:outputText value="#{u.sinhala}" ></h:outputText>
+                        </p:column><!-- comment -->
+                        <p:column headerText="Tamil" >
+                            <h:outputText value="#{u.tamil}" ></h:outputText>
+                        </p:column><!-- comment -->
+                        <p:column headerText="English" >
+                            <h:outputText value="#{u.english}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Order No" >
+                            <h:outputText value="#{u.orderNo}" ></h:outputText>
+                        </p:column>
+                        <p:column headerText="Actions" >
+                            <h:commandButton value="Edit Short Text" action="${webContentController.toEditWebContent()}" >
+                                <f:setPropertyActionListener value="#{u}" target="#{webContentController.selected}" >
+                                </f:setPropertyActionListener>
+                            </h:commandButton>
+                            <h:commandButton value="Edit Long Text" action="${webContentController.toEditWebContentLong()}" >
+                                <f:setPropertyActionListener value="#{u}" target="#{webContentController.selected}" >
+                                </f:setPropertyActionListener>
+                            </h:commandButton>
+                        </p:column>
+                    </p:dataTable >
+                </h:form>
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

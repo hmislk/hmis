@@ -33,11 +33,11 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:commandButton  value="Fill" action="#{membershipSchemeController.fillItems()}" styleClass="buttons" >
-                                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:component('gpDetail')} detailFocus" execute="@this" >
+                                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetail',view).clientId} detailFocus" execute="@this" >
                                         </f:ajax>
                                     </p:commandButton>
                                     <p:commandButton id="btnAdd" value="Add" action="#{membershipSchemeController.prepareAdd()}" styleClass="buttons" >
-                                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:component('gpDetail')} detailFocus" execute="@this" >
+                                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetail',view).clientId} detailFocus" execute="@this" >
                                         </f:ajax>
                                     </p:commandButton>
                                     

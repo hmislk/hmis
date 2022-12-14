@@ -25,7 +25,7 @@
                                            var="admi"
                                            itemLabel="#{admi.bhtNo}"
                                            itemValue="#{admi}" ></f:selectItems>
-                            <f:ajax event="change" execute="@this" render="panelAdmissionDetails :#{p:component('panPrint')}" ></f:ajax>
+                            <f:ajax event="change" execute="@this" render="panelAdmissionDetails :#{p:resolveFirstComponentWithId('panPrint',view).clientId}" ></f:ajax>
                         </p:selectOneMenu>
 
                     </p:panelGrid>

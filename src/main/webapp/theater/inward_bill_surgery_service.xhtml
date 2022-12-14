@@ -69,7 +69,7 @@
                             <h:panelGroup id="panelIx" >
 
 
-                                <p:panel id='pIxAdd' header="Items Requests"   >
+                                <p:panel id='pIxAdd' header="Items Requests">
                                     <p:focus  context="acIx"/>
                                     <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                                     value="#{billBhtController.currentBillItem.item}"
@@ -178,8 +178,8 @@
                                                                          or(!webUserController.hasPrivilege('ShowInwardFee'))}" >
                                                     <f:convertNumber pattern="#,##0.00" />
                                                     <f:ajax event="keyup" execute="@this" 
-                                                            render=" :#{p:component('tblRequests')}  
-                                                            :#{p:component('pBillDetails')} matrix feeValue" 
+                                                            render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  
+                                                            :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} matrix feeValue" 
                                                             listener="#{billBhtController.feeChangedSurgery(bif)}" />
                                                 </h:inputText>
                                             </p:column>
@@ -247,7 +247,7 @@
                     <div >
 
 
-                        <h:panelGroup   id="gpBillPreview"   >
+                        <h:panelGroup   id="gpBillPreview">
 
                             <div>
 
@@ -306,7 +306,7 @@
 
 
                                             <div class="items" >
-                                                <h:dataTable value="#{billBhtController.lstBillEntries}" var="bip"   >
+                                                <h:dataTable value="#{billBhtController.lstBillEntries}" var="bip">
                                                     <h:column >
                                                         <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" 
                                                                        value="#{bip.billItem.item.printName}" 

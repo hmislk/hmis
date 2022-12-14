@@ -38,7 +38,7 @@
 
                         </f:facet>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.prescreptionBills}" var="bill"   >
+                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.prescreptionBills}" var="bill">
 
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
@@ -112,7 +112,7 @@
                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}" />
                             </p:column>
 
-                            <!--                            <p:column headerText="Paymentmethod"   >
+                            <!--                            <p:column headerText="Paymentmethod">
                                                             <h:outputLabel value="#{bill.paymentScheme.paymentMethod}" />
                                                         </p:column>-->
 

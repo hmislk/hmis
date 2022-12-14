@@ -5,7 +5,7 @@
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:f="http://java.sun.com/jsf/core">
 
 
@@ -18,7 +18,7 @@
                     <h:outputLabel value="Staff Name"/>
                     <p:autoComplete  forceSelection="true" value="#{staffPaySheetComponentController.current.staff}"
                                      completeMethod="#{staffController.completeStaffCode}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                     converter="stfcon"   >   
+                                     converter="stfcon">   
                         <f:ajax event="itemSelect" execute="@this" render="tb6 stfCode stfCode2"  />
                         <p:column headerText="Name">
                             #{mys.person.name}
@@ -84,7 +84,7 @@
                     <h:panelGrid columns="3">  
                         <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentController.createTable()}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb6" fileName="hr_staff_paysheet_component_individual"  />
+                            <p:dataExporter type="xlsx" target="tb6" fileName="hr_staff_paysheet_component_individual"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="individualpanel" ></p:printer>

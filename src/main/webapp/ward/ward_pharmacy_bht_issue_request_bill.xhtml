@@ -82,7 +82,7 @@
                                                 <p:column>
                                                     <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                                 </p:column>
-                                                <p:ajax event="itemSelect" process="acPt2" update="#{p:component('gpDetail')}" />
+                                                <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                                             </p:autoComplete>  
                                         </h:panelGrid>
 
@@ -134,7 +134,7 @@
                                                                 </h:outputLabel>
                                                             </p:column>
                                                             <p:ajax event="focus" process="acStock" ></p:ajax>
-                                                            <p:ajax event="query" update=":#{p:component('tabI')}" process="acStock"></p:ajax>
+                                                            <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
                                                             <p:ajax event="itemSelect"   
                                                                     listener="#{pharmacySaleBhtController.handleSelect}"  
                                                                     update="focusQty" ></p:ajax>
@@ -144,14 +144,14 @@
 
                                                     <h:panelGrid columns="1" >
                                                         <p:outputLabel value="Quantity" ></p:outputLabel>
-                                                        <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleBhtController.qty}" style="width: 50px!important;"   >
+                                                        <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleBhtController.qty}" style="width: 50px!important;">
                                                             <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                             <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                         </p:inputText>
                                                     </h:panelGrid>
 
                                                     <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                                      action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem :#{p:component('panelError')}" onclick="onSubmitButton();"  ></p:commandButton>
+                                                                      action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId}" onclick="onSubmitButton();"  ></p:commandButton>
 
                                                     <p:focus id="focusQty" for="txtQty" ></p:focus>
                                                     <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -271,8 +271,8 @@
                                                          selectionMode="single"
                                                          rowKey="#{ri.id}"
                                                          emptyMessage="System can not detect suitable replacements.">
-                                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacySaleBhtController.makeStockAsBillItemStock()}" ></p:ajax>
-                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacySaleBhtController.makeStockAsBillItemStock()}" ></p:ajax>
+                                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacySaleBhtController.makeStockAsBillItemStock()}" ></p:ajax>
+                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacySaleBhtController.makeStockAsBillItemStock()}" ></p:ajax>
                                                 <p:column headerText="Item">
                                                     #{ri.itemBatch.item.name}
                                                 </p:column>
@@ -310,8 +310,8 @@
                                                          selectionMode="single"
                                                          rowKey="#{si.id}"
                                                          emptyMessage="No items with that name without stocks.">
-                                                <p:ajax event="rowSelect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
-                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
+                                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
+                                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" listener="#{pharmacySaleBhtController.selectReplaceableStocksNew()}" ></p:ajax>
                                                 <p:column headerText="Generic">
                                                     #{si.vmp.name}
                                                 </p:column>
@@ -355,7 +355,7 @@
                         </div>
 
                         <!--                        <div >
-                                                    <h:panelGroup   id="gpBillPreview"   > 
+                                                    <h:panelGroup   id="gpBillPreview"> 
                                                         <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                                                     </h:panelGroup>
                                                 </div>-->

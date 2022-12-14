@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -12,8 +12,6 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
 import com.divudi.facade.SmsFacade;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -26,10 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.prefs.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import javax.swing.JOptionPane;
 
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -143,9 +137,9 @@ public class SmsController implements Serializable {
 
     public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
 
-        //System.out.println("number = " + number);
-        //System.out.println("message = " + message);
-        //System.out.println("username = " + username);
+        //// // System.out.println("number = " + number);
+        //// // System.out.println("message = " + message);
+        //// // System.out.println("username = " + username);
 
         Map m = new HashMap();
         m.put("userName", username);
@@ -167,9 +161,9 @@ public class SmsController implements Serializable {
 
     public boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
 
-        //System.out.println("number = " + number);
-        //System.out.println("message = " + message);
-        //System.out.println("username = " + username);
+        //// // System.out.println("number = " + number);
+        //// // System.out.println("message = " + message);
+        //// // System.out.println("username = " + username);
 
         Map m = new HashMap();
         m.put("userName", username);

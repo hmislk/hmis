@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -39,7 +39,7 @@
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>  
                             <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton"  >
-                                <pe:exporter type="xlsx" 
+                                <p:dataExporter type="xlsx" 
                                              target="#{commonReport.institutionBilledBillsOwn.bills.size() ne 0 ?'billed,':''}
                                              #{commonReport.institutionCancelledBillsOwn.bills.size() ne 0 ?'cancelled,':''}
                                              #{commonReport.institutionRefundedBillsOwn.bills.size() ne 0 ?'refund,':''}
@@ -249,7 +249,7 @@
                         <f:facet name="header">  
                             <h:outputLabel value="Cancelled"/>
                         </f:facet> 
-                        <p:column headerText="Time"   >
+                        <p:column headerText="Time">
                             <f:facet name="header">  
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
@@ -403,7 +403,7 @@
                         <f:facet name="header">  
                             <h:outputLabel value="Refunded" />
                         </f:facet> 
-                        <p:column headerText="Time"   >
+                        <p:column headerText="Time">
                             <f:facet name="header">  
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
@@ -723,7 +723,7 @@
                         <f:facet name="header">  
                             <h:outputLabel value="Cancelled"/>
                         </f:facet> 
-                        <p:column headerText="Time"   >
+                        <p:column headerText="Time">
                             <f:facet name="header">  
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
@@ -877,7 +877,7 @@
                         <f:facet name="header">  
                             <h:outputLabel value="Refunded" />
                         </f:facet> 
-                        <p:column headerText="Time"   >
+                        <p:column headerText="Time">
                             <f:facet name="header">  
                                 <h:outputLabel value="Time"/>
                             </f:facet> 
@@ -1206,7 +1206,7 @@
                             <h:outputLabel value="#{b4.person.nameWithTitle}" rendered="#{b4.person ne null}"/>
                         </p:column>
 
-                        <p:column headerText="Cash" style="text-align: right;"   >
+                        <p:column headerText="Cash" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
@@ -1215,7 +1215,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b4.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>    
-                        <p:column headerText="Cheque" style="text-align: right;"   >
+                        <p:column headerText="Cheque" style="text-align: right;">
                             <f:facet name="footer">  
                                 <h:outputLabel value="Checque"/>
                             </f:facet> 
@@ -1305,7 +1305,7 @@
                             <h:outputLabel value="#{b4.person.nameWithTitle}" rendered="#{b4.person ne null}"/>
                         </p:column>
 
-                        <p:column headerText="Cash" style="text-align: right;"   >
+                        <p:column headerText="Cash" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
@@ -1314,7 +1314,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b4.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>    
-                        <p:column headerText="Cheque" style="text-align: right;"   >
+                        <p:column headerText="Cheque" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cheque"/>
                             </f:facet> 
@@ -1408,7 +1408,7 @@
                             <h:outputLabel value="#{b7.fromInstitution.name}" />
                         </p:column>
 
-                        <p:column headerText="Cash" style="text-align: right;"   >
+                        <p:column headerText="Cash" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
@@ -1417,7 +1417,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>    
-                        <p:column headerText="Cheque" style="text-align: right;"   >
+                        <p:column headerText="Cheque" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cheque"/>
                             </f:facet> 
@@ -1426,7 +1426,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
                         </p:column> 
-                        <p:column headerText="Slip" style="text-align: right;"   >
+                        <p:column headerText="Slip" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Slip"/>
                             </f:facet> 
@@ -1512,7 +1512,7 @@
                             <h:outputLabel value="#{b7.fromInstitution.name}" />
                         </p:column>
 
-                        <p:column headerText="Cash" style="text-align: right;"   >
+                        <p:column headerText="Cash" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet> 
@@ -1522,7 +1522,7 @@
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>   
 
-                        <p:column headerText="Cheque" style="text-align: right;"   >
+                        <p:column headerText="Cheque" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cheque"/>
                             </f:facet> 
@@ -1532,7 +1532,7 @@
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
                         </p:column>    
 
-                        <p:column headerText="Slip" style="text-align: right;"   >
+                        <p:column headerText="Slip" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Slip"/>
                             </f:facet> 
@@ -1635,7 +1635,7 @@
                             <h:outputLabel value="#{b7.fromInstitution.name}" />
                         </p:column>
 
-                        <p:column headerText="Cash" style="text-align: right;"   >
+                        <p:column headerText="Cash" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet>
@@ -1644,7 +1644,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>    
-                        <p:column headerText="Cheque" style="text-align: right;"   >
+                        <p:column headerText="Cheque" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cheque"/>
                             </f:facet>
@@ -1653,7 +1653,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
                         </p:column>  
-                        <p:column headerText="Slip" style="text-align: right;"   >
+                        <p:column headerText="Slip" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Slip"/>
                             </f:facet>
@@ -1740,7 +1740,7 @@
                             <h:outputLabel value="#{b7.fromInstitution.name}" />
                         </p:column>
 
-                        <p:column headerText="Cash" style="text-align: right;"   >
+                        <p:column headerText="Cash" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cash"/>
                             </f:facet>
@@ -1750,7 +1750,7 @@
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cash'}" value="0.00"/>
                         </p:column>    
 
-                        <p:column headerText="Cheque" style="text-align: right;"   >
+                        <p:column headerText="Cheque" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Cheque"/>
                             </f:facet>
@@ -1760,7 +1760,7 @@
                             <h:outputLabel rendered="#{b7.paymentMethod!='Cheque'}" value="0.00"/>
                         </p:column> 
 
-                        <p:column headerText="Slip" style="text-align: right;"   >
+                        <p:column headerText="Slip" style="text-align: right;">
                             <f:facet name="header">  
                                 <h:outputLabel value="Slip"/>
                             </f:facet>

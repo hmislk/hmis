@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -28,7 +28,6 @@ import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
-import javax.swing.JOptionPane;
 
 /**
  *
@@ -49,21 +48,12 @@ public class SmsManagerEjb {
     }
 
     private void sendSmsAwaitingToSendInDatabase() {
-        System.out.println("sendSmsAwaitingToSendInDatabase");
         String j = "Select e from Sms e where e.pending=true and e.retired=false and e.createdAt>:d";
         Map m = new HashMap();
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, 0);
         m.put("d", c.getTime());
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         List<Sms> smses = getSmsFacade().findBySQL(j,m,TemporalType.DATE);
-        System.out.println("smses = " + smses.size());
-//        if (false) {
-//            Sms e = new Sms();
-//            e.getSentSuccessfully();
-//            e.getInstitution();
-//        }
         for (Sms e : smses) {
             e.setSentSuccessfully(Boolean.TRUE);
             e.setPending(false);

@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -52,7 +52,7 @@
                     </p:commandButton>
 
                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
-                        <pe:exporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
+                        <p:dataExporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
                     </p:commandButton>
                 </h:panelGrid>
             </p:panel>

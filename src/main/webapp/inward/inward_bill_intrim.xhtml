@@ -52,7 +52,9 @@
                                         <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                                     </p:column>
                                 </p:autoComplete>   
-                                <p:commandButton ajax="false"  style="width: 10em;" value="Display Details" action="#{bhtSummeryController.createTables()}" >
+                                <p:commandButton ajax="false"  style="width: 10em;" 
+                                                 value="Display Details" 
+                                                 action="#{bhtSummeryController.createTables()}" >
                                 </p:commandButton>
                                 <p:spacer height="1" width="15" ></p:spacer>
 
@@ -122,7 +124,7 @@
                                         <h:outputLabel value="#{c.inwardChargeType.label}"/>
                                     </p:column>
                                     <p:column  style="text-align: right;" headerText="Total">
-                                        <h:outputLabel value="#{c.total}"   >
+                                        <h:outputLabel value="#{c.total}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>

@@ -24,7 +24,7 @@
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:form id="form">
-                        <p:growl autoUpdate="true" id="growl" ></p:growl>
+                        <p:growl id="growl" ></p:growl>
                         <p:focus id="focusIx" for="acIx" />
                         <f:facet name="header">
                             <h:outputLabel value="OPD"/>
@@ -39,7 +39,7 @@
                                         <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
                                             <f:selectItems value="#{enumController.paymentMethods}"  />
                                             <p:ajax process="@this cmbPs" 
-                                                    update=":#{p:component('pBillDetails')}  tblBillItem creditCard cheque slip"
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem creditCard cheque slip"
                                                     event="change"
                                                     listener="#{billController.changeListener()}"/>
                                         </p:selectOneMenu>
@@ -50,7 +50,7 @@
                                             <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                            var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                             <p:ajax process="@this pay" 
-                                                    update=":#{p:component('pBillDetails')} :#{p:component('creditCompany')} :#{p:component('creditStaff')}  tblBillItem creditCard cheque slip" 
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem creditCard cheque slip" 
                                                     event="change" 
                                                     listener="#{billController.changeListener()}"/>
                                         </p:selectOneMenu>
@@ -91,10 +91,10 @@
 
                                             <p:tabView id="tvPt" activeIndex="#{billController.patientSearchTab}"  >
                                                 <p:ajax event="tabChange"   process="@this"  
-                                                        update=":#{p:component('cmbPs')} :#{p:component('tblBillItem')} :#{p:component('pBillDetails')} "
+                                                        update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} "
                                                         listener="#{billController.onTabChange}" />
 
-                                                <p:tab id="tabNewPt" title="New Patient"   >
+                                                <p:tab id="tabNewPt" title="New Patient">
                                                     <p:panel header="Enter New Patient Details" style="width: 550px;">
 
                                                         <p:panelGrid columns="2" >
@@ -248,8 +248,8 @@
                                                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                                 </h:outputLabel>
                                                             </p:column>
-                                                            <f:ajax event="itemSelect" execute=":#{p:component('cmbPs')} @this" 
-                                                                    render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
+                                                            <f:ajax event="itemSelect" execute=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} @this" 
+                                                                    render="panSearch :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                                     listener="#{billController.calTotals()}" />
                                                         </p:autoComplete>   
 
@@ -304,7 +304,7 @@
                                                     <f:ajax event="itemSelect"  execute="@this" render="txtQty" />
                                                 </p:autoComplete>
                                                 <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
-                                                    <f:ajax execute="txtQty acIx btnAddIx :#{p:component('cmbPs')} :#{p:component('pay')} panelBillItems" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
+                                                    <f:ajax execute="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems" render="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd" />
                                                 </h:commandButton>
 
                                                 <h:panelGrid id="txtQty">
@@ -323,7 +323,7 @@
                                                 <!--<p:defaultCommand target="btnAddIx" />-->
                                                 <p:panel header="Session"  >
                                                     <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
-                                                        <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" listener="#{billController.fillBillSessionsLstner}" />
+                                                        <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{billController.fillBillSessionsLstner}" />
                                                     </p:calendar>
                                                     <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
                                                         <f:selectItem itemLabel="Select Department"/>
@@ -395,7 +395,7 @@
                                                 <h:panelGroup >
                                                     <p:commandLink id="btnAddNewDoc" type="button"  value="Add" oncomplete="PF('dlg').show();" 
                                                                    actionListener="#{doctorController.prepareAdd}"  
-                                                                   process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                                                   process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                                     <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false" modal="true">  
 
 
@@ -423,7 +423,7 @@
                                                             <p:outputLabel id="lblQuaD" value="Qualification" ></p:outputLabel>
                                                             <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                                            <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                                            <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
                                                             </p:commandButton>
 
                                                         </h:panelGrid>  
@@ -456,7 +456,7 @@
 
                                                     <f:ajax  event="itemSelect" listener="#{billController.calTotals()}"
                                                              execute="@this" 
-                                                             render=":#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}" />
+                                                             render=":#{p:resolveFirstComponentWithId('panelBillTotals',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
                                                 </p:autoComplete> 
                                                 <h:panelGroup >
                                                     <p:watermark for="creditCompany" value="Type at least 3 charactors of Credit Company." ></p:watermark>
@@ -489,7 +489,7 @@
                                                     </p:column>
 
                                                     <p:ajax process="@this" 
-                                                            update="creditCompany :#{p:component('panelBillTotals')}  :#{p:component('tblRequests')} :#{p:component('tblBillItem')}"
+                                                            update="creditCompany :#{p:resolveFirstComponentWithId('panelBillTotals',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
                                                             event="itemSelect"  listener="#{billController.calTotals()}" />
 
                                                 </p:autoComplete>
@@ -535,7 +535,7 @@
                                                         <p:column>
                                                             <h:commandButton id="btnRemove" value="X" action="#{billController.removeBillItem}" >
                                                                 <f:setPropertyActionListener  value="#{rowIndex}" target="#{billController.index}" />
-                                                                <p:ajax  process="btnRemove" update=":#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" />
+                                                                <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
                                                             </h:commandButton>
                                                         </p:column>
                                                     </p:dataTable>
@@ -567,7 +567,7 @@
                                                                          value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                                 <f:ajax event="keyup" execute="@this" 
-                                                                        render=":#{p:component('tblRequests')}  :#{p:component('pBillDetails')}"
+                                                                        render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                                         listener="#{billController.feeChangeListener(bif)}" />
                                                             </h:inputText>
                                                         </p:column>

@@ -73,7 +73,7 @@
                                     </table>
                                 </p:panel>
                                 <h:panelGroup  
-                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }"   >
+                                    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                     <p:panel header="Calculations " id="tblCals">
                                         <table >               
                                             <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -81,7 +81,7 @@
 
                                                         >
 
-                                                <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}"   >
+                                                <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                     <tr>
                                                         <td>
                                                             <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
@@ -249,9 +249,9 @@
 
                                     </h:panelGrid>
                                     <h1>#{patientReportController.currentPatientReport.patientReportItemValues}</h1>
-                                    <p:editor id="reportEditor" value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
+                                    <p:textEditor secure="false" id="reportEditor" value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
 
-                                    </p:editor>
+                                    </p:textEditor>
 
 
                                 </p:panel>

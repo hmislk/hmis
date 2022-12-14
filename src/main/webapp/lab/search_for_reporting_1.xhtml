@@ -98,7 +98,7 @@
                                     <p:commandButton process="btnSample" update="tblBills"  rendered="#{!pi.collected}"   id="btnSample" value="Collect Sample" action="#{patientInvestigationController.markAsSampled}" onclick="onSubmitButton();"  >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton process="btnReceive" update="tblBills"  rendered="#{pi.received ne true}"   id="btnReceive" value="Receive Sample" action="#{patientInvestigationController.markAsReceived()}" onclick="onSubmitButton();" onclick="onSubmitButton();"   >
+                                    <p:commandButton process="btnReceive" update="tblBills"  rendered="#{pi.received ne true}"   id="btnReceive" value="Receive Sample" action="#{patientInvestigationController.markAsReceived()}" onclick="onSubmitButton();" onclick="onSubmitButton();">
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
                                     <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="/lab/single_worksheet" onclick="onSubmitButton();" >

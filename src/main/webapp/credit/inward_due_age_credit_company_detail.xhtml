@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -16,7 +16,7 @@
                                      value="Process Due Age(Excel)" 
                                      action="#{creditCompanyDueController.createInwardAgeDetailAnalysis}" onclick="onSubmitButton();" />
                     <p:commandButton value="Excel" ajax="false" actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}" >
-                        <pe:exporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx" />
+                        <p:dataExporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx" />
                     </p:commandButton>
                     <p:defaultCommand target="btnSearch"/>
 

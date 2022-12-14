@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
@@ -337,15 +337,12 @@ public enum Privileges {
     ChannelCashierTransactionExpencess,
     ChannelCashierTransactionExpencessSearch,
     ChannelActiveVat,
-    
-    
     MemberShip,
     MemberShipAdd,
     MemberShipEdit,
     MembershipReports,
     MembershipDiscountManagement,
     MembershipAdministration,
-    
     MembershipSchemes,
     MemberShipInwardMemberShip,
     MemberShipInwardMemberShipSchemesDicounts,
@@ -356,7 +353,6 @@ public enum Privileges {
     MemberShipOpdMemberShipDisOpdMemberShipReport,
     MemberShipMemberDeActive,
     MemberShipMemberReActive,
-    
     HrAdmin,
     HrReports,
     HrReportsLevel1,
@@ -378,13 +374,141 @@ public enum Privileges {
     HrAdditionalForms,
     HrEditRetiedDate,
     HrRemoveResignDate,
-    
     Developers,
     //Cashier
     AllCashierSummery,
     //Administration
     SearchAll,
     ChangePreferece,
-    SendBulkSMS,
+    SendBulkSMS;
+
+    public String getLabel() {
+        switch (this) {
+            case Opd:
+                return "Online Settlement";
+            case OpdCancel:
+                return "OPD Bill Cancellation";
+            case OpdReturn:
+                return "OPD Bill Return";
+            default:
+                return this.toString();
+
+        }
+    }
+
+    public String getCategory() {
+        switch (this) {
+            case Opd:
+            case OpdCancel:
+            case OpdReturn:
+            case OpdBilling:
+            case OpdReprint:
+            case OpdBillSearch:
+            case OpdPreBilling:
+            case OpdReactivate:
+            case OpdBillItemSearch:
+            case OpdBillSearchEdit:
+            case OpdCollectingCentreBilling:
+            case OpdCollectingCentreBillSearch:
+            case OpdCollectingCentreBillingMenu:
+                return "OPD";
+            case Lab:
+            case LabItems:
+            case LabLists:
+            case LabSetUp:
+            case LabReport:
+            case LabBilling:
+            case LabCashier:
+            case LabReceive:
+            case LabReports:
+            case LabPrinting:
+            case LabCCBilling:
+            case LabDataentry:
+            case LabReporting:
+            case LabSummeries:
+            case LabBillSearch:
+            case LabReportEdit:
+            case LabReprinting:
+            case LabAutherizing:
+            case LabBillReprint:
+            case LabEditPatient:
+            case LabReportPrint:
+            case LabReportSearch:
+            case LabRevertSample:
+            case LabBillRefunding:
+            case LabBillReturning:
+            case LabDeAutherizing:
+            case LabInwardBilling:
+            case LabItemFeeDelete:
+            case LabAdiministrator:
+            case LabBillCancelling:
+            case LabBillItemSearch:
+            case LabItemFeeUpadate:
+            case LabCCBillingSearch:
+            case LabReportSearchAll:
+            case LabReportSearchOwn:
+            case LabSampleReceiving:
+            case LabSummeriesLevel1:
+            case LabSummeriesLevel2:
+            case LabSummeriesLevel3:
+            case LabBillReactivating:
+            case LabInvestigationFee:
+            case LabSampleCollecting:
+            case LabAddInwardServices:
+            case LabBillCancelSpecial:
+            case LabBillRefundSpecial:
+            case LabBillSearchCashier:
+            case LabCasheirBillSearch:
+            case LabReportFormatEditing:
+            case LabCollectingCentreBilling:
+            case LabInwardSearchServiceBill:
+            case LabReportSearchByDepartment:
+            case LabSearchBillLoggedInstitution:
+            case LabReportSearchByLoggedInstitution:
+                return "Lab";
+            case Pharmacy:
+            case PharmacySale:
+            case PharmacySaleWh:
+            case PharmacySearch:
+            case PharmacyReports:
+            case PharmacySummery:
+            case PharmacyPurchase:
+            case PharmacyTransfer:
+            case PharmacyPurchaseWh:
+            case PharmacySaleCancel:
+            case PharmacySaleReturn:
+            case PharmacyStockIssue:
+            case PharmacyGoodReceive:
+            case PharmacySaleReprint:
+            case PharmacyReAddToStock:
+            case PharmacySaleCancelWh:
+            case PharmacySaleReturnWh:
+            case PharmacyDealorPayment:
+            case PharmacyGoodReceiveWh:
+            case PharmacyInwardBilling:
+            case PharmacyOrderApproval:
+            case PharmacyOrderCreation:
+            case PharmacySaleReprintWh:
+            case PharmacyAdministration:
+            case PharmacyBHTIssueAccept:
+            case PharmacyPurchaseReturn:
+            case PharmacyGoodReceiveEdit:
+            case PharmacyPurchaseReprint:
+            case PharmacySetReorderLevel:
+            case PharmacyStockAdjustment:
+            case PharmacyGoodReceiveCancel:
+            case PharmacyGoodReceiveReturn:
+            case PharmacyOrderCancellation:
+            case PharmacyInwardBillingCancel:
+            case PharmacyInwardBillingReturn:
+            case PharmacyPurchaseCancellation:
+            case PharmacyReturnWithoutTraising:
+            case PharmacyStockAdjustmentSingleItem:
+                return "Pharmacy";
+            default:
+                return this.toString();
+
+        }
+    }
 
 }

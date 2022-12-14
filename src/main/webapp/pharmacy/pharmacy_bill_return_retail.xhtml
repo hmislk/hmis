@@ -87,7 +87,7 @@
 
                     <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
                         <p:inputText autocomplete="off" value="#{ph.qty}" >
-                            <f:ajax event="blur" render="@this :#{p:component('total')}"  execute="@this" listener="#{saleReturnController.onEdit(ph)}" ></f:ajax>
+                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  execute="@this" listener="#{saleReturnController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
                     </p:column>  
 
@@ -101,7 +101,7 @@
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
-                <!--                <p:panel   id="gpBillPreview"   >
+                <!--                <p:panel   id="gpBillPreview">
                                     <ph:returnBill bill="#{saleReturnController.returnBill}"/>
                 
                                 </p:panel>-->

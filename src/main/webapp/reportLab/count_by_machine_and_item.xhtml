@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -47,8 +47,8 @@
                             </p:commandButton>
 
                             <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" style="float: right;" actionListener="#{investigationMonthSummeryOwnController.createLabServiceWithCountByMachineAndBillType()}" >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Investigation Counts From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
-                                             subTable="true"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Investigation Counts From #{investigationMonthSummeryOwnController.fromDate} To #{investigationMonthSummeryOwnController.toDate}"
+                                               />
                             </p:commandButton>      
 
 

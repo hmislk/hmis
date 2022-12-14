@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -38,6 +38,10 @@ public class UserPreference implements Serializable {
     String pharmacyBillHeader;
     @Lob
     String pharmacyBillFooter;
+    @Lob
+    private String inwardDepositBillTemplate;
+    @Lob
+    private String inwardDepositCancelBillTemplate;
     @Lob
     String opdBillHeader;
     @Lob
@@ -78,6 +82,7 @@ public class UserPreference implements Serializable {
     boolean channelSettleWithoutPatientPhoneNumber=false;
     boolean opdSettleWithoutPatientPhoneNumber=false;
     boolean channelBillDouble=false;
+    private boolean hasAwebsiteAsFrontEnd = false;
     private boolean channelDoctorArivalMsgSend=false;
     String microBiologyFont;
     String logoName;
@@ -110,6 +115,7 @@ public class UserPreference implements Serializable {
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
+    
     
     
     
@@ -684,6 +690,30 @@ public class UserPreference implements Serializable {
 
     public void setSendBulkSms(boolean sendBulkSms) {
         this.sendBulkSms = sendBulkSms;
+    }
+
+    public String getInwardDepositBillTemplate() {
+        return inwardDepositBillTemplate;
+    }
+
+    public void setInwardDepositBillTemplate(String inwardDepositBillTemplate) {
+        this.inwardDepositBillTemplate = inwardDepositBillTemplate;
+    }
+
+    public String getInwardDepositCancelBillTemplate() {
+        return inwardDepositCancelBillTemplate;
+    }
+
+    public void setInwardDepositCancelBillTemplate(String inwardDepositCancelBillTemplate) {
+        this.inwardDepositCancelBillTemplate = inwardDepositCancelBillTemplate;
+    }
+
+    public boolean isHasAwebsiteAsFrontEnd() {
+        return hasAwebsiteAsFrontEnd;
+    }
+
+    public void setHasAwebsiteAsFrontEnd(boolean hasAwebsiteAsFrontEnd) {
+        this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
     }
 
     

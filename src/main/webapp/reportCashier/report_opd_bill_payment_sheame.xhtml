@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -29,7 +29,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport1.createOpdBillList}"/>
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                    <pe:exporter type="xlsx" target="tblBills,tblBills1,tblBills2" fileName="report_opd_bill_payment_sheame"  />
+                                    <p:dataExporter type="xlsx" target="tblBills,tblBills1,tblBills2" fileName="report_opd_bill_payment_sheame"  />
                                 </p:commandButton>
                                 <p:commandButton value="Print" ajax="false" action="#" >
                                     <p:printer target="panPrint" ></p:printer>

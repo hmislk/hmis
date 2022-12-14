@@ -19,7 +19,7 @@
                                             value="#{staffTransferFormController.currentTransferForm.staff}"
                                             completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                             itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                            converter="stfcon"   >
+                                            converter="stfcon">
                                 <f:ajax execute="@this" render="rs" event="itemSelect"/>
                             </p:autoComplete>    
                             <h:outputLabel value="Current Roster"/>
@@ -55,7 +55,7 @@
                                 value="#{staffTransferFormController.staff}"
                                 completeMethod="#{staffController.completeStaffCode}" var="mys" 
                                 itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                converter="stfcon"   >   
+                                converter="stfcon">   
                             </p:autoComplete>
 
                             <p:commandButton ajax="false" value="Search Created Date" action="#{staffTransferFormController.createTransferTable()}" />                            

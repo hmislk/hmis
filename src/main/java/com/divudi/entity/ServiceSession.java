@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -251,8 +251,8 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransStartTime() {
         Calendar st = Calendar.getInstance();
         Calendar start = Calendar.getInstance();
-//        //System.out.println("sessionAt = " + sessionAt);
-//        //System.out.println("startingTime = " + startingTime);
+//        //// // System.out.println("sessionAt = " + sessionAt);
+//        //// // System.out.println("startingTime = " + startingTime);
         if (sessionAt == null || startingTime == null) {
             return null;
         }
@@ -268,7 +268,7 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransEndTime() {
         Calendar st = Calendar.getInstance();
         Calendar ending = Calendar.getInstance();
-//        //System.out.println("sessionAt = " + sessionAt);
+//        //// // System.out.println("sessionAt = " + sessionAt);
         if (sessionAt == null || getEndingTime() == null) {
             return null;
         }

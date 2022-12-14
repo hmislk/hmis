@@ -77,7 +77,7 @@
                         <p:inputText autocomplete="off" id="tmpRetail"  styleClass="numericTxt" 
                                      value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.retailRate}"  />  
                         <p:calendar navigator="true"
-                                    id="calDoe" pattern="dd MM yy" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.doe}"   >
+                                    id="calDoe" pattern="dd MM yy" value="#{storePurchaseController.currentBillItem.pharmaceuticalBillItem.doe}">
                             <f:ajax event="dateSelect" execute="@this" render="tmp" listener="#{storePurchaseController.setBatch()}"/>
                         </p:calendar> 
                         <p:inputText autocomplete="off"  styleClass="numericTxt" 
@@ -86,7 +86,7 @@
 
                         <p:commandButton id="btnAdd" value="Add Item" 
                                         action="#{storePurchaseController.addItem}" 
-                                         process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:component('total')}"/>
+                                         process="cmbParent itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId}"/>
 
                     </p:panelGrid>
 
@@ -191,7 +191,7 @@
 
                     <!--                    <p:column headerText="Qty" style="width:20%" >                     
                                             <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}"  >
-                                                <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:component('tot')}"
+                                                <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                                         execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
                                             </p:inputText>
                                         </p:column>  
@@ -202,7 +202,7 @@
 
                     <!--                    <p:column headerText="Free" style="width:20%">       
                                             <p:inputText autocomplete="off" id="freeQty" value="#{ph.pharmaceuticalBillItem.freeQty}" style="width:100%" >
-                                                <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:component('tot')}"
+                                                <f:ajax event="blur" render="item qty freeQty purchase retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                                         execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
                                             </p:inputText>
                                         </p:column> -->
@@ -214,7 +214,7 @@
 
                     <!--                    <p:column headerText="P. Rate" style="width:24% ;">                     
                                             <h:inputText autocomplete="off" id="purchase" value="#{ph.pharmaceuticalBillItem.purchaseRate}">
-                                                <f:ajax event="blur" render="profMargin @this retail total :#{p:component('tot')}"  execute="@this qty item qty freeQty purchase retail" listener="#{storePurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
+                                                <f:ajax event="blur" render="profMargin @this retail total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty item qty freeQty purchase retail" listener="#{storePurchaseController.onEditPurchaseRate(ph)}" ></f:ajax> 
                                             </h:inputText>
                                             <p:outputLabel value=" X #{ph.item.dblValue}" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                                                
                                         </p:column>              -->
@@ -225,7 +225,7 @@
 
                     <!--                    <p:column headerText="S. Rate" style="width:24%">                   
                                             <h:inputText autocomplete="off" id="retail" value="#{ph.pharmaceuticalBillItem.retailRate}"  label="Price">
-                                                <f:ajax event="blur" render="profMargin @this total :#{p:component('tot')}"  execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
+                                                <f:ajax event="blur" render="profMargin @this total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="item qty freeQty purchase retail" listener="#{storePurchaseController.onEdit(ph)}" ></f:ajax> 
                                             </h:inputText>
                                             <p:outputLabel value=" X (#{ph.item.dblValue})" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                    
                                         </p:column>  -->
@@ -291,7 +291,7 @@
                         <p:commandButton id="btnAddExpense" value="Add Expense" 
                                         action="#{storePurchaseController.addExpense()}" 
                                          process="billExpenseGrid" 
-                                         update="tblExpenses billExpenseGrid tot focusExpense :#{p:component('net')} :#{p:component('lblBillExpenses')}"/>
+                                         update="tblExpenses billExpenseGrid tot focusExpense :#{p:resolveFirstComponentWithId('net',view).clientId} :#{p:resolveFirstComponentWithId('lblBillExpenses',view).clientId}"/>
                     </h:panelGrid>
                     <p:dataTable id="tblExpenses" value="#{storePurchaseController.billExpenses}" var="be"
                                  emptyMessage="No Bill Expenses" >

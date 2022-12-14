@@ -83,7 +83,7 @@
                                                     <h:outputLabel rendered="#{appointmentController.searchedPatient!=null}" value="#{appointmentController.searchedPatient.person.sex}" ></h:outputLabel>
                                                     <h:outputLabel  rendered="#{appointmentController.searchedPatient!=null}" value="DOB"  />
 
-                                                    <h:outputLabel rendered="#{appointmentController.searchedPatient!=null}" value="#{appointmentController.searchedPatient.person.dob}"   >
+                                                    <h:outputLabel rendered="#{appointmentController.searchedPatient!=null}" value="#{appointmentController.searchedPatient.person.dob}">
                                                         <f:convertDateTime pattern="dd/MM/yy" />
                                                     </h:outputLabel>
 
@@ -126,7 +126,7 @@
                                         <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();" onclick="onSubmitButton();">
+                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();" onclick="onSubmitButton();">
                                         </p:commandButton>
 
                                     </h:panelGrid>  
@@ -139,7 +139,7 @@
                                         <p:tab title="Refering Doctor" id="rdr">
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{appointmentController.currentBill.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" >
+                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" >
                                             <p:resetInput target="panelBillReferrals"/>
                                             </p:commandButton>  
                                       

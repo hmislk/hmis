@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -23,7 +23,7 @@
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel"  styleClass="noPrintButton" style="float: right;"
                                              disabled="#{reportsStockVariant.recordedBillAfter.id eq null}">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Category_report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton>  
                             <p:commandButton ajax="false" value="Save Records"
                                             action="#{reportsStockVariant.saveRecordAfter()}"

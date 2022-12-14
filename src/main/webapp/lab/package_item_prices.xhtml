@@ -68,7 +68,7 @@
                                     <h:inputText autocomplete="off" id="txtFee" value="#{packageItemFeeController.currentFee.fee}"/>
                                     <h:outputText value=""/>
                                     <h:commandButton id="btnAddTo" value="Add" action="#{packageItemFeeController.saveCharge}" styleClass="buttons">
-                                        <f:ajax render="dtbFee gpVeda" execute="gpVeda :#{p:component('cur')}"  />
+                                        <f:ajax render="dtbFee gpVeda" execute="gpVeda :#{p:resolveFirstComponentWithId('cur',view).clientId}"  />
                                     </h:commandButton>
                                     <p:defaultCommand target="btnAddTo"/>
                                 </h:panelGrid>
@@ -93,7 +93,7 @@
                                     <p:column headerText="Remove">
                                         <h:commandButton id="remove" value="Remove" action="#{packageItemFeeController.removeFee}" >
                                             <f:setPropertyActionListener value="#{bi}" target="#{packageItemFeeController.removedPackageFee}"/>
-                                            <p:ajax update=":#{p:component('lblTotal')} dtbFee" process="remove dtbFee" />
+                                            <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee" process="remove dtbFee" />
                                         </h:commandButton>
                                     </p:column>
                                 </p:dataTable>

@@ -124,7 +124,7 @@
                         <div id="centrewrapper">
                             <div id="centrecell">
                                 <div class="centrecontent">
-                                    <p:commandButton value="Print" ajax="false" action="#"   >
+                                    <p:commandButton value="Print" ajax="false" action="#">
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
@@ -197,7 +197,7 @@
 
 
 
-                                                <h:dataTable value="#{billSearch.billItems}" var="bip" styleClass="items"   >
+                                                <h:dataTable value="#{billSearch.billItems}" var="bip" styleClass="items">
                                                     <h:column >
                                                         <h:outputLabel value="#{bip.item.printName}" style="margin: 4px;" />
                                                     </h:column>

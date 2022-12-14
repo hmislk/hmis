@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:poue="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -14,7 +14,7 @@
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
                     <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
-                        <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingPastController.listnerStaffListForSpecilitySelectedText}"/> 
+                        <p:ajax  event="keyup" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingPastController.listnerStaffListForSpecilitySelectedText}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch')).keypress(function (event) {
@@ -34,18 +34,18 @@
                                   var="spe" 
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingPastController.listnerStaffListForRowSelect}"/> 
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingPastController.generateSessions}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingPastController.listnerStaffListForRowSelect}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingPastController.generateSessions}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   ></p:tooltip>
+                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"></p:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
 
                 <h:panelGroup id="scStaff" >
                     <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingPastController.selectTextConsultant}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
-                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingPastController.listnerStaffRowSelect}"/> 
+                        <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblCon',view).clientId} :#{p:resolveFirstComponentWithId('panSpeciality',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingPastController.listnerStaffRowSelect}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch2')).keypress(function (event) {
@@ -69,7 +69,7 @@
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
-                                 update=":#{p:component('tblSessionsOfSelectedConsultant')} :#{p:component('tblBookingsOfSelectedSession')}"  
+                                 update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} :#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}"  
                                  listener="#{bookingPastController.generateSessions}"/>
                     </p:dataTable>
 
@@ -80,7 +80,7 @@
                 <h:panelGroup>
                     <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
                         <p:ajax event="dateSelect" process="@this date" 
-                                update=":#{p:component('tblSessionsOfSelectedConsultant')}"
+                                update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}"
                                 listener="#{bookingPastController.generateSessions}" />
                     </p:calendar>
 
@@ -94,7 +94,7 @@
                                  style="min-height: 300px;">
 
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:component('tblBookingsOfSelectedSession')}"
+                                update=":#{p:resolveFirstComponentWithId('tblBookingsOfSelectedSession',view).clientId}"
                                 listener="#{bookingPastController.fillBillSessions}" />
 
                         <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
@@ -184,7 +184,7 @@
                                              selectionMode="single" rowKey="#{bs.id}"
                                              rowStyleClass="#{bs.bill.cancelled eq true or bs.bill.refunded eq true ? 'redText':''}"
                                              selection="#{bookingPastController.selectedBillSession}" scrollable="true" scrollHeight="275">
-                                    <p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" 
+                                    <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
                                             listener="#{channelBillController.createBillfees}" />  
 
                                     <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
@@ -555,8 +555,8 @@
                                     </p:column>
                                     <p:column headerText="Return Value">
                                         <p:inputText value="#{bi.tmpChangedValue}" disabled="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
-                                            <f:ajax execute="@this" render=":#{p:component('tot')}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
-                                            <f:ajax execute="@this" render=":#{p:component('tot')} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{channelBillController.calRefundTotal()}"/>
+                                            <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{channelBillController.checkRefundTotal()}"/>
                                         </p:inputText>
 
                                     </p:column>

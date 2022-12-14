@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}" >
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>
 
@@ -39,7 +39,7 @@
                                 <p:tab id="tabUser" title="User Details">
                                     <p:panel >
                                         <h:panelGrid columns="2" >
-                                            <h:outputText value="User Name"   ></h:outputText>
+                                            <h:outputText value="User Name"></h:outputText>
                                             <p:inputText autocomplete="off" required="true" maxlength="50" value="#{webUserController.current.name }" ></p:inputText>
                                             <h:outputText value="Password" ></h:outputText>
                                             <p:password feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" />

@@ -50,10 +50,10 @@
 
                                         <p:tabView id="tvPt" activeIndex="#{collectingCentreBillController.patientSearchTab}"  >
                                             <p:ajax event="tabChange"   process="@this"  
-                                                    update=":#{p:component('tblBillItem')} :#{p:component('pBillDetails')} "
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} "
                                                     listener="#{collectingCentreBillController.onTabChange}" />
 
-                                            <p:tab id="tabNewPt" title="New Patient"   >
+                                            <p:tab id="tabNewPt" title="New Patient">
 
 
                                                 <table >
@@ -187,7 +187,7 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <f:ajax event="itemSelect" execute="@this" 
-                                                                render="panSearch :#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" 
+                                                                render="panSearch :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                                 listener="#{collectingCentreBillController.calTotals()}" />
                                                     </p:autoComplete>   
 
@@ -236,7 +236,7 @@
                                                     <p:ajax event="itemSelect"  listener="#{collectingCentreBillController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                                 </p:autoComplete>
                                                 <h:commandButton id="btnAddIx" value="Add" action="#{collectingCentreBillController.addToBill()}"  style="width: 75px;"  >
-                                                    <f:ajax execute="acIx btnAddIx panelBillItems :#{p:component('acColl')}" render="focusIx tblBillItem  :#{p:component('pBillDetails')}  pIxAdd" />
+                                                    <f:ajax execute="acIx btnAddIx panelBillItems :#{p:resolveFirstComponentWithId('acColl',view).clientId}" render="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd" />
                                                 </h:commandButton>
                                                 <p:defaultCommand target="btnAddIx" />
                                             </h:panelGrid>
@@ -245,7 +245,7 @@
 
                                                 <p:panelGrid columns="2" >
                                                     <p:calendar id="calS" mode="inline" value="#{collectingCentreBillController.sessionDate}" pattern="dd MMMM yyyy" >
-                                                        <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:component('lblTemS')}" />
+                                                        <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" />
                                                     </p:calendar>
 
                                                     <p:dataTable id="tblSs" value="#{collectingCentreBillController.billSessions}" var="bs" emptyMessage="No Numbers Yet">
@@ -327,7 +327,7 @@
                                             <h:panelGrid columns="1">
                                                 <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{collectingCentreBillController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 200px;float: left;">
                                                 </p:autoComplete>
-                                                <p:commandButton id="btnAddNewDoc" type="button" value="Add Refering Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                                <p:commandButton id="btnAddNewDoc" type="button" value="Add Refering Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                             </h:panelGrid>
                                             <p:outputLabel value="Refferal Institution"></p:outputLabel>
                                             <p:autoComplete forceSelection="true" id="cmdIns" 
@@ -385,7 +385,7 @@
                                             <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                             <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                            <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
+                                            <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc :#{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();">
                                             </p:commandButton>
 
                                         </h:panelGrid>  
@@ -428,7 +428,7 @@
                                                     <p:column>
                                                         <h:commandButton id="btnRemove" value="X" action="#{collectingCentreBillController.removeBillItem}" >
                                                             <f:setPropertyActionListener  value="#{rowIndex}" target="#{collectingCentreBillController.index}" />
-                                                            <p:ajax  process="btnRemove" update=":#{p:component('tblBillItem')} :#{p:component('pBillDetails')}" />
+                                                            <p:ajax  process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />
                                                         </h:commandButton>
                                                     </p:column>
                                                 </p:dataTable>
@@ -460,7 +460,7 @@
                                                                      value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                             <f:convertNumber pattern="#,##0.00" />
                                                             <f:ajax event="keyup" execute="@this" 
-                                                                    render=":#{p:component('tblRequests')}  :#{p:component('pBillDetails')}"
+                                                                    render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                                     listener="#{collectingCentreBillController.feeChangeListener(bif)}" />
                                                         </h:inputText>
                                                     </p:column>

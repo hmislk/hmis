@@ -7,7 +7,7 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:ph="http://java.sun.com/jsf/composite/pharmacy/inward"
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -20,7 +20,7 @@
                             <h:outputLabel value="Reprint BHT Issue" ></h:outputLabel>
 
                             <hr/>
-                            <p:commandButton value="Reprint" ajax="false"   >
+                            <p:commandButton value="Reprint" ajax="false">
                                 <p:printer target="gpBillPreviewFiveFive" ></p:printer>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
@@ -35,7 +35,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                <pe:exporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
                             </p:commandButton> 
 
 

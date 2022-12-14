@@ -54,11 +54,11 @@
 
                                     <p:dataTable id="dtF" value="#{patientInvestigationController.toReceive}" var="smpIx" rowKey="#{smpIx.id}" selection="#{patientInvestigationController.selectedToReceive}" >
                                         <p:ajax event="rowSelectCheckbox" 
-                                                update=":#{p:component('pPrintWorksheet')}" process="colSelect dtF"      />  
+                                                update=":#{p:resolveFirstComponentWithId('pPrintWorksheet',view).clientId}" process="colSelect dtF"      />  
                                         <p:ajax event="rowUnselectCheckbox" 
-                                                update=":#{p:component('pPrintWorksheet')}" process="colSelect dtF"      />  
+                                                update=":#{p:resolveFirstComponentWithId('pPrintWorksheet',view).clientId}" process="colSelect dtF"      />  
                                         <p:ajax event="toggleSelect" 
-                                                update=":#{p:component('pPrintWorksheet')}" process="colSelect dtF"      />  
+                                                update=":#{p:resolveFirstComponentWithId('pPrintWorksheet',view).clientId}" process="colSelect dtF"      />  
                                         <p:column id="colSelect"  selectionMode="multiple" >
                                         </p:column>
                                         <p:column headerText="Patient"  styleClass="alignTop" >

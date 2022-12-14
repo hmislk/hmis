@@ -8,214 +8,218 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="dup" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form>
-
-
-            <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
-            <div  >
-                <h:panelGroup id="gpBillPreview" >
-
-                    <div class="fiveinchbillBreakRuhunu" >
-
-                        <div style="position: absolute!important;left: 60%!important; font-weight: bold!important;
-                             top: 0%!important;font-size: 16px!important; text-decoration: underline!important;">
-                            <h:outputLabel value="Receipt"   />                           
-                        </div>
-
-                        <div style="position: absolute;
-                             left: 0%!important;
-                             top: 7%!important;
-                             font-size: 12px!important;">
-                            <h:outputLabel value="Receipt No"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 23%;
-                             top: 7%;
-                             font-size:12px!important;">
-                            <h:outputLabel value=":"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 25%!important;
-                             top: 7%!important;
-                             font-size: 12px!important;">
-                            <!--                        <h:outputLabel value="Bill No"/><h:outputLabel value=":"/>-->
-                            <h:outputLabel value="#{cc.attrs.bill.insId}" rendered="#{cc.attrs.bill.cancelled eq false}"/>
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.insId}" rendered="#{cc.attrs.bill.cancelled eq true}"/>
-                        </div>
-
-                        <div style="position: absolute;
-                             left: 73%!important;
-                             top: 7%!important;
-                             font-size: 12px!important;">
-                            <h:outputLabel value="Date"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 82%;
-                             top: 7%;
-                             font-size:12px!important;">
-                            <h:outputLabel value=":"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 84%!important;
-                             top: 7%!important;
-                             font-size: 12px!important;" >
-                            <h:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.bill.cancelled eq false}">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}" rendered="#{cc.attrs.bill.cancelled eq true}">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
-                        </div>
-
-                        <div style="position: absolute;
-                             left: 0%!important;
-                             top: 11%!important;
-                             font-size: 12px!important;">
-                            <h:outputLabel value="Payment Type"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 23%;
-                             top: 11%;
-                             font-size:12px!important;">
-                            <h:outputLabel value=":"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 25%;
-                             top: 11%;
-                             font-size:12px!important;" >
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" >
-                            </h:outputLabel>
-                        </div>
-
-                        <div style="position: absolute;
-                             left: 73%!important;
-                             top: 11%!important;
-                             font-size: 12px!important;">
-                            <h:outputLabel value="Time"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 82%;
-                             top: 11%;
-                             font-size:12px!important;">
-                            <h:outputLabel value=":"/>
-                        </div>
-                        <div style="position: absolute;
-                             left: 84%;
-                             top: 11%;
-                             font-size:12px!important;" >
-                            <h:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.bill.cancelled eq false}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
-                            </h:outputLabel>
-                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}" rendered="#{cc.attrs.bill.cancelled eq true}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
-                            </h:outputLabel>
-                        </div>
-                        
-                        <div style="position: absolute;
-                             left: 50%;
-                             top: 17%;
-                             font-size:12px!important;
-                             font-weight: bold!important;">
-                            <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.dup eq true}" />
-                            <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
-                        </div>
-                        
-                        <div style="position: absolute;
-                         left: 0%!important;
-                         top: 25%!important;
-                         font-size: 13px!important;">
-                            <h:outputLabel value="Patient Name"/>
-                        </div>
-                        <div style="position: absolute;
-                         left: 26%;
-                         top: 25%;
-                         font-size:13px!important;">
-                            <h:outputLabel value=":"/>
-                        </div>
-                        <div style="position: absolute;
-                         left: 28%;
-                         top: 25%;
-                         font-size:13px!important;
-                         text-transform: capitalize!important;" >
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  />
-                        </div>
-
-                        <div style="position: absolute;
-                         left: 0%!important;
-                         top: 35%!important;
-                         font-size: 13px!important;">
-                            <h:outputLabel value="BHT No"/>
-                        </div>
-                        <div style="position: absolute;
-                         left: 26%;
-                         top: 35%;
-                         font-size:13px!important;">
-                            <h:outputLabel value=":"/>
-                        </div>
-                        <div style="position: absolute;
-                         left: 28%;
-                         top: 35%;
-                         font-size:13px!important;" >
-                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" style=""/>
-                        </div>
-
-
-
-
-
-
-                        <div style="position: absolute;left: 20%;top: 50%;min-width: 85%; margin-top: 60px!important;" >
-
-                            <table style="min-width:100%;">
+            <div class="w-100" >
+                <div class="row my-2 p-2">
+                    <div class="col-md-12" >
+                        <div class="container text-center w-100 m-auto" >
+                            <h:outputText value="#{cc.attrs.bill.department.printingName}" ></h:outputText>
+                            <br/>
+                            <h:outputText value="#{cc.attrs.bill.department.address}" ></h:outputText>
+                            <br/>
+                            <h:outputText value="Phone: " ></h:outputText>
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" ></h:outputLabel>
+                            <h:outputLabel value=", " ></h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" ></h:outputLabel>
+                            <br/>
+                            <h:outputText value="Email : " ></h:outputText>
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" ></h:outputLabel>
+                            <br/>
+                            <hr/>
+                            <h:outputText value="Deposit Receipt" ></h:outputText>
+                            <hr/>
+                            <br/>
+                            <table >
                                 <tr>
-                                    <td style="text-align: left; min-width: 3cm; font-weight: bold;">
-                                        <h:outputLabel value="Cash Amount :&nbsp;&nbsp;" style="text-align: right!important;  font-size: 15px!important;"/>
-
-
-                                        <h:outputLabel value="Rs. " style="font-size: 15px!important;"/>
-                                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" style="font-size: 15px!important;">
-                                            <f:convertNumber pattern="#,###,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value=" /=" style="font-size: 18px!important;"/>
+                                    <td>
+                                        Name
                                     </td>
-
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}
+                                    </td>
                                 </tr>
-                            </table>
-                            <br/>
-                            <br/>
-                            <br/>
-
-                        </div>
-                        <div>
-                            <table>
                                 <tr>
                                     <td>
-                                        <div class="cashierPrinting" style="text-decoration: overline;font-size: 12px;">
-                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.creater.code}" rendered="#{cc.attrs.bill.cancelled eq false}"  />
-                                            <h:outputLabel  value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}" rendered="#{cc.attrs.bill.cancelled eq true}"  />
-                                        </div>
-
+                                        BHT
                                     </td>
                                     <td>
-<!--                                        <div class="pgsignPrinting" style="text-decoration: overline; margin-left: 70%; font-size: 12px;">
-                                            <h:outputLabel  value="Patient/Guardian"   />
-                                        </div>-->
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.bhtNo}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Admission Type
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.admissionType.name}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Date of Admissions
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.dateOfAdmission}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.dateOfDischarge ne null}" >
+                                    <tr>
+                                        <td>
+                                            Date of Discharge
+                                        </td>
+                                        <td>
+                                            :
+                                        </td>
+                                        <td>
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.dateOfDischarge}" >
+                                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
+                                <tr>
+                                    <td>
+                                        Age
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.patient.age}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Sex
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.patient.person.sex}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Phone
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.patient.person.phone}
+                                        #{cc.attrs.bill.patientEncounter.patient.person.mobile}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Address
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.patientEncounter.patient.person.address}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Paying Amount
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Bill No
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.insId}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Payment Method
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.paymentMethod.label}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Cashier
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        #{cc.attrs.bill.creater.name}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Date
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cc.attrs.bill.billDate}" >
+                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Time*
+                                    </td>
+                                    <td>
+                                        :
+                                    </td>
+                                    <td>
+                                        <h:outputLabel value="#{cc.attrs.bill.billTime}" >
+                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                        </h:outputLabel>
                                     </td>
                                 </tr>
                             </table>
                         </div>
                     </div>
-
-                </h:panelGroup>
+                </div>
             </div>
-
-
         </h:form>
     </cc:implementation>
 </html>

@@ -1,5 +1,3 @@
-select *
-from Bill
-where `CANCELLED`=false and `CANCELLEDBILL_ID` is not null
-order by id desc
-limit 10;
+select * 
+from BILL
+where id=28691256 or id = 28691287;

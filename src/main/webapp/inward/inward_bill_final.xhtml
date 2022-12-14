@@ -110,9 +110,9 @@
                                                                                       or c.inwardChargeType eq 'MedicalCare' 
                                                                                       or c.total eq 0}" >
                                 <f:convertNumber pattern="#,##0.00" />
-                                <p:ajax process="@this" update="@this catNetTotal :#{p:component('tot')}  "  event="blur"
+                                <p:ajax process="@this" update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}  "  event="blur"
                                         listener="#{bhtSummeryController.changeDiscountListener(c)}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}"
+                                <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}"
                                         listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
@@ -132,9 +132,9 @@
                                                      or c.inwardChargeType eq 'AdministrationCharge'
                                                      or c.inwardChargeType eq 'ProfessionalCharge'}">
                                 <f:convertNumber pattern="#,##0.00" />
-                                <p:ajax process="@this" update=":#{p:component('tot')} "  event="blur"
+                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "  event="blur"
                                         listener="#{bhtSummeryController.updateTotal()}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
                     </p:dataTable>  
@@ -194,7 +194,7 @@
                                         <f:convertNumber pattern="#,##0.00" />                                           
                                         <p:ajax event="blur" process="@this"  update="chargeNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomRoomCharge(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -207,7 +207,7 @@
                                         <f:convertNumber pattern="#,##0.00" />                                        
                                         <p:ajax event="blur" process="@this" 
                                                 listener="#{bhtSummeryController.changeAdjustedValueRoomCharge(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -228,7 +228,7 @@
                                         <f:convertNumber pattern="#,##0.00" />                                        
                                         <p:ajax event="blur" process="@this" update="mainNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMaintain(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -241,7 +241,7 @@
                                         <f:convertNumber pattern="#,##0.00" />                                           
                                         <p:ajax event="blur" process="@this" 
                                                 listener="#{bhtSummeryController.changeAdjustedValueMaintain(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
 
@@ -263,7 +263,7 @@
                                         <f:convertNumber pattern="#,##0.00" />                                          
                                         <p:ajax event="blur" process="@this"  update="moNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMo(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -277,7 +277,7 @@
 
                                         <p:ajax event="blur" process="@this" 
                                                 listener="#{bhtSummeryController.changeAdjustedValueMo(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -301,7 +301,7 @@
 
                                         <p:ajax event="blur" process="@this"  update="nurNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomNursing(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -315,7 +315,7 @@
 
                                         <p:ajax event="blur" process="@this"
                                                 listener="#{bhtSummeryController.changeAdjustedValueNursing(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -338,7 +338,7 @@
 
                                         <p:ajax event="blur" process="@this"  update="admNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomAdministration(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -351,7 +351,7 @@
                                         <f:convertNumber pattern="#,##0.00" />   
 
                                         <p:ajax event="blur" process="@this" listener="#{bhtSummeryController.changeAdjustedValueAdministration(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -373,7 +373,7 @@
 
                                         <p:ajax event="blur" process="@this"  update="medNet" 
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMedicalCare(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -386,7 +386,7 @@
                                         <f:convertNumber pattern="#,##0.00" />   
 
                                         <p:ajax event="blur" process="@this"  listener="#{bhtSummeryController.changeAdjustedValueMedicalCare(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -409,7 +409,7 @@
 
                                         <p:ajax event="blur" process="@this"  update="linNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomLinen(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Net" >                                      
@@ -421,7 +421,7 @@
                                     <p:inputText autocomplete="off" id="linAdj" value="#{b.ajdustedLinenCharge}" >
                                         <f:convertNumber pattern="#,##0.00" />                                             
                                         <p:ajax event="blur" process="@this"  listener="#{bhtSummeryController.changeAdjustedValueLinen(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -444,9 +444,9 @@
                             <p:inputText autocomplete="off" value="#{pf.feeAdjusted}">
                                 <f:convertNumber pattern="#,##0.00"/>                               
                                 <p:ajax event="blur" process="@this" 
-                                        update=":#{p:component('dList')} :#{p:component('tot')}"  
+                                        update=":#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"  
                                         listener="#{bhtSummeryController.changeAdjustedProValue(pf)}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:component('settle')}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
 
@@ -474,7 +474,7 @@
                         </p:panel>
                         <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false"   >
+                                <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false">
                                     <p:printer target="professionalAndFinaBill" ></p:printer>
                                 </p:commandButton> 
                                 <p:commandButton value="Check Intrim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" onclick="onSubmitButton();">
@@ -496,7 +496,7 @@
                                                 </p:panel>-->
                         <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
                             <h:panelGrid columns="1">
-                                <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"   >
+                                <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false">
                                     <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
                                 </p:commandButton>
                             </h:panelGrid>

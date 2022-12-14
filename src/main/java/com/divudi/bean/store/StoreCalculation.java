@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.store;
 
@@ -703,7 +703,7 @@ public class StoreCalculation {
 //
 //        } else {
 //            qty = (ph.getPharmaceuticalBillItem().getQty() + ph.getPharmaceuticalBillItem().getFreeQty()) * item.getDblValue();
-//            //      //////System.out.println("sssssss " + qty);
+//            //      //////// // System.out.println("sssssss " + qty);
 //        }
 //
 //        if (itb.getId() != null) {

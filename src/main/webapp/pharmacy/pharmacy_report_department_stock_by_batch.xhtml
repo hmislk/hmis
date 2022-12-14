@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -28,14 +28,14 @@
                             <p:spacer width="10" height="1" ></p:spacer>
                             <p:commandButton ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentStocks()}" ></p:commandButton>
                             <p:commandButton value="PDF" ajax="false" >
-                                <pe:exporter type="pdf" target="tbl" fileName="MessagesAndDetails"  
-                                             datasetPadding="4"/>  
+                                <p:dataExporter type="pdf" target="tbl" fileName="MessagesAndDetails"  
+                                             />  
                             </p:commandButton>
                             <p:commandButton value="Excel" ajax="false">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Total_Stock"
-                                             facetBackground="#008000" facetFontSize="15" 
-                                             facetFontColor="#FFFFFF" facetFontStyle="BOLD" cellFontColor="#0000FF" cellFontSize="12"  cellFontStyle="NORMAL" 
-                                             fontName="Courier New" />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Total_Stock"
+                                               
+                                                   
+                                              />
                             </p:commandButton>
 
 

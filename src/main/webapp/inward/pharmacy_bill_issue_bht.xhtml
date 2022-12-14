@@ -82,7 +82,7 @@
                                             <p:column>
                                                 <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                             </p:column>
-                                            <p:ajax event="itemSelect" process="acPt2" update="#{p:component('gpDetail')}" />
+                                            <p:ajax event="itemSelect" process="acPt2" update="#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
                                         </p:autoComplete>  
 
                                     </p:panel>
@@ -139,14 +139,14 @@
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quantity" ></p:outputLabel>
-                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleBhtController.qty}" style="width: 50px!important;"   >
+                                            <p:inputText autocomplete="off"  accesskey="q"   id="txtQty" value="#{pharmacySaleBhtController.qty}" style="width: 50px!important;">
                                                 <p:ajax event="keyup"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                                 <p:ajax event="blur"  listener="#{pharmacySaleBhtController.calculateBillItemListner}" process="acStock txtQty"></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:component('tblBillItem')} acStock focusItem :#{p:component('panelError')} " onclick="onSubmitButton();"  ></p:commandButton>
+                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} " onclick="onSubmitButton();"  ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -234,7 +234,7 @@
                         </div>
 
                         <!--                        <div >
-                                                    <h:panelGroup   id="gpBillPreview"   > 
+                                                    <h:panelGroup   id="gpBillPreview"> 
                                                         <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
                                                     </h:panelGroup>
                                                 </div>-->

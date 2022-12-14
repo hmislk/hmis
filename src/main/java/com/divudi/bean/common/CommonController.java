@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
 
@@ -14,7 +14,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Pattern;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -75,9 +74,9 @@ public class CommonController implements Serializable {
     public Date getDateAfterThreeMonthsCurrentDateTime() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
-//        //System.out.println("1.cal.getTime() = " + cal.getTime());
+//        //// // System.out.println("1.cal.getTime() = " + cal.getTime());
         cal.add(Calendar.MONTH, 3);
-//        //System.out.println("2.cal.getTime() = " + cal.getTime());
+//        //// // System.out.println("2.cal.getTime() = " + cal.getTime());
         return cal.getTime();
     }
 
@@ -207,7 +206,7 @@ public class CommonController implements Serializable {
     public Date getConvertDateTimeFormat24(String dateString) throws ParseException {
         DateFormat d = new SimpleDateFormat("yyyy-MM-dd");
         Date date = d.parse(dateString);
-//        //System.out.println("date = " + date +" ~ dateString = " + dateString);
+//        //// // System.out.println("date = " + date +" ~ dateString = " + dateString);
         return date;
     }
 
@@ -215,7 +214,7 @@ public class CommonController implements Serializable {
         String s = "";
         NumberFormat myFormatter = new DecimalFormat("##0.00");
         s = myFormatter.format(d);
-//        //System.out.println("s = " + s);
+//        //// // System.out.println("s = " + s);
         return s;
     }
     

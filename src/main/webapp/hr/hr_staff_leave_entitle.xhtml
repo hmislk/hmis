@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -67,7 +67,7 @@
                                 </p:calendar>
                                 
                                 <h:outputLabel value="Leave Type : "/>
-                                <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}"   >
+                                <p:selectOneMenu value="#{staffLeaveEntitleController.current.leaveType}">
                                     <f:selectItem itemLabel="Select Leave Type"/>
                                     <f:selectItems value="#{enumController.leaveType}"/>
                                 </p:selectOneMenu>
@@ -95,7 +95,7 @@
                             <h:outputLabel value="To Date : "/>
                             <p:calendar id="to" value="#{staffLeaveEntitleController.toDate}"/>
                             <h:outputLabel value="Leave Type : "/>
-                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}"   >
+                            <p:selectOneMenu value="#{staffLeaveEntitleController.leaveType}">
                                 <f:selectItem itemLabel="Select Leave Type"/>
                                 <f:selectItems value="#{enumController.leaveType}"/>
                             </p:selectOneMenu>                                                       
@@ -137,7 +137,7 @@
                     <h:panelGrid columns="3">                           
                         <p:commandButton ajax="false" value="Search " action="#{staffLeaveEntitleController.createAllItems()}" /> 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb4" fileName="hr_staff_leave_entitle"  />
+                            <p:dataExporter type="xlsx" target="tb4" fileName="hr_staff_leave_entitle"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="staffleaveentitie" ></p:printer>

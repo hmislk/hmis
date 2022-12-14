@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -36,7 +36,7 @@
                                         value="#{channelReportTempController.reportKeyWord.staff}" id="scStaff"
                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                        converter="stfcon" rendered="#{!channelReportTempController.paid}"   >                                            
+                                        converter="stfcon" rendered="#{!channelReportTempController.paid}">                                            
                         </p:autoComplete>
                         <h:outputLabel value="Specility" rendered="#{!channelReportTempController.paid}"/>
                         <au:completeSpeciality value="#{channelReportTempController.reportKeyWord.speciality}" rendered="#{!channelReportTempController.paid}" />
@@ -56,7 +56,7 @@
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tbl1" fileName="Channel_Count"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Channel_Count"  />
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>

@@ -1,7 +1,7 @@
 
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data;
 
@@ -236,6 +236,8 @@ public enum BillType {
                 return "Channel";
             case XrayScan:
                 return "X-Ray and Scan";
+            case InwardFinalBill:
+                return "Inward Final Bill";
 
         }
 

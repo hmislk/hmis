@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
         <h:form>
@@ -17,7 +17,7 @@
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
                         <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
                                          completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                         converter="specilityCon"   >
+                                         converter="specilityCon">
                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
                         </p:autoComplete>
 
@@ -26,7 +26,7 @@
                         <h:outputLabel  value="Doctor" ></h:outputLabel>
                         <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                          converter="stfcon"   >   
+                                          converter="stfcon">   
                         </p:autoComplete>  
                         <p:commandButton value="Fill Shedules" action="#{channelReportTempController.createStaffShedules()}" ajax="false" />
                         <h:panelGroup >
@@ -34,7 +34,7 @@
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <pe:exporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
                             </p:commandButton>
                         </h:panelGroup>
                     </h:panelGrid>

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.report;
 
@@ -398,7 +398,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     public List<DailyCash> getDailyCredit() {
-        // //////System.out.println("Starting : ");
+        // //////// // System.out.println("Starting : ");
         if (dailyCash == null) {
             dailyCash = new ArrayList<>();
 
@@ -539,7 +539,7 @@ public class CreditSummeryController implements Serializable {
     }
 
     public List<DailyCredit> getDailyCreditByBill() {
-        // //////System.out.println("Starting : ");
+        // //////// // System.out.println("Starting : ");
         if (dailyCredit == null) {
             dailyCredit = new ArrayList<>();
 

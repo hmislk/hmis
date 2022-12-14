@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -43,7 +43,7 @@
                             </p:commandButton>
 
                             <p:commandButton actionListener="#{channelReportController.createAgentBookings()}" ajax="false" value="Excel" styleClass="noPrintButton">
-                                <pe:exporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
+                                <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
                             </p:commandButton>
                         </h:panelGrid>
                     </h:panelGrid> 

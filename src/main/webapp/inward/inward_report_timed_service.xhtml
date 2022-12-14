@@ -6,7 +6,7 @@
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:pe="http://primefaces.org/ui/extensions">
+                >
 
 
     <ui:define name="content">
@@ -47,7 +47,7 @@
                         </p:commandButton>
 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardTimedItemController.createTimeServiceList}">
-                            <pe:exporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
+                            <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
                         </p:commandButton>
                     </p:panel>
                     <p:panel header="Timed Sevice" id="gpBillPreview">                          
@@ -95,7 +95,7 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Start Time"/>
                                 </f:facet>
-                                <h:outputLabel value="#{ti.fromTime}"   >
+                                <h:outputLabel value="#{ti.fromTime}">
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>                               
@@ -103,7 +103,7 @@
                                 <f:facet name="header">
                                     <p:outputLabel value="Stopped Time"/>
                                 </f:facet>
-                                <h:outputLabel value="#{ti.toTime}"   >
+                                <h:outputLabel value="#{ti.toTime}">
                                     <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a" />
                                 </h:outputLabel>
                             </p:column>

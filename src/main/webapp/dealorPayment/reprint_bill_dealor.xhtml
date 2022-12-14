@@ -40,7 +40,7 @@
                         <p:commandButton value="Print" ajax="false" action="#" disabled="#{dealorPaymentBillSearch.bill.billType eq 'GrnPaymentPre'}" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>                    
-                        <p:panel   id="gpBillPreview"   >
+                        <p:panel   id="gpBillPreview">
 
                             <bi:grn_payment billItems="#{dealorPaymentBillSearch.billItems}" bill="#{dealorPaymentBillSearch.bill}"/>  
 

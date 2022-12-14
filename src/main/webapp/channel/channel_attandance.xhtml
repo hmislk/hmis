@@ -8,7 +8,7 @@
                 xmlns:ch="http://java.sun.com/jsf/composite/channel"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete"
-                xmlns:poue="http://primefaces.org/ui/extensions">
+                >
 
     <ui:define name="content">
 
@@ -19,7 +19,8 @@
                 <h:panelGrid columns="1"  id="panSpeciality" styleClass="noBorderGrid1">
                     <p:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="width: 176px;" placeholder="Specialities" >
                         <f:ajax execute="txtSearch" render="acSpeciality" event="keyup" />
-                        <p:ajax  event="keyup" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
+                        <p:ajax  event="keyup" process="@this" 
+                                 update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId} :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForSpecilitySelectedText}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch')).keypress(function (event) {
@@ -39,17 +40,17 @@
                                   var="spe" 
                                   selectionMode="single" 
                                   style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
-                        <p:ajax  event="rowSelect" process="@this" update=":#{p:component('scStaff')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
+                        <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('scStaff',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffListForRowSelectNew}"/> 
                         <p:column style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;" >
                             <h:outputText id="lblSpeName" value="#{spe.name}" ></h:outputText>
-                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"   ></p:tooltip>
+                            <p:tooltip for="lblSpeName" value="#{spe.name}"  showDelay="0" hideDelay="0"></p:tooltip>
                         </p:column>
                     </p:dataTable>
                 </h:panelGrid>
 
                 <h:panelGroup id="scStaff" >
                     <p:inputText autocomplete="off" id="txtSearch2" value="#{bookingController.selectTextConsultant}" style="width: 176px;margin-left: 2px;" placeholder="Consultant" >
-                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblCon')} :#{p:component('panSpeciality')}  :#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerStaffRowSelect}"/> 
+                        <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblCon',view).clientId} :#{p:resolveFirstComponentWithId('panSpeciality',view).clientId}  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerStaffRowSelect}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch2')).keypress(function (event) {
@@ -73,7 +74,7 @@
                         </p:column>
                         <p:ajax  event="rowSelect" 
                                  process="@this" 
-                                 update=":#{p:component('tblSessionsOfSelectedConsultant')}"  
+                                 update=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}"  
                                  listener="#{bookingController.listnerServiceSessionListForRowSelectNew}"/>
                     </p:dataTable>
 
@@ -83,7 +84,7 @@
 
                 <h:panelGroup >
                     <p:inputText autocomplete="off" id="txtSearch3" value="#{bookingController.selectTextSession}" style="width: 176px;margin-left: 2px;" placeholder="Session" >
-                        <f:ajax  event="keyup" execute="@this" render=":#{p:component('tblSessionsOfSelectedConsultant')}" listener="#{bookingController.listnerSessionRowSelect}"/> 
+                        <f:ajax  event="keyup" execute="@this" render=":#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" listener="#{bookingController.listnerSessionRowSelect}"/> 
                     </p:inputText>
                     <h:outputScript>
                         $(document.getElementById('form:txtSearch3')).keypress(function (event) {
@@ -103,7 +104,7 @@
                                  scrollHeight="300"
                                  style="min-height: 300px; max-width: 500px;">
                         <p:ajax event="rowSelect" process="@this tblSessionsOfSelectedConsultant" 
-                                update=":#{p:component('panelArrivals')}"
+                                update=":#{p:resolveFirstComponentWithId('panelArrivals',view).clientId}"
                                 listener="#{bookingController.findArrivals}" />
 
                         <p:column id="colText" headerText="Session" style="text-wrap: none;"  rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}">
@@ -187,7 +188,7 @@
                     <h:panelGroup rendered="#{bookingController.arrivalRecord eq null}" >
                         <h:outputText value="NOT YET ARRIVED." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Arrival" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" 
+                        <p:commandButton value="Mark Arrival" update="panelArrivals :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" action="#{bookingController.markAsArrived()}" 
                                          onclick="if (!confirm('Are you sure you want to Mark this Session as arival?'))
                                                 return false;">
                         </p:commandButton>
@@ -201,7 +202,7 @@
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Departure" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsLeft()}" 
+                        <p:commandButton value="Mark Departure" update="panelArrivals :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" action="#{bookingController.markAsLeft()}" 
                                          onclick="if (!confirm('Are you sure you want to Mark this Session as Departure?'))
                                                 return false;"></p:commandButton>
                     </h:panelGroup>
@@ -221,7 +222,7 @@
                         </h:outputText>
                         <h:outputText value="." ></h:outputText>
                         <br/>
-                        <p:commandButton value="Mark Arrival Again" update="panelArrivals :#{p:component('tblSessionsOfSelectedConsultant')}" action="#{bookingController.markAsArrived()}" 
+                        <p:commandButton value="Mark Arrival Again" update="panelArrivals :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId}" action="#{bookingController.markAsArrived()}" 
                                          onclick="if (!confirm('Are you sure you want to Mark this Session as arival again?'))
                                                 return false;"></p:commandButton>
                     </h:panelGroup>

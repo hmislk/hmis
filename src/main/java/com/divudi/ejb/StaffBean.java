@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 
 package com.divudi.ejb;
@@ -23,7 +23,7 @@ public class StaffBean {
     
     public void updateStaffCredit(Staff staff, double value) {
         if(staff==null || staff.getId()==null){
-         //   ////System.out.println("Staff Null or Not previously persisted.");
+         //   ////// // System.out.println("Staff Null or Not previously persisted.");
             return;
         }
         staff.setAnnualWelfareUtilized(staff.getAnnualWelfareUtilized() + value);

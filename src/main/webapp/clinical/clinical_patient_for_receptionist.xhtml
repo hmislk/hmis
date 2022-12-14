@@ -30,14 +30,14 @@
                                         <p:commandButton id="btnAddPt" 
                                                          style="float: right;" 
                                                          value="Add New Patient" process="btnAddPt" 
-                                                         update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
+                                                         update="acPt :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('patientDetail',view).clientId} " 
                                                          action="#{patientController.prepareAdd()}" onclick="onSubmitButton();" >
                                         </p:commandButton>
 
                                         <p:commandButton id="btnDeletePt" 
                                                          style="float: right;" 
                                                          value="Delete" process="btnDeletePt" 
-                                                         update="acPt :#{p:component('panelDetails')} :#{p:component('patientDetail')} " 
+                                                         update="acPt :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('patientDetail',view).clientId} " 
                                                          action="#{patientController.delete()}" onclick="onSubmitButton();" 
                                                          rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
@@ -75,7 +75,7 @@
                                                     <f:convertDateTime pattern="dd MMMM yyyy"/>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:component('panelDetails')} :#{p:component('panelQueue')} " 
+                                            <f:ajax event="itemSelect" execute="acPt" render=":#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelQueue',view).clientId} " 
                                                     listener="#{patientController.patientSelected}"/>
                                         </p:autoComplete>
 
@@ -128,12 +128,12 @@
                                     <p:dataTable id="bSession" value="#{practiceBookingController.billSessions}" var='bs'
                                                  selectionMode="single" rowKey="#{bs.id}"
                                                  selection="#{practiceBookingController.selectedBillSession}">
-                                        <!--<p:ajax event="rowSelect" process="@this" update=":#{p:component('detail')}" />-->  
+                                        <!--<p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" />-->  
 
                                         <p:column headerText="No">#{bs.serialNo}</p:column>
                                         <p:column headerText="Patient Name">#{bs.bill.patient.person.nameWithTitle}</p:column>
                                         <p:column headerText="Actions">
-                                            <p:commandButton value="View Patient" process="bSession" update=":#{p:component('panelSearch')} :#{p:component('panelDetails')} " onclick="onSubmitButton();" >
+                                            <p:commandButton value="View Patient" process="bSession" update=":#{p:resolveFirstComponentWithId('panelSearch',view).clientId} :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} " onclick="onSubmitButton();" >
                                                 <f:setPropertyActionListener value="#{bs.bill.patient}" target="#{patientController.current}" >
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
@@ -152,7 +152,7 @@
 
                             </h:panelGroup>
 
-                            <p:panel id="panelDetails"   >
+                            <p:panel id="panelDetails">
                                 <f:facet name="header" >
                                     <h:outputLabel value="Details of Selected Patient" />
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />

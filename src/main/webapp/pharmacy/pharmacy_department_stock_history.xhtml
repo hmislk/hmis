@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -35,7 +35,7 @@
                                                 itemValue="#{d}"
                                                 value="#{stockHistoryController.department}"
                                                  converter="departmentConverter" >
-                                    <f:ajax event="itemSelect" execute="@this" render=":#{p:component('tblHistories')}" ></f:ajax>
+                                    <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></f:ajax>
                                 </p:autoComplete>
 
                                 <p:commandButton ajax="false" 
@@ -70,10 +70,10 @@
                                 </p:selectOneMenu>
 
                                 <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithZero()}" 
-                                                 value="Display History" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
+                                                 value="Display History" process="@this :#{p:resolveFirstComponentWithId('tblDates',view).clientId}" update=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></p:commandButton>
                                                  
                                 <p:commandButton id="btnHx2" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithOutZero()}" 
-                                                 value="Display History(Stock With Out Zero)" process="@this :#{p:component('tblDates')}" update=":#{p:component('tblHistories')}" ></p:commandButton>
+                                                 value="Display History(Stock With Out Zero)" process="@this :#{p:resolveFirstComponentWithId('tblDates',view).clientId}" update=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></p:commandButton>
 
 
 
@@ -91,7 +91,7 @@
                                 <p:printer target="panelPrint" />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" action="#" >
-                                <pe:exporter type="xlsx" target="tblHistories" fileName="Pharmacy_Stock_Report"   />
+                                <p:dataExporter type="xlsx" target="tblHistories" fileName="Pharmacy_Stock_Report"   />
                             </p:commandButton>
                         </h:panelGrid>
 

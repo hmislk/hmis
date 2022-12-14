@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity;
 
@@ -48,10 +48,10 @@ public class Patient implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-    @ManyToOne
-    WebUser editer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date editedAt;
+//    @ManyToOne
+//    WebUser editer;
+//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+//    Date editedAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -331,21 +331,21 @@ public class Patient implements Serializable {
         this.createdAt = createdAt;
     }
 
-    public WebUser getEditer() {
-        return editer;
-    }
-
-    public void setEditer(WebUser editer) {
-        this.editer = editer;
-    }
-
-    public Date getEditedAt() {
-        return editedAt;
-    }
-
-    public void setEditedAt(Date editedAt) {
-        this.editedAt = editedAt;
-    }
+//    public WebUser getEditer() {
+//        return editer;
+//    }
+//
+//    public void setEditer(WebUser editer) {
+//        this.editer = editer;
+//    }
+//
+//    public Date getEditedAt() {
+//        return editedAt;
+//    }
+//
+//    public void setEditedAt(Date editedAt) {
+//        this.editedAt = editedAt;
+//    }
 
     public boolean isRetired() {
         return retired;

@@ -1,7 +1,7 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Open Hospital Management Information System
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.data.hr;
 
@@ -367,7 +367,7 @@ public class ReportKeyWord {
         }
 
         String arr[] = address.split(",");
-        ////System.out.println(arr);
+        ////// // System.out.println(arr);
         if (arr == null) {
             return;
         }
@@ -377,7 +377,7 @@ public class ReportKeyWord {
             transAddress3 = arr[2];
             transAddress4 = arr[3];
         } catch (Exception e) {
-            ////System.out.println(e.getMessage());
+            ////// // System.out.println(e.getMessage());
         }
 
     }

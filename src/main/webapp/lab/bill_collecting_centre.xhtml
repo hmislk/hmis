@@ -65,7 +65,7 @@
                                                     <h:outputLabel rendered="#{labBillCollectingController.searchedPatient!=null}" value="#{labBillCollectingController.searchedPatient.person.sex}" ></h:outputLabel>
                                                     <h:outputLabel  rendered="#{labBillCollectingController.searchedPatient!=null}" value="DOB"  />
 
-                                                    <h:outputLabel rendered="#{labBillCollectingController.searchedPatient!=null}" value="#{labBillCollectingController.searchedPatient.person.dob}"   >
+                                                    <h:outputLabel rendered="#{labBillCollectingController.searchedPatient!=null}" value="#{labBillCollectingController.searchedPatient.person.dob}">
                                                         <f:convertDateTime pattern="dd/MM/yy" />
                                                     </h:outputLabel>
 
@@ -129,7 +129,7 @@
                                         <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:component('cmbDoc')}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();" onclick="onSubmitButton();" >
+                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();" onclick="onSubmitButton();" >
                                         </p:commandButton>
 
                                     </h:panelGrid>  
@@ -143,7 +143,7 @@
                                         <p:tab title="Refering Doctor">
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{labBillCollectingController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
-                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:component('panDoc')}" />  
+                                            <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                         </p:tab>
                                                                       
                                         <p:tab title="Staff">
@@ -208,7 +208,7 @@
                                                 <p:column>
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:inputText autocomplete="off" id="txtFeeVal" value="#{bif.feeValue}" disabled="#{!bif.billItem.item.userChangable}" >
-                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:component('tblRequests')}  :#{p:component('pBillDetails')}" listener="#{labBillCollectingController.feeChanged}" />
+                                                        <f:ajax event="keyup" execute="txtFeeVal" render=" :#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" listener="#{labBillCollectingController.feeChanged}" />
                                                     </h:inputText>
                                                 </p:column>
 
@@ -298,7 +298,7 @@
                 <div >
 
 
-                    <h:panelGroup   id="gpBillPreview"   >
+                    <h:panelGroup   id="gpBillPreview">
 
 
 
@@ -359,7 +359,7 @@
 
 
                                 <div class="itemsPrinting" >
-                                    <h:dataTable value="#{labBillCollectingController.lstBillEntries}" var="bip"   >
+                                    <h:dataTable value="#{labBillCollectingController.lstBillEntries}" var="bip">
                                         <h:column >
                                             <h:outputLabel rendered="#{bip.billItem.item.department.id eq bill.toDepartment.id}" value="#{bip.billItem.item.printName}" style="margin: 4px; font-size: 11px!important;" >
                                             </h:outputLabel>

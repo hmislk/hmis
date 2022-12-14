@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.ejb;
 
@@ -18,10 +18,8 @@ import com.divudi.entity.ServiceSession;
 import com.divudi.entity.ServiceSessionLeave;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Staff;
-import com.divudi.entity.channel.ArrivalRecord;
 import com.divudi.facade.BillFeeFacade;
 import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.ServiceSessionLeaveFacade;
 import com.divudi.facade.SessionNumberGeneratorFacade;
@@ -235,7 +233,7 @@ public class ChannelBean {
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        ////////System.out.println("Specific Count : " + sessionDayCount);
+                        ////////// // System.out.println("Specific Count : " + sessionDayCount);
                         serviceSessions.add(newSs);
 
                         if (tmp != ss.getSessionWeekday()) {
@@ -262,7 +260,7 @@ public class ChannelBean {
                         newSs.setStaff(ss.getStaff());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        // //////System.out.println("Count : " + sessionDayCount);
+                        // //////// // System.out.println("Count : " + sessionDayCount);
 
                         serviceSessions.add(newSs);
 
@@ -361,13 +359,13 @@ public class ChannelBean {
                         newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, nowDate));
                         newSs.setDeactivated(false);
                         newSs.setStaff(ss.getStaff());
-//                        //System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
-//                        //System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
-//                        //System.out.println("newSs.getDepartment() = " + newSs.getDepartment());
-//                        //System.out.println("newSs.getInstitution() = " + newSs.getInstitution());
+//                        //// // System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+//                        //// // System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
+//                        //// // System.out.println("newSs.getDepartment() = " + newSs.getDepartment());
+//                        //// // System.out.println("newSs.getInstitution() = " + newSs.getInstitution());
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        ////////System.out.println("Specific Count : " + sessionDayCount);
+                        ////////// // System.out.println("Specific Count : " + sessionDayCount);
                         createdSessions.add(newSs);
 
                         if (!Objects.equals(tmp, ss.getSessionWeekday())) {
@@ -402,19 +400,19 @@ public class ChannelBean {
                         newSs.setId(ss.getId());
                         newSs.setDepartment(ss.getDepartment());
                         newSs.setInstitution(ss.getInstitution());
-//                        //System.out.println("newSs.getDepartment() 2= " + newSs.getDepartment());
-//                        //System.out.println("newSs.getInstitution() 2= " + newSs.getInstitution());
+//                        //// // System.out.println("newSs.getDepartment() 2= " + newSs.getDepartment());
+//                        //// // System.out.println("newSs.getInstitution() 2= " + newSs.getInstitution());
                         newSs.setSessionAt(nowDate);
                         newSs.setDisplayCount(getBillSessionsCount(ss, nowDate));
                         newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(ss, nowDate));
                         newSs.setTransCreditBillCount(getBillSessionsCountCrditBill(ss, nowDate));
-//                        //System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
-//                        //System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
+//                        //// // System.out.println("getBillSessionsCountWithOutCancelRefund(ss, nowDate) = " + getBillSessionsCountWithOutCancelRefund(ss, nowDate));
+//                        //// // System.out.println("getBillSessionsCountCrditBill(ss, nowDate) = " + getBillSessionsCountCrditBill(ss, nowDate));
                         newSs.setStaff(ss.getStaff());
                         newSs.setSessionDate(nowDate);
                         //Temprory
                         newSs.setRoomNo(rowIndex++);
-                        // //////System.out.println("Count : " + sessionDayCount);
+                        // //////// // System.out.println("Count : " + sessionDayCount);
 //                        System.err.println("@@@45");
                         createdSessions.add(newSs);
 //                        System.err.println("@@@46");
@@ -631,7 +629,7 @@ public class ChannelBean {
 //                            System.err.println("Cretate New");
                                 newSs = createServiceSessionForChannelShedule(ss, nowDate);
                             }
-//                        //System.out.println("newSs = " + newSs);
+//                        //// // System.out.println("newSs = " + newSs);
                             //Temprory
                             newSs.setDisplayCount(getBillSessionsCount(newSs, nowDate));
                             newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
@@ -694,7 +692,7 @@ public class ChannelBean {
 //                            System.err.println("Cretate New");
                                 newSs = createServiceSessionForChannelShedule(ss, nowDate);
                             }
-//                        //System.out.println("newSs = " + newSs);
+//                        //// // System.out.println("newSs = " + newSs);
                             //Temprory
                             newSs.setDisplayCount(getBillSessionsCount(newSs, nowDate));
                             newSs.setTransDisplayCountWithoutCancelRefund(getBillSessionsCountWithOutCancelRefund(newSs, nowDate));
@@ -794,7 +792,7 @@ public class ChannelBean {
     }
 
     public List<ServiceSession> fetchCreatedServiceSessions(Staff s, Date fd, Date td) {
-        //System.out.println("fetchCreatedServiceSessions");
+        //// // System.out.println("fetchCreatedServiceSessions");
         String sql;
         Map m = new HashMap();
         List<ServiceSession> tmp = new ArrayList<>();
@@ -810,7 +808,7 @@ public class ChannelBean {
         m.put("class", ServiceSession.class);
         try {
             tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 14);
-            //System.out.println("m = " + m);
+            //// // System.out.println("m = " + m);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -857,7 +855,7 @@ public class ChannelBean {
             newSs.setStaff(ss.getStaff());
             //Temprory
             newSs.setRoomNo(rowIndex++);
-            ////////System.out.println("Specific Count : " + sessionDayCount);
+            ////////// // System.out.println("Specific Count : " + sessionDayCount);
             createdSessions.add(newSs);
 
         }

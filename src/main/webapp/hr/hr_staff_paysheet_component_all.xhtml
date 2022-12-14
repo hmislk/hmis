@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:pe="http://primefaces.org/ui/extensions"
+                
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
@@ -28,7 +28,7 @@
                             </p:selectOneMenu>
                             <h:outputLabel value="From"/>                            
                             <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">
-                                <f:ajax execute="@this" render="#{p:component('frm')}" event="dateSelect"/>
+                                <f:ajax execute="@this" render="#{p:resolveFirstComponentWithId('frm',view).clientId}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
                             <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy"/>
@@ -123,7 +123,7 @@
                         
                           <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_all"  />
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_all"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>

@@ -5,7 +5,7 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions"
+      
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
@@ -38,7 +38,7 @@
                         <p:commandButton ajax="false" value="Finger Print Logged Record All " action="#{hrReportController.createFingerPrintRecordAll()}"/>
                         <p:commandButton ajax="false" value="Finger Print Logged Record " action="#{hrReportController.createFingerPrintRecordLogged()}"/>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                            <pe:exporter type="xlsx" target="tb1" fileName="hr_report_finger_print_record_logged"  />
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_finger_print_record_logged"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>

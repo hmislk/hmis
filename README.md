@@ -1,4 +1,4 @@
-# An Open-Source Hospital Management System Initiated by Dr M H B Ariyaratne
+# Open Hospital Management Information System
 
 ## Title
 
@@ -91,8 +91,6 @@ The features available to different roles of the users are stated in detail in t
 ## Credits 
 Our contributors and Open Source Community for their knowledge and time. Healthcare Institutions provided financial supporters are listed below.
 
-* Galle Cooperative Hospital, Galle, Sri Lanka - 2008 - 2018
-* Ruhunu Hospital, Karapitiya - 2008 - 2019
 * Ruhunu MediHospital, Hambanthota  - 2012 Up to date
 * Arogya Hospital, Tangalle - 2014 Up to date
 * Arogya Channelling Centre, Tangalle -  2010 Up to date
@@ -115,6 +113,8 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * Matara Pharmacy, Galle, 2015 up to date
 * Supipi Medical Centre, Kamburupitiya 2011  up to date
 * Ahangama Medical Centre, Ahangama - 2008 up to date
+* Galle Cooperative Hospital, Galle, Sri Lanka - 2008 - 2018
+* Ruhunu Hospital, Karapitiya - 2008 - 2019
 * Weligama Medical Center, Weligama - 2009  up to date
 * Osethra Medical Centre, Beliatta - 2010 up to date
 * Isuru Medihouse, Hambanthota - 2014  up to date

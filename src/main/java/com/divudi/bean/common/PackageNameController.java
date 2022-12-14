@@ -3,8 +3,8 @@
  *
  * Development and Implementation of Web-based System by ww.divudi.com
  Development and Implementation of Web-based System by ww.divudi.com
- * and
- * a Set of Related Tools
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
@@ -24,7 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
  Informatics)
  */
 @Named
@@ -52,7 +52,7 @@ public  class PackageNameController implements Serializable {
             sql = "select p from Packege p where p.retired=false "
                     + "and (p.inactive=false or p.inactive is null)"
                     + "and (upper(p.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
-            //////System.out.println(sql);
+            //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
         return suggestions;

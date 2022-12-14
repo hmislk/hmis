@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.bean.hr;
 
@@ -243,8 +243,8 @@ public class StaffPaySheetComponentController implements Serializable {
     }
 
     public List<StaffPaysheetComponent> getItems() {
-        //   //////System.out.println("getting Lst ");
-        //   //////System.out.println("Staff  : " + getCurrent().getStaff());
+        //   //////// // System.out.println("getting Lst ");
+        //   //////// // System.out.println("Staff  : " + getCurrent().getStaff());
         if (items == null) {
 
         }

@@ -1,6 +1,6 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
  */
 package com.divudi.entity.lab;
 
@@ -249,13 +249,13 @@ public class PatientInvestigation implements Serializable {
     }
 
     public Boolean getSampleOutside() {
-        //////System.out.println("Getting "+sampleOutside);
+        //////// // System.out.println("Getting "+sampleOutside);
         
         return sampleOutside;
     }
 
     public void setSampleOutside(Boolean sampleOutside) {
-        //////System.out.println("Setting "+sampleOutside);
+        //////// // System.out.println("Setting "+sampleOutside);
         this.sampleOutside = sampleOutside;
     }
 

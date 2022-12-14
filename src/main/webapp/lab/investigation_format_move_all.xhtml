@@ -25,7 +25,7 @@
                                                 completeMethod="#{investigationController.completeInvest}" 
                                                 var="apt" itemLabel="#{apt.name}"
                                                 itemValue="#{apt}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect" process="acPt" update=":#{p:component('pPreview')}"/>
+                                    <p:ajax event="itemSelect" process="acPt" update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                 </p:autoComplete> 
                                 <p:selectBooleanCheckbox itemLabel="Master Items Only" value="#{investigationController.listMasterItemsOnly}">
                                     <p:ajax event="change" process="@this" update="acPt tbl count" />
@@ -105,7 +105,7 @@
                 </h:panelGroup>
 
 
-                <p:panel id="pPreview"   >
+                <p:panel id="pPreview">
                     <f:facet name="header" >
                         <p:panelGrid columns="5" >
                             <p:commandLink ajax="false" value="Print" >
@@ -153,7 +153,7 @@
                                                      rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'Edit_mode'}"  
                                                      value="#{myIi.htmltext}" 
                                                      style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important;"  >
-                                            <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}"   ></f:ajax>
+                                            <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}"></f:ajax>
                                             <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" ></f:ajax>
                                         </p:inputText>
 
@@ -164,7 +164,7 @@
                                                      rendered="#{myIi.retired ne true and investigationItemController.editMode eq 'Move_Mode'}" >
                                             <f:ajax event="keyup" execute="@this keyCode" 
                                                     listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
-                                                    render="gpIi :#{p:component('pDetails')} moveFocus "/>
+                                                    render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
                                         </h:inputText>
 
                                         <p:watermark value="#{myIi.htmltext}" for="txtMove" ></p:watermark>

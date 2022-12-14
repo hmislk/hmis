@@ -13,7 +13,7 @@
             <p:panel rendered="#{!transferIssueController.printPreview}">
 
                 <f:facet name="header" >                                  
-                    <h:panelGrid columns="4"   >
+                    <h:panelGrid columns="4">
                         <f:facet name="header">
                             <h:outputLabel value="Department :#{transferIssueController.requestedBill.department.name}" />
                         </f:facet>
@@ -73,7 +73,7 @@
                             </f:facet>                        
                             <f:facet name="input">  
                                 <p:inputText autocomplete="off" id="qty" value="#{bItm.tmpQty}" >
-                                    <f:ajax event="focus" render=":#{p:component('tab')}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
                                 </p:inputText>
                             </f:facet>
                         </p:cellEditor>

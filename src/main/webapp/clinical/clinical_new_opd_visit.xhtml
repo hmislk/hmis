@@ -4,19 +4,11 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      >
-
+      xmlns:f="http://java.sun.com/jsf/core">
     <h:body>
-
-
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
-
                 <h:form>
-
                     <p:panel >
                         <f:facet name="header" >
                             <div>
@@ -73,7 +65,7 @@
                                                      >
                                         <f:ajax event="keyup" execute="txtComments" ></f:ajax>
                                     </p:inputTextarea>
-                                    <p:watermark forElement="txtComments" value="Write comments here." ></p:watermark>
+                                    <p:watermark for="txtComments" value="Write comments here." ></p:watermark>
                                 </p:panel>
                                 <p:panel header="Diagnosis" styleClass="alignTop" >
                                     <h:panelGrid columns="1" styleClass="alignTop" >
@@ -115,15 +107,8 @@
                                                     <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                 </p:commandButton>
                                             </p:column>
-
                                         </p:dataTable>
-
-
-
-
-
                                     </h:panelGrid>
-
                                 </p:panel>
 
                             </h:panelGroup>
@@ -350,14 +335,14 @@
                                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column  headerText="Bill Type"   >
+                                            <p:column  headerText="Bill Type">
                                                 <h:outputLabel value="#{bill.billType}" ></h:outputLabel>
                                             </p:column>
                                             <p:column  headerText="Consultant"  >
                                                 <h:outputLabel value="#{bill.staff.person.name}" ></h:outputLabel>
                                             </p:column>
 
-                                            <p:column  headerText="Bill Fees"   >
+                                            <p:column  headerText="Bill Fees">
 
                                                 <table >
                                                     <ui:repeat value="#{bill.billFees}" var="tbi" >

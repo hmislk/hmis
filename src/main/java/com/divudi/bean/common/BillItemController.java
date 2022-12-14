@@ -1,10 +1,10 @@
 /*
- * MSc(Biomedical Informatics) Project
+ * Open Hospital Management Information System
  *
- * Development and Implementation of a Web-based Combined Data Repository of
- Genealogical, Clinical, Laboratory and Genetic Data
- * and
- * a Set of Related Tools
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
+ * (94) 71 5812399
+ * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
@@ -22,8 +22,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
- * Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
+ * Acting Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -69,18 +69,18 @@ public class BillItemController implements Serializable {
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
-                ////System.out.println("value = " + value);
-//                ////System.out.println("value.length() = " + value.length());
+                ////// // System.out.println("value = " + value);
+//                ////// // System.out.println("value.length() = " + value.length());
                 return null;
             }
             BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "billItemController");
             if (controller == null) {
-                ////System.out.println("null controller");
+                ////// // System.out.println("null controller");
                 return null;
             }
             if (getKey(value) == null) {
-                ////System.out.println("value null");
+                ////// // System.out.println("value null");
                 return null;
             }
             return controller.findBillItemInListBySerial(getKey(value));
@@ -124,22 +124,22 @@ public class BillItemController implements Serializable {
 //        @Override
 //        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
 //            if (value == null || value.length() == 0) {
-//                ////System.out.println("value = " + value);
-//                ////System.out.println("value.length() = " + value.length());
+//                ////// // System.out.println("value = " + value);
+//                ////// // System.out.println("value.length() = " + value.length());
 //                return null;
 //            }
 //            BillItemController controller = (BillItemController) facesContext.getApplication().getELResolver().
 //                    getValue(facesContext.getELContext(), null, "billItemController");
 //            if (controller == null) {
-//                ////System.out.println("null controller");
+//                ////// // System.out.println("null controller");
 //                return null;
 //            }
 //            if (controller.getFacade() == null) {
-//                ////System.out.println("facade null");
+//                ////// // System.out.println("facade null");
 //                return null;
 //            }
 //            if (getKey(value) == null) {
-//                ////System.out.println("value null");
+//                ////// // System.out.println("value null");
 //                return null;
 //            }
 //            return controller.getFacade().find(getKey(value));

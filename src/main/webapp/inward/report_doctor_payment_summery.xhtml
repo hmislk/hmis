@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/bill"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
 
@@ -24,7 +24,7 @@
                                 <h:outputLabel  value="Speciality" ></h:outputLabel>
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon"   >
+                                                converter="specilityCon">
                                 </p:autoComplete>
                                 <h:outputLabel value="Admission Type : " ></h:outputLabel>
                                 <p:selectOneMenu  id="lstAdmissionType"   
@@ -56,7 +56,7 @@
                             </p:commandButton>
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
-                                <pe:exporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
+                                <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview">

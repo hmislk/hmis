@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+
+                    <p:panel header="Item-vice Adjustments" >
+
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
+                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
+                                            value="#{pharmacyAdjustmentController.fromDepartment}" converter="departmentConverter" >
+                            </p:autoComplete>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                            <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="dd MM yyyy HH:mm:ss a" ></p:calendar>
+                            <h:outputLabel value="To" ></h:outputLabel>
+                            <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="dd MM yyyy HH:mm:ss a" ></p:calendar>
+                        </h:panelGrid>
+
+                        <h:panelGrid columns="3">
+                            <p:commandButton ajax="false" value="Fill" 
+                                             action="#{pharmacyAdjustmentController.fillDepartmentAdjustmentByBillItem()}" ></p:commandButton>
+
+                            <p:commandButton value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                            </p:commandButton>  
+                        </h:panelGrid>
+
+
+                        <h:panelGroup id="gpBillPreview">
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont" 
+                                         value="#{pharmacyAdjustmentController.billItems}" var="i"  
+                                         >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Adjustment List "/>
+                                    <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/> 
+                                    <h:panelGrid columns="4">
+                                        <h:outputLabel value="From  "/>
+                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="To  "/>
+                                        <h:outputLabel value="#{reportsTransfer.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        </h:outputLabel>
+                                    </h:panelGrid>
+                                </f:facet>
+
+                                <p:column headerText="Bill No"
+                                          sortBy="#{i.bill.deptId}"
+                                          filterBy="#{i.bill.deptId}"
+                                          filterMatchMode="contains"
+                                          rendered="false"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill No"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Date/Time"
+                                          filterBy="#{i.bill.createdAt}"
+                                          filterMatchMode="contains"
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Date/Time"/>
+                                    </f:facet>                                    
+                                    <h:outputLabel value="#{i.bill.createdAt}"  >
+                                        <f:convertDateTime pattern="dd/MM/yy hh:mm a" ></f:convertDateTime>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Item">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.item.name}"  >                                      
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Comments"
+                                          sortBy="#{i.bill.comments}"
+                                          filterBy="#{i.bill.comments}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comments"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.comments}" 
+                                                   style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="User"
+                                          sortBy="#{i.bill.creater.webUserPerson.name}"
+                                          filterBy="#{i.bill.creater.webUserPerson.name}"
+                                          filterMatchMode="contains"
+                                          
+                                          >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="User"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.bill.creater.webUserPerson.name}" 
+                                                   style="width: 100px!important;" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Quantity before Adjustment" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Quantity before Adjustment"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stockHistory.stockQty}" >
+                                    </h:outputLabel>
+                                </p:column>
+                                
+                                <p:column headerText="Adjusted Quantity" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Adjusted Quantity"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Purchase Rate Before Adjustment" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Rate Before Adjustment"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Cost Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Current Purchase Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column colspan="6"/>
+                                        <p:column style="text-align: right;" >
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>                                        
+                                    </p:row>
+                                </p:columnGroup>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

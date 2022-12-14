@@ -11,7 +11,7 @@
 
 
     <head>
-
+        <h:outputStylesheet library="css" name="lab.css" />
     </head>
 
     <body>
@@ -57,7 +57,7 @@
                                     <p:outputLabel value="Report Format" ></p:outputLabel>
                                     <p:selectOneMenu  id="mnuCat" value="#{patientReportController.currentPatientReport.reportFormat}"  style="width: 300px!important;">
                                         <f:selectItems  value="#{reportFormatController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax event="change" execute="mnuCat" render=":#{p:component('divPrint')}" />
+                                        <f:ajax event="change" execute="mnuCat" render=":#{p:resolveFirstComponentWithId('divPrint',view).clientId}" />
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <h:panelGrid columns="9" >
@@ -65,8 +65,8 @@
                                                      value="Save" 
                                                      action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:component('tblCals')} :#{p:component('tblFlags')} :#{p:component('divPrint')}"  styleClass="nonPrintBlock"  value="Calculate" 
-                                                     action="#{patientReportController.calculate}" onclick="onSubmitButton();"   >
+                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  styleClass="nonPrintBlock"  value="Calculate" 
+                                                     action="#{patientReportController.calculate}" onclick="onSubmitButton();">
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
@@ -76,7 +76,7 @@
                                     <p:commandButton styleClass="nonPrintBlock" rendered="true"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Sent SMS" 
                                                      action="#{patientReportController.sendSmsForPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    
+
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnSendSms"  
                                                      disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
                                                      action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
@@ -140,7 +140,7 @@
                                         </table>
                                     </p:panel>
                                     <h:panelGroup  
-                                        rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }"   >
+                                        rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType ne 'Microbiology'  and patientReportController.currentPatientReport.containCalculations eq true }">
                                         <p:panel header="Calculations " id="tblCals">
                                             <table >               
                                                 <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" 
@@ -148,7 +148,7 @@
 
                                                             >
 
-                                                    <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}"   >
+                                                    <h:panelGroup   rendered="#{pvcal.investigationItem.ixItemType eq 'Calculation'}">
                                                         <tr>
                                                             <td>
                                                                 <h:outputLabel value="#{pvcal.investigationItem.name}" ></h:outputLabel>
@@ -225,7 +225,7 @@
                                     </p:panel>
                                     <p:panel header="Microbiology"    rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
                                         <f:view contentType="text/html">
-                                           
+
                                             <table >
                                                 <ui:repeat id="tblMicVals" 
                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues }"  
@@ -344,10 +344,10 @@
                                                 <h1>D</h1>
                                                 <h1>E</h1>
                                             </h:panelGroup>
-                                            <p:editor rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
-                                                      value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
+                                            <p:textEditor secure="false"  rendered="#{patientReportController.currentPatientReport.templateItem ne null}" 
+                                                          value="#{patientReportController.currentPatientReport.templateItem.lobValue}" widgetVar="editor" height="650" >
 
-                                            </p:editor>
+                                            </p:textEditor>
                                         </p:panel>
 
                                     </p:panel>
@@ -397,7 +397,7 @@
                         <h:panelGroup  id="divPrint" >
 
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType ne 'Microbiology'}"  >
-                                <div id="divReport"  class="labReport" >
+                                <div id="divReport"  class="labReport" style="position: relative; display: block;" >
                                     <ez:common_report commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                                       patientReport="#{patientReportController.currentPatientReport}"/>
                                     <ui:repeat  value="#{patientReportController.currentPatientReport.patientReportItemValues}" var="prv" >

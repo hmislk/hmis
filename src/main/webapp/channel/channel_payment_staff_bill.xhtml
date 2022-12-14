@@ -6,21 +6,21 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
-
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
-                <h:form>
-                    <h:panelGroup rendered="#{!channelStaffPaymentBillController.printPreview}" styleClass="alignTop" >
-                        <p:panel header="Staff Payments" >
-                            <h:panelGrid columns="1" >
+
+                <h:panelGroup rendered="#{!channelStaffPaymentBillController.printPreview}" styleClass="alignTop" >
+                    <p:panel header="Staff Payments" >
+                        <h:panelGrid columns="1" >
+
+                            <h:form  >
                                 <h:panelGrid columns="2" >
                                     <h:panelGrid columns="2">
                                         <p:outputLabel value="Speciality" />
                                         <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{channelStaffPaymentBillController.speciality}" id="acSpeciality"
                                                         completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                        converter="specilityCon"   >
+                                                        converter="specilityCon">
                                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff" />
                                         </p:autoComplete>
 
@@ -30,7 +30,7 @@
                                                         value="#{channelStaffPaymentBillController.currentStaff}" id="scStaff"
                                                         completeMethod="#{channelStaffPaymentBillController.completeStaff}" var="mys" 
                                                         itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                        converter="stfcon"   >                                            
+                                                        converter="stfcon">                                            
                                             <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
                                                     listener="#{channelStaffPaymentBillController.fillSessions}"></p:ajax>
                                         </p:autoComplete>
@@ -61,21 +61,22 @@
 
 
                                 </h:panelGrid>
+                            </h:form>
 
-
+                            <h:form  >
                                 <p:dataTable id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" rowIndexVar="i" var="bf" rowKey="#{bf.id}" >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
 
                                     <f:ajax  event="rowUnselectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />  
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />  
 
                                     <f:ajax  event="toggleSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
                                     <f:ajax  event="rowSelect" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
-                                             render=":#{p:component('scStaff')}  :#{p:component('lblDue')} :#{p:component('lblPay')} tblFee"  />
+                                             render=":#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId}"  />
 
                                     <p:column selectionMode="multiple" ></p:column>
 
@@ -143,9 +144,12 @@
                                     </p:column>
 
                                 </p:dataTable>
+                            </h:form>
 
 
 
+
+                            <h:form  >
                                 <p:panel id="pTotals"  >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Payment Details" />
@@ -164,27 +168,33 @@
                                 <h:panelGroup >
 
                                     <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                    <p:selectOneMenu  id="cmbPay" style="width: 400px;" value="#{channelStaffPaymentBillController.paymentMethod}" >
+                                    <p:selectOneMenu  id="cmbPay" style="width: 400px;" 
+                                                      value="#{channelStaffPaymentBillController.paymentMethod}" >
                                         <!--<f:selectItem itemLabel="Please select a Payment method" />-->
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBill()}" onclick="onSubmitButton();" >
-                                        <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
+                                    <p:commandButton id="btnPay" ajax="false" value="Pay" 
+                                                     action="#{channelStaffPaymentBillController.settleBill()}" 
+                                                     >
+                                        <f:ajax execute="btnPay cmbPay" render="@all" />
                                     </p:commandButton>
                                 </h:panelGroup>
-                            </h:panelGrid>
-
-                        </p:panel>
-                    </h:panelGroup>
+                            </h:form>
 
 
+                        </h:panelGrid>
 
-                    <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
-                        <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
-                        <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
-                    </h:panelGroup>
-                </h:form>
+                    </p:panel>
+                </h:panelGroup>
+
+
+
+                <h:panelGroup id="gpBillPreview" rendered="#{channelStaffPaymentBillController.printPreview}">
+                    <p:commandButton ajax="false" styleClass="noPrintButton" value="New Bill" action="#{channelStaffPaymentBillController.makenull()}" />
+                    <bi:staffBill_1  controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                </h:panelGroup>
+
 
 
 

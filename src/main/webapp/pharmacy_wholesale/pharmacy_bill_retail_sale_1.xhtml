@@ -88,9 +88,9 @@
                                                         <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:ajax event="focus" process="acStock :#{p:component('cmbPs')} :#{p:component('cmbPs2')}"  ></p:ajax>
-                                                <p:ajax event="itemSelect"   listener="#{pharmacyWholeSaleController1.handleSelect}"  update="txtQty txtRate focusQty :#{p:component('lstReplaceableBatch')}" ></p:ajax>
-                                                <p:ajax event="query" update=":#{p:component('tabI')}" process="acStock"></p:ajax>
+                                                <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}"  ></p:ajax>
+                                                <p:ajax event="itemSelect"   listener="#{pharmacyWholeSaleController1.handleSelect}"  update="txtQty txtRate focusQty :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
+                                                <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
                                             </p:autoComplete>
 
 
@@ -98,16 +98,16 @@
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Quantity" ></p:outputLabel>
-                                            <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacyWholeSaleController1.intQty}" style="width: 50px!important;"   >
-                                                <p:ajax event="keyup"  listener="#{pharmacyWholeSaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
-                                                <p:ajax event="blur"  listener="#{pharmacyWholeSaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" update="txtRate txtVal" ></p:ajax>
+                                            <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacyWholeSaleController1.intQty}" style="width: 50px!important;">
+                                                <p:ajax event="keyup"  listener="#{pharmacyWholeSaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                                <p:ajax event="blur"  listener="#{pharmacyWholeSaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                             </p:inputText>
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                          action="#{pharmacyWholeSaleController1.addBillItemNew()}" 
-                                                          process="@this acStock txtQty :#{p:component('cmbPs')} :#{p:component('cmbPs2')}" 
-                                                          update=":#{p:component('netTotal')} :#{p:component('dis')} :#{p:component('total')} :#{p:component('pBillDetails')} :#{p:component('tblBillItem')} txtRate txtQty acStock focusItem :#{p:component('tabI')} :#{p:component('panelError')}" ></p:commandButton>
+                                                          process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
+                                                          update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:commandButton>
 
                                         <h:panelGrid columns="1" >
                                             <p:outputLabel value="Rate" ></p:outputLabel>
@@ -131,8 +131,8 @@
                                         <p:dataTable id="tblBillItem" value="#{pharmacyWholeSaleController1.preBill.billItems}"
                                                      var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
 
-                                            <p:ajax event="rowEdit" listener="#{pharmacyWholeSaleController1.onEdit}" update="@this gros :#{p:component('pBillDetails')}" />  
-                                            <p:ajax event="rowEditCancel" listener="#{pharmacyWholeSaleController1.onEdit}" update="@this gros :#{p:component('pBillDetails')}" /> 
+                                            <p:ajax event="rowEdit" listener="#{pharmacyWholeSaleController1.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                            <p:ajax event="rowEditCancel" listener="#{pharmacyWholeSaleController1.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
                                             <p:column headerText="Item">
@@ -227,8 +227,8 @@
                                                      selectionMode="single"
                                                      rowKey="#{ri.id}"
                                                      emptyMessage="System can not detect suitable replacements.">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacyWholeSaleController1.makeStockAsBillItemStock()}" ></p:ajax>
-                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:component('acStock')}" listener="#{pharmacyWholeSaleController1.makeStockAsBillItemStock()}" ></p:ajax>
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacyWholeSaleController1.makeStockAsBillItemStock()}" ></p:ajax>
+                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacyWholeSaleController1.makeStockAsBillItemStock()}" ></p:ajax>
                                             <p:column headerText="Item">
                                                 #{ri.itemBatch.item.name}
                                             </p:column>
@@ -266,8 +266,8 @@
                                                      selectionMode="single"
                                                      rowKey="#{si.id}"
                                                      emptyMessage="No items with that name without stocks.">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacyWholeSaleController1.selectReplaceableStocksNew()}" ></p:ajax>
-                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:component('lstReplaceableBatch')}" listener="#{pharmacyWholeSaleController1.selectReplaceableStocksNew()}" ></p:ajax>
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" listener="#{pharmacyWholeSaleController1.selectReplaceableStocksNew()}" ></p:ajax>
+                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" listener="#{pharmacyWholeSaleController1.selectReplaceableStocksNew()}" ></p:ajax>
                                             <p:column headerText="Generic">
                                                 #{si.vmp.name}
                                             </p:column>
@@ -400,7 +400,7 @@
 
                                     <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacyWholeSaleController1.patientSearchTab}" >
                                         <p:ajax event="tabChange"  process="@this"
-                                                update=":#{p:component('cmbPs')} :#{p:component('cmbPs2')} :#{p:component('pBillDetails')}"
+                                                update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                 listener="#{pharmacyWholeSaleController1.onTabChange}" />
 
                                         <p:tab id="tabNewPt" title="New Patient"  >
@@ -419,7 +419,7 @@
                                                 itemValue="#{apt}" size="30"  
                                                 style="width: 400px;"
                                                 disabled="#{pharmacyWholeSaleController1.fromOpdEncounter}">
-                                                <p:ajax event="itemSelect" process="@this" update=":#{p:component('cmbPs')} :#{p:component('cmbPs2')} :#{p:component('pBillDetails')} panSearch"
+                                                <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"
                                                         listener="#{pharmacyWholeSaleController1.searchPatientListener}"/>
                                             </p:autoComplete>  
                                             <h:panelGroup id="panSearch">
@@ -444,7 +444,7 @@
                                                                  converter="institutionConverter" 
                                                                  disabled="#{pharmacyWholeSaleController1.paymentMethod ne 'Credit' }">
 
-                                                    <p:ajax process="scCreditCompany" update=":#{p:component('pBillDetails')}" 
+                                                    <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                             event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                                                 </p:autoComplete>
@@ -475,7 +475,7 @@
                                                         </h:outputLabel>
                                                     </p:column>
 
-                                                    <p:ajax process="scStaff" update=":#{p:component('pBillDetails')}" 
+                                                    <p:ajax process="scStaff" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
                                                             event="itemSelect"  listener="#{pharmacyWholeSaleController1.paymentSchemeChanged}" />
 
                                                 </p:autoComplete>

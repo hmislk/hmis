@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:pe="http://primefaces.org/ui/extensions">
+      >
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -51,7 +51,7 @@
                                 </p:commandButton>
 
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{searchController.createDueFeeTableAll()}">
-                                    <pe:exporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
+                                    <p:dataExporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
                                 </p:commandButton> 
                             </h:panelGrid>
                         </f:facet>
@@ -59,7 +59,7 @@
                         <br/><br/>
 
                         <p:defaultCommand target="btnSearch" />
-                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf"   >
+                        <p:dataTable rowIndexVar="i"  id="tblFee" value="#{searchController.billFees}" var="bf">
                             <f:facet name="header">
                                 <h:outputLabel value="Doctor Payment Due Report OPD"/>
                                 <h:outputLabel value="From : " style="white-space: pre-line"/>
