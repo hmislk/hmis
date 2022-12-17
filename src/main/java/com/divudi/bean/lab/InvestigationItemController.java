@@ -32,6 +32,8 @@ import com.divudi.facade.InvestigationItemValueFacade;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ReportItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -40,6 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -96,6 +100,9 @@ public class InvestigationItemController implements Serializable {
     InvestigationItemValue removingItem;
     InvestigationItemValue addingItem;
     String addingString;
+    
+    private String jsonString;
+    
 
     Investigation copyingFromInvestigation;
     Investigation copyingToInvestigation;
@@ -942,6 +949,25 @@ public class InvestigationItemController implements Serializable {
         toAddNewTest(lastItem);
     }
 
+    
+    public void convertIxToJson(){
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(getCurrent());
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public void convertJsonToIx(){
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            current = mapper.readValue(jsonString, InvestigationItem.class);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     public void toAddNewTest(InvestigationItem lastItem) {
 
         addingNewTest = true;
@@ -1493,7 +1519,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
@@ -1586,16 +1612,13 @@ public class InvestigationItemController implements Serializable {
     public Investigation getCurrentInvestigation() {
         if (currentInvestigation == null) {
             currentInvestigation = new Investigation();
-            //current = null;
         }
-        current = null;
         return currentInvestigation;
     }
 
     public void setCurrentInvestigation(Investigation currentInvestigation) {
         this.currentInvestigation = currentInvestigation;
         listInvestigationItem();
-
     }
 
     public ReportItemFacade getRiFacade() {
@@ -1753,6 +1776,8 @@ public class InvestigationItemController implements Serializable {
     public double getRiColGap() {
         return riColGap;
     }
+    
+    
 
     public void setRiColGap(double riColGap) {
         this.riColGap = riColGap;
@@ -1933,6 +1958,14 @@ public class InvestigationItemController implements Serializable {
 
     public ItemController getItemController() {
         return itemController;
+    }
+
+    public String getJsonString() {
+        return jsonString;
+    }
+
+    public void setJsonString(String jsonString) {
+        this.jsonString = jsonString;
     }
 
     public enum EditMode {

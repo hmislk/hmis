@@ -154,8 +154,7 @@ public class WebContentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from WebContent c "
                 + " where c.retired=:ret "
-                + " and c.name = :q "
-                + " order by c.id desc";
+                + " and c.name=:q ";
         hm.put("q", word);
         hm.put("ret", false);
         list = getFacade().findFirstBySQL(sql, hm);

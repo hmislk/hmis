@@ -17,27 +17,13 @@
 
                         <h:panelGroup rendered="#{investigationItemController.editMode ne 'Move_Mode'}" >
 
-                            <p:panel header="Investigation">
-                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
-                                                value="#{investigationItemController.currentInvestigation}" 
-                                                completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
-                                                var="apt" itemLabel="#{apt.name}" 
-                                                itemValue="#{apt}" size="30" maxResults="10"  style="width: 400px;">
-                                    <p:column headerText="Name" >
-                                        <h:outputLabel value="#{apt.name}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Code" >
-                                        <h:outputLabel value="#{apt.code}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Printing Name" >
-                                        <h:outputLabel value="#{apt.printName}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="Fill Name" >
-                                        <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
-                                    </p:column>
-                                    <p:ajax event="itemSelect" process="acPt" 
-                                            update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
-                                </p:autoComplete> 
+                            <p:panel >
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Investigation - " ></h:outputLabel>
+                                    <p:outputLabel value="#{investigationItemController.currentInvestigation.name}" >
+                                    </p:outputLabel>
+                                </f:facet>
+                                
                                 <p:panel header="Add New ..." >
                                     <h:panelGrid columns="6" >
                                         <p:commandButton id="btnToNewTestFirst" value="Test-1" oncomplete="PF('dlgTest').show();" 
@@ -535,6 +521,20 @@
                                         <p:commandButton value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
                                             <p:fileDownload value="#{investigationItemController.downloadingFile}" />
                                         </p:commandButton>
+                                        
+                                        <p:commandButton value="Download JSON" 
+                                                         ajax="false" 
+                                                         icon="ui-icon-arrowthick-1-s"
+                                                         action="#{investigationItemController.convertIxToJson()}">
+                                        </p:commandButton>
+                                         <p:commandButton value="Upload JSON" 
+                                                         ajax="false" 
+                                                         icon="ui-icon-arrowthick-1-s"
+                                                         action="#{investigationItemController.convertJsonToIx()}">
+                                            
+                                        </p:commandButton>
+                                        
+                                        <h:inputTextarea value="#{investigationItemController.jsonString}" ></h:inputTextarea>
 
 
                                         <script type="text/javascript">
