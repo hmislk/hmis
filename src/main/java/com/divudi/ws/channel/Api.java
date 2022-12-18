@@ -1633,7 +1633,7 @@ public class Api {
     }
 
     private String generateBillNumberDeptId(Bill bill, ServiceSession ss) {
-        String suffix = ss.getDepartment().getDepartmentCode();
+        String suffix = ss.getDepartment().getCode();
         BillClassType billClassType = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);

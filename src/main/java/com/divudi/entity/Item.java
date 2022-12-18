@@ -54,14 +54,15 @@ import javax.persistence.Transient;
 @Entity
 public class Item implements Serializable, Comparable<Item> {
 
-    @JsonIgnore
+//    @JsonIgnore
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
     //
-    @JsonIgnore
+//    @JsonIgnore
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
-    @JsonIgnore
+    
+//    @JsonIgnore
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<ItemFee> itemFeesAuto;
 

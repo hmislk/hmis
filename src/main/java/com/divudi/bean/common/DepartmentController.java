@@ -309,24 +309,6 @@ public class DepartmentController implements Serializable {
         items = null;
     }
 
-    private Boolean checkCodeExist() {
-        String sql = "SELECT i FROM Department i where i.retired=false "
-                + " and i.departmentCode is not null ";
-        List<Department> ins = getEjbFacade().findBySQL(sql);
-        if (ins != null) {
-            for (Department i : ins) {
-                if (i.getDepartmentCode().trim().equals("")) {
-                    continue;
-                }
-                if (i.getDepartmentCode() != null && i.getDepartmentCode().equals(getCurrent().getDepartmentCode())) {
-                    UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public void saveSelected() {
         if (getCurrent() == null || getCurrent().getName().trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a name");
@@ -337,20 +319,9 @@ public class DepartmentController implements Serializable {
             return;
         }
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            if (getCurrent().getDepartmentCode() != null) {
-                getCurrent().setDepartmentCode(getCurrent().getDepartmentCode());
-            }
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated");
         } else {
-            if (getCurrent().getDepartmentCode() != null) {
-                if (!checkCodeExist()) {
-                    getCurrent().setDepartmentCode(getCurrent().getDepartmentCode());
-
-                } else {
-                    return;
-                }
-            }
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
