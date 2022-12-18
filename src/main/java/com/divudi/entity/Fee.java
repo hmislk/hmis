@@ -6,6 +6,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.FeeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -14,6 +15,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -31,10 +33,12 @@ public class Fee implements Serializable {
     //Main Properties
     Long id;
     String name;
-    String sName;
-    String tName;
+    @Lob
+    String description;
+    String code;
     double fee = 0.0;
     double ffee = 0.0;
+    @JsonIgnore
     @ManyToOne
     Item item; // FBC, ESR, UFR
     @ManyToOne
@@ -46,45 +50,63 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
+    @JsonIgnore
     ServiceSession serviceSession;
     private boolean booleanValue;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser editer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date editedAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
+    @JsonIgnore
     String retireComments;
     @Enumerated(EnumType.STRING)
     FeeType feeType;
     // Newly Added Field
     @ManyToOne
+    @JsonIgnore
     Item packege;  //Ceylinco, LEC ,
     @ManyToOne
+    @JsonIgnore
     Department fromDepartment;
     @ManyToOne
+    @JsonIgnore
     Department toDepartment;
+    @JsonIgnore
     @ManyToOne
     Institution fromInstitution;
+    @JsonIgnore
     @ManyToOne
     Institution toInstitution;
+    @JsonIgnore
     @ManyToOne
     Staff fromStaff;
     @ManyToOne
+    @JsonIgnore
     Staff toStaff;
     @ManyToOne
+    @JsonIgnore
     Speciality fromSpeciality;
     @ManyToOne
+    @JsonIgnore
     Speciality toSpaciality;
     private boolean discountAllowed;
 
@@ -207,12 +229,12 @@ public class Fee implements Serializable {
         this.name = name;
     }
 
-    public String getsName() {
-        return sName;
+    public String getDescription() {
+        return description;
     }
 
-    public void setsName(String sName) {
-        this.sName = sName;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public WebUser getEditer() {
@@ -231,12 +253,12 @@ public class Fee implements Serializable {
         this.editedAt = editedAt;
     }
 
-    public String gettName() {
-        return tName;
+    public String getCode() {
+        return code;
     }
 
-    public void settName(String tName) {
-        this.tName = tName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public double getFee() {
@@ -415,7 +437,4 @@ public class Fee implements Serializable {
         this.discountAllowed = discountAllowed;
     }
 
-
-    
-    
 }

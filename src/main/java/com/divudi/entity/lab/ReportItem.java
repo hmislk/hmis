@@ -49,8 +49,8 @@ public class ReportItem implements Serializable {
     Long id;
     //Main Properties
     String name;
-    String tName;
-    String sName;
+    String code;
+    @Lob
     String description;
     int orderNo;
     //Created Properties
@@ -634,21 +634,15 @@ public class ReportItem implements Serializable {
         this.formatString = formatString;
     }
 
-    public String gettName() {
-        return tName;
+    public String getCode() {
+        return code;
     }
 
-    public void settName(String tName) {
-        this.tName = tName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getsName() {
-        return sName;
-    }
-
-    public void setsName(String sName) {
-        this.sName = sName;
-    }
+  
 
 //    public String getCssStyle() {
 //        cssStyle = "top:" + getRiTop() + "%; left:" + getRiLeft()
@@ -973,8 +967,7 @@ public class ReportItem implements Serializable {
 
     public static void copyReportItem(ReportItem fromRi, ReportItem toRi) {
         toRi.name = fromRi.name;
-        toRi.tName = fromRi.tName;
-        toRi.sName = fromRi.sName;
+        toRi.code = fromRi.code;
         toRi.htmltext = fromRi.htmltext;
         toRi.description = fromRi.description;
         toRi.orderNo = fromRi.orderNo;
