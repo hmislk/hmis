@@ -17,6 +17,7 @@ import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
+import com.divudi.java.CommonFunctions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
@@ -49,8 +50,7 @@ public class ReportItem implements Serializable {
     Long id;
     //Main Properties
     String name;
-    String tName;
-    String sName;
+    String code;
     String description;
     int orderNo;
     //Created Properties
@@ -71,6 +71,7 @@ public class ReportItem implements Serializable {
     Date retiredAt;
     @JsonIgnore
     String retireComments;
+    @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     Item item;
     @Enumerated(EnumType.STRING)
@@ -114,12 +115,15 @@ public class ReportItem implements Serializable {
     String cssStyle;
     @Enumerated(EnumType.STRING)
     ReportItemType reportItemType;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Category category;
     int pageNo;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private Item referringItem;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private Category referringCategory;
 
     double riTop;
@@ -134,27 +138,38 @@ public class ReportItem implements Serializable {
     @Lob
     String htmltext;
 
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem testHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem valueHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem unitHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem referenceHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem testLabel;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private ReportItem valueValue;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private ReportItem flagValue;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem unitLabel;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem referenceLabel;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private ReportItem commentLabel;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private InvestigationComponent investigationComponent;
     @Enumerated(EnumType.STRING)
     private DataEntryMethod dataEntryMethod;
@@ -634,20 +649,15 @@ public class ReportItem implements Serializable {
         this.formatString = formatString;
     }
 
-    public String gettName() {
-        return tName;
+    public String getCode() {
+        if (code == null || code.trim().equals("")) {
+
+        }
+        return code;
     }
 
-    public void settName(String tName) {
-        this.tName = tName;
-    }
-
-    public String getsName() {
-        return sName;
-    }
-
-    public void setsName(String sName) {
-        this.sName = sName;
+    public void setCode(String code) {
+        this.code = code;
     }
 
 //    public String getCssStyle() {
@@ -973,8 +983,7 @@ public class ReportItem implements Serializable {
 
     public static void copyReportItem(ReportItem fromRi, ReportItem toRi) {
         toRi.name = fromRi.name;
-        toRi.tName = fromRi.tName;
-        toRi.sName = fromRi.sName;
+        toRi.code = fromRi.code;
         toRi.htmltext = fromRi.htmltext;
         toRi.description = fromRi.description;
         toRi.orderNo = fromRi.orderNo;
