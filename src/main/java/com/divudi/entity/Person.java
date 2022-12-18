@@ -11,6 +11,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.membership.MembershipScheme;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -19,6 +20,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -42,10 +44,10 @@ import org.joda.time.PeriodType;
 @XmlRootElement
 public class Person implements Serializable {
 
-    @OneToOne(mappedBy = "webUserPerson",cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "webUserPerson",cascade = CascadeType.ALL) @JsonIgnore
     private WebUser webUser;
 
-    @OneToMany(mappedBy = "person")
+    @OneToMany(mappedBy = "person",fetch = FetchType.LAZY)
     private List<ClinicalFindingValue> clinicalFindingValues;
 
     static final long serialVersionUID = 1L;
@@ -74,8 +76,8 @@ public class Person implements Serializable {
     Date dob;
 
     //Created Properties
-    @ManyToOne
-    WebUser creater;
+    @ManyToOne @JsonIgnore
+    WebUser creater; @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
 //    @ManyToOne
@@ -83,17 +85,17 @@ public class Person implements Serializable {
 //    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
 //    Date editedAt;
     //Retairing properties
-    boolean retired;
-    @ManyToOne
+     @JsonIgnore boolean retired;
+    @ManyToOne  @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)  @JsonIgnore
+    Date retiredAt; @JsonIgnore
     String retireComments;
-    @ManyToOne
+    @ManyToOne   @JsonIgnore
     Area area;
-    @ManyToOne
+    @ManyToOne  @JsonIgnore
     Institution institution;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Department department;
     @Enumerated(EnumType.STRING)
     Title title;
@@ -103,7 +105,7 @@ public class Person implements Serializable {
     String nameWithTitle;
     boolean foreigner = false;
 
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private MembershipScheme membershipScheme;
 
     @Transient

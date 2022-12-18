@@ -7,6 +7,7 @@
  */
 package com.divudi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -19,42 +20,51 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Entity
 @XmlRootElement
 public class WebUserRole implements Serializable {
-     static final long serialVersionUID = 1L;
+
+    static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-     Long id;
+    Long id;
 
     //Main Properties
     String name;
     String description;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
+    @JsonIgnore
     @ManyToOne
     WebUser retirer;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    @JsonIgnore
     String retireComments;
     //Activation properties
+    @JsonIgnore
     boolean activated;
+    @JsonIgnore
     @ManyToOne
     WebUser activator;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date activatedAt;
+    @JsonIgnore
     String activateComments;
-    
-    
-    
+
     public Long getId() {
         return id;
     }
@@ -159,9 +169,6 @@ public class WebUserRole implements Serializable {
         this.retirer = retirer;
     }
 
-    
-    
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -185,5 +192,5 @@ public class WebUserRole implements Serializable {
     public String toString() {
         return "gov.sp.health.entity.WebUserRole[ id=" + id + " ]";
     }
-    
+
 }

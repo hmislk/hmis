@@ -319,7 +319,7 @@ public class InvestigationItemController implements Serializable {
 
         setCurrentInvestigation(copyingToInvestigation);
 
-        return "/lab/investigation_format";
+        return toEditInvestigationFormat();
 
     }
 
@@ -1619,6 +1619,15 @@ public class InvestigationItemController implements Serializable {
     public void setCurrentInvestigation(Investigation currentInvestigation) {
         this.currentInvestigation = currentInvestigation;
         listInvestigationItem();
+    }
+    
+    public String toEditInvestigationFormat(){
+        if(currentInvestigation==null){
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        listInvestigationItem();
+        return "/lab/investigation_format";
     }
 
     public ReportItemFacade getRiFacade() {

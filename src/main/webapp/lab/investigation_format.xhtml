@@ -534,7 +534,7 @@
                                             
                                         </p:commandButton>
                                         
-                                        <h:inputTextarea value="#{investigationItemController.jsonString}" ></h:inputTextarea>
+                                        <p:inputTextarea class="w-100" value="#{investigationItemController.jsonString}" ></p:inputTextarea>
 
 
                                         <script type="text/javascript">
@@ -681,11 +681,7 @@
                     </p:panel>
                 </h:form>
 
-                <h:form >
-                    <p:panel header="Correct Format from Old Databases" >
-                        <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
-                    </p:panel>
-                </h:form>
+               
             </ui:define>
 
         </ui:composition>

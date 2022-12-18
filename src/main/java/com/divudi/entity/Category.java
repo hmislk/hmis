@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.SymanticHyrachi;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -43,15 +44,18 @@ public class Category implements Serializable {
     int orderNo;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    Date retiredAt;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
+    Date retiredAt; @JsonIgnore
     String retireComments;
     Double dblValue;
     Long longValue;
@@ -59,10 +63,10 @@ public class Category implements Serializable {
     Category parentCategory;
     Double saleMargin = 0.0;
     Double wholeSaleMargin = 0.0;
-    @OneToMany(mappedBy = "category")
+    @OneToMany(mappedBy = "category",fetch = FetchType.LAZY) @JsonIgnore
     List<Item> items;
     String code;
-    @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+    @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH) @JsonIgnore
     List<Category> childCategories;
     @Enumerated
     SymanticHyrachi symanticType;
@@ -83,9 +87,6 @@ public class Category implements Serializable {
     public void setFilled(boolean filled) {
         this.filled = filled;
     }
-    
-    
-    
 
     public String getCategoryClass() {
         return this.getClass().toString();
@@ -315,6 +316,4 @@ public class Category implements Serializable {
         this.department = department;
     }
 
-    
-    
 }

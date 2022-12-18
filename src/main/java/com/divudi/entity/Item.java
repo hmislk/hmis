@@ -24,6 +24,7 @@ import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,13 +54,14 @@ import javax.persistence.Transient;
 @Entity
 public class Item implements Serializable, Comparable<Item> {
 
+    @JsonIgnore
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
     //
-
+    @JsonIgnore
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
-
+    @JsonIgnore
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<ItemFee> itemFeesAuto;
 
@@ -67,6 +69,7 @@ public class Item implements Serializable, Comparable<Item> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     Long id;
     int orderNo;
 
@@ -82,16 +85,21 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     Speciality speciality;
     @ManyToOne
+    @JsonIgnore
     Staff staff;
     @ManyToOne
+    @JsonIgnore
     Institution forInstitution;
     @ManyToOne
+    @JsonIgnore
     Department forDepartment;
     @Enumerated(EnumType.STRING)
     BillType forBillType;
     @ManyToOne
+    @JsonIgnore
     Item billedAs;
     @ManyToOne
+    @JsonIgnore
     Item reportedAs;
     String name;
     String sname;
@@ -103,22 +111,31 @@ public class Item implements Serializable, Comparable<Item> {
     String fullName;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
-    //Retairing properties
+    //Retairing properties 
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
+    @JsonIgnore
     String retireComments;
     //Editer Properties
     @ManyToOne
+    @JsonIgnore
     WebUser editer;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date editedAt;
     @ManyToOne
+    @JsonIgnore
     Item parentItem;
     boolean userChangable;
     @Enumerated(EnumType.STRING)
@@ -203,12 +220,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     String transName;
 
-    
-       @Transient
+    @Transient
     private String transCodeFromName;
-    
-      
-       
+
     public double getVatPercentage() {
         return 0;
     }
@@ -367,10 +381,10 @@ public class Item implements Serializable, Comparable<Item> {
     double totalFee;
     @Transient
     double totalFfee;
-    @Transient
+    @Transient @JsonIgnore
     List<ItemFee> itemFees;
 
-    @Transient
+    @Transient  @JsonIgnore
     private List<ItemFee> itemFeesActive;
 
     public List<ItemFee> getItemFeesAuto() {

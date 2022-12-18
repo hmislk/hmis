@@ -17,6 +17,8 @@ import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -43,6 +45,7 @@ public class ReportItem implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @JsonIgnore
     Long id;
     //Main Properties
     String name;
@@ -52,15 +55,21 @@ public class ReportItem implements Serializable {
     int orderNo;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
+    @JsonIgnore
     String retireComments;
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     Item item;
@@ -105,12 +114,12 @@ public class ReportItem implements Serializable {
     String cssStyle;
     @Enumerated(EnumType.STRING)
     ReportItemType reportItemType;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Category category;
     int pageNo;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private Item referringItem;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private Category referringCategory;
 
     double riTop;
@@ -125,31 +134,31 @@ public class ReportItem implements Serializable {
     @Lob
     String htmltext;
 
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem testHeader;
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem valueHeader;
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem unitHeader;
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem referenceHeader;
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem testLabel;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private ReportItem valueValue;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private ReportItem flagValue;
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem unitLabel;
-    @OneToOne
+    @OneToOne @JsonIgnore
     private ReportItem referenceLabel;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private ReportItem commentLabel;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     private InvestigationComponent investigationComponent;
     @Enumerated(EnumType.STRING)
     private DataEntryMethod dataEntryMethod;
-    
+
     private boolean automated;
     @ManyToOne
     private Machine machine;
@@ -162,18 +171,17 @@ public class ReportItem implements Serializable {
     @ManyToOne
     private InvestigationTube tube;
     private String resultCode;
-    
+
     private boolean canNotApproveIfValueIsEmpty;
     private boolean canNotApproveIfValueIsBelowAbsoluteLowValue;
     private boolean canNotApproveIfValueIsAboveAbsoluteHighValue;
-    
+
     private String emptyValueWarning;
     private String belowAbsoluteWarning;
     private String aboveAbsoluteWarning;
-    
+
     private double absoluteLowValue;
     private double absoluteHighValue;
-    
 
     public CssTextDecoration getCssTextDecoration() {
         return cssTextDecoration;
@@ -402,7 +410,7 @@ public class ReportItem implements Serializable {
     }
 
     public InvestigationItemType getIxItemType() {
-        if(ixItemType==null){
+        if (ixItemType == null) {
             ixItemType = InvestigationItemType.Label;
         }
         return ixItemType;
@@ -1170,6 +1178,4 @@ public class ReportItem implements Serializable {
         this.aboveAbsoluteWarning = aboveAbsoluteWarning;
     }
 
-    
-    
 }

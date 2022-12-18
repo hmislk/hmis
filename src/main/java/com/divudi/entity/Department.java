@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.DepartmentType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -40,33 +41,33 @@ public class Department implements Serializable {
     String telephone2;
     String fax;
     String email;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Institution institution;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Department superDepartment;
     @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Department sampleDepartment;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Department labDepartment;
 
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Institution sampleInstitution;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Institution labInstitution;
 //     double maxDiscount;
 
     //Created Properties
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+  @JsonIgnore   @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
-    boolean retired;
-    @ManyToOne
+  @JsonIgnore   boolean retired;
+  @JsonIgnore   @ManyToOne
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+  @JsonIgnore   @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
 
