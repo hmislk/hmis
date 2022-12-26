@@ -4,13 +4,9 @@
  */
 package com.divudi.data;
 
-/**
- *
- * @author Buddhika
- */
 public enum Sex {
     Male,
     Female,
     Unknown,
-    Other,
+    Other;
 }
