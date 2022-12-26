@@ -1,7 +1,3 @@
-/*
-* Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- */
 package com.divudi.entity;
 
 import com.divudi.data.BillClassType;
@@ -22,6 +18,4 @@ public class PreBill extends Bill implements Serializable {
         billClassType = BillClassType.PreBill;
         qty = 1;
     }
-//    private static final long serialVersionUID = 1L;
-
 }

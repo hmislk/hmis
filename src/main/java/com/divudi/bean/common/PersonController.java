@@ -16,19 +16,21 @@ import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent; import javax.faces.context.FacesContext;
+import javax.faces.component.UIComponent;
+import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class PersonController implements Serializable {
+public class PersonController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -46,13 +48,13 @@ public  class PersonController implements Serializable {
     }
 
     public List<Person> completePerson(String qry) {
-        List<Person> a=null ;
+        List<Person> a = null;
         if (qry != null) {
             a = getFacade().findBySQL("select c from Person c where c.retired=false and "
-                    + "  upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name",20);
+                    + "  upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name", 20);
         }
-        if(a==null){
-            a=new ArrayList<Person>();
+        if (a == null) {
+            a = new ArrayList<Person>();
         }
         return a;
     }
@@ -71,6 +73,14 @@ public  class PersonController implements Serializable {
 
     private void recreateModel() {
         items = null;
+    }
+
+    public void save(Person p) {
+        if (p.getId() == null) {
+            getFacade().create(p);
+        } else {
+            getFacade().edit(p);
+        }
     }
 
     public void saveSelected() {

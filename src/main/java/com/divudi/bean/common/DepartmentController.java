@@ -31,8 +31,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -53,13 +53,12 @@ public class DepartmentController implements Serializable {
 
     List<Department> itemsToRemove;
 
-    
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
         items = getFacade().findBySQL(j);
     }
-    
+
     public String toListDepartments() {
         fillItems();
         return "/admin/departments";
@@ -87,21 +86,20 @@ public class DepartmentController implements Serializable {
         getFacade().edit(current);
         return toListDepartments();
     }
-    
-    public String saveSelectedDepartment(){
-         if (current == null) {
+
+    public String saveSelectedDepartment() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-         if(current.getId()==null){
-             getFacade().create(current);
-         }else{
-             getFacade().edit(current);
-         }
-         return toListDepartments();
+        if (current.getId() == null) {
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        return toListDepartments();
     }
-    
-    
+
     public List<Department> getSearchItems() {
         return searchItems;
     }
@@ -155,7 +153,6 @@ public class DepartmentController implements Serializable {
         }
         return items;
     }
-
 
     public List<Department> listAllDepatrments() {
         List<Department> departments;
@@ -325,6 +322,14 @@ public class DepartmentController implements Serializable {
             }
         }
         return false;
+    }
+
+    public void save(Department dep) {
+        if (dep.getId() == null) {
+            getFacade().create(dep);
+        } else {
+            getFacade().edit(dep);
+        }
     }
 
     public void saveSelected() {
