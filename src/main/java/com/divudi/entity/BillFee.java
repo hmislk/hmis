@@ -213,7 +213,7 @@ public class BillFee implements Serializable {
         return "com.divudi.entity.BillFee[ id=" + id + " ]";
     }
 
-    public void setFeeValue(boolean foriegn) {
+    public void setFeeValueBoolean(boolean foriegn) {
         if (tmpChangedValue != null) {
             this.feeGrossValue = tmpChangedValue;
             this.feeValue = tmpChangedValue;
@@ -356,7 +356,7 @@ public class BillFee implements Serializable {
         }
     }
 
-    public void setFeeValue(boolean foriegn, double discountPercent) {
+    public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
 
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {

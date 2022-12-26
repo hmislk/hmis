@@ -17,8 +17,8 @@ import com.divudi.data.lab.DataEntryMethod;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.WebUser;
+import com.divudi.java.CommonFunctions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.CascadeType;
@@ -72,6 +72,7 @@ public class ReportItem implements Serializable {
     @JsonIgnore
     String retireComments;
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
     Item item;
     @Enumerated(EnumType.STRING)
     InvestigationItemType ixItemType;
@@ -114,12 +115,15 @@ public class ReportItem implements Serializable {
     String cssStyle;
     @Enumerated(EnumType.STRING)
     ReportItemType reportItemType;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Category category;
     int pageNo;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private Item referringItem;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private Category referringCategory;
 
     double riTop;
@@ -134,27 +138,38 @@ public class ReportItem implements Serializable {
     @Lob
     String htmltext;
 
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem testHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem valueHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem unitHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem referenceHeader;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem testLabel;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private ReportItem valueValue;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private ReportItem flagValue;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem unitLabel;
-    @OneToOne @JsonIgnore
+    @OneToOne
+    @JsonIgnore
     private ReportItem referenceLabel;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private ReportItem commentLabel;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     private InvestigationComponent investigationComponent;
     @Enumerated(EnumType.STRING)
     private DataEntryMethod dataEntryMethod;
@@ -635,14 +650,15 @@ public class ReportItem implements Serializable {
     }
 
     public String getCode() {
+        if (code == null || code.trim().equals("")) {
+            code = CommonFunctions.nameToCode(name);
+        }
         return code;
     }
 
     public void setCode(String code) {
         this.code = code;
     }
-
-  
 
 //    public String getCssStyle() {
 //        cssStyle = "top:" + getRiTop() + "%; left:" + getRiLeft()
@@ -736,6 +752,7 @@ public class ReportItem implements Serializable {
         return cssStyle;
     }
 
+    @JsonIgnore
     public String getInnerCssStyle() {
         cssStyle = "";
         if (getRiFontSize() != 0) {
@@ -784,6 +801,7 @@ public class ReportItem implements Serializable {
         return cssStyle;
     }
 
+    @JsonIgnore
     public String getOuterCssStyle() {
         cssStyle = "";
         if (getRiTop() != 0) {

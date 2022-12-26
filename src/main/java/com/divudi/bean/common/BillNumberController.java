@@ -86,9 +86,9 @@ public class BillNumberController {
         }
 
         if (i != null) {
-            result = ins.getInstitutionCode() + suffix + "/" + (i + 1);
+            result = ins.getCode() + suffix + "/" + (i + 1);
         } else {
-            result = ins.getInstitutionCode() + suffix + "/" + 1;
+            result = ins.getCode() + suffix + "/" + 1;
         }
 
         return result;

@@ -291,10 +291,10 @@ public class InstitutionController implements Serializable {
         List<Institution> ins = getEjbFacade().findBySQL(sql);
         if (ins != null) {
             for (Institution i : ins) {
-                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
+                if (i.getCode() == null || i.getCode().trim().equals("")) {
                     continue;
                 }
-                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getCurrent().getInstitutionCode())) {
+                if (i.getCode() != null && i.getCode().equals(getCurrent().getCode())) {
                     UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
@@ -308,10 +308,10 @@ public class InstitutionController implements Serializable {
         List<Institution> ins = getEjbFacade().findBySQL(sql);
         if (ins != null) {
             for (Institution i : ins) {
-                if (i.getInstitutionCode() == null || i.getInstitutionCode().trim().equals("")) {
+                if (i.getCode() == null || i.getCode().trim().equals("")) {
                     continue;
                 }
-                if (i.getInstitutionCode() != null && i.getInstitutionCode().equals(getAgency().getInstitutionCode())) {
+                if (i.getCode() != null && i.getCode().equals(getAgency().getCode())) {
                     UtilityController.addErrorMessage("Insituion Code Already Exist Try another Code");
                     return true;
                 }
@@ -358,21 +358,21 @@ public class InstitutionController implements Serializable {
         }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-
-            if (getCurrent().getInstitutionCode() != null) {
-                getCurrent().setInstitutionCode(getCurrent().getInstitutionCode());
-            }
+//
+//            if (getCurrent().getCode() != null) {
+//                getCurrent().setInstitutionCode(getCurrent().getCode());
+//            }
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            if (getCurrent().getInstitutionCode() != null) {
-                if (!checkCodeExist()) {
-                    getCurrent().setInstitutionCode(getCurrent().getInstitutionCode());
-
-                } else {
-                    return;
-                }
-            }
+//            if (getCurrent().getCode() != null) {
+//                if (!checkCodeExist()) {
+//                    getCurrent().setInstitutionCode(getCurrent().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getCurrent());
@@ -389,20 +389,20 @@ public class InstitutionController implements Serializable {
 
         if (getAgency().getId() != null && getAgency().getId() > 0) {
 
-            if (getAgency().getInstitutionCode() != null) {
-                getAgency().setInstitutionCode(getAgency().getInstitutionCode());
-            }
+//            if (getAgency().getCode() != null) {
+//                getAgency().setInstitutionCode(getAgency().getCode());
+//            }
             getFacade().edit(getAgency());
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            if (getAgency().getInstitutionCode() != null) {
-                if (!checkCodeExistAgency()) {
-                    getAgency().setInstitutionCode(getAgency().getInstitutionCode());
-
-                } else {
-                    return;
-                }
-            }
+//            if (getAgency().getCode() != null) {
+//                if (!checkCodeExistAgency()) {
+//                    getAgency().setInstitutionCode(getAgency().getCode());
+//
+//                } else {
+//                    return;
+//                }
+//            }
             getAgency().setCreatedAt(new Date());
             getAgency().setCreater(getSessionController().getLoggedUser());
             getFacade().create(getAgency());
@@ -569,12 +569,12 @@ public class InstitutionController implements Serializable {
         InstitutionType[] types = {InstitutionType.Agency};
         selectedAgencies = completeInstitution(null, types);
         for (Institution a : selectedAgencies) {
-//            //// // System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //// // System.out.println("a.getCode() = " + a.getCode());
             DecimalFormat df = new DecimalFormat("000");
-            double d = Double.parseDouble(a.getInstitutionCode());
+            double d = Double.parseDouble(a.getCode());
 //            //// // System.out.println("d = " + d);
             a.setInstitutionCode(df.format(d));
-//            //// // System.out.println("a.getInstitutionCode() = " + a.getInstitutionCode());
+//            //// // System.out.println("a.getCode() = " + a.getCode());
             getFacade().edit(a);
         }
     }

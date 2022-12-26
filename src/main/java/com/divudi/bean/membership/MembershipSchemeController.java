@@ -119,7 +119,7 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public void saveSelected() {
-        getCurrent().setInstitution(getSessionController().getInstitution());
+//        getCurrent().setInstitution(getSessionController().getInstitution());
         if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
             JsfUtil.addErrorMessage("Please Select Code Like \"LM\"");
             return;

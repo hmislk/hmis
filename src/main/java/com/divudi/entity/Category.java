@@ -5,6 +5,7 @@
 package com.divudi.entity;
 
 import com.divudi.data.SymanticHyrachi;
+import com.divudi.java.CommonFunctions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
@@ -35,11 +36,10 @@ public class Category implements Serializable {
     static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     Long id;
     //Main Properties
     String name;
-    String tName;
-    String sName;
     String description;
     int orderNo;
     //Created Properties
@@ -52,31 +52,40 @@ public class Category implements Serializable {
     //Retairing properties
     @JsonIgnore
     boolean retired;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
-    Date retiredAt; @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
+    Date retiredAt;
+    @JsonIgnore
     String retireComments;
+    @JsonIgnore
     Double dblValue;
+    @JsonIgnore
     Long longValue;
+    @JsonIgnore
     @ManyToOne
     Category parentCategory;
+    @JsonIgnore
     Double saleMargin = 0.0;
+    @JsonIgnore
     Double wholeSaleMargin = 0.0;
-    @OneToMany(mappedBy = "category",fetch = FetchType.LAZY) @JsonIgnore
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @JsonIgnore
     List<Item> items;
     String code;
-    @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH) @JsonIgnore
+    @OneToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+    @JsonIgnore
     List<Category> childCategories;
     @Enumerated
     SymanticHyrachi symanticType;
     @Transient
+    @JsonIgnore
     private String entityClass;
+    @JsonIgnore
     boolean filled;
-    @ManyToOne
-    Institution institution;
-    @ManyToOne
-    Department department;
+
 
     // @ManyToOne
     //   private Department department;
@@ -86,10 +95,6 @@ public class Category implements Serializable {
 
     public void setFilled(boolean filled) {
         this.filled = filled;
-    }
-
-    public String getCategoryClass() {
-        return this.getClass().toString();
     }
 
     public SymanticHyrachi getSymanticType() {
@@ -110,6 +115,9 @@ public class Category implements Serializable {
     }
 
     public String getCode() {
+        if (code == null || code.trim().equals("")) {
+            code = CommonFunctions.nameToCode(name);
+        }
         return code;
     }
 
@@ -264,24 +272,6 @@ public class Category implements Serializable {
         return name;
     }
 
-    public String gettName() {
-        return tName;
-    }
-
-    public void settName(String tName) {
-        this.tName = tName;
-    }
-
-    public String getsName() {
-        //////// // System.out.println("get name");
-        return sName;
-    }
-
-    public void setsName(String sName) {
-        //////// // System.out.println("set name");
-        this.sName = sName;
-    }
-
     @XmlTransient
     public List<Item> getItems() {
         return items;
@@ -298,22 +288,6 @@ public class Category implements Serializable {
 
     public void setEntityClass(String entityClass) {
         this.entityClass = entityClass;
-    }
-
-    public Institution getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
-    }
-
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
     }
 
 }
