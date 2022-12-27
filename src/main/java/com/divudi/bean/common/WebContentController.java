@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.Language;
 import com.divudi.data.WebContentType;
 import com.divudi.entity.WebContent;
+import com.divudi.entity.WebLanguage;
 import com.divudi.facade.WebContentFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
@@ -38,11 +38,13 @@ public class WebContentController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    WebLanguageController webLanguageController;
     @EJB
     private WebContentFacade ejbFacade;
     private WebContent selected;
     private List<WebContent> items = null;
-    private Language language;
+    private WebLanguage language;
     String page;
 
     public String toHome() {
@@ -148,7 +150,7 @@ public class WebContentController implements Serializable {
         return "/webcontent/web_contents";
     }
 
-    public WebContent findSingleWebContent(String word, Language lang) {
+    public WebContent findSingleWebContent(String word, WebLanguage lang) {
         WebContent list;
         String sql;
         HashMap hm = new HashMap();
@@ -162,48 +164,15 @@ public class WebContentController implements Serializable {
     }
 
     public String findSingleText(String word) {
-        WebContent wc = findSingleWebContent(word);
+        WebContent wc = findSingleWebContent(word, language);
         if (wc == null || getLanguage() == null) {
             return word;
         }
-        switch (language) {
-            case English:
-                return wc.getEnglish();
-            case Sinhala:
-                return wc.getSinhala();
-            case Tamil:
-                return wc.getTamil();
-            default:
-                return word;
-        }
+        return wc.getName();
     }
 
-    public Language[] getLanguages() {
-        return Language.values();
-    }
-
-    public boolean isSinhala() {
-        return language.equals(Language.Sinhala);
-    }
-
-    public boolean isEnglish() {
-        return language.equals(Language.English);
-    }
-
-    public boolean isTamil() {
-        return language.equals(Language.Tamil);
-    }
-
-    public void makeLanguageSinhala() {
-        language = Language.Sinhala;
-    }
-
-    public void makeLanguageTamil() {
-        language = Language.Tamil;
-    }
-
-    public void makeLanguageEnglish() {
-        language = Language.English;
+    public List<WebLanguage> getLanguages() {
+        return webLanguageController.getItems();
     }
 
     public List<String> findMultipleWebText(String word) {
@@ -213,17 +182,7 @@ public class WebContentController implements Serializable {
             return strs;
         }
         for (WebContent wc : wcs) {
-            switch (language) {
-                case English:
-                    strs.add(wc.getEnglish());
-                    break;
-                case Sinhala:
-                    strs.add(wc.getSinhala());
-                    break;
-                case Tamil:
-                    strs.add(wc.getTamil());
-                    break;
-            }
+            strs.add(wc.getName());
         }
 
         return strs;
@@ -348,14 +307,14 @@ public class WebContentController implements Serializable {
         return items;
     }
 
-    public Language getLanguage() {
+    public WebLanguage getLanguage() {
         if (language == null) {
-            language = Language.English;
+            language = webLanguageController.getDefaultLanguage();
         }
         return language;
     }
 
-    public void setLanguage(Language language) {
+    public void setLanguage(WebLanguage language) {
         this.language = language;
     }
 
