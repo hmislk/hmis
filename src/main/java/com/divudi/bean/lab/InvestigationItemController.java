@@ -873,8 +873,6 @@ public class InvestigationItemController implements Serializable {
         }
         try {
             InputStream inputStream = file.getInputStream();
-            byte[] bytes = IOUtils.toByteArray(input);
-
             String text = new BufferedReader(
                     new InputStreamReader(inputStream, StandardCharsets.UTF_8))
                     .lines()
@@ -895,7 +893,7 @@ public class InvestigationItemController implements Serializable {
             JsonNode actualObj = mapper.readTree(jsonString);
             String color = actualObj.get("reportFormat").asText();
             System.out.println("color = " + color);
-            
+
         } catch (JsonProcessingException ex) {
             Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
         }
