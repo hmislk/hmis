@@ -528,7 +528,7 @@ public class StoreGrnController implements Serializable {
             }
         }
         String code = "";
-        code += getSessionController().getInstitution().getInstitutionCode();
+        code += getSessionController().getInstitution().getCode();
         code += "/";
         code += getSessionController().getDepartment().getCode();
         code += "/";

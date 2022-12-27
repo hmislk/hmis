@@ -379,7 +379,7 @@ public class StorePurchaseController implements Serializable {
         }
         ////System.out.println("b = " + b);
         String code = "";
-        code += getSessionController().getInstitution().getInstitutionCode();
+        code += getSessionController().getInstitution().getCode();
         code += "/";
         code += getSessionController().getDepartment().getCode();
         code += "/";

@@ -7,6 +7,7 @@ package com.divudi.entity;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
+import com.divudi.java.CommonFunctions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
+    @Deprecated
     String institutionCode;
     String name;
     private String code;
@@ -614,6 +616,13 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public void setCode(String code) {
+        if(code==null || code.trim().equals("")){
+            if(institutionCode!=null && !institutionCode.trim().equals("")){
+                code=institutionCode;
+            }else{
+                code = CommonFunctions.nameToCode(name);
+            }
+        }
         this.code = code;
     }
 

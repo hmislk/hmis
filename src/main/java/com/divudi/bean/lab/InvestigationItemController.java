@@ -953,7 +953,7 @@ public class InvestigationItemController implements Serializable {
     public void convertIxToJson(){
         ObjectMapper mapper = new ObjectMapper();
         try {
-            jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(getCurrent());
+            jsonString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(getCurrentInvestigation());
         } catch (JsonProcessingException ex) {
             Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -962,7 +962,8 @@ public class InvestigationItemController implements Serializable {
     public void convertJsonToIx(){
         ObjectMapper mapper = new ObjectMapper();
         try {
-            current = mapper.readValue(jsonString, InvestigationItem.class);
+            currentInvestigation = mapper.readValue(jsonString, Investigation.class);
+            toEditInvestigationFormat();
         } catch (JsonProcessingException ex) {
             Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
         }
