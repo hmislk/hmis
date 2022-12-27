@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
@@ -141,26 +142,29 @@ public class ApplicationController {
     }
 
     public String createNewPersonalHealthNumber(Institution ins) {
-        InstitutionLastPhn iln = null;
-        for (InstitutionLastPhn p : getInsPhns()) {
-            if (p.institution.equals(ins)) {
-                iln = p;
-            }
+        if (ins == null) {
+            return null;
         }
-        if (iln == null) {
-            iln = new InstitutionLastPhn();
-            String j = "select count(p) from Patient p "
-                    + " where p.createdInstitution=:ins ";
-            Map m = new HashMap();
-            m.put("ins", ins);
-            iln.institution = ins;
-            iln.patientCount = patientFacade.countBySql(j, m);
+        String alpha = "BCDFGHJKMPQRTVWXY";
+        String numeric = "23456789";
+        String alphanum = alpha + numeric;
+
+        StringBuilder sb = new StringBuilder();
+        Random random = new Random();
+
+        int length = 6;
+        for (int i = 0; i < length; i++) {
+            int index = random.nextInt(alphanum.length());
+            char randomChar = alphanum.charAt(index);
+            sb.append(randomChar);
         }
-        iln.patientCount++;
+
+        String randomString = sb.toString();
+
         String poi = ins.getPointOfIssueNo();
-        String num = String.format("%05d", iln.patientCount);
-        String checkDigit = calculateCheckDigit(poi + num);
-        String phn = poi + num + checkDigit;
+        String checkDigit = calculateCheckDigit(poi + randomString);
+        String phn = poi + randomString + checkDigit;
+
         return phn;
     }
 
