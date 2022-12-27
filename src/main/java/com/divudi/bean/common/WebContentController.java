@@ -42,7 +42,7 @@ public class WebContentController implements Serializable {
     private WebContentFacade ejbFacade;
     private WebContent selected;
     private List<WebContent> items = null;
-    private Language language = Language.English;
+    private Language language;
     String page;
 
     public String toHome() {
@@ -148,7 +148,7 @@ public class WebContentController implements Serializable {
         return "/webcontent/web_contents";
     }
 
-    public WebContent findSingleWebContent(String word) {
+    public WebContent findSingleWebContent(String word, Language lang) {
         WebContent list;
         String sql;
         HashMap hm = new HashMap();
