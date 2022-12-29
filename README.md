@@ -95,7 +95,7 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * Arogya Hospital, Tangalle - 2014 Up to date
 * Arogya Channelling Centre, Tangalle -  2010 Up to date
 * Arogya Pharmacy, Tangalle -  2015 Up to date
-* St. George Hospital, Biyagama -  2016 Up to date
+* St. George Hospital, Biyagama -  2016 Up to 2019
 * Digasiri Hospital, Puttalama  2015 Up to date
 * Suwasarana Hospital, Ragama   -  2016 Up to date
 * Suwani Hospital, Galle -  2015 Up to date

@@ -4,12 +4,14 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.WebContentType;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
 
 /**
  *
@@ -31,6 +33,18 @@ public class WebContent implements Serializable {
     @Lob
     private String english;
     private double orderNo;
+    @ManyToOne
+    private WebLanguage webLanguage;
+    private WebContentType type;
+    private String shortText;
+    @Lob
+    private String longText;
+    @ManyToOne
+    private WebContent parent;
+    
+    
+    
+    
 
     public String getIdStr() {
         if (id == null) {
@@ -119,6 +133,46 @@ public class WebContent implements Serializable {
 
     public void setOrderNo(double orderNo) {
         this.orderNo = orderNo;
+    }
+
+    public WebLanguage getWebLanguage() {
+        return webLanguage;
+    }
+
+    public void setWebLanguage(WebLanguage webLanguage) {
+        this.webLanguage = webLanguage;
+    }
+
+    public WebContentType getType() {
+        return type;
+    }
+
+    public void setType(WebContentType type) {
+        this.type = type;
+    }
+
+    public String getShortText() {
+        return shortText;
+    }
+
+    public void setShortText(String shortText) {
+        this.shortText = shortText;
+    }
+
+    public WebContent getParent() {
+        return parent;
+    }
+
+    public void setParent(WebContent parent) {
+        this.parent = parent;
+    }
+
+    public String getLongText() {
+        return longText;
+    }
+
+    public void setLongText(String longText) {
+        this.longText = longText;
     }
 
 }

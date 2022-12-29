@@ -9,6 +9,7 @@ package com.divudi.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -48,7 +49,7 @@ public class WebUser implements Serializable {
     @OneToOne
     Person webUserPerson;
     //Main Properties
-//    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false)
     String name;
     String description;
     //Created Properties
