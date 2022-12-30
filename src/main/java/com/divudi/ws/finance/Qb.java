@@ -173,6 +173,7 @@ public class Qb {
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
         headerJo.put("payMethod", paymentMethod);
+        headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -200,12 +201,12 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
     private JSONObject pharmGrnBilltoJSONObject(Bill b) {
-//        System.out.println("pharmBilltoJSONObject");
+
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
         String supplierName = "Supplier";
@@ -247,18 +248,16 @@ public class Qb {
             }
             bijo.put("qty", qty);
             bijo.put("amount", amount);
-//            bijo.put("bit", "Pharmacy Item");
-//            bijo.put("itemType", "Service");
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
     private JSONObject paymentBilltoJSONObject(Bill b) {
-//        System.out.println("pharmBilltoJSONObject");
+
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
@@ -300,9 +299,10 @@ public class Qb {
             headerJo.put("chqNo", chqNo);
         }
 
+        headerJo.put("rep_name", "");
         headerJo.put("supplier", supplierName);
         headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
-//        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
+
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -329,7 +329,7 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
@@ -421,7 +421,7 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
@@ -499,7 +499,7 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
@@ -577,7 +577,7 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
@@ -655,7 +655,7 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
+
         return jSONObject;
     }
 
@@ -901,12 +901,10 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
 
     private JSONObject inwardPaymentBilltoJSONObjectForCustomerPayments(Bill b) {
-        //        System.out.println("inwardPaymentBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
@@ -956,7 +954,6 @@ public class Qb {
     }
 
     private JSONObject inwardFinalBilltoJSONObject(Bill b) {
-        System.out.println("inwardFinalBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
@@ -1009,6 +1006,7 @@ public class Qb {
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getInsId());
         headerJo.put("bankAcc", bankAccount);
+        headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
 
@@ -1081,12 +1079,10 @@ public class Qb {
 
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
 
     private JSONObject channelBilltoJSONObject(Bill b) {
-//        System.out.println("channelBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
         if (b.getPatient() != null & b.getPatient().getPerson() != null) {
@@ -1188,12 +1184,10 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
 
     private JSONObject channelBilltoJSONObjectForJl(Bill b) {
-//        System.out.println("channelBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
         if (b.getPatient() != null & b.getPatient().getPerson() != null) {
@@ -1270,12 +1264,10 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
 
     private JSONObject channelOncallBilltoJSONObject(Bill b) {
-//        System.out.println("channelBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
         if (b.getPatient() != null & b.getPatient().getPerson() != null) {
@@ -1289,6 +1281,7 @@ public class Qb {
         String payMethod = "Cash";
         Date invoiceDate = new Date();
         String invoiceNo = "";
+        String rep_name = "";
 
         if (b.getPatient() != null && b.getPatient().getPerson() != null) {
             soldTo = b.getPatient().getPerson().getNameWithTitle();
@@ -1301,9 +1294,14 @@ public class Qb {
         if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
             customerName = b.getPatientEncounter().getCreditCompany().getName();
         }
+        
+        if(b.getStaff()!=null){
+            rep_name = b.getStaff().getPerson().getName();
+        }
 
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
+        headerJo.put("rep_name", rep_name);
         headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
@@ -1333,20 +1331,16 @@ public class Qb {
         }
         jSONObject.put("header", headerJo);
         jSONObject.put("grid", bija);
-//        System.out.println("jSONObject = " + jSONObject);
         return jSONObject;
     }
 
     private JSONArray invoiceBillsToJSONArray(List<Bill> bills) {
-//        System.out.println("invoiceBillsToJSONArray");
-//        System.out.println("bills = " + bills.size());
         JSONArray array = new JSONArray();
         for (Bill bill : bills) {
             if (bill.getBillType() == null) {
                 continue;
             }
             JSONObject jSONObject = new JSONObject();
-            System.out.println("bill.getBillType() = " + bill.getBillType());
             switch (bill.getBillType()) {
                 case PharmacySale:
                 case PharmacyWholeSale:
@@ -1392,20 +1386,16 @@ public class Qb {
 
             array.put(jSONObject);
         }
-//        System.out.println("array = " + array);
         return array;
     }
 
     private JSONArray wcBillsToJSONArray(List<Bill> bills) {
-//        System.out.println("invoiceBillsToJSONArray");
-//        System.out.println("bills = " + bills.size());
         JSONArray array = new JSONArray();
         for (Bill bill : bills) {
             if (bill.getBillType() == null) {
                 continue;
             }
             JSONObject jSONObject = new JSONObject();
-            System.out.println("bill.getBillType() = " + bill.getBillType());
             switch (bill.getBillType()) {
                 case ChannelProPayment:
                     jSONObject = wcChannelProPaymentBilltoJSONObject(bill);
@@ -1420,15 +1410,12 @@ public class Qb {
     }
 
     private JSONArray customerPaymentBillsToJSONArray(List<Bill> bills) {
-//        System.out.println("invoiceBillsToJSONArray");
-//        System.out.println("bills = " + bills.size());
         JSONArray array = new JSONArray();
         for (Bill bill : bills) {
             if (bill.getBillType() == null) {
                 continue;
             }
             JSONObject jSONObject = new JSONObject();
-            System.out.println("bill.getBillType() = " + bill.getBillType());
             switch (bill.getBillType()) {
                 case InwardPaymentBill:
                     jSONObject = inwardPaymentBilltoJSONObjectForCustomerPayments(bill);
@@ -1439,20 +1426,16 @@ public class Qb {
 
             array.put(jSONObject);
         }
-//        System.out.println("array = " + array);
         return array;
     }
 
     private JSONArray jurListToJSONArray(List<Bill> bills) {
-//        System.out.println("invoiceBillsToJSONArray");
-//        System.out.println("bills = " + bills.size());
         JSONArray array = new JSONArray();
         for (Bill bill : bills) {
             if (bill.getBillType() == null) {
                 continue;
             }
             JSONObject jSONObject = new JSONObject();
-            System.out.println("bill.getBillType() = " + bill.getBillType());
             switch (bill.getBillType()) {
                 case ChannelProPayment:
                     jSONObject = paymentBilltoJSONObjectForJl(bill);
@@ -1463,7 +1446,6 @@ public class Qb {
 
             array.put(jSONObject);
         }
-//        System.out.println("array = " + array);
         return array;
     }
 
@@ -1637,30 +1619,29 @@ public class Qb {
     }
 
     private boolean isValidKey(String key) {
-        System.out.println("key = " + key);
         if (key == null || key.trim().equals("")) {
-            System.out.println("No key given");
+            System.err.println("No key given");
             return false;
         }
         ApiKey k = apiKeyController.findApiKey(key);
         if (k == null) {
-            System.out.println("No key found");
+            System.err.println("No key found");
             return false;
         }
         if (k.getWebUser() == null) {
-            System.out.println("No user for the key");
+            System.err.println("No user for the key");
             return false;
         }
         if (k.getWebUser().isRetired()) {
-            System.out.println("User Retired");
+            System.err.println("User Retired");
             return false;
         }
         if (!k.getWebUser().isActivated()) {
-            System.out.println("User Inactive");
+            System.err.println("User Inactive");
             return false;
         }
         if (k.getDateOfExpiary().before(new Date())) {
-            System.out.println("Key Expired");
+            System.err.println("Key Expired");
             return false;
         }
         return true;
@@ -1713,9 +1694,6 @@ public class Qb {
             @PathParam("last_invoice_id") String strLastIdInRequest,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
-
-        System.out.println("REST Request - cInvList - " + new Date());
-
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
         String key = requestContext.getHeader("Finance");
@@ -1731,7 +1709,6 @@ public class Qb {
         } catch (Exception e) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
-            System.out.println("e = " + e);
             return json;
         }
         if (lastIdInRequest < 1) {
@@ -1809,7 +1786,6 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("cInvList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -1827,7 +1803,6 @@ public class Qb {
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
 
-        System.out.println("REST Request - cInvList - " + new Date());
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -1844,7 +1819,6 @@ public class Qb {
         } catch (Exception e) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
-            System.out.println("e = " + e);
             return json;
         }
         if (lastIdInRequest < 1) {
@@ -1927,7 +1901,6 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("invList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -1945,7 +1918,6 @@ public class Qb {
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
 
-        System.out.println("REST Request - salesRetList - " + new Date());
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -1962,7 +1934,6 @@ public class Qb {
         } catch (Exception e) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
-            System.out.println("e = " + e);
             return json;
         }
         if (lastIdInRequest < 1) {
@@ -2021,7 +1992,6 @@ public class Qb {
 
         }
 
-//        System.out.println("bills.size() = " + bills.size());
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("salesRetList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2113,7 +2083,6 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("grnList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2263,7 +2232,8 @@ public class Qb {
             lastIdOfCurrentdata = 0l;
         }
 
-//        System.out.println("bills.size() = " + bills.size());
+
+        
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("grnRetList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2351,7 +2321,7 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
+
         array = wcBillsToJSONArray(bills);
         jSONObjectOut.put("wcList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2440,7 +2410,7 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
+
         array = jurListToJSONArray(bills);
         jSONObjectOut.put("jurList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2523,7 +2493,7 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
+
         array = customerPaymentBillsToJSONArray(bills);
         jSONObjectOut.put("cusPayList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2595,7 +2565,7 @@ public class Qb {
             }
         }
 
-//        System.out.println("bills.size() = " + bills.size());
+
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("paymentReturnList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2713,8 +2683,7 @@ public class Qb {
 
         m.put("bid", fromId);
         m.put("ret", true);
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
+
         if (recordCount == null || recordCount == 0) {
             bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP, 500);
         } else {
@@ -2739,9 +2708,7 @@ public class Qb {
         m.put("id", billId);
         billObjects = billSessionFacade.findBySQL(sql, m);
 
-//        //System.out.println("m = " + m);
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("billObjects.length = " + billObjects.size());
+
         Map map = new HashMap();
         if (!billObjects.isEmpty()) {
 
@@ -2764,7 +2731,6 @@ public class Qb {
             }
         }
 
-//        //System.out.println("map.length = " + map.size());
         array.put(map);
 
         return array;
@@ -2791,9 +2757,7 @@ public class Qb {
         m.put("td", commonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
-//        //System.out.println("m = " + m);
-//        //System.out.println("sql = " + sql);
-//        //System.out.println("billObjects.length = " + billObjects.size());
+
         for (BillSession o : billObjects) {
             try {
                 JSONObject map = new JSONObject();
