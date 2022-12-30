@@ -99,18 +99,18 @@ public class InstitutionController implements Serializable {
         getFacade().edit(current);
         return toListInstitutions();
     }
-    
-    public String saveSelectedInstitution(){
-         if (current == null) {
+
+    public String saveSelectedInstitution() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-         if(current.getId()==null){
-             getFacade().create(current);
-         }else{
-             getFacade().edit(current);
-         }
-         return toListInstitutions();
+        if (current.getId() == null) {
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        return toListInstitutions();
     }
 
     public List<Institution> getSelectedItems() {
@@ -349,6 +349,14 @@ public class InstitutionController implements Serializable {
         suppliers = null;
         agencies = null;
 
+    }
+
+    public void save(Institution ins) {
+        if (ins.getId() == null) {
+            getFacade().create(ins);
+        } else {
+            getFacade().edit(ins);
+        }
     }
 
     public void saveSelected() {

@@ -22,11 +22,9 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@XmlRootElement
 public class HrForm extends Form implements Serializable {
 
     @ManyToOne
@@ -60,8 +58,6 @@ public class HrForm extends Form implements Serializable {
         this.transFlag = transFlag;
     }
     
-    
-
     public Date getFromTime() {
         return fromTime;
     }
@@ -78,8 +74,6 @@ public class HrForm extends Form implements Serializable {
         this.toTime = toTime;
     }
     
-    
-
     public Times getTimes() {
         return times;
     }

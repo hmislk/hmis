@@ -59,12 +59,12 @@ public class ServiceSession extends Item implements Serializable {
     double displayPercent;
     double duration;
     int roomNo;
-    int durationIncrementCount = 1;
-    boolean showAppointmentCount = true;
-    boolean oncallBookingsAllowed = true;
-    long advanceAppointmentPeriod = 10;
-    int advanceAPpointmentPeriodUnit = Calendar.DATE;
-    boolean showAppointmentTime = true;
+//    int durationIncrementCount = 1;
+//    boolean showAppointmentCount = true;
+//    boolean oncallBookingsAllowed = true;
+//    long advanceAppointmentPeriod = 10;
+//    int advanceAPpointmentPeriodUnit = Calendar.DATE;
+//    boolean showAppointmentTime = true;
 
     //Deactivate Properties(Doctor Leave)
     boolean deactivated;
