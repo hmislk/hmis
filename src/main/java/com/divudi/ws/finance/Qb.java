@@ -173,6 +173,7 @@ public class Qb {
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
         headerJo.put("payMethod", paymentMethod);
+        headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -300,6 +301,7 @@ public class Qb {
             headerJo.put("chqNo", chqNo);
         }
 
+        headerJo.put("rep_name", "");
         headerJo.put("supplier", supplierName);
         headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
 //        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
@@ -1009,6 +1011,7 @@ public class Qb {
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getInsId());
         headerJo.put("bankAcc", bankAccount);
+        headerJo.put("rep_name", "");
 
         JSONArray bija = new JSONArray();
 
@@ -1289,6 +1292,7 @@ public class Qb {
         String payMethod = "Cash";
         Date invoiceDate = new Date();
         String invoiceNo = "";
+        String rep_name = "";
 
         if (b.getPatient() != null && b.getPatient().getPerson() != null) {
             soldTo = b.getPatient().getPerson().getNameWithTitle();
@@ -1301,9 +1305,14 @@ public class Qb {
         if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
             customerName = b.getPatientEncounter().getCreditCompany().getName();
         }
+        
+        if(b.getStaff()!=null){
+            rep_name = b.getStaff().getPerson().getName();
+        }
 
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
+        headerJo.put("rep_name", rep_name);
         headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
