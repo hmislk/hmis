@@ -515,27 +515,12 @@
                                     <p:tab title="Developer" >
                                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                                         </p:dialog>
-                                        <p:outputLabel value="ID : " ></p:outputLabel>
-                                        <p:inputText value="#{investigationItemController.current.id}"/>
+                                       
 
-                                        <p:commandButton value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
-                                            <p:fileDownload value="#{investigationItemController.downloadingFile}" />
+                                        <p:commandButton value="Download as JSON" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
+                                            <p:fileDownload value="#{investigationItemController.ixToJsonFile}" />
                                         </p:commandButton>
                                         
-                                        <p:commandButton value="Download JSON" 
-                                                         ajax="false" 
-                                                         icon="ui-icon-arrowthick-1-s"
-                                                         action="#{investigationItemController.convertIxToJson()}">
-                                        </p:commandButton>
-                                         <p:commandButton value="Upload JSON" 
-                                                         ajax="false" 
-                                                         icon="ui-icon-arrowthick-1-s"
-                                                         action="#{investigationItemController.convertJsonToIx()}">
-                                            
-                                        </p:commandButton>
-                                        
-                                        <p:inputTextarea class="w-100" value="#{investigationItemController.jsonString}" ></p:inputTextarea>
-
 
                                         <script type="text/javascript">
                                             function start() {
@@ -671,15 +656,10 @@
                         </p:panel>
 
                     </h:panelGrid>
-                    <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
+                  
                 </h:form>
 
-                <h:form enctype="multipart/form-data">
-                    <p:panel header="Upload Format" >
-                        <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
-                        <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
-                    </p:panel>
-                </h:form>
+              
 
                
             </ui:define>
