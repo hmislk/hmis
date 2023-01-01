@@ -168,8 +168,14 @@ public abstract class AbstractFacade<T> {
     public List<T> findAll() {
         javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
         javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        return getEntityManager().createQuery(cq).getResultList();
+
+        List<T> ts;
+        try {
+            ts = getEntityManager().createQuery(cq).getResultList();
+        } catch (Exception e) {
+            ts = new ArrayList<>();
+        }
+        return ts;
     }
 
     public List<T> findAll(String fieldName) {
