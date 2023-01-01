@@ -345,7 +345,7 @@ public class ItemController implements Serializable {
             return;
         }
         current.setMachine(machine);
-        current.setInstitution(machine.getInstitution());
+//        current.setInstitution(machine.getInstitution());
         current.setItemType(ItemType.AnalyzerTest);
 
         if (current.getId() == null) {

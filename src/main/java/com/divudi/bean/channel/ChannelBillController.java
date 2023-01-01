@@ -2170,7 +2170,7 @@ public class ChannelBillController implements Serializable {
     }
 
     private String generateBillNumberInsId(Bill bill) {
-        String suffix = getSessionController().getInstitution().getInstitutionCode();
+        String suffix = getSessionController().getInstitution().getCode();
         BillClassType billClassType = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -2209,7 +2209,7 @@ public class ChannelBillController implements Serializable {
     }
 
     private String generateBillNumberDeptId(Bill bill) {
-        String suffix = getSessionController().getDepartment().getDepartmentCode();
+        String suffix = getSessionController().getDepartment().getCode();
         BillClassType billClassType = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);

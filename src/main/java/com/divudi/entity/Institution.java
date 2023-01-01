@@ -7,6 +7,8 @@ package com.divudi.entity;
 import com.divudi.data.IdentifiableWithNameOrCode;
 import com.divudi.data.InstitutionType;
 import com.divudi.entity.channel.AgentReferenceBook;
+import com.divudi.java.CommonFunctions;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,15 +38,19 @@ import javax.xml.bind.annotation.XmlTransient;
 public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     Institution institution;
     @ManyToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
     private Person contactPerson;
 
     static final long serialVersionUID = 1L;
     @Id
+    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
+    @Deprecated
     String institutionCode;
     String name;
     private String code;
@@ -71,14 +77,19 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     InstitutionType institutionType;
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
     @ManyToOne
+    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
     String retireComments;
     double labBillDiscount;
@@ -104,25 +115,26 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @Transient
     private String transAddress7;
     @Transient
+    @JsonIgnore
     List<AgentReferenceBook> agentReferenceBooks;
     String pointOfIssueNo;
-    
+
     @OneToMany(mappedBy = "institution", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     List<Institution> branch = new ArrayList<>();
     @Lob
     String descreption;
     String accountNo;
+    @JsonIgnore
     Institution bankBranch;
-    
+
     String emailSendingUsername;
     String emailSendingPassword;
-    
+
     private String smsSendingUsername;
     private String smsSendingPassword;
     private String smsSendingAlias;
-    
-    
-    
+
     //Inactive Status
     private boolean inactive;
 
@@ -142,8 +154,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.emailSendingPassword = emailSendingPassword;
     }
 
-    
-    
     public String getPointOfIssueNo() {
         return pointOfIssueNo;
     }
@@ -152,13 +162,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.pointOfIssueNo = pointOfIssueNo;
     }
 
-    
-    
-    
     public Institution() {
         split();
-    }   
-    
+    }
 
     public String getDescreption() {
         return descreption;
@@ -191,10 +197,9 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setInwardDiscount(double inwardDiscount) {
         this.inwardDiscount = inwardDiscount;
     }
-    
 
     public String getTransAddress1() {
-        if (transAddress1==null) {
+        if (transAddress1 == null) {
             split();
         }
         return transAddress1;
@@ -227,29 +232,29 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setTransAddress4(String transAddress4) {
         this.transAddress4 = transAddress4;
     }
-    
+
     public void split() {
-        if(address == null){
+        if (address == null) {
             return;
         }
-        
+
         String arr[] = address.split(",");
         ////// // System.out.println(arr);
-        if(arr==null){
+        if (arr == null) {
             return;
         }
-       try{
-            transAddress1=arr[0];
-            transAddress2=arr[1];
-            transAddress3=arr[2];
-            transAddress4=arr[3];
-            transAddress5=arr[4];
-            transAddress6=arr[5];
-            transAddress7=arr[6];
-       }catch(Exception e){
-           ////// // System.out.println(e.getMessage());
-       }
-        
+        try {
+            transAddress1 = arr[0];
+            transAddress2 = arr[1];
+            transAddress3 = arr[2];
+            transAddress4 = arr[3];
+            transAddress5 = arr[4];
+            transAddress6 = arr[5];
+            transAddress7 = arr[6];
+        } catch (Exception e) {
+            ////// // System.out.println(e.getMessage());
+        }
+
     }
 
     public Long getId() {
@@ -468,8 +473,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setMaxCreditLimit(double maxCreditLimit) {
         this.maxCreditLimit = maxCreditLimit;
     }
-    
-    
 
     public String getChequePrintingName() {
         return chequePrintingName;
@@ -478,8 +481,6 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setChequePrintingName(String chequePrintingName) {
         this.chequePrintingName = chequePrintingName;
     }
-    
-    
 
     @XmlTransient
     public List<Institution> getBranch() {
@@ -491,7 +492,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public Institution getInstitution() {
-        
+
         return institution;
     }
 
@@ -527,8 +528,8 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
-        if (agentReferenceBooks==null) {
-            agentReferenceBooks=new ArrayList<>();
+        if (agentReferenceBooks == null) {
+            agentReferenceBooks = new ArrayList<>();
         }
         return agentReferenceBooks;
     }
@@ -615,6 +616,13 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public void setCode(String code) {
+        if(code==null || code.trim().equals("")){
+            if(institutionCode!=null && !institutionCode.trim().equals("")){
+                code=institutionCode;
+            }else{
+                code = CommonFunctions.nameToCode(name);
+            }
+        }
         this.code = code;
     }
 
@@ -626,6 +634,4 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
         this.ownerEmail = ownerEmail;
     }
 
-    
-    
 }

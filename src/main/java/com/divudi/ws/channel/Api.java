@@ -714,7 +714,7 @@ public class Api {
                 if (bs.getBill().getPaymentMethod() == PaymentMethod.Staff) {
                     jSONObject.put("staff_agent_status", bs.getBill().getToStaff().getCode());
                 } else if (bs.getBill().getPaymentMethod() == PaymentMethod.Agent) {
-                    jSONObject.put("staff_agent_status", bs.getBill().getCreditCompany().getInstitutionCode());
+                    jSONObject.put("staff_agent_status", bs.getBill().getCreditCompany().getCode());
                 } else {
                     jSONObject.put("staff_agent_status", "");
                 }
@@ -1592,7 +1592,7 @@ public class Api {
     }
 
     private String generateBillNumberInsId(Bill bill, ServiceSession ss) {
-        String suffix = ss.getInstitution().getInstitutionCode();
+        String suffix = ss.getInstitution().getCode();
         BillClassType billClassType = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -1633,7 +1633,7 @@ public class Api {
     }
 
     private String generateBillNumberDeptId(Bill bill, ServiceSession ss) {
-        String suffix = ss.getDepartment().getDepartmentCode();
+        String suffix = ss.getDepartment().getCode();
         BillClassType billClassType = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);

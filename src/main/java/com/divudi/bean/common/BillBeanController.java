@@ -2233,13 +2233,13 @@ public class BillBeanController implements Serializable {
         }
 
         if (discountAllowed == false) {
-            bf.setFeeValue(foreign);
+            bf.setFeeValueBoolean(foreign);
         } else if (discountAllowed == true
                 && institution != null
                 && institution.getLabBillDiscount() > 0.0) {
             bf.setFeeValueForCreditCompany(foreign, institution.getLabBillDiscount());
         } else {
-            bf.setFeeValue(foreign, discount);
+            bf.setFeeValueForeignAndDiscount(foreign, discount);
             bf.setPriceMatrix(priceMatrix);
         }
     }
@@ -2249,12 +2249,12 @@ public class BillBeanController implements Serializable {
         boolean discountAllowed = item.isDiscountAllowed();
 
         if (discountAllowed == false) {
-            bf.setFeeValue(foreign);
+            bf.setFeeValueBoolean(foreign);
         } else if (priceMatrix != null) {
-            bf.setFeeValue(foreign, priceMatrix.getDiscountPercent());
+            bf.setFeeValueForeignAndDiscount(foreign, priceMatrix.getDiscountPercent());
             bf.setPriceMatrix(priceMatrix);
         } else {
-            bf.setFeeValue(foreign, 0);
+            bf.setFeeValueForeignAndDiscount(foreign, 0);
         }
     }
 

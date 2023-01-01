@@ -5,6 +5,8 @@
 package com.divudi.entity;
 
 import com.divudi.data.DepartmentType;
+import com.divudi.java.CommonFunctions;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
@@ -13,6 +15,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,10 +33,12 @@ public class Department implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     //Main Properties   
     Long id;
+    @Deprecated
     String departmentCode;
     String name;
-    String sName;
-    String tName;
+    @Lob
+    String description;
+    String code;
     String printingName;
     String address;
     String telephone1;
@@ -41,31 +46,42 @@ public class Department implements Serializable {
     String fax;
     String email;
     @ManyToOne
+    @JsonIgnore
     Institution institution;
     @ManyToOne
+    @JsonIgnore
     Department superDepartment;
     @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
     @ManyToOne
+    @JsonIgnore
     Department sampleDepartment;
     @ManyToOne
+    @JsonIgnore
     Department labDepartment;
 
     @ManyToOne
+    @JsonIgnore
     Institution sampleInstitution;
     @ManyToOne
+    @JsonIgnore
     Institution labInstitution;
 //     double maxDiscount;
 
     //Created Properties
     @ManyToOne
+    @JsonIgnore
     WebUser creater;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
     //Retairing properties
+    @JsonIgnore
     boolean retired;
+    @JsonIgnore
     @ManyToOne
     WebUser retirer;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     String retireComments;
@@ -80,8 +96,6 @@ public class Department implements Serializable {
     public void setPharmacyMarginFromPurchaseRate(double pharmacyMarginFromPurchaseRate) {
         this.pharmacyMarginFromPurchaseRate = pharmacyMarginFromPurchaseRate;
     }
-    
-    
 
     public double getMargin() {
         return margin;
@@ -212,28 +226,35 @@ public class Department implements Serializable {
         this.name = name;
     }
 
-    public String getsName() {
-        return sName;
+    public String getDescription() {
+        return description;
     }
 
-    public void setsName(String sName) {
-        this.sName = sName;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    public String gettName() {
-        return tName;
+    public String getCode() {
+        if (code == null || code.trim().equals("")) {
+            if (departmentCode != null && !departmentCode.trim().equals("")) {
+                code = departmentCode;
+            } else {
+                code = CommonFunctions.nameToCode(name);
+            }
+        }
+        return code;
     }
 
-    public void settName(String tName) {
-        this.tName = tName;
+    public void setCode(String code) {
+        this.code = code;
     }
-    
+
     public String getTname() {
-        return tName;
+        return code;
     }
 
     public void setTname(String tName) {
-        this.tName = tName;
+        this.code = tName;
     }
 
     public DepartmentType getDepartmentType() {

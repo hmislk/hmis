@@ -245,9 +245,9 @@ public class CommonReportItemController implements Serializable {
         }
         List<CommonReportItem> ris = getItems();
         ReportFormat c = new ReportFormat();
-        c.setName(category.getName() + "1");
-        c.settName(category.gettName() + "1");
-        c.setsName(category.getsName() + "1");
+        c.setName(category.getName() + "_1");
+        c.setCode(category.getCode()+ "_1");
+        c.setDescription(category.getDescription() + "_1");
         c.setCreatedAt(new Date());
         c.setCreater(sessionController.getLoggedUser());
         getCategoryFacade().create(c);

@@ -30,7 +30,7 @@
                                 <p:panelGrid columns="1" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabReports')}" >
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Report Format Categories" action="/lab/report_format_category"  />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Report Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="/lab/report_format"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="/lab/investigation_format"  />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="#{investigationItemController.toEditInvestigationFormat()}"  />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Field Values" action="/lab/investigation_item_value"  />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Pathology Templates" action="/lab/investigation_item_value_path"  />
 
@@ -67,6 +67,7 @@
                                 <p:panelGrid columns="1" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
                                      <p:commandButton  styleClass="linkButton" ajax="false" value="Report Samples" actionListener="#{investigationController.listAllIxs}" action="/lab/report_samples"  />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Report Dynamic Lables" action="/lab/report_dynamic_lables"  />
+                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Ix" action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" />
                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Developer" action="/lab/setup" />
                                 
                                 </p:panelGrid>

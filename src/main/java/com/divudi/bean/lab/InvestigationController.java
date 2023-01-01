@@ -58,8 +58,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -123,8 +123,6 @@ public class InvestigationController implements Serializable {
     List<ItemWithFee> itemWithFees;
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
-    
-    
 
     public String toAddManyIx() {
         current = new Investigation();
@@ -225,7 +223,7 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return "/lab/investigation_format";
+        return investigationItemController.toEditInvestigationFormat();
     }
 
     public String toListReportItems() {
@@ -244,7 +242,7 @@ public class InvestigationController implements Serializable {
 
         return "/lab/investigation_values";
     }
-    
+
     public String toLoadParentInvestigation() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -255,7 +253,7 @@ public class InvestigationController implements Serializable {
             return "";
         }
         if (current.getReportedAs() != null) {
-            current=(Investigation) current.getReportedAs();
+            current = (Investigation) current.getReportedAs();
         }
         return "";
     }
@@ -274,7 +272,7 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return "/lab/investigation_format_move_all";
+        return investigationItemController.toEditInvestigationFormat();
     }
 
     public String toEditReportCalculations() {
@@ -292,8 +290,7 @@ public class InvestigationController implements Serializable {
         ixCalController.setIx((Investigation) current.getReportedAs());
         return "/lab/calculation";
     }
-    
-    
+
     public String toReplaceableIxs() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -1186,7 +1183,7 @@ public class InvestigationController implements Serializable {
     }
 
     public List<Investigation> getInvestigationWithSelectedFormat() {
-        if(investigationWithSelectedFormat==null){
+        if (investigationWithSelectedFormat == null) {
             String j = "select i from Investigation i where i.reportFormat=:rf order by i.name";
             Map m = new HashMap();
             m.put("rf", categoryForFormat);
@@ -1551,6 +1548,4 @@ public class InvestigationController implements Serializable {
         return itemForItemController;
     }
 
-    
-    
 }
