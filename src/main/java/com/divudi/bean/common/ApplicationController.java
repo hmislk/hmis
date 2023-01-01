@@ -60,7 +60,7 @@ public class ApplicationController {
 
     private void loadApplicationPreferances() {
         String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-        applicationPreference = userPreferenceFacade.findFirstBySQL(sql);
+        applicationPreference = userPreferenceFacade.findFirstByJpql(sql);
         if (applicationPreference == null) {
             applicationPreference = new UserPreference();
             applicationPreference.setWebUser(null);

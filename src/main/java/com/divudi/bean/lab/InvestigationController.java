@@ -40,13 +40,19 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -55,6 +61,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -123,6 +130,8 @@ public class InvestigationController implements Serializable {
     List<ItemWithFee> itemWithFees;
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
+    private UploadedFile file;
+    
 
     public String toAddManyIx() {
         current = new Investigation();
@@ -182,6 +191,30 @@ public class InvestigationController implements Serializable {
         return toAddManyIx();
     }
 
+    public String toUuploadJsonToInvestigations() {
+        return "/admin/lab/upload_investigations";
+    }
+    
+    public String uploadJsonToCreateAnInvestigations() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream inputStream = file.getInputStream();
+            String text = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+
+           
+
+        } catch (IOException ex) {
+            System.out.println("ex = " + ex);
+        }
+        return "/lab/investigation_format";
+    }
+    
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
         for (Investigation ix : ixs) {
@@ -1205,6 +1238,14 @@ public class InvestigationController implements Serializable {
         investigationWithSelectedFormat = null;
     }
 
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
     public class InvestigationWithInvestigationItems {
 
         Investigation i;
@@ -1465,6 +1506,8 @@ public class InvestigationController implements Serializable {
     public void setInvestigationWithInvestigationItemses(List<InvestigationWithInvestigationItems> investigationWithInvestigationItemses) {
         this.investigationWithInvestigationItemses = investigationWithInvestigationItemses;
     }
+    
+    
 
     /**
      *

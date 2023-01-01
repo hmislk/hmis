@@ -635,7 +635,7 @@ public class OpdPreSettleController implements Serializable {
                 for (BillItem bi : b.getBillItems()) {
 
                     String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
-                    BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+                    BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
                     if (rbi != null) {
                         UtilityController.addErrorMessage("Some Bill Item Already Refunded");

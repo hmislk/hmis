@@ -236,7 +236,7 @@ public class StaffImageController implements Serializable {
             return new DefaultStreamedContent();
         }
 
-        Staff temStaff = getStaffFacade().findFirstBySQL("select s from Staff s where s.baImage != null and s.id = " + stfId);
+        Staff temStaff = getStaffFacade().findFirstByJpql("select s from Staff s where s.baImage != null and s.id = " + stfId);
 
         //////System.out.println("Printing");
         if (temStaff == null) {

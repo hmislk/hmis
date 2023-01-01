@@ -112,7 +112,7 @@ public class PharmacyCalculation implements Serializable {
 
     public boolean checkItem(Institution ins, Item i) {
         String sql = "Select i from ItemsDistributors i where i.retired=false and i.institution.id= " + ins.getId() + " and i.item.id=" + i.getId();
-        ItemsDistributors tmp = getItemsDistributorsFacade().findFirstBySQL(sql);
+        ItemsDistributors tmp = getItemsDistributorsFacade().findFirstByJpql(sql);
         if (tmp != null) {
             return true;
         }
@@ -136,7 +136,7 @@ public class PharmacyCalculation implements Serializable {
             return 0.0f;
         }
 
-        cat = getCategoryFacade().findFirstBySQL(sql);
+        cat = getCategoryFacade().findFirstByJpql(sql);
 
         if (cat != null) {
             margin = cat.getSaleMargin();
@@ -425,7 +425,7 @@ public class PharmacyCalculation implements Serializable {
     public double getRemainingQty(PharmaceuticalBillItem ph) {
 
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id = " + ph.getBillItem().getReferanceBillItem().getId();
-        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 
         //    Item poItem = po.getBillItem().getItem();
         //    Item grnItem = ph.getBillItem().getItem();
@@ -440,7 +440,7 @@ public class PharmacyCalculation implements Serializable {
     public boolean checkQty(PharmaceuticalBillItem ph) {
 
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + ph.getBillItem().getReferanceBillItem().getId();
-        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 
         //    Item poItem = po.getBillItem().getItem();
         //    Item grnItem = ph.getBillItem().getItem();
@@ -464,7 +464,7 @@ public class PharmacyCalculation implements Serializable {
         double oldPrice, newPrice = 0.0;
 
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + i.getBillItem().getReferanceBillItem().getId();
-        PharmaceuticalBillItem tmp = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+        PharmaceuticalBillItem tmp = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 
         oldPrice = tmp.getPurchaseRate();
         newPrice = i.getPurchaseRate();

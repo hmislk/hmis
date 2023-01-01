@@ -3120,7 +3120,7 @@ public class SearchController implements Serializable {
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
@@ -3187,7 +3187,7 @@ public class SearchController implements Serializable {
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : billFees) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);

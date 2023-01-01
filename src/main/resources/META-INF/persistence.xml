@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-    <persistence-unit name="hmisPU" transaction-type="JTA">
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" 
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+    <persistence-unit name="pu" transaction-type="JTA">
         <jta-data-source>jdbc/arogya</jta-data-source>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <shared-cache-mode>ALL</shared-cache-mode>
@@ -8,16 +10,14 @@
             <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
         </properties>
     </persistence-unit>
-    <persistence-unit name="pu">
-        <description>My Persistence Unit</description>
+    <persistence-unit name="hmisPU">
+        <description>ObjectDB Persistence Unit</description>
         <provider>com.objectdb.jpa.Provider</provider>
         <properties>
-            <property name="javax.persistence.jdbc.url" value="objectdb://localhost/sahana.odb"/>
-            <!--<property name="javax.persistence.jdbc.url" value="/home/buddhika/objectdb-2.8.8/db/sahana1.odb"/>-->
-            <!--<property name="javax.persistence.jdbc.url" value="/home/buddhika/objectdb-2.8.8/db/sahana.odb"/>-->
+            <property name="javax.persistence.jdbc.url" value="objectdb://localhost:6136/horizon1.odb"/>
             <property name="javax.persistence.jdbc.user" value="admin"/>
             <property name="javax.persistence.jdbc.password" value="admin"/>
-            <property name="javax.persistence.schema-generation.database.action" value="create"/>
+            <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
         </properties>
     </persistence-unit>
 </persistence>

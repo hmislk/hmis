@@ -886,7 +886,7 @@ public class BhtSummeryFinalizedController implements Serializable {
     public void errorCheck2() {
         String sql = "Select s from Speciality s where s.retired=false "
                 + " and s.name like '%Nurse%' ";
-        Speciality speciality = specialityFacade.findFirstBySQL(sql);
+        Speciality speciality = specialityFacade.findFirstByJpql(sql);
 
         for (Staff staff : fetchStaff()) {
             staff.setSpeciality(speciality);

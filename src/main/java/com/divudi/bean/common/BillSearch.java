@@ -681,7 +681,7 @@ public class BillSearch implements Serializable {
             }
             //Add for check refund is already done
             String sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + i.getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
             if (rbi != null) {
                 UtilityController.addErrorMessage("This Bill Item Already Refunded");
@@ -1988,7 +1988,7 @@ public class BillSearch implements Serializable {
 
         for (BillItem bi : billItems) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql);
 
             if (rbi != null) {
                 bi.setTransRefund(true);
@@ -2500,7 +2500,7 @@ public class BillSearch implements Serializable {
 
         sql = " select ah from AgentHistory ah where ah.retired=false "
                 + " and ah.bill.id=" + b.getId();
-        AgentHistory ah = agentHistoryFacade.findFirstBySQL(sql);
+        AgentHistory ah = agentHistoryFacade.findFirstByJpql(sql);
 
         return ah;
     }

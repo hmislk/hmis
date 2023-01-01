@@ -213,7 +213,14 @@ public abstract class AbstractFacade<T> {
 //                //////// // System.out.println("Parameter " + pPara + "\t Val =" + pVal);
             }
         }
-        return qry.getResultList();
+
+        List<T> ts;
+        try {
+            ts = qry.getResultList();
+        } catch (Exception e) {
+            ts = new ArrayList<>();
+        }
+        return ts;
     }
 
     public List<T> findBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
@@ -736,10 +743,15 @@ public abstract class AbstractFacade<T> {
         }
     }
 
-    public T findFirstBySQL(String temSQL) {
-        TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
+    public T findFirstByJpql(String jpql) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(1);
-        return qry.getSingleResult();
+        try {
+            T result = qry.getSingleResult();
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public T findFirstBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
