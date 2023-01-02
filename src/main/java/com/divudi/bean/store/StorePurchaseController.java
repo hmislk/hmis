@@ -379,9 +379,9 @@ public class StorePurchaseController implements Serializable {
         }
         ////System.out.println("b = " + b);
         String code = "";
-        code += getSessionController().getInstitution().getInstitutionCode();
+        code += getSessionController().getInstitution().getCode();
         code += "/";
-        code += getSessionController().getDepartment().getDepartmentCode();
+        code += getSessionController().getDepartment().getCode();
         code += "/";
         if (billItem != null && billItem.getItem() != null && billItem.getItem().getCategory() != null) {
             code += billItem.getItem().getCategory().getCode();

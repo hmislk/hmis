@@ -7,6 +7,7 @@
  */
 package com.divudi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
@@ -53,22 +54,22 @@ public class WebUser implements Serializable {
     String name;
     String description;
     //Created Properties
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
     Date createdAt;
     //Retairing properties
-    boolean retired;
-    @ManyToOne
+  @JsonIgnore   boolean retired;
+    @ManyToOne @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
     Date retiredAt;
     String retireComments;
     //Activation properties
-    boolean activated;
-    @ManyToOne
+   @JsonIgnore  boolean activated;
+ @JsonIgnore    @ManyToOne
     WebUser activator;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+  @JsonIgnore   @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date activatedAt;
     String activateComments;
     @ManyToOne
@@ -77,11 +78,11 @@ public class WebUser implements Serializable {
     String defLocale;
     String email;
     String telNo;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Institution institution;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Department department;
-    @ManyToOne
+    @ManyToOne @JsonIgnore
     Staff staff;
 
     String code;

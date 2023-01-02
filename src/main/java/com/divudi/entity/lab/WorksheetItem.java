@@ -16,8 +16,7 @@ import javax.persistence.InheritanceType;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class WorksheetItem extends ReportItem implements Serializable {
-    private static final long serialVersionUID = 1L;
-    
+
     
     
     

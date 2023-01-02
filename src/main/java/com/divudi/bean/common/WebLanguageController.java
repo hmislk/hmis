@@ -8,7 +8,6 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.Language;
 import com.divudi.entity.WebLanguage;
 import com.divudi.facade.WebLanguageFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -41,7 +40,6 @@ public class WebLanguageController implements Serializable {
     private WebLanguageFacade ejbFacade;
     private WebLanguage selected;
     private List<WebLanguage> items = null;
-    private Language language = Language.English;
     String page;
 
     public String toHome() {
@@ -58,7 +56,7 @@ public class WebLanguageController implements Serializable {
         page = "/report_search";
         return page;
     }
-    
+
     public String toServices() {
         page = "/services";
         return page;
@@ -86,7 +84,7 @@ public class WebLanguageController implements Serializable {
         }
         return "/webcontent/web_content";
     }
-    
+
     public String toEditWebLanguageLong() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select");
@@ -125,38 +123,6 @@ public class WebLanguageController implements Serializable {
         list = getFacade().findFirstBySQL(sql, hm);
         return list;
     }
-
-   
-
-    public Language[] getLanguages() {
-        return Language.values();
-    }
-
-    public boolean isSinhala() {
-        return language.equals(Language.Sinhala);
-    }
-
-    public boolean isEnglish() {
-        return language.equals(Language.English);
-    }
-
-    public boolean isTamil() {
-        return language.equals(Language.Tamil);
-    }
-
-    public void makeLanguageSinhala() {
-        language = Language.Sinhala;
-    }
-
-    public void makeLanguageTamil() {
-        language = Language.Tamil;
-    }
-
-    public void makeLanguageEnglish() {
-        language = Language.English;
-    }
-
-    
 
     public List<WebLanguage> completeWebLanguage(String qry) {
         List<WebLanguage> list;
@@ -248,6 +214,45 @@ public class WebLanguageController implements Serializable {
         return ejbFacade;
     }
 
+    public WebLanguage getDefaultLanguage() {
+        if (getItems() == null || getItems().isEmpty()) {
+            WebLanguage wl = new WebLanguage();
+            wl.setName("English");
+            wl.setCode("en");
+            wl.setOrderNo(1.0);
+            wl.setDefaultLanguage(true);
+            getFacade().create(wl);
+            items = new ArrayList<>();
+            items.add(wl);
+            return wl;
+        } else {
+            WebLanguage fl = null;
+            for (WebLanguage w : getItems()) {
+                if (fl == null) {
+                    fl = w;
+                }
+                if (w.isDefaultLanguage()) {
+                    return w;
+                }
+            }
+            if (fl != null) {
+                fl.setDefaultLanguage(true);
+                getFacade().edit(fl);
+                return fl;
+            }
+        }
+        WebLanguage wl = new WebLanguage();
+        wl.setName("English");
+        wl.setCode("en");
+        wl.setOrderNo(1.0);
+        wl.setDefaultLanguage(true);
+        getFacade().create(wl);
+        items = new ArrayList<>();
+        items.add(wl);
+        return wl;
+
+    }
+
     public void listItems() {
         String j;
         j = "select a "
@@ -258,18 +263,10 @@ public class WebLanguageController implements Serializable {
     }
 
     public List<WebLanguage> getItems() {
-        return items;
-    }
-
-    public Language getLanguage() {
-        if (language == null) {
-            language = Language.English;
+        if (items == null) {
+            listItems();
         }
-        return language;
-    }
-
-    public void setLanguage(Language language) {
-        this.language = language;
+        return items;
     }
 
     /**

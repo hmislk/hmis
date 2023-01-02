@@ -163,6 +163,16 @@ public class CommonFunctions {
         return calendar.getTime();
     }
 
+    public static String nameToCode(String name) {
+        if(name==null){
+            return "";
+        }
+        String code;
+        code = name.replaceAll(" ", "_");
+        code = code.toLowerCase();
+        return code;
+    }
+
     public Date getFirstDayOfYear(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);

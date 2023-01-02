@@ -114,7 +114,7 @@
                             <p:spacer height="1" width="30" ></p:spacer>
                             <p:commandLink ajax="false" action="/lab/administration" value="Back to Ix Administration" ></p:commandLink>
                             <p:commandLink ajax="false" action="/lab/investigation" value="Back to Ix Details" ></p:commandLink>
-                            <p:commandLink ajax="false" action="/lab/investigation_format" value="Edit Individual Items" ></p:commandLink>
+                            <p:commandLink ajax="false" action="#{investigationItemController.toEditInvestigationFormat()}" value="Edit Individual Items" ></p:commandLink>
                         </p:panelGrid>
 
                     </f:facet>

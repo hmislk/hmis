@@ -156,7 +156,7 @@ public class AgentReferenceBookController implements Serializable {
     }
 
     public void commonErrorMessageForSaveChannelBook(AgentReferenceBook arb) {
-        UtilityController.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getInstitutionCode() + ")");
+        UtilityController.addErrorMessage("Agent Name - " + arb.getInstitution().getName() + "(" + arb.getInstitution().getCode() + ")");
         UtilityController.addErrorMessage("Book No - " + arb.getBookNumber());
         UtilityController.addErrorMessage("Starting Ref. Number - " + arb.getStartingReferenceNumber());
         UtilityController.addErrorMessage("Ending Ref. Number - " + arb.getEndingReferenceNumber());

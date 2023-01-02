@@ -36,9 +36,9 @@ public class WebContent implements Serializable {
     @ManyToOne
     private WebLanguage webLanguage;
     private WebContentType type;
-    private String shortText;
+    private String shortContext;
     @Lob
-    private String longText;
+    private String longContext;
     @ManyToOne
     private WebContent parent;
     
@@ -151,12 +151,12 @@ public class WebContent implements Serializable {
         this.type = type;
     }
 
-    public String getShortText() {
-        return shortText;
+    public String getShortContext() {
+        return shortContext;
     }
 
-    public void setShortText(String shortText) {
-        this.shortText = shortText;
+    public void setShortContext(String shortContext) {
+        this.shortContext = shortContext;
     }
 
     public WebContent getParent() {
@@ -167,12 +167,12 @@ public class WebContent implements Serializable {
         this.parent = parent;
     }
 
-    public String getLongText() {
-        return longText;
+    public String getLongContext() {
+        return longContext;
     }
 
-    public void setLongText(String longText) {
-        this.longText = longText;
+    public void setLongContext(String longContext) {
+        this.longContext = longContext;
     }
 
 }

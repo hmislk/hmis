@@ -739,7 +739,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -793,7 +793,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill Refund");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -848,7 +848,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill Refund");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");
@@ -901,7 +901,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setRowType("SPL");
             qbf.setTrnsType("Bill");
             qbf.setDate(sdf.format(b.getCreatedAt()));
-            qbf.setAccnt("INVENTORIES:" + b.getDepartment().gettName());
+            qbf.setAccnt("INVENTORIES:" + b.getDepartment().getCode());
             qbf.setName("");
             qbf.setInvItemType("");
             qbf.setInvItem("");

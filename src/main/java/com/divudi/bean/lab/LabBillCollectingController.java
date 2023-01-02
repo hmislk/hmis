@@ -584,7 +584,7 @@ public class LabBillCollectingController implements Serializable {
                             dis = 0.0;
                             bf.getBillItem().setDiscount(0.0);
                         } else {
-                            //    bf.setFeeValue(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
+                            //    bf.setFeeValueBoolean(bf.getFee().getFee() / 100 * (100 - getPaymentScheme().getDiscountPercent()));
                             //     dis += (bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
                             //              bf.getBillItem().setDiscount(bf.getBillItem().getDiscount() + bf.getFee().getFee() / 100 * (getPaymentScheme().getDiscountPercent()));
                         }
