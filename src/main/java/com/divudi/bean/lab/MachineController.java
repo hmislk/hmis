@@ -3,7 +3,6 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
@@ -24,6 +23,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 /**
  *
  * @author Sniper 619
@@ -37,26 +37,25 @@ public class MachineController implements Serializable {
     @Inject
     SessionController sessionController;
     Machine current;
-    List<Machine>items;
+    List<Machine> items;
     private Institution institution;
     private List<Machine> institutionMachines;
-    
+
     public MachineController() {
     }
-    
-    
-    
-    
-    
+
     public List<Machine> getItems() {
-        items = getEjbFacade().findAll("name", true);
+        if (items == null) {
+            //TODO
+            items = getEjbFacade().findAll();
+        }
         return items;
     }
-    
+
     public void prepareAdd() {
         current = new Machine();
     }
-    
+
     public void delete() {
 
         if (current != null) {
@@ -73,11 +72,11 @@ public class MachineController implements Serializable {
         current = null;
         getCurrent();
     }
-    
+
     private void recreateModel() {
         items = null;
     }
-    
+
     public void saveSelected() {
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
@@ -110,8 +109,8 @@ public class MachineController implements Serializable {
     }
 
     public Machine getCurrent() {
-        if (current==null) {
-            current=new Machine();
+        if (current == null) {
+            current = new Machine();
         }
         return current;
     }
@@ -121,11 +120,11 @@ public class MachineController implements Serializable {
     }
 
     public List<Machine> getInstitutionMachines() {
-        if(sessionController.getLoggedUser().getInstitution()!= institution){
-            institutionMachines=null;
+        if (sessionController.getLoggedUser().getInstitution() != institution) {
+            institutionMachines = null;
             institution = sessionController.getLoggedUser().getInstitution();
         }
-        if(institutionMachines==null){
+        if (institutionMachines == null) {
             String j = "select m from Machine m where m.institution=:ins order by m.name";
             Map m = new HashMap();
             m.put("ins", institution);
@@ -145,7 +144,7 @@ public class MachineController implements Serializable {
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
-    
+
     @FacesConverter(forClass = Machine.class)
     public static class MachineControllerConverter implements Converter {
 

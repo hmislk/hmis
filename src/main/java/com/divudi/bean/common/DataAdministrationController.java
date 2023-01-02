@@ -347,7 +347,7 @@ public class DataAdministrationController {
                 if (tmp.size() > 0) {
                 } else {
                     sql = "Select bi From BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getReferanceBillItem().getId();
-                    BillItem billItem = getBillItemFacade().findFirstBySQL(sql);
+                    BillItem billItem = getBillItemFacade().findFirstByJpql(sql);
                     sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
                     tmp = getBillFeeFacade().findBySQL(sql);
                     if (tmp.size() > 0) {

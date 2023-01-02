@@ -1782,7 +1782,7 @@ public class InwardBeanController implements Serializable {
         TimedItemFee tmp = new TimedItemFee();
         if (ti.getId() != null) {
             String sql = "SELECT tif FROM TimedItemFee tif where tif.retired=false AND tif.item.id=" + ti.getId();
-            tmp = getTimedItemFeeFacade().findFirstBySQL(sql);
+            tmp = getTimedItemFeeFacade().findFirstByJpql(sql);
         }
 
         if (tmp == null) {

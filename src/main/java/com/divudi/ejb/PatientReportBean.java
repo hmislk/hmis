@@ -56,7 +56,7 @@ public class PatientReportBean {
             return null;
         }
         sql = "Select r from PatientReport r where r.retired=false and r.patientInvestigation.id = " + pi.getId();
-        r = getPrFacade().findFirstBySQL(sql);
+        r = getPrFacade().findFirstByJpql(sql);
         if (r == null) {
             r = new PatientReport();
             r.setCreatedAt(new Date());
@@ -210,7 +210,7 @@ public class PatientReportBean {
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.data.InvestigationItemType.Value";
-                    val = getPtRivFacade().findFirstBySQL(sql);
+                    val = getPtRivFacade().findFirstByJpql(sql);
                     if (val == null) {
                         val = new PatientReportItemValue();
                         val.setStrValue(getPatientDynamicLabel((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));

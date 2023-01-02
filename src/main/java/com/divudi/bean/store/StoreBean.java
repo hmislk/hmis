@@ -758,7 +758,7 @@ public class StoreBean {
         }
         String sql;
         sql = "Select s from Stock s where s.itemBatch.id = " + batch.getId() + " and s.department.id = " + department.getId();
-        Stock s = getStockFacade().findFirstBySQL(sql);
+        Stock s = getStockFacade().findFirstByJpql(sql);
         if (s == null) {
             s = new Stock();
             s.setDepartment(department);
@@ -1423,7 +1423,7 @@ public class StoreBean {
         }
         name = name.trim();
         PharmaceuticalItemCategory cat;
-        cat = getPharmaceuticalItemCategoryFacade().findFirstBySQL("SELECT c FROM PharmaceuticalItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
+        cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql("SELECT c FROM PharmaceuticalItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
         if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemCategory();
             cat.setName(name);
@@ -1442,7 +1442,7 @@ public class StoreBean {
         }
         name = name.trim();
         StoreItemCategory cat;
-        cat = getStoreItemCategoryFacade().findFirstBySQL("SELECT c FROM StoreItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
+        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
         if (cat == null && createNew == true) {
             cat = new StoreItemCategory();
             cat.setName(name);
@@ -1556,7 +1556,7 @@ public class StoreBean {
 
     public Ampp getAmpp(Amp amp) {
         String sql = "select a from Ampp a where a.retired=false and a.amp.id=" + amp.getId();
-        return getAmppFacade().findFirstBySQL(sql);
+        return getAmppFacade().findFirstByJpql(sql);
     }
 
     public Ampp getAmpp(Amp amp, double issueUnitsPerPack, MeasurementUnit unit) {

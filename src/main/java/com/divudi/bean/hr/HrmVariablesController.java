@@ -91,7 +91,7 @@ public class HrmVariablesController implements Serializable {
                 + " from HrmVariables hv"
                 + " where hv.retired=false ";
 
-        current = ejbFacade.findFirstBySQL(sql);
+        current = ejbFacade.findFirstByJpql(sql);
     }
 
     public HrmVariables getCurrent() {
