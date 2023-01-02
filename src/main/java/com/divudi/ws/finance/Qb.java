@@ -1121,7 +1121,7 @@ public class Qb {
         }
         
         if(b.getStaff()!=null){
-            rep_name = b.getStaff().getPerson().getName();
+            rep_name = b.getStaff().getCode();
         }
 
         headerJo.put("customerName", customerName);
@@ -1296,7 +1296,7 @@ public class Qb {
         }
         
         if(b.getStaff()!=null){
-            rep_name = b.getStaff().getPerson().getName();
+            rep_name = b.getStaff().getCode();
         }
 
         headerJo.put("customerName", customerName);

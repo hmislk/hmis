@@ -360,6 +360,14 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getCode() {
+        if(code==null||code.trim().equals("")){
+            if(person!=null){
+                if(person.getName()!=null){
+                    String temName = person.getName() + "      ";
+                    code = temName.substring(0,5);
+                }
+            }
+        }
         return code;
     }
 
