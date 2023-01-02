@@ -150,6 +150,10 @@ public class WebContentController implements Serializable {
         return "/webcontent/web_contents";
     }
 
+    public WebContent findSingleWebContent(String word) {
+        return findSingleWebContent(word, getLanguage());
+    }
+
     public WebContent findSingleWebContent(String word, WebLanguage lang) {
         WebContent list;
         String sql;
@@ -168,7 +172,7 @@ public class WebContentController implements Serializable {
         if (wc == null || getLanguage() == null) {
             return word;
         }
-        return wc.getName();
+        return wc.getShortContext();
     }
 
     public List<WebLanguage> getLanguages() {

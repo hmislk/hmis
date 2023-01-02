@@ -89,7 +89,7 @@ public class StoreItemsDistributorsController implements Serializable {
         String sql = "Select i from ItemsDistributors i where i.retired=false"
                 + " and i.institution.id= " + getCurrentInstituion().getId() + " and "
                 + " i.item.id=" + getCurrentItem().getId();
-        ItemsDistributors tmp = getFacade().findFirstBySQL(sql);
+        ItemsDistributors tmp = getFacade().findFirstByJpql(sql);
         if (tmp != null) {
             return true;
         } else {

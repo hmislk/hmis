@@ -578,7 +578,7 @@ public class ApiMembership {
         HashMap m = new HashMap();
         sql = "SELECT i FROM Institution i where i.retired=false "
                 + " and i.id=" + id;
-        Institution bank = getInstitutionFacade().findFirstBySQL(sql);
+        Institution bank = getInstitutionFacade().findFirstByJpql(sql);
 //        //// // System.out.println("bank = " + bank);
         return bank;
     }

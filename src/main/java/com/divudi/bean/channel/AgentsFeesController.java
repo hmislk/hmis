@@ -77,7 +77,7 @@ public class AgentsFeesController implements Serializable {
     public void saveSelected() {
         if (getCurrent().getServiceSession() != null) {
 
-            AgentsFees tp = getEjbFacade().findFirstBySQL("select s from AgentsFees s where s.serviceSession.id=" + getCurrent().getServiceSession().getId()
+            AgentsFees tp = getEjbFacade().findFirstByJpql("select s from AgentsFees s where s.serviceSession.id=" + getCurrent().getServiceSession().getId()
                     + " and s.agent.id=" + getAgent().getId());
 
             if (tp != null) {

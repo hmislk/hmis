@@ -74,7 +74,7 @@ public class ItemsCategoriesController implements Serializable {
 
     private boolean checkItem() {
         String sql = "Select i from ItemsCategories i where i.retired=false and i.category.id= " + getCurrentCategory().getId() + " and i.item.id=" + getCurrentItem().getId();
-        ItemsCategories tmp = getFacade().findFirstBySQL(sql);
+        ItemsCategories tmp = getFacade().findFirstByJpql(sql);
         if (tmp != null) {
             return true;
         } else {

@@ -19,6 +19,8 @@ import com.divudi.data.ItemType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.lab.InvestigationWithCount;
+import com.divudi.data.lab.JsonInvestigation;
+import com.divudi.data.lab.JsonInvestigationList;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -40,13 +42,25 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.WorksheetItemFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -55,6 +69,9 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -123,6 +140,8 @@ public class InvestigationController implements Serializable {
     List<ItemWithFee> itemWithFees;
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
+    private UploadedFile file;
+    private StreamedContent downloadingFile;
 
     public String toAddManyIx() {
         current = new Investigation();
@@ -180,6 +199,74 @@ public class InvestigationController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Added");
         return toAddManyIx();
+    }
+
+    public StreamedContent getIxToJsonFile() {
+        createJsonForListOfInvestigations(selectedInvestigations);
+        return downloadingFile;
+    }
+
+    public void createJsonForListOfInvestigations(List<Investigation> ixs) {
+        if (ixs == null || ixs.isEmpty()) {
+            downloadingFile = null;
+            return;
+        }
+        JsonInvestigationList jixlist = new JsonInvestigationList();
+        for (Investigation i : ixs) {
+            JsonInvestigation j = new JsonInvestigation();
+            j.setName(i.getName());
+            j.setCode(i.getCode());
+            j.setFullName(i.getFullName());
+            j.setPrintingName(i.getPrintName());
+            if (i.getInvestigationCategory() != null) {
+                j.setCategory(i.getInvestigationCategory().getName());
+            }
+            if(i.getSample()!=null){
+                j.setSample(i.getSample().getName());
+            }
+            if(i.getInvestigationTube()!=null){
+                j.setTube(i.getInvestigationTube().getName());
+            }
+            if(i.getMachine()!=null){
+                j.setAnalyzer(i.getMachine().getName());
+            }
+            if(i.getPriority()!=null){
+                j.setPrintingName(i.getPriority().toString());
+            }
+            
+            jixlist.getInvestigations().add(j);
+        }
+        String j = "";
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            j = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jixlist);
+        } catch (JsonProcessingException ex) {
+            Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        InputStream stream = new ByteArrayInputStream(j.getBytes(Charset.defaultCharset()));
+        downloadingFile = DefaultStreamedContent.builder().contentType("image/jpeg").name("selected_investigations.json").stream(() -> stream).build();
+    }
+
+    public String toUuploadJsonToInvestigations() {
+        return "/admin/lab/upload_investigations";
+    }
+
+    public String uploadJsonToCreateAnInvestigations() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream inputStream = file.getInputStream();
+            String text = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+
+        } catch (IOException ex) {
+            System.out.println("ex = " + ex);
+        }
+        return "/lab/investigation_format";
     }
 
     public void changeIxInstitutionAccordingToDept() {
@@ -1203,6 +1290,22 @@ public class InvestigationController implements Serializable {
     public void setCategoryForFormat(Category categoryForFormat) {
         this.categoryForFormat = categoryForFormat;
         investigationWithSelectedFormat = null;
+    }
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
+    public StreamedContent getDownloadingFile() {
+        return downloadingFile;
+    }
+
+    public void setDownloadingFile(StreamedContent downloadingFile) {
+        this.downloadingFile = downloadingFile;
     }
 
     public class InvestigationWithInvestigationItems {

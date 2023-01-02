@@ -420,7 +420,7 @@ public class CollectingCentreBillController implements Serializable {
 //    }
     public boolean findByFilter(String property, String value) {
         String sql = "Select b From Bill b where b.retired=false and upper(b." + property + ") like '%" + value.toUpperCase() + " %'";
-        Bill b = getBillFacade().findFirstBySQL(sql);
+        Bill b = getBillFacade().findFirstByJpql(sql);
         //System.err.println("SQL " + sql);
         //System.err.println("Bill " + b);
         if (b != null) {
