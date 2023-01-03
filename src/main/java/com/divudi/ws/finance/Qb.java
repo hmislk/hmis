@@ -205,6 +205,144 @@ public class Qb {
         return jSONObject;
     }
 
+    private JSONObject pharmReturnstoJSONObject(Bill b) {
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+
+        String soldTo = "Customer";
+        String customerName = "customerName";
+        String paymentMethod = "paymentMethod";
+        String bankAcc = "";
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getPatient() != null && b.getPatient().getPerson() != null && b.getPatient().getPerson().getNameWithTitle() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getNameWithTitle() != null) {
+            customerName = b.getToStaff().getPerson().getNameWithTitle();
+        }
+        if (b.getCreditCompany() != null) {
+            customerName = b.getCreditCompany().getName();
+        }
+        if (b.getPaymentMethod() != null) {
+            paymentMethod = b.getPaymentMethod().getLabel();
+            if (customerName.equalsIgnoreCase("customerName")) {
+                customerName = b.getPaymentMethod().getInHandLabel();
+            }
+            bankAcc = b.getPaymentMethod().getInHandLabel() + " ";
+        }
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", paymentMethod);
+        headerJo.put("rep_name", "");
+
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+            JSONObject bijo = new JSONObject();
+            if (bi.getItem() != null) {
+                bijo.put("item", bi.getItem().getName());
+            } else {
+                bijo.put("item", "item");
+            }
+            String invClass = "invClass";
+            String invType = "invType";
+
+            if (b.getBillType() != null) {
+                invType = b.getBillType().getLabel();
+            }
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            bijo.put("qty", bi.getAbsoluteQty());
+            bijo.put("amount", bi.getAbsoluteNetValue());
+            bijo.put("invClass", invClass);
+            bijo.put("invType", invType);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+
+        return jSONObject;
+    }
+
+    private JSONObject pharmCancellationstoJSONObject(Bill b) {
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+
+        String soldTo = "Customer";
+        String customerName = "customerName";
+        String paymentMethod = "paymentMethod";
+        String bankAcc = "";
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getPatient() != null && b.getPatient().getPerson() != null && b.getPatient().getPerson().getNameWithTitle() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getNameWithTitle() != null) {
+            customerName = b.getToStaff().getPerson().getNameWithTitle();
+        }
+        if (b.getCreditCompany() != null) {
+            customerName = b.getCreditCompany().getName();
+        }
+        if (b.getPaymentMethod() != null) {
+            paymentMethod = b.getPaymentMethod().getLabel();
+            if (customerName.equalsIgnoreCase("customerName")) {
+                customerName = b.getPaymentMethod().getInHandLabel();
+            }
+            bankAcc = b.getPaymentMethod().getInHandLabel() + " ";
+        }
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", paymentMethod);
+        headerJo.put("rep_name", "");
+
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+            JSONObject bijo = new JSONObject();
+            if (bi.getItem() != null) {
+                bijo.put("item", bi.getItem().getName());
+            } else {
+                bijo.put("item", "item");
+            }
+            String invClass = "invClass";
+            String invType = "invType";
+
+            if (b.getBillType() != null) {
+                invType = b.getBillType().getLabel();
+            }
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            bijo.put("qty", bi.getAbsoluteQty());
+            bijo.put("amount", bi.getAbsoluteNetValue());
+            bijo.put("invClass", invClass);
+            bijo.put("invType", invType);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+
+        return jSONObject;
+    }
+
     private JSONObject pharmGrnBilltoJSONObject(Bill b) {
 
         JSONObject jSONObject = new JSONObject();
@@ -224,11 +362,113 @@ public class Qb {
         if (b.getBillType() != null) {
             headerJo.put("billType", b.getBillType().toString());
         }
-        if(b.getInvoiceNumber()!=null){
+        if (b.getInvoiceNumber() != null) {
             headerJo.put("memo", b.getInvoiceNumber());
-        }else if(b.getIntInvoiceNumber()!=0){
+        } else if (b.getIntInvoiceNumber() != 0) {
             headerJo.put("memo", b.getIntInvoiceNumber());
-        }else{
+        } else {
+            headerJo.put("memo", b.getIdStr());
+        }
+        headerJo.put("rep_name", "");
+
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+            JSONObject bijo = new JSONObject();
+            Double amount = Math.abs(bi.getNetValue());
+            Double qty = 0.0;
+            if (bi.getItem() != null) {
+                bijo.put("item", bi.getItem().getName());
+            } else {
+                bijo.put("item", "item");
+            }
+            if (bi.getQty() != null) {
+                qty = Math.abs(bi.getQty());
+            }
+            bijo.put("qty", qty);
+            bijo.put("amount", amount);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+
+        return jSONObject;
+    }
+
+    private JSONObject pharmGrnReturnstoJSONObject(Bill b) {
+
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        String supplierName = "Supplier";
+        String bankAcc = "";
+        if (b.getFromInstitution() != null) {
+            supplierName = b.getFromInstitution().getName();
+        }
+        if (b.getToInstitution() != null) {
+            supplierName += " " + b.getToInstitution().getName();
+        }
+        headerJo.put("SupplierName", supplierName);
+
+        headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
+        if (b.getBillType() != null) {
+            headerJo.put("billType", b.getBillType().toString());
+        }
+        if (b.getInvoiceNumber() != null) {
+            headerJo.put("memo", b.getInvoiceNumber());
+        } else if (b.getIntInvoiceNumber() != 0) {
+            headerJo.put("memo", b.getIntInvoiceNumber());
+        } else {
+            headerJo.put("memo", b.getIdStr());
+        }
+        headerJo.put("rep_name", "");
+
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+            JSONObject bijo = new JSONObject();
+            Double amount = Math.abs(bi.getNetValue());
+            Double qty = 0.0;
+            if (bi.getItem() != null) {
+                bijo.put("item", bi.getItem().getName());
+            } else {
+                bijo.put("item", "item");
+            }
+            if (bi.getQty() != null) {
+                qty = Math.abs(bi.getQty());
+            }
+            bijo.put("qty", qty);
+            bijo.put("amount", amount);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+
+        return jSONObject;
+    }
+
+    private JSONObject pharmGrnCancellationstoJSONObject(Bill b) {
+
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        String supplierName = "Supplier";
+        String bankAcc = "";
+        if (b.getFromInstitution() != null) {
+            supplierName = b.getFromInstitution().getName();
+        }
+        if (b.getToInstitution() != null) {
+            supplierName += " " + b.getToInstitution().getName();
+        }
+        headerJo.put("SupplierName", supplierName);
+
+        headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("billNo", b.getDeptId() + "-" + b.getId());
+        if (b.getBillType() != null) {
+            headerJo.put("billType", b.getBillType().toString());
+        }
+        if (b.getInvoiceNumber() != null) {
+            headerJo.put("memo", b.getInvoiceNumber());
+        } else if (b.getIntInvoiceNumber() != 0) {
+            headerJo.put("memo", b.getIntInvoiceNumber());
+        } else {
             headerJo.put("memo", b.getIdStr());
         }
         headerJo.put("rep_name", "");
@@ -303,6 +543,81 @@ public class Qb {
         headerJo.put("supplier", supplierName);
         headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
 
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+
+            String account = "account";
+            String amount = "amount";
+
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            JSONObject bijo = new JSONObject();
+            if (bi.getItem() != null) {
+                account = bi.getItem().getName();
+            }
+//            bijo.put("qty", bi.getQty());
+//            bijo.put("amount", bi.getNetValue());
+//            if (b.getBillType() != null) {
+//                headerJo.put("billType", b.getBillType().toString());
+//            }
+            bijo.put("account", account);
+            bijo.put("amount", amount);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+
+        return jSONObject;
+    }
+    
+    private JSONObject paymentReturnstoJSONObject(Bill b) {
+
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+
+        String supplierName = "Supplier";
+        String invClass = "invClass";
+        String bankAcc = "";
+        String wcDate = "";
+        String chqNo = "";
+
+        if (b.getFromInstitution() != null) {
+            supplierName = b.getFromInstitution().getName();
+        }
+        if (b.getToInstitution() != null) {
+            supplierName += " " + b.getToInstitution().getName();
+        }
+
+        if (b.getBank() != null) {
+            if (b.getBank().getName() != null) {
+                bankAcc = b.getBank().getName();
+            }
+            if (b.getBank().getAccountNo() != null) {
+                bankAcc += b.getBank().getAccountNo();
+            }
+        }
+        if (b.getChequeDate() != null) {
+            wcDate = b.getChequeDate().toString();
+        }
+        if (b.getChequeRefNo() != null) {
+            chqNo = b.getChequeRefNo();
+        }
+
+        if (!bankAcc.trim().equals("")) {
+            headerJo.put("bankAcc", bankAcc);
+        }
+        if (!wcDate.trim().equals("")) {
+            headerJo.put("wcDate", wcDate);
+        }
+        if (!chqNo.trim().equals("")) {
+            headerJo.put("chqNo", chqNo);
+        }
+
+        headerJo.put("rep_name", "");
+        headerJo.put("supplier", supplierName);
+        headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
 
         JSONArray bija = new JSONArray();
         for (BillItem bi : b.getBillItems()) {
@@ -333,6 +648,82 @@ public class Qb {
         return jSONObject;
     }
 
+    private JSONObject paymentCancellationstoJSONObject(Bill b) {
+
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+
+        String supplierName = "Supplier";
+        String invClass = "invClass";
+        String bankAcc = "";
+        String wcDate = "";
+        String chqNo = "";
+
+        if (b.getFromInstitution() != null) {
+            supplierName = b.getFromInstitution().getName();
+        }
+        if (b.getToInstitution() != null) {
+            supplierName += " " + b.getToInstitution().getName();
+        }
+
+        if (b.getBank() != null) {
+            if (b.getBank().getName() != null) {
+                bankAcc = b.getBank().getName();
+            }
+            if (b.getBank().getAccountNo() != null) {
+                bankAcc += b.getBank().getAccountNo();
+            }
+        }
+        if (b.getChequeDate() != null) {
+            wcDate = b.getChequeDate().toString();
+        }
+        if (b.getChequeRefNo() != null) {
+            chqNo = b.getChequeRefNo();
+        }
+
+        if (!bankAcc.trim().equals("")) {
+            headerJo.put("bankAcc", bankAcc);
+        }
+        if (!wcDate.trim().equals("")) {
+            headerJo.put("wcDate", wcDate);
+        }
+        if (!chqNo.trim().equals("")) {
+            headerJo.put("chqNo", chqNo);
+        }
+
+        headerJo.put("rep_name", "");
+        headerJo.put("supplier", supplierName);
+        headerJo.put("wcDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+
+        JSONArray bija = new JSONArray();
+        for (BillItem bi : b.getBillItems()) {
+
+            String account = "account";
+            String amount = "amount";
+
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            JSONObject bijo = new JSONObject();
+            if (bi.getItem() != null) {
+                account = bi.getItem().getName();
+            }
+//            bijo.put("qty", bi.getQty());
+//            bijo.put("amount", bi.getNetValue());
+//            if (b.getBillType() != null) {
+//                headerJo.put("billType", b.getBillType().toString());
+//            }
+            bijo.put("account", account);
+            bijo.put("amount", amount);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+
+        return jSONObject;
+    }
+    
     private JSONObject wcChannelProPaymentBilltoJSONObject(Bill b) {
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
@@ -364,17 +755,15 @@ public class Qb {
                 bankAcc += b.getCreater().getDepartment().getName();
             }
         }
-        
-        
-        
-        /*************************
-         * 
+
+        /**
+         * ***********************
+         *
          * Change all
-         * 
+         *
          */
-        
         bankAcc = "Cash in hand Hospital Channelin";
-        
+
         if (b.getChequeDate() != null) {
             wcDate = CommonFunctions.formatDate(b.getChequeDate(), "yyyy-MM-dd");
         } else {
@@ -747,7 +1136,113 @@ public class Qb {
         if (b.getDepartment() != null) {
             bankAcc += b.getDepartment().getName();
         }
-        
+
+        headerJo.put("rep_name", "");
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", paymentMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(invoiceDate, "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+
+        JSONArray bija = new JSONArray();
+        List<BillFee> bfs = b.getBillFees();
+        if (bfs == null || bfs.isEmpty()) {
+            b = billFacade.find(b.getId());
+        }
+        bfs = b.getBillFees();
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
+
+        for (BillFee bf : bfs) {
+            JSONObject bijo = new JSONObject();
+            String feeName = "";
+            String itemName = "";
+            String docName = "";
+            String insName = "";
+            String itemTypeName = "Service or Test";
+            String invType = "InvType";
+            String item;
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null) {
+                feeName = bf.getFee().getFeeType().getLabel();
+            }
+            if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+                itemName = bf.getBillItem().getItem().getName();
+            }
+            if (bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                    && bf.getBillItem().getItem().getItemType() != null) {
+                itemTypeName = bf.getBillItem().getItem().getItemType().name();
+            }
+
+            String invClass = "invClass";
+            if (b.getToDepartment() != null) {
+                invClass = b.getToDepartment().getName();
+            }
+            if (b.getBillType() != null) {
+                invType = b.getBillType().getLabel();
+            }
+            String itemType = "itemType";
+            if (b.getBillType() != null) {
+                itemType = b.getBillType().getLabel();
+            }
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null) {
+                itemType += " " + bf.getFee().getFeeType().getLabel();
+            }
+
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null && bf.getFee().getFeeType() == FeeType.Staff) {
+                item = "Doc Fee";
+            } else {
+                item = itemName + " - " + feeName;
+            }
+
+            bijo.put("item", item);
+            bijo.put("qty", 1);
+            bijo.put("amount", bf.getAbsoluteFeeValue());
+            bijo.put("invType", invType);
+            bijo.put("invClass", invClass);
+
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+//        System.out.println("jSONObject = " + jSONObject);
+        return jSONObject;
+    }
+    
+    private JSONObject opdCancellationstoJSONObject(Bill b) {
+        //        System.out.println("opdBilltoJSONObject");
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        String customerName = "Customer";
+        String soldTo = "Customer";
+        String paymentMethod = "Payment Method";
+        String bankAcc = "";
+        Date invoiceDate = new Date();
+        if (b.getPatient() != null && b.getPatient().getPerson() != null && b.getPatient().getPerson().getNameWithTitle() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getNameWithTitle() != null) {
+            customerName = b.getToStaff().getPerson().getNameWithTitle();
+        }
+        if (b.getCreditCompany() != null) {
+            customerName = b.getCreditCompany().getName();
+        }
+        if (b.getPaymentMethod() != null) {
+            paymentMethod = b.getPaymentMethod().getLabel();
+            bankAcc = b.getPaymentMethod().getInHandLabel() + " ";
+        }
+        if (b.getBillDate() != null) {
+            invoiceDate = b.getBillDate();
+        } else if (b.getCreatedAt() != null) {
+            invoiceDate = b.getCreatedAt();
+        }
+
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
         headerJo.put("rep_name", "");
 
         headerJo.put("customerName", customerName);
@@ -822,6 +1317,112 @@ public class Qb {
         return jSONObject;
     }
 
+    private JSONObject opdReturnstoJSONObject(Bill b) {
+        //        System.out.println("opdBilltoJSONObject");
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        String customerName = "Customer";
+        String soldTo = "Customer";
+        String paymentMethod = "Payment Method";
+        String bankAcc = "";
+        Date invoiceDate = new Date();
+        if (b.getPatient() != null && b.getPatient().getPerson() != null && b.getPatient().getPerson().getNameWithTitle() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+        if (b.getToStaff() != null && b.getToStaff().getPerson() != null && b.getToStaff().getPerson().getNameWithTitle() != null) {
+            customerName = b.getToStaff().getPerson().getNameWithTitle();
+        }
+        if (b.getCreditCompany() != null) {
+            customerName = b.getCreditCompany().getName();
+        }
+        if (b.getPaymentMethod() != null) {
+            paymentMethod = b.getPaymentMethod().getLabel();
+            bankAcc = b.getPaymentMethod().getInHandLabel() + " ";
+        }
+        if (b.getBillDate() != null) {
+            invoiceDate = b.getBillDate();
+        } else if (b.getCreatedAt() != null) {
+            invoiceDate = b.getCreatedAt();
+        }
+
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        headerJo.put("rep_name", "");
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", paymentMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(invoiceDate, "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+
+        JSONArray bija = new JSONArray();
+        List<BillFee> bfs = b.getBillFees();
+        if (bfs == null || bfs.isEmpty()) {
+            b = billFacade.find(b.getId());
+        }
+        bfs = b.getBillFees();
+        if (bfs == null || bfs.isEmpty()) {
+            bfs = findBillFeesFromBill(b);
+        }
+
+        for (BillFee bf : bfs) {
+            JSONObject bijo = new JSONObject();
+            String feeName = "";
+            String itemName = "";
+            String docName = "";
+            String insName = "";
+            String itemTypeName = "Service or Test";
+            String invType = "InvType";
+            String item;
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null) {
+                feeName = bf.getFee().getFeeType().getLabel();
+            }
+            if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+                itemName = bf.getBillItem().getItem().getName();
+            }
+            if (bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                    && bf.getBillItem().getItem().getItemType() != null) {
+                itemTypeName = bf.getBillItem().getItem().getItemType().name();
+            }
+
+            String invClass = "invClass";
+            if (b.getToDepartment() != null) {
+                invClass = b.getToDepartment().getName();
+            }
+            if (b.getBillType() != null) {
+                invType = b.getBillType().getLabel();
+            }
+            String itemType = "itemType";
+            if (b.getBillType() != null) {
+                itemType = b.getBillType().getLabel();
+            }
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null) {
+                itemType += " " + bf.getFee().getFeeType().getLabel();
+            }
+
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null && bf.getFee().getFeeType() == FeeType.Staff) {
+                item = "Doc Fee";
+            } else {
+                item = itemName + " - " + feeName;
+            }
+
+            bijo.put("item", item);
+            bijo.put("qty", 1);
+            bijo.put("amount", bf.getAbsoluteFeeValue());
+            bijo.put("invType", invType);
+            bijo.put("invClass", invClass);
+
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+//        System.out.println("jSONObject = " + jSONObject);
+        return jSONObject;
+    }
+    
     private JSONObject inwardPaymentBilltoJSONObject(Bill b) {
         //        System.out.println("inwardPaymentBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
@@ -904,6 +1505,170 @@ public class Qb {
         return jSONObject;
     }
 
+    private JSONObject inwardPaymentReturnstoJSONObject(Bill b) {
+        //        System.out.println("inwardPaymentBilltoJSONObject");
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        String ptName = "";
+        String bankAcc = "";
+
+        String customerName = "Insurance";
+        String soldTo = "Customer";
+        String payMethod = "Cash";
+        Date invoiceDate = new Date();
+        String invoiceNo = "";
+
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPaymentMethod() != null) {
+            payMethod = b.getPaymentMethod().getLabel();
+            bankAcc = b.getPaymentMethod().getInHandLabel();
+        }
+
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", payMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+        headerJo.put("rep_name", "");
+        JSONArray bija = new JSONArray();
+
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            b = billFacade.find(b.getId());
+        }
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        if (bis == null || bis.isEmpty()) {
+            return jSONObject;
+        }
+
+        for (BillItem bi : bis) {
+            String invType = "invType";
+            String invClass = "invClass";
+            String item = "Advance Payment";
+            Double amount = 1000.0000;
+            String itemName = "Advance Payment";
+
+            JSONObject bijo = new JSONObject();
+
+            if (b.getBillType() != null) {
+                invType = b.getBillType().getLabel();
+                itemName = b.getBillType().getLabel();
+            }
+
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            amount = Math.abs(b.getNetTotal());
+
+            bijo.put("item", itemName);
+            bijo.put("qty", 1);
+            bijo.put("amount", amount);
+            bijo.put("invType", invType);
+            bijo.put("invClass", invClass);
+
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+        return jSONObject;
+    }
+
+     private JSONObject inwardPaymentCancellationstoJSONObject(Bill b) {
+        //        System.out.println("inwardPaymentBilltoJSONObject");
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        String ptName = "";
+        String bankAcc = "";
+
+        String customerName = "Insurance";
+        String soldTo = "Customer";
+        String payMethod = "Cash";
+        Date invoiceDate = new Date();
+        String invoiceNo = "";
+
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPaymentMethod() != null) {
+            payMethod = b.getPaymentMethod().getLabel();
+            bankAcc = b.getPaymentMethod().getInHandLabel();
+        }
+
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("payMethod", payMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+        headerJo.put("rep_name", "");
+        JSONArray bija = new JSONArray();
+
+        List<BillItem> bis = b.getBillItems();
+        if (bis == null || bis.isEmpty()) {
+            b = billFacade.find(b.getId());
+        }
+        if (bis == null || bis.isEmpty()) {
+            bis = findBillItemsFromBill(b);
+        }
+        if (bis == null || bis.isEmpty()) {
+            return jSONObject;
+        }
+
+        for (BillItem bi : bis) {
+            String invType = "invType";
+            String invClass = "invClass";
+            String item = "Advance Payment";
+            Double amount = 1000.0000;
+            String itemName = "Advance Payment";
+
+            JSONObject bijo = new JSONObject();
+
+            if (b.getBillType() != null) {
+                invType = b.getBillType().getLabel();
+                itemName = b.getBillType().getLabel();
+            }
+
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            amount = Math.abs(b.getNetTotal());
+
+            bijo.put("item", itemName);
+            bijo.put("qty", 1);
+            bijo.put("amount", amount);
+            bijo.put("invType", invType);
+            bijo.put("invClass", invClass);
+
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+        return jSONObject;
+    }
+    
     private JSONObject inwardPaymentBilltoJSONObjectForCustomerPayments(Bill b) {
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
@@ -1119,8 +1884,218 @@ public class Qb {
         if (b.getDepartment() != null) {
             bankAcc += b.getDepartment().getName();
         }
-        
-        if(b.getStaff()!=null){
+
+        if (b.getStaff() != null) {
+            rep_name = b.getStaff().getCode();
+        }
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("rep_name", rep_name);
+        headerJo.put("payMethod", payMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+        JSONArray bija = new JSONArray();
+
+        List<BillFee> billFees = b.getBillFees();
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = findBillFeesFromBill(b);
+        }
+
+        for (BillFee bf : b.getBillFees()) {
+
+            if (bf.getFeeGrossValue() == null || bf.getFeeGrossValue() < 0.01) {
+                continue;
+            }
+
+            String invType = "invType";
+            String invClass = "invClass";
+            String item = "Item";
+            if (b.getBillType() != null) {
+                invType = b.getBillType().toString();
+            }
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            JSONObject bijo = new JSONObject();
+
+            if (bf.getFee() != null) {
+                item = bf.getFee().getFeeType().getLabel();
+            }
+
+            if (bf.getSpeciality() != null) {
+                item += " " + bf.getSpeciality().getName();
+            }
+            if (bf.getStaff() != null) {
+                item += " " + bf.getStaff().getPerson().getNameWithTitle();
+            }
+
+            if (bf.getDepartment() != null) {
+                item += " " + bf.getDepartment().getName();
+            }
+
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null && bf.getFee().getFeeType() == FeeType.Staff) {
+                item = "Doc Fee";
+            }
+
+            bijo.put("item", item);
+            bijo.put("qty", 1);
+            bijo.put("amount", bf.getAbsoluteFeeValue());
+            bijo.put("invClass", invClass);
+            bijo.put("invType", invType);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+        return jSONObject;
+    }
+
+    private JSONObject channelReturnstoJSONObject(Bill b) {
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        if (b.getPatient() != null & b.getPatient().getPerson() != null) {
+            headerJo.put("customerName", b.getPatient().getPerson().getNameWithTitle());
+        } else {
+            headerJo.put("customerName", "Customer");
+        }
+
+        String customerName = "Customer";
+        String soldTo = "Customer";
+        String payMethod = "Cash";
+        Date invoiceDate = new Date();
+        String invoiceNo = "";
+        String bankAcc = "";
+        String rep_name = "";
+
+        if (b.getPaymentMethod() != null) {
+            customerName = b.getPaymentMethod().getLabel() + " customer";
+            bankAcc = b.getPaymentMethod().getInHandLabel() + " ";
+        }
+
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
+            soldTo = b.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
+            customerName = b.getPatientEncounter().getCreditCompany().getName();
+        }
+
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        if (b.getStaff() != null) {
+            rep_name = b.getStaff().getCode();
+        }
+
+        headerJo.put("customerName", customerName);
+        headerJo.put("soldTo", soldTo);
+        headerJo.put("rep_name", rep_name);
+        headerJo.put("payMethod", payMethod);
+        headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
+        headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
+        headerJo.put("bankAcc", bankAcc);
+        JSONArray bija = new JSONArray();
+
+        List<BillFee> billFees = b.getBillFees();
+        if (billFees == null || billFees.isEmpty()) {
+            billFees = findBillFeesFromBill(b);
+        }
+
+        for (BillFee bf : b.getBillFees()) {
+
+            if (bf.getFeeGrossValue() == null || bf.getFeeGrossValue() < 0.01) {
+                continue;
+            }
+
+            String invType = "invType";
+            String invClass = "invClass";
+            String item = "Item";
+            if (b.getBillType() != null) {
+                invType = b.getBillType().toString();
+            }
+            if (b.getDepartment() != null) {
+                invClass = b.getDepartment().getName();
+            }
+
+            JSONObject bijo = new JSONObject();
+
+            if (bf.getFee() != null) {
+                item = bf.getFee().getFeeType().getLabel();
+            }
+
+            if (bf.getSpeciality() != null) {
+                item += " " + bf.getSpeciality().getName();
+            }
+            if (bf.getStaff() != null) {
+                item += " " + bf.getStaff().getPerson().getNameWithTitle();
+            }
+
+            if (bf.getDepartment() != null) {
+                item += " " + bf.getDepartment().getName();
+            }
+
+            if (bf.getFee() != null && bf.getFee().getFeeType() != null && bf.getFee().getFeeType() == FeeType.Staff) {
+                item = "Doc Fee";
+            }
+
+            bijo.put("item", item);
+            bijo.put("qty", 1);
+            bijo.put("amount", bf.getAbsoluteFeeValue());
+            bijo.put("invClass", invClass);
+            bijo.put("invType", invType);
+            bija.put(bijo);
+        }
+        jSONObject.put("header", headerJo);
+        jSONObject.put("grid", bija);
+        return jSONObject;
+    }
+
+    private JSONObject channelCancellationstoJSONObject(Bill b) {
+        JSONObject jSONObject = new JSONObject();
+        JSONObject headerJo = new JSONObject();
+        if (b.getPatient() != null & b.getPatient().getPerson() != null) {
+            headerJo.put("customerName", b.getPatient().getPerson().getNameWithTitle());
+        } else {
+            headerJo.put("customerName", "Customer");
+        }
+
+        String customerName = "Customer";
+        String soldTo = "Customer";
+        String payMethod = "Cash";
+        Date invoiceDate = new Date();
+        String invoiceNo = "";
+        String bankAcc = "";
+        String rep_name = "";
+
+        if (b.getPaymentMethod() != null) {
+            customerName = b.getPaymentMethod().getLabel() + " customer";
+            bankAcc = b.getPaymentMethod().getInHandLabel() + " ";
+        }
+
+        if (b.getPatient() != null && b.getPatient().getPerson() != null) {
+            soldTo = b.getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getPatient() != null && b.getPatientEncounter().getPatient().getPerson() != null) {
+            soldTo = b.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
+        }
+
+        if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
+            customerName = b.getPatientEncounter().getCreditCompany().getName();
+        }
+
+        if (b.getDepartment() != null) {
+            bankAcc += b.getDepartment().getName();
+        }
+
+        if (b.getStaff() != null) {
             rep_name = b.getStaff().getCode();
         }
 
@@ -1294,8 +2269,8 @@ public class Qb {
         if (b.getPatientEncounter() != null && b.getPatientEncounter().getCreditCompany() != null) {
             customerName = b.getPatientEncounter().getCreditCompany().getName();
         }
-        
-        if(b.getStaff()!=null){
+
+        if (b.getStaff() != null) {
             rep_name = b.getStaff().getCode();
         }
 
@@ -1373,6 +2348,85 @@ public class Qb {
                 case PaymentBill:
                 case GrnPayment:
                     jSONObject = paymentBilltoJSONObject(bill);
+                    break;
+                case InwardFinalBill:
+                    jSONObject = inwardFinalBilltoJSONObject(bill);
+                    break;
+                case ChannelOnCall:
+                    jSONObject = channelOncallBilltoJSONObject(bill);
+                    break;
+                default:
+                    continue;
+            }
+
+            array.put(jSONObject);
+        }
+        return array;
+    }
+
+    private JSONArray invoiceReturnsAndCancellationsToJSONArray(List<Bill> bills) {
+        JSONArray array = new JSONArray();
+        for (Bill bill : bills) {
+            if (bill.getBillType() == null) {
+                continue;
+            }
+            JSONObject jSONObject = new JSONObject();
+            switch (bill.getBillType()) {
+                case PharmacySale:
+                case PharmacyWholeSale:
+                    if (bill.getBillClassType() == BillClassType.CancelledBill) {
+                        jSONObject = pharmCancellationstoJSONObject(bill);
+                    } else if (bill.getBillClassType() == BillClassType.RefundBill) {
+                        jSONObject = pharmReturnstoJSONObject(bill);
+                    }
+                    break;
+                case PharmacyGrnBill:
+                case PharmacyPurchaseBill:
+                case PharmacyReturnWithoutTraising:
+                case PharmacyGrnReturn:
+                case PurchaseReturn:
+                case StoreGrnReturn:
+                case StoreGrnBill:
+                case StorePurchase:
+                case StorePurchaseReturn:
+                    if (bill.getBillClassType() == BillClassType.CancelledBill) {
+                        jSONObject = pharmGrnCancellationstoJSONObject(bill);
+                    } else if (bill.getBillClassType() == BillClassType.RefundBill) {
+                        jSONObject = pharmGrnReturnstoJSONObject(bill);
+                    }
+                    break;
+                case ChannelPaid:
+                case ChannelCash:
+                    if (bill.getBillClassType() == BillClassType.CancelledBill) {
+                        jSONObject = channelCancellationstoJSONObject(bill);
+                    } else if (bill.getBillClassType() == BillClassType.RefundBill) {
+                        jSONObject = channelReturnstoJSONObject(bill);
+                    }
+                    break;
+                case OpdBill:
+                    if (bill.getBillClassType() == BillClassType.CancelledBill) {
+                        jSONObject = opdCancellationstoJSONObject(bill);
+                    } else if (bill.getBillClassType() == BillClassType.RefundBill) {
+                        jSONObject = opdReturnstoJSONObject(bill);
+                    }
+                    break;
+                case InwardPaymentBill:
+                    if (bill.getBillClassType() == BillClassType.CancelledBill) {
+                        jSONObject = inwardPaymentCancellationstoJSONObject(bill);
+                    } else if (bill.getBillClassType() == BillClassType.RefundBill) {
+                        jSONObject = inwardPaymentReturnstoJSONObject(bill);
+                    }
+                    break;
+
+                case ChannelProPayment:
+                case PettyCash:
+                case PaymentBill:
+                case GrnPayment:
+                    if (bill.getBillClassType() == BillClassType.CancelledBill) {
+                        jSONObject = paymentCancellationstoJSONObject(bill);
+                    } else if (bill.getBillClassType() == BillClassType.RefundBill) {
+                        jSONObject = paymentReturnstoJSONObject(bill);
+                    }
                     break;
                 case InwardFinalBill:
                     jSONObject = inwardFinalBilltoJSONObject(bill);
@@ -1748,7 +2802,6 @@ public class Qb {
 
 //        List<BillType> billTypesInpatient = new ArrayList<>();
 //        billTypesInpatient.add(BillType.InwardFinalBill);
-
         List<BillClassType> billClassTypes = new ArrayList<>();
         billClassTypes.add(BillClassType.BilledBill);
         /**
@@ -1803,7 +2856,6 @@ public class Qb {
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
 
-
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
         String key = requestContext.getHeader("Finance");
@@ -1852,7 +2904,7 @@ public class Qb {
         billTypes.add(BillType.PharmacySale);
         billTypes.add(BillType.ChannelPaid);
         billTypes.add(BillType.OpdBill);
-        billTypes.add(BillType.InwardPaymentBill);
+//        billTypes.add(BillType.InwardPaymentBill);
         billTypes.add(BillType.ChannelCash);
         billTypes.add(BillType.PharmacyWholeSale);
 
@@ -1917,7 +2969,6 @@ public class Qb {
             @PathParam("last_invoice_id") String strLastIdInRequest,
             @PathParam("institution_code") String strInstitutionCode,
             @PathParam("last_date") String strLastDate) {
-
 
         JSONArray array;
         JSONObject jSONObjectOut = new JSONObject();
@@ -1992,7 +3043,7 @@ public class Qb {
 
         }
 
-        array = invoiceBillsToJSONArray(bills);
+        array = invoiceReturnsAndCancellationsToJSONArray(bills);
         jSONObjectOut.put("salesRetList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
         jSONObjectOut.put("status", successMessage());
@@ -2163,11 +3214,11 @@ public class Qb {
          *
          */
         int maxNo = 50;
-        
+
         List<Bill> bills1 = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, true);
-        
+
         Long lastIdOfCurrentdata1 = null;
-        if (bills1!=null && !bills1.isEmpty()) {
+        if (bills1 != null && !bills1.isEmpty()) {
             Bill tbf = bills1.get(bills1.size() - 1);
             if (tbf != null) {
                 lastIdOfCurrentdata1 = tbf.getId();
@@ -2184,18 +3235,16 @@ public class Qb {
         billClassTypes.add(BillClassType.RefundBill);
         billClassTypes.add(BillClassType.CancelledBill);
 
-        
-
         List<Bill> bills2 = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, true);
         Long lastIdOfCurrentdata2 = null;
-        if (bills2!=null && !bills2.isEmpty()) {
+        if (bills2 != null && !bills2.isEmpty()) {
             Bill tbf = bills2.get(bills2.size() - 1);
             if (tbf != null) {
                 lastIdOfCurrentdata2 = tbf.getId();
             }
         }
 
-        List<Bill> bills=new ArrayList<>();
+        List<Bill> bills = new ArrayList<>();
         boolean bills1HasDate = false;
         boolean bills2HasDate = false;
 
@@ -2205,18 +3254,18 @@ public class Qb {
         if (bills2 != null && !bills2.isEmpty()) {
             bills2HasDate = true;
         }
-        
-        if(bills1HasDate && bills2HasDate){
+
+        if (bills1HasDate && bills2HasDate) {
             bills = bills1;
             bills.addAll(bills2);
-        }else if (bills1HasDate){
+        } else if (bills1HasDate) {
             bills = bills1;
-        }else if(bills2HasDate){
+        } else if (bills2HasDate) {
             bills = bills2;
-        }else{
+        } else {
             bills = new ArrayList<>();
         }
-        
+
         Long lastIdOfCurrentdata;
         if (lastIdOfCurrentdata1 != null && lastIdOfCurrentdata2 == null) {
             lastIdOfCurrentdata = lastIdOfCurrentdata1;
@@ -2232,8 +3281,6 @@ public class Qb {
             lastIdOfCurrentdata = 0l;
         }
 
-
-        
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("grnRetList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2320,7 +3367,6 @@ public class Qb {
                 lastIdOfCurrentdata = tbf.getId();
             }
         }
-
 
         array = wcBillsToJSONArray(bills);
         jSONObjectOut.put("wcList", array);
@@ -2410,7 +3456,6 @@ public class Qb {
             }
         }
 
-
         array = jurListToJSONArray(bills);
         jSONObjectOut.put("jurList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2493,7 +3538,6 @@ public class Qb {
             }
         }
 
-
         array = customerPaymentBillsToJSONArray(bills);
         jSONObjectOut.put("cusPayList", array);
         jSONObjectOut.put("lastId", lastIdOfCurrentdata);
@@ -2564,7 +3608,6 @@ public class Qb {
                 lastIdOfCurrentdata = tbf.getId();
             }
         }
-
 
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("paymentReturnList", array);
@@ -2708,7 +3751,6 @@ public class Qb {
         m.put("id", billId);
         billObjects = billSessionFacade.findBySQL(sql, m);
 
-
         Map map = new HashMap();
         if (!billObjects.isEmpty()) {
 
@@ -2756,7 +3798,6 @@ public class Qb {
         m.put("fd", commonFunctions.getStartOfDay(fromDate));
         m.put("td", commonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
-
 
         for (BillSession o : billObjects) {
             try {
