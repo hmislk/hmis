@@ -2782,6 +2782,7 @@ public class Qb {
     }
 
     private Institution findInstitutionByCode(String strInstitutionCode) {
+        System.out.println("strInstitutionCode = " + strInstitutionCode);
         String j;
         j = "select i "
                 + " from Institution i "
@@ -2790,7 +2791,10 @@ public class Qb {
         Map m = new HashMap<>();
         m.put("c", strInstitutionCode);
         m.put("ret", false);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
         Institution ins = institutionFacade.findFirstBySQL(j, m);
+        System.out.println("ins = " + ins);
         return ins;
     }
 
