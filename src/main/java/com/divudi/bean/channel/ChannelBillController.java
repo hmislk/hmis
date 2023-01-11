@@ -1232,7 +1232,7 @@ public class ChannelBillController implements Serializable {
 
     public ServiceSession getSs() {
         if (getbookingController().getSelectedServiceSession() != null) {
-            return getServiceSessionFacade().findFirstBySQL("Select s From ServiceSession s where s.retired=false and s.id=" + getbookingController().getSelectedServiceSession().getId());
+            return getServiceSessionFacade().findFirstByJpql("Select s From ServiceSession s where s.retired=false and s.id=" + getbookingController().getSelectedServiceSession().getId());
         } else {
             return new ServiceSession();
         }

@@ -90,7 +90,7 @@ public class CommonReportItemController implements Serializable {
 
     public CommonReportItem getLastCommonReportItem() {
         String j = "select i from CommonReportItem i order by i.id desc";
-        return getEjbFacade().findFirstBySQL(j);
+        return getEjbFacade().findFirstByJpql(j);
     }
 
     public void addNewCombo() {

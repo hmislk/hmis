@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.lab;
+
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.InvestigationCategory;
@@ -15,7 +16,9 @@ import com.divudi.facade.InvestigationCategoryFacade;
 import com.divudi.facade.MachineFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -27,8 +30,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -136,10 +139,18 @@ public class InvestigationCategoryController implements Serializable {
     }
 
     public List<InvestigationCategory> getItems() {
-        items = getFacade().findAll("name", true);
+        if (items == null) {
+            String jpql = "select c "
+                    + " from InvestigationCategory c "
+                    + " where c:retired=:ret "
+                    + " order by c.name";
+            Map m = new HashMap();
+            m.put("ret", false);
+            items = getFacade().findBySQL(jpql, m);
+        }
         return items;
     }
-    
+
     public List<Machine> getMachines() {
         machines = machineFacade.findAll("name", true);
         return machines;

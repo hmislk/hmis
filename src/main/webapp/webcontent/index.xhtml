@@ -35,6 +35,12 @@
                             <div class="col" >
                                 <h:commandButton  class="btn btn-primary m-2 w-75" value="List Images" action="#{uploadController.toListUploads()}" ></h:commandButton>
                             </div>
+                             <div class="col" >
+                                 <h:commandButton  class="btn btn-primary m-2 w-75" value="Add Language" action="#{webLanguageController.toAddNewWebLanguage()}" ></h:commandButton>
+                            </div>
+                            <div class="col" >
+                                <h:commandButton  class="btn btn-primary m-2 w-75" value="List Languages" action="#{webLanguageController.toListWebLanguage()}" ></h:commandButton>
+                            </div>
                         </h:form>
                         
                         <h1>#{webContentController.findSingleText('title')}</h1>
