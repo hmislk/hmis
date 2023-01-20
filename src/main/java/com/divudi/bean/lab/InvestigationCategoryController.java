@@ -142,7 +142,7 @@ public class InvestigationCategoryController implements Serializable {
         if (items == null) {
             String jpql = "select c "
                     + " from InvestigationCategory c "
-                    + " where c:retired=:ret "
+                    + " where c.retired=:ret "
                     + " order by c.name";
             Map m = new HashMap();
             m.put("ret", false);
