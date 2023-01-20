@@ -85,6 +85,9 @@ public class Category implements Serializable {
     private String entityClass;
     @JsonIgnore
     boolean filled;
+    
+    @ManyToOne
+    private Institution institution;
 
 
     // @ManyToOne
@@ -104,6 +107,8 @@ public class Category implements Serializable {
     public void setSymanticType(SymanticHyrachi symanticType) {
         this.symanticType = symanticType;
     }
+    
+    
 
     @XmlTransient
     public List<Category> getChildCategories() {
@@ -288,6 +293,14 @@ public class Category implements Serializable {
 
     public void setEntityClass(String entityClass) {
         this.entityClass = entityClass;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
     }
 
 }
