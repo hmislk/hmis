@@ -125,7 +125,7 @@
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" />
                             <h:outputText value="#{ses.startingTime}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                <f:convertDateTime  timeZone="IST" pattern="hh:mm a" />
                             </h:outputText>
                             <h:outputText value=" &nbsp;&nbsp;" />
                             <h:outputText value="#{ses.totalFee}" >
@@ -179,7 +179,7 @@
                         </p:column>
                         <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
                             <h:outputText value="#{ses.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                <f:convertDateTime  timeZone="IST" pattern="hh:mm" />
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
@@ -277,6 +277,8 @@
                                             });
                                         </h:outputScript>
                                     </h:panelGroup>
+
+
                                     <h:outputLabel rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
                                     <p:autoComplete rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
                                                     value="#{channelBillController.institutionOnCallAgency}"  completeMethod="#{agencyController.completeAgency}" var="ix"
@@ -556,7 +558,8 @@
                                            :#{p:component('pgNewBookingDetail')}" 
                                            update="gpThisBookingDetails dialogChannelAdded" style="float: right;" 
                                            action="#{channelBillController.add}" 
-                                           onclick="if (! confirm('Are you sure?')) return false"
+                                           onclick="if (!confirm('Are you sure?'))
+                                                       return false"
                                            oncomplete="PF('dlgAdd').show();">   
                             <!--<p:confirm header="Confirmation" message="Are you sure?" icon="ui-icon-alert" />-->
                         </p:commandButton>
@@ -622,7 +625,7 @@
                                     </div>
 
                                     <h:panelGrid columns="2">
-                                        <p:outputLabel value="Name"/>
+                                        <p:outputLabel value="Name : "/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle}" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle ne null}"/>
                                         <p:outputLabel value="" rendered="#{bookingController.selectedBillSession.bill.patient.person.nameWithTitle eq null}"/>
                                         <p:outputLabel value="Consultant"/>
@@ -666,6 +669,19 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.createdAt}"> 
                                             <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
+
+                                        <p:outputLabel value="Department" />
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.department.name}" />
+
+                                        <p:outputLabel value="ID" />
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.id}" />
+
+                                        <p:outputLabel value="INS ID" />
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}" />
+
+                                        <p:outputLabel value="Dep ID" />
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}" />
+
 
                                         <p:outputLabel value="Settled At" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingController.selectedBillSession.bill.paidBill ne null}"> 
@@ -803,6 +819,19 @@
                                         <p:outputLabel value="#{bookingController.selectedBillSession.billItem.agentRefNo}" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Agent'}"/>
                                         <p:outputLabel value="Booking User"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
+
+                                        <p:outputLabel value="Department"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.department.name}"/>
+
+                                        <p:outputLabel value="ID"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.id}"/>
+
+                                        <p:outputLabel value="Ins ID"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.insId}"/>
+
+                                        <p:outputLabel value="Dept ID"/>
+                                        <p:outputLabel value="#{bookingController.selectedBillSession.bill.deptId}"/>
+
                                         <p:outputLabel value="Staff Name" rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                         <p:outputLabel value="#{bookingController.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingController.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingController.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                         <p:outputLabel value="Booked At"/>
@@ -1069,7 +1098,7 @@
 
                                         <h:panelGroup id="panelAddedBillPrintSettle" styleClass="noBorder" rendered="#{channelBillController.settleSucessFully}">
                                             <div>
-                                                 <ch:channelRecipt bill="#{channelBillController.billSession.bill}" dup="false"/>
+                                                <ch:channelRecipt bill="#{channelBillController.billSession.bill}" dup="false"/>
                                             </div>
                                         </h:panelGroup>
                                         <h:panelGroup  styleClass="noBorder" rendered="#{!channelBillController.settleSucessFully}" >

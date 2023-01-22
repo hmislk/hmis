@@ -40,7 +40,7 @@
                                     <p:printer target="panPrint" />
                                 </p:commandButton>
                                 <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton">
-                                    <pe:exporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report"/>
+                                    <p:dataExporter type="xls" target="tblBills" fileName="Stock_Taking_New_Report"/>
                                 </p:commandButton>
                             </h:panelGrid>
                         </f:facet>
@@ -49,7 +49,7 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Stock Taking Special Report(This Report Accuracy is Depending On Stock Taking Date.)" />
                             </f:facet>
-                            <p:dataTable rowIndexVar="i" id="tblBills" 
+                            <p:dataTable rowIndexVar="i" id="tblBills" rowIndexVar="#{r}" 
                                          value="#{searchController.pharmacyAdjustmentRows}" var="r" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="From Date - #{searchController.fromDate}"></p:outputLabel><br></br>

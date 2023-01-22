@@ -1000,7 +1000,7 @@ public class BookingController implements Serializable {
                     //all Bill
 //                    ss.setTotalFee(ss.getTotalFee() * finalVariables.getVATPercentageWithAmount());
 //                    ss.getOriginatingSession().setTotalFee(ss.getOriginatingSession().getTotalFfee() * finalVariables.getVATPercentageWithAmount());
-                    
+
                     //only Doc Fee
                     ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
                     ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
@@ -1297,7 +1297,7 @@ public class BookingController implements Serializable {
 
         String msg = "Dear Sir/Madam,\n"
                 + ss.getStaff().getPerson().getName() + " has arrived.\n"
-//                + "** Now you can channel your doctor online on www.ruhunuhospital.lk **";
+                //                + "** Now you can channel your doctor online on www.ruhunuhospital.lk **";
                 + "** Now you can channel your doctor online on https://goo.gl/aEbnDD **";
 //        fillBillSessions();
         for (BillSession bs : bSessions) {
@@ -1404,6 +1404,7 @@ public class BookingController implements Serializable {
 
         String sql = "Select bs From BillSession bs "
                 + " where bs.retired=false"
+                + " and bs.bill.retired=false"
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "

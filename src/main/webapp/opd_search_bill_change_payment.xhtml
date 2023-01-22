@@ -140,23 +140,6 @@
                                             <p:outputLabel value="Gender" ></p:outputLabel>
                                             <p:outputLabel value="#{bill.patient.person.sex}" ></p:outputLabel>
                                             <p:outputLabel value="Changing Details" ></p:outputLabel>
-                                            <p:outputLabel value="Not Edited" rendered="#{bill.patient.person.editer eq null}"></p:outputLabel>
-                                            <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
-                                                <h:outputLabel value="Edited By " />
-                                                <h:outputLabel rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
-                                                </h:outputLabel>
-                                                <h:panelGroup rendered="#{bill.patient.person.editedAt ne null}" >
-                                                    <h:outputLabel value=" on " />
-                                                    <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy"/>
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value=" at " />
-                                                    <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="." />
-                                                </h:panelGroup>
-                                            </h:panelGroup>
                                         </p:panelGrid>
                                     </p:panel>
                                 </p:tooltip>

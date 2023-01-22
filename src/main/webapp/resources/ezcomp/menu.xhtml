@@ -705,6 +705,13 @@
 
             </p:submenu>
 
+            <p:submenu styleClass="rightBordrOnly" id="smSearch" 
+                       label="Search" 
+                       rendered="#{webUserController.hasPrivilege('Search')}">
+                <!--<p:menuitem  ajax="false"  action="/search_all" value="Grand Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>-->
+                <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>
+                <!--<p:menuitem  ajax="false"  action="/dataAdmin/admin_all_bill_type_bills" value="Bill All By Bill Types" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>-->
+            </p:submenu>
            
 
 

@@ -14,7 +14,7 @@
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >
                             <h:panelGroup>
-                                <h:panelGrid columns="5">
+                                <h:panelGrid columns="6">
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
@@ -24,6 +24,11 @@
 
                                     </p:calendar>
                                     <p:commandButton ajax="false" action="#{searchController.createInwardPaymentBills()}" value="Search" onclick="onSubmitButton();" />
+                                    <p:commandButton value="Download" ajax="false" >
+                                        <p:dataExporter target="tblBills" type="xlsx" fileName="inpatient_payments" ></p:dataExporter>
+                                    </p:commandButton>
+                                
+                                
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="6">
@@ -45,7 +50,7 @@
                         </f:facet>
 
                         <p:dataTable id="tblBills" value="#{searchController.bills}" var="bb">
-                            <p:column>
+                            <p:column exportable="false">
                                 <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_payment" onclick="onSubmitButton();" >
                                     <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                 </p:commandButton>

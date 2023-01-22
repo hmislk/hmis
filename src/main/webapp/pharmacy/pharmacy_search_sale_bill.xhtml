@@ -85,7 +85,7 @@
                             </p:column>   
 
                             <p:column headerText="Pre Bill at"  >
-                                <h:outputLabel value="#{bill.createdAt}" >
+                                <h:outputLabel value="#{bill.createdAt.time}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
                                 </h:outputLabel>
 

@@ -268,7 +268,7 @@
                                     </p:panelGrid>
                                 </p:panel>
                             </p:panelGrid>
-                            <p:panel header="Bill Fee Detail">
+                            <p:panel header="Bill Fee Detail" rendered="false">
                                 <p:dataTable rowIndexVar="rowIndex"
                                              editable="true" value="#{billSearch.billFeesList}" var="bip" >
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
@@ -436,7 +436,7 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
-                            <p:panel header="Bill Item Detail">
+                            <p:panel header="Bill Item Detail" rendered="false">
                                 <p:dataTable value="#{billSearch.billItemList}"
                                              editable="true"  var="bip21" rowIndexVar="rowIndex">
                                     <p:ajax event="rowEdit" listener="#{billSearch.onEditItem}" />  
@@ -592,41 +592,7 @@
                             </p:panel>
                         </p:panel>
                     </p:panel>
-                    <h:panelGroup id="gpBillPreview" styleClass="noBorder">
-
-                        <p:panel rendered="#{billSearch.billSearch.billType eq 'PaymentBill'}">
-                            <p:commandButton value="Print" styleClass="noPrintButton" ajax="false" action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                <h:panelGroup rendered="#{!sessionController.loggedPreference.pharmacyBillPrabodha}">
-                                    <bi:staffBill_1  controller="#{billSearch}" bill="#{billSearch.billSearch}" />
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-
-                        </p:panel>
-                        <p:panel id="gpBillPreviewCC" rendered="#{billSearch.bill.billType eq 'OpdBill'}">
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}" >
-
-                                <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
-                                        <p:printer target="gpBillPreviewCC" ></p:printer>
-                                    </p:commandButton>
-                                </div>
-                                <h:panelGroup  rendered="#{sessionController.loggedPreference.printLabelForOPdBill eq false
-                                                                             and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'
-                                                                             and sessionController.loggedPreference.fiveFivePaperWithHeadings eq false}">
-                                    <bi:opdBillPrintRuhunu bill="#{billSearch.billSearch}" dup="false" />
-
-                                </h:panelGroup>
-
-                            </h:panelGroup>
-
-                            
-                        </p:panel>
-                    </h:panelGroup>
+                  
 
                 </h:form>
             </ui:define>

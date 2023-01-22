@@ -123,11 +123,7 @@
                                     <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                 </h:commandLink>
 
-                                <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
-                                    <h:outputLabel style="color: red;" value="Edited By " />
-                                    <h:outputLabel style="color: red;" rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
-                                    </h:outputLabel>
-                                </h:panelGroup>
+                               
 
                                 <h:panelGroup rendered="#{bill.patient.person.editedAt ne null}" >
                                     <h:outputLabel style="color: red;" value="Edited At " />

@@ -55,13 +55,13 @@
                 <table style="width: 100%; margin-left:0.5cm;" >
                     <tr>
                         <td style="width: 15%; text-align: left;" >
-                            <h:outputLabel value="Date" style="text-align: center!important;   
+                            <h:outputLabel value="Date" style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 85%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: center!important;   
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                                 <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
@@ -71,13 +71,13 @@
 
                     <tr>
                         <td style="width: 15%; text-align: left;" >
-                            <h:outputLabel value="Time" style="text-align: center!important;   
+                            <h:outputLabel value="Time" style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%" >
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="text-align: center!important;   
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}"  style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
@@ -88,13 +88,13 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Inv.No" style="text-align: center!important;   
+                            <h:outputLabel value="Inv.No" style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            <h:outputLabel value="#{cc.attrs.bill.insId}"  style="text-align: center!important;   
+                            <h:outputLabel value="#{cc.attrs.bill.insId}"  style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>
@@ -103,13 +103,13 @@
 
                     <tr>
                         <td style="width: 15% ;text-align: left;" >
-                            <h:outputLabel value="Method" style="text-align: center!important;   
+                            <h:outputLabel value="Method" style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  style="text-align: center!important;   
+                            <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"  style="text-align: center!important;
                                            font-size: 12px!important;
                                            font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>
@@ -119,13 +119,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Name" style="text-align: center!important;   
+                                <h:outputLabel value="Name" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"  style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -136,13 +136,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Phone" style="text-align: center!important;   
+                                <h:outputLabel value="Phone" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"  style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}"  style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -153,13 +153,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Age" style="text-align: center!important;   
+                                <h:outputLabel value="Age" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.patient.age}"  style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.patient.age}"  style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -170,13 +170,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Ref. Doctor" style="text-align: center!important;   
+                                <h:outputLabel value="Ref. Doctor" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.name}"  style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.name}"  style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -188,13 +188,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.referredByInstitution ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Col. Center" style="text-align: center!important;   
+                                <h:outputLabel value="Col. Center" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}" style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;" >
                                 </h:outputLabel>
@@ -206,13 +206,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Staff Name" style="text-align: center!important;   
+                                <h:outputLabel value="Staff Name" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}"  style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -227,13 +227,13 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.toDepartment ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Department" style="text-align: center!important;   
+                                <h:outputLabel value="Department" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.toDepartment.name}"  style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>
@@ -245,13 +245,17 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.creater.staff.code ne null}" >
                         <tr>
                             <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Billed by" style="text-align: center!important;   
+                                <h:outputLabel value="Billed by" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;"></h:outputLabel>
                             </td>
                             <td>:</td>
                             <td style="width: 30%;" >
-                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" style="text-align: center!important;   
+                                <h:outputLabel value="#{cc.attrs.bill.creater.staff.code}" style="text-align: center!important;
+                                               font-size: 12px!important;
+                                               font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.id}" style="text-align: center!important;
                                                font-size: 12px!important;
                                                font-family:Arial, Helvetica, sans-serif!important;">
                                 </h:outputLabel>

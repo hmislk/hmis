@@ -83,7 +83,7 @@
                                      >
                             <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
                                       sortBy="#{bill.id}"
-                                      styleClass="alignTop" width="15">
+                                      styleClass="alignTop" width="55">
                                 <h:outputLabel value="#{bill.id}"/>
                             </p:column>
                             <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
@@ -187,23 +187,6 @@
                                             <p:outputLabel value="Gender" ></p:outputLabel>
                                             <p:outputLabel value="#{bill.patient.person.sex}" ></p:outputLabel>
                                             <p:outputLabel value="Changing Details" ></p:outputLabel>
-                                            <p:outputLabel value="Not Edited" rendered="#{bill.patient.person.editer eq null}"></p:outputLabel>
-                                            <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
-                                                <h:outputLabel value="Edited By " />
-                                                <h:outputLabel rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
-                                                </h:outputLabel>
-                                                <h:panelGroup rendered="#{bill.patient.person.editedAt ne null}" >
-                                                    <h:outputLabel value=" on " />
-                                                    <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy"/>
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value=" at " />
-                                                    <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="." />
-                                                </h:panelGroup>
-                                            </h:panelGroup>
                                         </p:panelGrid>
                                     </p:panel>
                                 </p:tooltip>
@@ -236,8 +219,8 @@
                         <div class="printBlock">
                             <p:dataTable rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
                                          var="bill1" paginator="false">
-                                <p:column headerText="No" >
-                                    <h:outputLabel value="#{i+1}"/>
+                                <p:column headerText="ID" >
+                                    <h:outputLabel value="#{bill1.id}"/>
                                 </p:column>
                                 <p:column headerText="Bill No" >   
                                     <p:outputLabel value="#{bill1.insId}" ></p:outputLabel>
