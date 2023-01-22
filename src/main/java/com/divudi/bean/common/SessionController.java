@@ -204,7 +204,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         String jpql;
         Map m = new HashMap();
         jpql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-        currentPreference = getUserPreferenceFacade().findFirstBySQL(jpql);
+        currentPreference = getUserPreferenceFacade().findFirstByJpql(jpql);
         if (currentPreference == null) {
             currentPreference = new UserPreference();
 
@@ -591,14 +591,13 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private boolean isFirstVisit() {
         String j = "Select w from WebUser w order by w.id";
-        WebUser ws = getFacede().findFirstBySQL(j);
+        WebUser ws = getFacede().findFirstByJpql(j);
         if (ws == null) {
             UtilityController.addSuccessMessage("First Visit");
             return true;
         } else {
             return false;
         }
-
     }
 
     private boolean checkUsers() {
@@ -657,7 +656,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                         if (insPre == null) {
                             sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-                            insPre = getUserPreferenceFacade().findFirstBySQL(sql);
+                            insPre = getUserPreferenceFacade().findFirstByJpql(sql);
 
                         }
 
@@ -927,7 +926,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         institutionPreference = getUserPreferenceFacade().findFirstBySQL(sql, m);
 
         sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-        applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
+        applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
 
         if (applicationPreference == null) {
             applicationPreference = new UserPreference();
@@ -951,7 +950,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private void loadApplicationPreferances() {
         String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
-        applicationPreference = getUserPreferenceFacade().findFirstBySQL(sql);
+        applicationPreference = getUserPreferenceFacade().findFirstByJpql(sql);
         if (applicationPreference == null) {
             applicationPreference = new UserPreference();
             applicationPreference.setWebUser(null);

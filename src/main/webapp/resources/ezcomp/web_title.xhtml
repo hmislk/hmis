@@ -27,30 +27,13 @@
                 </a>
 
                 <h:form>
-
-
                     <ul class="nav">
-                        <h:panelGroup rendered="#{not webContentController.sinhala}" >
-                            <li class="nav-item ">
-                                <h:commandLink action="#{webContentController.makeLanguageSinhala}" class="nav-link link-dark px-2">
-                                    <h:outputText value="#{webContentController.findSingleText('sinhala')}" escape="false" ></h:outputText>
-                                </h:commandLink>
-                            </li>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{not webContentController.tamil}" >
-                        </h:panelGroup>
                         <li class="nav-item ">
-                            <h:commandLink   value="#{webContentController.findSingleText('tamil')}" action="#{webContentController.makeLanguageTamil()}" class="nav-link link-dark px-2">
-                                <h:outputText value="#{webContentController.findSingleText('tamil')}" escape="false" ></h:outputText>
-                            </h:commandLink>
+                            <h:selectOneMenu id="cmbLang" value="#{webContentController.language}" >
+                                <f:selectItems value="#{webLanguageController.items}" var="l" itemLabel="#{l.name}" itemValue="#{l}" ></f:selectItems>
+                                <f:ajax event="change" execute="cmbLang" render="@all" ></f:ajax>
+                            </h:selectOneMenu>
                         </li>
-                        <h:panelGroup rendered="#{not webContentController.english}"  >
-                            <li class="nav-item ">
-                                <h:commandLink  action="#{webContentController.makeLanguageEnglish()}" class="nav-link link-dark px-2">
-                                    <h:outputText value="#{webContentController.findSingleText('english')}" escape="false" ></h:outputText>
-                                </h:commandLink>
-                            </li>
-                        </h:panelGroup>
                     </ul>
                 </h:form>
             </div>

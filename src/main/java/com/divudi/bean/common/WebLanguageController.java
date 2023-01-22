@@ -74,7 +74,7 @@ public class WebLanguageController implements Serializable {
 
     public String toAddNewWebLanguage() {
         selected = null;
-        return "/webcontent/web_content";
+        return "/webcontent/web_language";
     }
 
     public String toEditWebLanguage() {
@@ -82,15 +82,7 @@ public class WebLanguageController implements Serializable {
             JsfUtil.addErrorMessage("Please select");
             return "";
         }
-        return "/webcontent/web_content";
-    }
-
-    public String toEditWebLanguageLong() {
-        if (selected == null) {
-            JsfUtil.addErrorMessage("Please select");
-            return "";
-        }
-        return "/webcontent/web_content_long";
+        return "/webcontent/web_language";
     }
 
     public String toDeleteWebLanguage() {
@@ -107,7 +99,7 @@ public class WebLanguageController implements Serializable {
 
     public String toListWebLanguage() {
         listItems();
-        return "/webcontent/web_contents";
+        return "/webcontent/web_languages";
     }
 
     public WebLanguage findSingleWebLanguage(String word) {
@@ -160,10 +152,11 @@ public class WebLanguageController implements Serializable {
         }
     }
 
-    public void saveSelected() {
+    public String saveSelected() {
         saveWebLanguage(selected);
         recreateModel();
         listItems();
+        return toListWebLanguage();
     }
 
     public WebLanguageFacade getEjbFacade() {
@@ -258,7 +251,7 @@ public class WebLanguageController implements Serializable {
         j = "select a "
                 + " from WebLanguage a "
                 + " where a.retired=false "
-                + " order by a.name";
+                + " order by a.orderNo";
         items = getFacade().findBySQL(j);
     }
 
