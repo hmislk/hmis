@@ -1404,6 +1404,7 @@ public class BookingController implements Serializable {
 
         String sql = "Select bs From BillSession bs "
                 + " where bs.retired=false"
+                + " and bs.bill.retired=false "
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
@@ -1424,7 +1425,8 @@ public class BookingController implements Serializable {
         List<BillType> bts = Arrays.asList(billTypes);
 
         String sql = "Select bs From BillSession bs "
-                + " where bs.retired=false"
+                + " where bs.retired=false "
+                + " and bs.bill.retired=false "
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
@@ -1448,6 +1450,7 @@ public class BookingController implements Serializable {
 
         String sql = "Select bs From BillSession bs "
                 + " where bs.retired=false"
+                + " and bs.bill.retired=false "
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt "
                 + " and bs.absent=true "

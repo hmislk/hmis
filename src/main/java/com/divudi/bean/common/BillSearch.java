@@ -1949,20 +1949,19 @@ public class BillSearch implements Serializable {
     }
 
     public Bill getBill() {
-        //recreateModel();
-        if (bill == null) {
-            bill = new Bill();
-        }
+//        if (bill == null) {
+//            bill = new Bill();
+//        }
         return bill;
     }
 
     public void setBill(Bill bill) {
         this.bill = bill;
-        paymentMethod = bill.getPaymentMethod();
-        createBillItems();
-
-        boolean flag = billController.checkBillValues(bill);
-        bill.setTransError(flag);
+//        paymentMethod = bill.getPaymentMethod();
+//        createBillItems();
+//
+//        boolean flag = billController.checkBillValues(bill);
+//        bill.setTransError(flag);
     }
 
     public List<BillEntry> getBillEntrys() {
@@ -2391,32 +2390,34 @@ public class BillSearch implements Serializable {
         this.creditCompany = creditCompany;
     }
 
-    public void setBillSearch(Bill bill) {
+//    public void setBillSearch(Bill bill) {
+//
+//        recreateModel();
+//        this.bill = bill;
+//        paymentMethod = bill.getPaymentMethod();
+//        createBillItemsForRetire();
+//        createBillFees();
+//        createBillItemsAll();
+//        if (getBill().getBillType() == BillType.CollectingCentreBill) {
+//            createCollectingCenterfees(getBill());
+//
+//        }
+//        if (getBill().getRefundedBill() != null) {
+//            bills = new ArrayList<>();
+//            String sql;
+//            Map m = new HashMap();
+//            sql = "Select b from Bill b where "
+//                    + " b.billedBill.id=:bid";
+//            m.put("bid", getBill().getId());
+//            bills = getBillFacade().findBySQL(sql, m);
+//            for (Bill b : bills) {
+//                createCollectingCenterfees(b);
+//            }
+//        }
+//    }
 
-        recreateModel();
-        this.bill = bill;
-        paymentMethod = bill.getPaymentMethod();
-        createBillItemsForRetire();
-        createBillFees();
-        createBillItemsAll();
-        if (getBill().getBillType() == BillType.CollectingCentreBill) {
-            createCollectingCenterfees(getBill());
-
-        }
-        if (getBill().getRefundedBill() != null) {
-            bills = new ArrayList<>();
-            String sql;
-            Map m = new HashMap();
-            sql = "Select b from Bill b where "
-                    + " b.billedBill.id=:bid";
-            m.put("bid", getBill().getId());
-            bills = getBillFacade().findBySQL(sql, m);
-            for (Bill b : bills) {
-                createCollectingCenterfees(b);
-            }
-        }
-    }
-
+    
+    
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {

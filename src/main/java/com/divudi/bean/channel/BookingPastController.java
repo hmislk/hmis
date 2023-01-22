@@ -386,6 +386,7 @@ public class BookingPastController implements Serializable {
 
         String sql = "Select bs From BillSession bs "
                 + " where bs.retired=false"
+                + " and bs.bill.retired=false "
                 + " and bs.serviceSession=:ss "
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "

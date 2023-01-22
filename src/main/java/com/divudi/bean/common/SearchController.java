@@ -177,6 +177,34 @@ public class SearchController implements Serializable {
         return "/index";
     }
 
+    public String toSearchBills() {
+        bills = null;
+        return "/serch_bill";
+    }
+
+    public String toListAllBills() {
+        bills = null;
+        return "/list_bills";
+    }
+
+    public void listAllBills() {
+        String sql;
+        Map temMap = new HashMap();
+        sql = "select b from Bill b where "
+                + " and b.createdAt between :fromDate and :toDate "
+                + "order by b.createdAt desc ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public String toViewBillSummery() {
+        if (bill == null) {
+            return "";
+        }
+        return "/bill_summery";
+    }
+
     public void fillBillSessions() {
         selectedBillSession = null;
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
@@ -4292,10 +4320,10 @@ public class SearchController implements Serializable {
         return fillUserPatientReport(true);
     }
 
-    public String toSearchReportsByBillNumber(){
+    public String toSearchReportsByBillNumber() {
         return "/report_search_by_bill_number";
     }
-    
+
     private String fillUserPatientReport(boolean web) {
         String jpql;
         Map m = new HashMap();
