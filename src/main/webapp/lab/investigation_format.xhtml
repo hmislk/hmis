@@ -7,7 +7,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body>
+    <body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -17,13 +17,27 @@
 
                         <h:panelGroup rendered="#{investigationItemController.editMode ne 'Move_Mode'}" >
 
-                            <p:panel >
-                                <f:facet name="header" >
-                                    <h:outputLabel value="Investigation - " ></h:outputLabel>
-                                    <p:outputLabel value="#{investigationItemController.currentInvestigation.name}" >
-                                    </p:outputLabel>
-                                </f:facet>
-                                
+                            <p:panel header="Investigation"   >
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                                value="#{investigationItemController.currentInvestigation}" 
+                                                completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
+                                                var="apt" itemLabel="#{apt.name}" 
+                                                itemValue="#{apt}" size="30" maxResults="10"  style="width: 400px;">
+                                    <p:column headerText="Name" >
+                                        <h:outputLabel value="#{apt.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code" >
+                                        <h:outputLabel value="#{apt.code}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Printing Name" >
+                                        <h:outputLabel value="#{apt.printName}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Fill Name" >
+                                        <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="acPt" 
+                                            update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
+                                </p:autoComplete> 
                                 <p:panel header="Add New ..." >
                                     <h:panelGrid columns="6" >
                                         <p:commandButton id="btnToNewTestFirst" value="Test-1" oncomplete="PF('dlgTest').show();" 
@@ -58,7 +72,7 @@
                                                 <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
 
                                                 <p:outputLabel value="Reference" ></p:outputLabel>
-                                                <p:textEditor secure="false" value="#{investigationItemController.testReferenceRange}" height="100" ></p:textEditor>
+                                                <p:textEditor  secure='false'  value="#{investigationItemController.testReferenceRange}" height="100" ></p:textEditor>
 
                                                 <p:outputLabel value="Comments" ></p:outputLabel>
                                                 <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
@@ -73,7 +87,7 @@
                                                 <p:outputLabel value="Analyzer" ></p:outputLabel>
                                                 <p:selectOneMenu value="#{investigationItemController.machine}" >
                                                     <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                    <f:selectItems value="#{machineController.items}" ></f:selectItems>
+                                                    <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
                                                 </p:selectOneMenu>
 
 
@@ -320,7 +334,7 @@
                                                         <p:commandButton process="lblIiText" update="txtContents" value="Save" 
                                                                          oncomplete="PF('dlgContents').hide()" 
                                                                          ></p:commandButton>
-                                                        <p:textEditor secure="false"  height="600" id="lblIiText" 
+                                                        <p:textEditor   height="600" id="lblIiText"  secure='false' 
                                                                    value="#{investigationItemController.current.htmltext}" >
 
                                                         </p:textEditor >
@@ -439,7 +453,7 @@
                                             <h:outputText value="Machine"/>
                                             <p:selectOneMenu value="#{investigationItemController.current.machine}" >
                                                 <f:selectItem itemLabel="Select" ></f:selectItem>
-                                                <f:selectItems value="#{machineController.items}" ></f:selectItems>
+                                                <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
                                             </p:selectOneMenu>
 
                                             <h:outputText value="Test"/>
@@ -515,12 +529,13 @@
                                     <p:tab title="Developer" >
                                         <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                                         </p:dialog>
-                                       
+                                        <p:outputLabel value="ID : " ></p:outputLabel>
+                                        <p:inputText value="#{investigationItemController.current.id}"/>
 
-                                        <p:commandButton value="Download as JSON" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
-                                            <p:fileDownload value="#{investigationItemController.ixToJsonFile}" />
+                                        <p:commandButton value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
+                                            <p:fileDownload value="#{investigationItemController.downloadingFile}" />
                                         </p:commandButton>
-                                        
+
 
                                         <script type="text/javascript">
                                             function start() {
@@ -540,7 +555,7 @@
                         </h:panelGroup>
 
 
-                        <p:panel id="pPreview">
+                        <p:panel id="pPreview"   >
                             <f:facet name="header" >
                                 <p:panelGrid columns="5" >
                                     <p:commandLink ajax="false" value="Print" >
@@ -597,10 +612,8 @@
 
 
                                     <ui:repeat value="#{investigationItemController.items}" var="myIi" >
-
-
-
                                         <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
+                                            
                                             <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'}; border: 1px solid lightblue; " >
                                                 <h:outputLabel id="lblViewModeIi" 
                                                                rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
@@ -656,15 +669,24 @@
                         </p:panel>
 
                     </h:panelGrid>
-                  
+                    <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
                 </h:form>
 
-              
+                <h:form enctype="multipart/form-data">
+                    <p:panel header="Upload Format" >
+                        <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
+                        <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
+                    </p:panel>
+                </h:form>
 
-               
+                <h:form >
+                    <p:panel header="Correct Format from Old Databases" >
+                        <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
+                    </p:panel>
+                </h:form>
             </ui:define>
 
         </ui:composition>
 
-    </h:body>
+    </body>
 </html>
