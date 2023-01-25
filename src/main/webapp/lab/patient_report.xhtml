@@ -81,13 +81,12 @@
                                                      disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
                                                      action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-
-                                    <!--                                    <p:commandButton styleClass="nonPrintBlock"  
-                                                                                         ajax="false" 
-                                                                                         value="Print" 
-                                                                                         rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                                                                         onclick="window.print();" 
-                                                                                         actionListener="#{patientReportController.printPatientReport()}"/>-->
+                                    <p:commandButton styleClass="nonPrintBlock"  
+                                                     ajax="false" 
+                                                     value="Print" 
+                                                     rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                                     onclick="window.print();" 
+                                                     actionListener="#{patientReportController.printPatientReport()}"/>
 
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >

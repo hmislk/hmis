@@ -51,6 +51,13 @@
                 </h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillNo' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.insId}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
+
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BHT' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.bht}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Ward' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.ward}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Comments' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.comments}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
                 </h:outputText>
@@ -61,16 +68,54 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampleInstitution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
 
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedName' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedCode' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.code}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedPosition' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"      value="#{cc.attrs.patientReport.approveUser.staff.speciality.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedQualification' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}" value="#{cc.attrs.patientReport.approveUser.staff.qualification}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
 
-                <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }"    
-                                value="#{staffImageController.signatureFromPatientReport}" style="width: #{myCli.wtPix};overflow: visible; display: block;" 
-                                height="#{myCli.htPix}" width="#{myCli.wtPix}">
+                <p:graphicImage rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.autherizedUser.id ne null }"    
+                                value="#{streamedContentController.signatureByUserId}"
+                                style="width: #{myCli.wtPix};overflow: visible; display: block;" 
+                                height="#{myCli.htPix}" >
+                    <f:param name="id" value="#{cc.attrs.patientReport.autherizedUser.id}" />
                 </p:graphicImage>
+
+                <p:graphicImage rendered="#{myCli.reportItemType eq 'ApprovedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.id ne null }"    
+                                value="#{streamedContentController.signatureByUserId}"
+                                style="width: #{myCli.wtPix};overflow: visible; display: block;" 
+                                height="#{myCli.htPix}" >
+                    <f:param name="id" value="#{cc.attrs.patientReport.approveUser.id}" />
+                </p:graphicImage>
+
+
+                <p:graphicImage rendered="#{myCli.reportItemType eq 'DataEntrySignature' and myCli.retired eq false and cc.attrs.patientReport.dataEntryUser.id ne null}"    
+                                value="#{streamedContentController.signatureByUserId}"
+                                style="width: #{myCli.wtPix};overflow: visible; display: block;" 
+                                height="#{myCli.htPix}" >
+                    <f:param name="id" value="#{cc.attrs.patientReport.dataEntryUser.id}" />
+                </p:graphicImage>
+
+               
+
+
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringInstitution' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.referredByInstitution.name}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+
+
+
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedUserDetails' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.autherizedUser.description}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'DataEntryUserDetails' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.dataEntryUser.description}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ApprovedUserDetails' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedName' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.autherizedUser.webUserPerson.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'DataEntryUserName' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.dataEntryUser.webUserPerson.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ApprovedUserName' and myCli.retired eq false }"  value="#{patientReportController.currentPatientReport.approveUser.webUserPerson.nameWithTitle}" style="color: #{myCli.cssColor}" escape="false" ></h:outputText>
+
+               
+
+
+
+
+
 
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
                               >
@@ -89,11 +134,18 @@
                     </div>
 
                 </h:panelGroup>
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true and myCli.ixItemValueType eq 'Image'}"  
-                              layout="block" style=" #{myCli.description}"        ></h:panelGroup>
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
+                              >
+                    <div style="#{myCli.description}" ></div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Image' and myCli.retired ne true }"  
+                              layout="block"         >
+                    <img src="#{myCli.description}" ></img>
+                </h:panelGroup>
 
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css'  and myCli.retired ne true and myCli.ixItemValueType eq 'Image' }" >
-                    <h:graphicImage value="#{myCli.description}" ></h:graphicImage>
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Html' and myCli.retired ne true }"  
+                              layout="block"         >
+                    <h:outputLabel value="#{myCli.description}" escape="false" ></h:outputLabel>
                 </h:panelGroup>
             </div>
         </ui:repeat>
@@ -120,6 +172,20 @@
                                    type="code128" orientation="90" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
                     </div>
 
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
+                              >
+                    <div style="#{myCli.description}" ></div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Image' and myCli.retired ne true }"  
+                              layout="block"         >
+                    <img src="#{myCli.description}" ></img>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Html' and myCli.retired ne true }"  
+                              layout="block"         >
+                    <h:outputLabel value="#{myCli.description}" escape="false" ></h:outputLabel>
                 </h:panelGroup>
 
 
