@@ -47,12 +47,13 @@
                                                 completeMethod="#{institutionController.completeIns}" id="institution"
                                                 var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  >
                                     <f:ajax event="itemSelect" execute="@this" render="department" ></f:ajax>
+                                    <f:ajax event="change" execute="@this" render="department" ></f:ajax>
                                 </p:autoComplete>
 
 
                                 <p:outputLabel value="Department:" for="department" />
                                 <p:selectOneMenu id="department" value="#{webUserController.current.department}" >
-                                    <f:selectItems value="#{departmentController.items}"/>
+                                    <f:selectItems value="#{webUserController.departmentsOfSelectedUsersInstitution}"/>
                                 </p:selectOneMenu>
 
                                 <p:outputLabel value="Email:" for="email" />

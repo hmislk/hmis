@@ -115,6 +115,8 @@ public class WebUserController implements Serializable {
     private Dashboard dashboard;
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
+    
+    private List<Department> departmentsOfSelectedUsersInstitution;
 
     public void removeSelectedItems() {
         for (WebUser s : itemsToRemove) {
@@ -176,6 +178,8 @@ public class WebUserController implements Serializable {
             UtilityController.addSuccessMessage("Updated");
         }
     }
+    
+    
 
     public void removeUser() {
 
@@ -916,6 +920,29 @@ public class WebUserController implements Serializable {
 
     public WebUserDashboardFacade getWebUserDashboardFacade() {
         return webUserDashboardFacade;
+    }
+
+    public List<Department> getDepartmentsOfSelectedUsersInstitution() {
+        departmentsOfSelectedUsersInstitution = new ArrayList<>();
+        if(getCurrent()==null){
+            return departmentsOfSelectedUsersInstitution;
+        }
+        if(getCurrent().getInstitution()==null){
+            return departmentsOfSelectedUsersInstitution;
+        }
+        String jpql = "select d "
+                + " from Department d "
+                + " where d.retired=false "
+                + " and d.institution=:ins "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("ins", getCurrent().getInstitution());
+        departmentsOfSelectedUsersInstitution = getDepartmentFacade().findBySQL(jpql, m);
+        return departmentsOfSelectedUsersInstitution;
+    }
+
+    public void setDepartmentsOfSelectedUsersInstitution(List<Department> departmentsOfSelectedUsersInstitution) {
+        this.departmentsOfSelectedUsersInstitution = departmentsOfSelectedUsersInstitution;
     }
 
     @FacesConverter("webUs")
