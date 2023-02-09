@@ -42,11 +42,13 @@
                             <h:panelGrid columns="2" styleClass="alignTop" >
                                 <h:panelGrid columns="2" >
                                     <h:outputText value="Institution" ></h:outputText>
-                                    <p:selectOneMenu  value="#{userDepartmentController.currentInstituion}" id="ins2"  >
-                                        <f:selectItem itemLabel="Please select an institutie"/>
-                                        <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                        <p:ajax update="dept2" process="ins2" event="change"/>
-                                    </p:selectOneMenu>
+                                    <p:autoComplete forceSelection="true" value="#{userDepartmentController.currentInstituion}"
+                                                    completeMethod="#{institutionController.completeIns}" id="ins2"
+                                                    var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  >
+                                        <f:ajax event="itemSelect" execute="@this" render="dept2" ></f:ajax>
+                                        <f:ajax event="change" execute="@this" render="dept2" ></f:ajax>
+                                    </p:autoComplete>
+
                                     <h:outputText value="Department" ></h:outputText>
                                     <p:selectOneMenu id="dept2"  value="#{userDepartmentController.currentDepartment}">
                                         <f:selectItem itemLabel="Please select a Department"/>
