@@ -636,9 +636,9 @@ public class Bill implements Serializable {
         return balance;
     }
 
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
+//    public void setBalance(double balance) {
+//        this.balance = balance;
+//    }
 
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
