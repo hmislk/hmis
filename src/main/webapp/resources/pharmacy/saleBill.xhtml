@@ -342,6 +342,28 @@
 
                         </td>
                     </tr>
+                    
+                    <tr>
+                        <td  class="totalsItemBlock" style="text-align: left;">
+                            <h:outputLabel   value="Tendered" />
+                        </td>
+                        <td  class="totalsItemBlock">
+                            <h:outputLabel   value="#{cc.attrs.bill.cashPaid}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        <td  class="totalsItemBlock" style="text-align: left;">
+                            <h:outputLabel   value="Balance" />
+                        </td>
+                        <td  class="totalsItemBlock">
+                            <h:outputLabel   value="#{cc.attrs.bill.balance}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td  class="totalsItemBlock" style="text-align: left;">
