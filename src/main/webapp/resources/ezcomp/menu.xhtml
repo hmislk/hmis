@@ -671,7 +671,7 @@
                     <p:menuitem ajax="false" action="/clinical/clinical_administration" value="Administration"/>
                 </p:submenu>
 
-                <p:submenu styleClass="rightBordrOnly" label="Reports"  rendered="#{webUserController.hasPrivilege('Reports')}">
+                <p:submenu styleClass="rightBordrOnly" icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_list" value="Lists" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                     <p:menuitem  ajax="false"  action="/reportIncome/report_income" value="Income Report"  ></p:menuitem>
@@ -686,7 +686,7 @@
 
                 </p:submenu>
 
-                <p:submenu styleClass="rightBordrOnly" label="User"  >
+                <p:submenu styleClass="rightBordrOnly" icon="pi pi-cog" >
                     <p:menuitem  ajax="false"  action="/user_change_password" value="Change My Password"></p:menuitem>
                     <p:menuitem  ajax="false"  action="/user_preferances" value="Change My Theme"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{apiKeyController.toManageMyApiKeys()}" 
