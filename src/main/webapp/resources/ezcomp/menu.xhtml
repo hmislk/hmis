@@ -14,7 +14,7 @@
     <cc:implementation>
         <h:form >
             <p:menubar styleClass="nonPrintBlock bottomBorderOnly ui-widget-header"  >
-                <p:menuitem  ajax="false"  action="/home" icon="ui-icon-home" styleClass="rightBordrOnly" ></p:menuitem>
+                <p:menuitem  ajax="false"  action="/home"  icon="pi pi-home" styleClass="rightBordrOnly" ></p:menuitem>
                 <p:submenu styleClass="rightBordrOnly" label="OPD" rendered="#{webUserController.hasPrivilege('Opd')}">
                     <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
@@ -709,7 +709,7 @@
 
 
                 <f:facet name="options">
-                    <p:commandButton id="btnLogout" ajax="false" icon="ui-icon-extlink" action="#{sessionController.logout}" />
+                    <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     <p:tooltip for="btnLogout" value="df"  >
                         <h:panelGrid columns="3" >
                             <h:outputText value="Institution" ></h:outputText>
