@@ -37,7 +37,7 @@
 
                             </f:facet>
 
-                            <p:dataTable id="tblBills" value="#{searchController.bills}"     var="bill"  >
+                            <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                                 <p:column>
                                     <p:commandButton ajax="false" value="View Bill" action="channel_expenses_bill_reprint">
                                         <f:setPropertyActionListener value="#{bill}" target="#{incomeExpensessBillController.bill}"/>

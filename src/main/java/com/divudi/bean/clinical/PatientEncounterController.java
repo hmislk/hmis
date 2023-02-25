@@ -102,6 +102,8 @@ public class PatientEncounterController implements Serializable {
     private List<PatientEncounter> items = null;
     List<PatientEncounter> currentPatientEncounters;
     List<ItemUsage> currentPatientAllergies;
+    private List<ItemUsage> currentEncounterMedicines;
+    private List<ItemUsage> currentEncounterDiagnosis;
     List<Bill> currentPatientBills;
     List<Bill> currentChannelBills;
     List<PatientInvestigation> currentPatientInvestigations;
@@ -382,8 +384,36 @@ public class PatientEncounterController implements Serializable {
         currentPatientEncounters = fillPatientEncounters(patient);
         currentPatientBills = fillPatientBills(patient);
         currentChannelBills = fillPatientChannelBills(patient);
-        currentPatientInvestigations= fillPatientInvestigations(patient);
+        currentPatientInvestigations = fillPatientInvestigations(patient);
         currentPatientAllergies = fillCurrentPatientAllergies();
+        currentEncounterMedicines = fillCurrentEncounterMedicines();
+        currentEncounterDiagnosis = fillCurrentEncounterDiagnosis();
+    }
+    
+    public List<ItemUsage> fillCurrentEncounterMedicines() {
+        Map m = new HashMap();
+        m.put("pe", getCurrent());
+        m.put("t", ItemUsageType.EncounterItems);
+        String sql;
+        sql = "Select e "
+                + " from ItemUsage e "
+                + " where e.patientEncounter=:pe "
+                + " and e.type=:t "
+                + " order by e.id desc";
+        return itemUsageFacade.findBySQL(sql, m);
+    }
+
+    public List<ItemUsage> fillCurrentEncounterDiagnosis() {
+        Map m = new HashMap();
+        m.put("pe", getCurrent());
+        m.put("t", ItemUsageType.EncounterDiagnosis);
+        String sql;
+        sql = "Select e "
+                + " from ItemUsage e "
+                + " where e.patientEncounter=:pe "
+                + " and e.type=:t "
+                + " order by e.id desc";
+        return itemUsageFacade.findBySQL(sql, m);
     }
 
     public List<Bill> fillPatientBills(Patient patient) {

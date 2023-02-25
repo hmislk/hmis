@@ -233,14 +233,14 @@
                                                 </p:inputText>
 
                                                 <h:outputLabel value="Phone"/>
-                                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
-                                                </p:inputMask>
+                                                <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
+                                                </p:inputText>
                                                 <h:outputLabel value="Date of Birth"/>
                                                 <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                                                     <f:ajax event="dateSelect" execute="calNewPtDob" render="lblPtAge"/>
                                                 </p:calendar>
                                                 <h:outputLabel value="NIC"/>
-                                                <p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />
+                                                <p:inputText  value="#{patientController.current.person.nic}" />
                                                 <h:outputLabel value=""/>
 
                                                 <h:outputLabel id="lblPtAge" value="#{patientController.current.age}"/>

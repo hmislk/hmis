@@ -158,11 +158,11 @@
                                                         </td>
                                                         <td> : </td>
                                                         <td >
-                                                            <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                                            <p:inputText  id="txtNewPtPhone" 
                                                                          autocomplete="off" maxlength="11" 
                                                                          value="#{opdPreBillController.newPatient.person.phone}"
                                                                          style="width: 100px;">
-                                                            </p:inputMask>
+                                                            </p:inputText>
                                                         </td>
                                                         <td  >
                                                             <p:autoComplete id="acNewPtArea" converter="areaCon" 
@@ -170,7 +170,7 @@
                                                                             var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
                                                                             itemValue="#{pta}" forceSelection="true" 
                                                                             value="#{opdPreBillController.newPatient.person.area}" ></p:autoComplete>
-                                                            <p:inputMask mask="999999999V" value="#{opdPreBillController.newPatient.person.nic}" />
+                                                            <p:inputText  value="#{opdPreBillController.newPatient.person.nic}" />
                                                         </td>
 
                                                     </tr>

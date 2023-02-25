@@ -29,7 +29,7 @@
                             <h:commandButton value="Submit" action="#{searchController.importToExcel}" />
                             <h:outputLabel></h:outputLabel>
                             <p:outputLabel value="Message" />
-                            <p:inputMask mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputMask>
+                            <p:inputText mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputText>
 
                             <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}"  />
                         </h:panelGrid>

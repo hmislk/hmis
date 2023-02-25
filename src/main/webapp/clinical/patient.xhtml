@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <div class="container-fluid" >
+                    <h:form class="form">
+
+                        <div class="card" >
+                            <div class="card-header" >
+                                <h:commandButton value="Save" 
+                                                 class="btn btn-success"
+                                                 action="#{patientController.savePatientAndThenNavigateToPatientProfile()}" 
+                                                 ></h:commandButton>
+                            </div>
+                            <div class="card-body container-fluid" >
+
+
+                                <div class="form-group row">
+                                    <div class="col-md-2">
+                                        <h:outputLabel class="form-label" value="Title"/>
+                                        <p:selectOneMenu class="form-control" id="cmbTitle" value="#{patientController.current.person.title}"  >
+                                            <f:selectItem itemLabel="Select Title" />
+                                            <f:selectItems value="#{billController.title}" var="i" 
+                                                           itemLabel="#{i.label}" itemValue="#{i}"/>
+                                        </p:selectOneMenu>
+                                    </div>       
+                                    <div class="col-md-10">
+                                        <h:outputLabel class="form-label"  value="Name"/>
+                                        <p:inputText  class="form-control" autocomplete="off"  id="txtNewPtName" value="#{patientController.current.person.name}" >
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group row">
+                                    <div class="col-md-3">
+                                        <h:outputLabel class="form-label"  value="Sex"/>
+                                        <p:selectOneMenu  class="form-control" id="txtNewSex"  value="#{patientController.current.person.sex}" >
+                                            <f:selectItem itemLabel="Select Gender"/>
+                                            <f:selectItems value="#{billController.sex}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h:outputLabel class="form-label"  value="Age"/>
+                                        <div class="row" >
+                                            <div class="col-md-4" >
+                                                <p:inputText autocomplete="off"  id="year"  
+                                                             class="form-control"
+                                                             placeholder="Years"
+                                                             value="#{patientController.yearMonthDay.year}">
+                                                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
+                                                            listener="#{patientController.dateChangeListen()}"  />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-4" >
+                                                <p:inputText autocomplete="off" id="month"
+                                                             placeholder="months"
+                                                             class="form-control"
+                                                             value="#{patientController.yearMonthDay.month}">
+                                                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{billController.dateChangeListen()}"  />
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-4" >
+                                                <p:inputText autocomplete="off" id="day" 
+                                                             placeholder="days"
+                                                             class="form-control"
+                                                             value="#{patientController.yearMonthDay.day}">
+                                                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4" >
+                                        <h:outputLabel class="form-label"  value="Date of Birth"/>
+                                        <p:datePicker  value="#{patientController.current.person.dob}" 
+                                                       id="calNewPtDob" pattern="dd/MM/yyyy" 
+                                                       class="form-control"
+                                                       style="border: none; padding: 0px;"
+                                                       yearNavigator="true"
+                                                       maxdate="#{sessionController.currentDate}"
+                                                       inputStyle="width:100%;">
+                                            <f:ajax event="dateSelect" />
+                                        </p:datePicker>
+                                    </div>
+
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-md-2">
+                                        <h:outputLabel  class="form-label" value="Phone"/>
+                                        <p:inputText  class="form-control" autocomplete="off"  id="txtPhone" value="#{patientController.current.person.phone}" >
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <h:outputLabel  class="form-label" value="Email"/>
+                                        <p:inputText  class="form-control" autocomplete="off"  id="txtEmail" value="#{patientController.current.person.email}" >
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <h:outputLabel  class="form-label" value="NIC"/>
+                                        <p:inputText  class="form-control" autocomplete="off"  id="txtNic" value="#{patientController.current.person.nic}" >
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <h:outputLabel   class="form-label" value="PHN No"/>
+                                        <p:inputText  class="form-control" autocomplete="off"  id="txtNewPtName1" value="#{patientController.current.phn}" >
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <h:outputLabel  class="form-label" value="Area"/>
+                                        <p:autoComplete  class="form-control" 
+                                                         id="acNewPtArea" converter="areaCon" placeholder="Search &amp; Select Area"
+                                                         completeMethod="#{areaController.completeArea}" 
+                                                         var="pta" itemLabel="#{pta.name}" style="border: none; padding: 0;"
+                                                         itemValue="#{pta}" forceSelection="true" 
+                                                         inputStyleClass="form-control"
+                                                         value="#{patientController.current.person.area}" ></p:autoComplete>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h:outputLabel  class="form-label" value="Address"/>
+                                        <p:inputText  class="form-control" 
+                                                      autocomplete="off"  id="txtAddress" 
+                                                      value="#{patientController.current.person.address}" >
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            </div>
+                        </div>
+
+
+
+
+
+
+
+
+                    </h:form>
+
+
+
+
+
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

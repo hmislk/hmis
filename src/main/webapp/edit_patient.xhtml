@@ -57,8 +57,8 @@
                     <h:outputLabel  value="Adress" />
                     <h:inputText autocomplete="off" value="#{patientController.current.person.address}" ></h:inputText>
                     <h:outputLabel value="Phone"/>
-                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" maxlength="11" value="#{patientController.current.person.phone}">
-                    </p:inputMask>
+                    <p:inputText  id="txtNewPtPhone" maxlength="11" value="#{patientController.current.person.phone}">
+                    </p:inputText>
                 </h:panelGrid>
                 <h:commandButton value="Save" action="#{patientController.saveSelected()}"/>
             </h:form>
