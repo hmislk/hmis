@@ -380,7 +380,28 @@ public enum Privileges {
     //Administration
     SearchAll,
     ChangePreferece,
-    SendBulkSMS;
+    SendBulkSMS,
+    
+    
+    
+    ClinicalAdministrationEditLetter,
+    ClinicalPatientAdd,
+    ClinicalPatientEdit,
+    ClinicalPatientCommentsView,
+    ClinicalPatientCommentsEdit,
+    ClinicalPatientNameChange,
+    ClinicalMembershipAdd,
+    ClinicalMembershipEdit,
+
+    
+    
+    
+    
+    
+    
+    
+    
+    ;
 
     public String getLabel() {
         switch (this) {
