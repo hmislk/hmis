@@ -12,6 +12,7 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
@@ -103,6 +104,8 @@ public class PatientController implements Serializable {
     private CommonController commonController;
     @Inject
     private SecurityController securityController;
+    @Inject
+    ApplicationController applicationController;
     /**
      *
      * Class Variables
@@ -144,10 +147,35 @@ public class PatientController implements Serializable {
     private String searchSampleId;
     private List<Patient> searchPatients;
 
+    
+    public void generateNewPhn() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient");
+            return;
+        }
+        if (sessionController.getLoggedUser() == null) {
+            return;
+        }
+        if (sessionController.getLoggedUser().getInstitution() == null) {
+            return;
+        }
+        Institution ins = sessionController.getLoggedUser().getInstitution();
+        current.setPhn(applicationController.createNewPersonalHealthNumber(ins));
+        current.setCreatedInstitution(ins);
+    }
+    
     public String toSearchPatient() {
         return "/clinical/patient_search";
     }
 
+     public void generateNewCode() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient");
+            return;
+        }
+        current.setCode(getCountPatientCode());
+    }
+    
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
         return "/membership/change_membership";
@@ -521,6 +549,15 @@ public class PatientController implements Serializable {
         }
         patientSelected();
         return "/clinical/patient";
+    }
+    
+    public String toPatientFromSearchPatientsProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        patientSelected();
+        return "/clinical/patient_profile";
     }
 
     public void createPatientBarcode() {
