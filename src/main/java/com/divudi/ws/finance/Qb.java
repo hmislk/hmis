@@ -366,7 +366,11 @@ public class Qb {
             supplierName = b.getFromInstitution().getName();
         }
         if (b.getToInstitution() != null) {
-            supplierName += " " + b.getToInstitution().getName();
+            if (b.getToInstitution().getChequePrintingName() != null) {
+                supplierName += " " + b.getToInstitution().getChequePrintingName();
+            } else {
+                supplierName += " " + b.getToInstitution().getName();
+            }
         }
         if (b.getDepartment() != null) {
             if (b.getDepartment().getPrintingName() != null) {
