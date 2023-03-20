@@ -170,13 +170,13 @@ public class Qb {
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
         headerJo.put("bankAcc", bankAcc);
-        
-        if(customerName==null || customerName.trim().equals("")){
+
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
 
         headerJo.put("customerName", customerName);
-        
+
         headerJo.put("soldTo", soldTo);
         headerJo.put("payMethod", paymentMethod);
         headerJo.put("rep_name", "");
@@ -241,7 +241,7 @@ public class Qb {
         if (b.getDepartment() != null) {
             bankAcc += b.getDepartment().getName();
         }
-if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
 
@@ -313,10 +313,9 @@ if(customerName==null || customerName.trim().equals("")){
         if (b.getDepartment() != null) {
             bankAcc += b.getDepartment().getName();
         }
-        if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
-
 
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         headerJo.put("invoiceNo", b.getDeptId() + "-" + b.getId());
@@ -369,8 +368,12 @@ if(customerName==null || customerName.trim().equals("")){
         if (b.getToInstitution() != null) {
             supplierName += " " + b.getToInstitution().getName();
         }
-        if(b.getDepartment()!=null){
-            departnemtName=b.getDepartment().getName();
+        if (b.getDepartment() != null) {
+            if (b.getDepartment().getPrintingName() != null) {
+                departnemtName = b.getDepartment().getPrintingName();
+            } else {
+                departnemtName = b.getDepartment().getName();
+            }
         }
         headerJo.put("SupplierName", supplierName);
 
@@ -1156,7 +1159,7 @@ if(customerName==null || customerName.trim().equals("")){
         }
 
         headerJo.put("rep_name", "");
-if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
 
@@ -1371,7 +1374,7 @@ if(customerName==null || customerName.trim().equals("")){
         }
 
         headerJo.put("rep_name", "");
-if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
 
@@ -1730,7 +1733,7 @@ if(customerName==null || customerName.trim().equals("")){
             bankAcc += " " + b.getDepartment().getName();
         }
 
-        if(soldTo==null || soldTo.trim().equals("")){
+        if (soldTo == null || soldTo.trim().equals("")) {
             soldTo = "Customer";
         }
 
@@ -1890,7 +1893,6 @@ if(customerName==null || customerName.trim().equals("")){
         } else {
             headerJo.put("customerName", "Customer");
         }
-       
 
         String customerName = "Customer";
         String soldTo = "Customer";
@@ -2032,10 +2034,9 @@ if(customerName==null || customerName.trim().equals("")){
         if (b.getStaff() != null) {
             rep_name = b.getStaff().getCode();
         }
-        if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
-
 
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
@@ -2141,10 +2142,9 @@ if(customerName==null || customerName.trim().equals("")){
         if (b.getStaff() != null) {
             rep_name = b.getStaff().getCode();
         }
-        if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
-
 
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
@@ -2297,7 +2297,6 @@ if(customerName==null || customerName.trim().equals("")){
         } else {
             headerJo.put("customerName", "Customer");
         }
-        
 
         String customerName = "Insurance";
         String soldTo = "Customer";
@@ -2322,11 +2321,10 @@ if(customerName==null || customerName.trim().equals("")){
             rep_name = b.getStaff().getCode();
         }
 
-        if(customerName==null || customerName.trim().equals("")){
+        if (customerName == null || customerName.trim().equals("")) {
             customerName = "Customer";
         }
 
-        
         headerJo.put("customerName", customerName);
         headerJo.put("soldTo", soldTo);
         headerJo.put("rep_name", rep_name);
