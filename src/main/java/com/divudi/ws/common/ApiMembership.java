@@ -163,8 +163,7 @@ public class ApiMembership {
             @PathParam("nic") String nic) {
         JSONObject jSONObjectOut = new JSONObject();
         String json;
-        URLDecoder decoder = new URLDecoder();
-
+       
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
 //        //// // System.out.println("s = " + s);
 
@@ -182,10 +181,10 @@ public class ApiMembership {
 //            MembershipScheme ms = getMembershipSchemeFacade().find(2670l);
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
-            person.setName(decoder.decode(name, "+"));
+            person.setName(name);
             person.setSex(Sex.valueOf(sex));
             person.setDob(getCommonController().getConvertDateTimeFormat24(dob));
-            person.setAddress(decoder.decode(address, "+"));
+            person.setAddress(address);
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
             person.setCreatedAt(new Date());
