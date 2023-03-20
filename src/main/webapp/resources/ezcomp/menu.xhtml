@@ -702,18 +702,7 @@
                 <p:menuitem ajax="false" action="/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                 <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                 <p:menuitem ajax="false" action="/admin/bill_contact_numbers.xhtml" value="Send Bulk SMS" rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" ></p:menuitem>
-
             </p:submenu>
-
-            <p:submenu styleClass="rightBordrOnly" id="smSearch" 
-                       label="Search" 
-                       rendered="#{webUserController.hasPrivilege('Search')}">
-                <!--<p:menuitem  ajax="false"  action="/search_all" value="Grand Search" rendered="#{webUserController.hasPrivilege('SearchGrand')}"></p:menuitem>-->
-                <p:menuitem  ajax="false"  action="/search_bill" value="Bill Search" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>
-                <!--<p:menuitem  ajax="false"  action="/dataAdmin/admin_all_bill_type_bills" value="Bill All By Bill Types" rendered="#{webUserController.hasPrivilege('Developers')}"></p:menuitem>-->
-            </p:submenu>
-           
-
 
             <f:facet name="options">
                 <p:commandButton id="btnLogout" ajax="false" icon="ui-icon-extlink" action="#{sessionController.logout}" />

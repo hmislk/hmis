@@ -30,7 +30,7 @@
                     </p:selectOneMenu>
                     <p:commandButton  value="Settle" action="#{grnController.settle}"
                                       onclick="onSubmitButton();"
-                                    ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                      ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                     </p:commandButton>      
                 </h:panelGrid>
 
@@ -44,19 +44,21 @@
                              id="itemList" editable="true">  
 
                     <f:facet name="header">  
-                        <h:outputLabel  value="Ordered Bill Item"/>   
+                        <h:outputLabel  value="Ordered Bill Item to Receive"/>   
                         <p:commandButton ajax="false" value="Remove All" 
-                                        action="#{grnController.removeSelected()}"/>
+                                         action="#{grnController.removeSelected()}"/>
                     </f:facet>  
 
                     <p:ajax event="rowEdit" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" />  
                     <p:ajax event="rowEditCancel" listener="#{grnController.onEdit}" update=":#{p:component('tot')}" /> 
 
-                    <p:column style="width:6%">  
-                        <p:rowEditor />  
-                    </p:column>
+
 
                     <p:column selectionMode="multiple" style="width: 10px;"/>
+
+                    <p:column width="100">  
+                        <p:rowEditor />  
+                    </p:column>
 
                     <p:column headerText="Item Name" style="width: 250px!important;"  > 
 
@@ -113,8 +115,8 @@
                             </f:facet>
                         </p:cellEditor>                       
                     </p:column>  
-                    
-                   
+
+
                     <p:column headerText="Sale Price"  > 
                         <p:cellEditor>
                             <f:facet name="output">
@@ -175,7 +177,7 @@
                     <p:column >
                         <p:commandButton value="Remove" ajax="false"
                                          onclick="onSubmitButton();"
-                                        action="#{grnController.removeItem(bi)}"/>
+                                         action="#{grnController.removeItem(bi)}"/>
                     </p:column>
 
                 </p:dataTable>  
@@ -215,20 +217,20 @@
             <p:panel rendered="#{grnController.printPreview}" style="border: none;">
                 <p:commandButton ajax="false" action="pharmacy_purchase_order_list_for_recieve"
                                  onclick="onSubmitButton();"
-                                actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
+                                 actionListener="#{grnController.viewPoList()}" value="PO List"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
                 <p:panel   id="gpBillPreview"   style="border: none;">
-                    
+
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                         <ph:grn bill="#{grnController.grnBill}"/>
                     </h:panelGroup>
-                    
+
 <!--                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
-                        <ph:grn_detail bill="#{grnController.grnBill}"/>
-                    </h:panelGroup>-->
-                    
+    <ph:grn_detail bill="#{grnController.grnBill}"/>
+</h:panelGroup>-->
+
 
                 </p:panel>
             </p:panel>
