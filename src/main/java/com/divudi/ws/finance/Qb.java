@@ -349,11 +349,15 @@ public class Qb {
         JSONObject headerJo = new JSONObject();
         String supplierName = "Supplier";
         String bankAcc = "";
+        String departnemtName = "";
         if (b.getFromInstitution() != null) {
             supplierName = b.getFromInstitution().getName();
         }
         if (b.getToInstitution() != null) {
             supplierName += " " + b.getToInstitution().getName();
+        }
+        if(b.getDepartment()!=null){
+            departnemtName=b.getDepartment().getName();
         }
         headerJo.put("SupplierName", supplierName);
 
@@ -386,6 +390,7 @@ public class Qb {
             }
             bijo.put("qty", qty);
             bijo.put("amount", amount);
+            bijo.put("billClass", departnemtName);
             bija.put(bijo);
         }
         jSONObject.put("header", headerJo);
