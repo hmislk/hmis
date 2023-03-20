@@ -60,28 +60,28 @@
                                 </f:facet>
                                 <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
                                 <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
-                                <p:column headerText="Institution">
+                                <p:column headerText="Institution" sortBy="#{u.institution.name}" filterBy="#{u.institution.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.institution.name}"/>
                                 </p:column>
 
-                                <p:column headerText="Department">
+                                <p:column headerText="Department"  sortBy="#{u.department.name}" filterBy="#{u.department.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.department.name}"/>
                                 </p:column>
 
-                                <p:column headerText="Users Full Name">
+                                <p:column headerText="Users Full Name" sortBy="#{u.webUserPerson.name}" filterBy="#{u.webUserPerson.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.webUserPerson.name}"/>
                                 </p:column>
 
-                                <p:column headerText="User Name">
+                                <p:column headerText="User Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.name}"/>
                                 </p:column>
-                                <p:column headerText="Staff Name">
+                                <p:column headerText="Staff Name" sortBy="#{u.staff.person.name}" filterBy="#{u.staff.person.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.staff.person.name}"/>
                                 </p:column>
-                                <p:column headerText="Staff Code">
+                                <p:column headerText="Staff Code" sortBy="#{u.staff.code}" filterBy="#{u.staff.code}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
                                 </p:column>
-                                <p:column headerText="Staff Specility">
+                                <p:column headerText="Staff Specility" sortBy="#{u.staff.speciality.name}" filterBy="#{u.staff.speciality.name}" filterMatchMode="contains">
                                     <h:outputLabel value="#{u.staff.speciality.name}" rendered="#{u.staff.speciality ne null}"/>
                                 </p:column>
                             </p:dataTable>

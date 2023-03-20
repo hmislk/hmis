@@ -19,12 +19,19 @@
 
                         <p:tabView orientation="left" >
                             <p:tab title="System Administrator Functions"  >
-                                <p:commandButton value="Search Any Bill" 
-                                                 action="#{searchController.toSearchBills()}" 
-                                                 rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
-                                <p:commandButton value="List All Bill" 
-                                                 action="#{searchController.toSearchBills()}" 
-                                                 rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
+
+                                <p:panelGrid columns="1" >
+                                    <p:commandButton value="Search Any Bill" ajax="false"
+                                                     class="btn btn-block"
+                                                     action="#{searchController.toSearchBills}" 
+                                                     rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
+                                    <p:commandButton value="List All Bill"  ajax="false"
+                                                     class="btn btn-block"
+                                                     action="#{searchController.toListAllBills}" 
+                                                     rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
+
+                                </p:panelGrid>
+
 
                             </p:tab>
                             <p:tab title="System Administrator Functions" disabled="true" >

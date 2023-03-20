@@ -354,7 +354,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
 //        Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder = new URLDecoder();
+        
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
@@ -385,7 +385,7 @@ public class Api {
             }
 //            //// // System.out.println("ss = " + ss);
             Bill b;
-            b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
+            b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
 
 //            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
 //            //// // System.out.println("b = " + b);
@@ -420,7 +420,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
 //        Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder = new URLDecoder();
+
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, st_foriegn);
@@ -452,9 +452,9 @@ public class Api {
 //            //// // System.out.println("ss = " + ss);
             Bill b;
             if ("0".equals(st_foriegn)) {
-                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
+                b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
             } else {
-                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, true);
+                b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, true);
             }
 //            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
 //            //// // System.out.println("b = " + b);
