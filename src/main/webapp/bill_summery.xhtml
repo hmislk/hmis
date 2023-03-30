@@ -12,35 +12,42 @@
 
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Reprint" >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Bill Details" ></h:outputLabel>
-                            <hr/>
+                    <div class="card w-100" >
+                        <div class="card-header" >
+                            <h:outputLabel value="Bill Detail" ></h:outputLabel>
                             <p:commandButton value="Back" action="search_bill" ajax="false" />
-                        </f:facet>
+                        </div>
+                        <div class="card-body" >
 
-                        <p:panel>
+                        </div>
+                    </div>
+
+                    <div class="row" >
+                        <div class="col" >
+                            <p:panel header="Patient Detail">
+                                <p:panelGrid columns="2">
+                                    <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.billSearch.patient.person.nameWithTitle }" ></h:outputLabel>
+                                    <h:outputLabel value="BHT No:" ></h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.billSearch.patientEncounter.bhtNo}" ></h:outputLabel>
+                                    <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }"></h:outputLabel> 
+                                    <h:outputLabel value="Age" />
+                                    <h:outputLabel value="#{billSearch.billSearch.patient.age}"  />
+                                    <h:outputLabel value="Sex" >
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.billSearch.patient.person.sex}" >
+                                    </h:outputLabel>
+                                    <h:outputLabel value="Phone" >
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{billSearch.billSearch.patient.person.phone}" >
+                                    </h:outputLabel>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                        <div class="col" >
                             <p:panelGrid columns="2" style="width: 100%;" styleClass="alignTop">
-                                <p:panel header="Patient Detail">
-                                    <p:panelGrid columns="2">
-                                        <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.patient.person.nameWithTitle }" ></h:outputLabel>
-                                        <h:outputLabel value="BHT No:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.patientEncounter.bhtNo}" ></h:outputLabel>
-                                        <h:outputLabel value="Staff ​Name:" ></h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.staff.person.nameWithTitle }"></h:outputLabel> 
-                                        <h:outputLabel value="Age" />
-                                        <h:outputLabel value="#{billSearch.billSearch.patient.age}"  />
-                                        <h:outputLabel value="Sex" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.patient.person.sex}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Phone" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="#{billSearch.billSearch.patient.person.phone}" >
-                                        </h:outputLabel>
-                                    </p:panelGrid>
-                                </p:panel>
+
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputText value="Bill No (Ins Id) :" ></h:outputText>
@@ -69,7 +76,7 @@
 
                                         <h:outputLabel value="Billed bill Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
-                                        
+
                                         <h:outputLabel value="Invoice Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
                                         <p:calendar value="#{billSearch.billSearch.billedBill.invoiceDate}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
@@ -77,13 +84,13 @@
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>
                                         <h:outputLabel value="Canceled Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill}" />
-                                        
+
                                         <h:outputLabel value="Refunded :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.refunded}" ></p:selectBooleanCheckbox>
-                                        
+
                                         <h:outputLabel value="Refunded Bill(Id) :" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.refundedBill}" />
-                                        
+
 
                                         <h:outputLabel value="Canceled Bill(Ins Id) :" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></h:outputLabel>
                                         <p:inputText value="#{billSearch.billSearch.cancelledBill.insId}" rendered="#{billSearch.billSearch.cancelledBill ne null}" ></p:inputText>
@@ -268,6 +275,8 @@
                                     </p:panelGrid>
                                 </p:panel>
                             </p:panelGrid>
+                        </div>
+                        <div class="col" >
                             <p:panel header="Bill Fee Detail" rendered="false">
                                 <p:dataTable rowIndexVar="rowIndex"
                                              editable="true" value="#{billSearch.billFeesList}" var="bip" >
@@ -286,16 +295,16 @@
                                         <h:outputLabel value="#{bip.bill.deptId} - "/>
                                         <h:outputLabel value="#{bip.bill.id}"/>
                                     </p:column>
-<!--                                    <p:column headerText="Bill Edit" rendered="false">
-                                        <p:cellEditor>
-                                            <f:facet name="output" >
-                                                <h:outputLabel value="#{bip.bill.deptId}" />
-                                            </f:facet>
-                                            <f:facet name="input" >
-                                                <p:inputText value="#{bip.bill}" />
-                                            </f:facet>
-                                        </p:cellEditor>
-                                    </p:column>-->
+                                    <!--                                    <p:column headerText="Bill Edit" rendered="false">
+                                                                            <p:cellEditor>
+                                                                                <f:facet name="output" >
+                                                                                    <h:outputLabel value="#{bip.bill.deptId}" />
+                                                                                </f:facet>
+                                                                                <f:facet name="input" >
+                                                                                    <p:inputText value="#{bip.bill}" />
+                                                                                </f:facet>
+                                                                            </p:cellEditor>
+                                                                        </p:column>-->
                                     <p:column rendered="false">
                                         <f:facet name="header">Bill paid</f:facet>
                                         <h:outputLabel value="#{bip.bill.billedBill.paidBill.cancelledBill.deptId} - "/>
@@ -436,6 +445,8 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
+                        </div>
+                        <div class="col" >
                             <p:panel header="Bill Item Detail" rendered="false">
                                 <p:dataTable value="#{billSearch.billItemList}"
                                              editable="true"  var="bip21" rowIndexVar="rowIndex">
@@ -590,9 +601,23 @@
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
-                        </p:panel>
-                    </p:panel>
-                  
+                        </div>
+                        <div class="col" >
+
+                        </div>
+                        <div class="col" >
+
+                        </div>
+                        <div class="col" >
+
+                        </div>
+                    </div>
+
+
+
+
+
+
 
                 </h:form>
             </ui:define>

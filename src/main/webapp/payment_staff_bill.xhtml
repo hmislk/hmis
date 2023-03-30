@@ -135,7 +135,8 @@
                                     </h:panelGrid>
                                 </p:panel>
                                 <h:panelGroup >
-                                    <p:commandButton id="btnPay" ajax="false" value="Pay" action="#{staffPaymentBillController.settleBill()}" >
+                                    <p:commandButton id="btnPay" ajax="false" value="Pay" 
+                                                     action="#{staffPaymentBillController.settleBill()}" >
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
                                     <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >

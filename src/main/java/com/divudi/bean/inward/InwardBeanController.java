@@ -1082,7 +1082,6 @@ public class InwardBeanController implements Serializable {
                 + " and b.item=:itm "
                 + " and type(b.bill)=:cls"
                 + " and b.bill.checkedBy is not null "
-                + " and b.bill.checkeAt is not null "
                 + " and b.bill.cancelled=false ";
 
         hm.put("btp", BillType.InwardBill);

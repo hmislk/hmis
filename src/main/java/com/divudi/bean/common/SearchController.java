@@ -179,7 +179,7 @@ public class SearchController implements Serializable {
 
     public String toSearchBills() {
         bills = null;
-        return "/serch_bill";
+        return "/search_bill";
     }
 
     public String toListAllBills() {
@@ -191,7 +191,7 @@ public class SearchController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from Bill b where "
-                + " and b.createdAt between :fromDate and :toDate "
+                + " b.createdAt between :fromDate and :toDate "
                 + "order by b.createdAt desc ";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
@@ -5491,7 +5491,7 @@ public class SearchController implements Serializable {
         }
         sql += " order by b.insId ";
 //        m.put("class", PreBill.class);
-        bills = getBillFacade().findBySQL(sql, m);
+        bills = getBillFacade().findBySQL(sql, m, 5000);
     }
 
     public void createSearchAll() {

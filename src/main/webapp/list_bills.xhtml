@@ -19,7 +19,8 @@
                         <h:outputLabel value="To"/>
                         <p:datePicker showTime="true" value="#{searchController.toDate}" pattern="dd MM yyyy hh:mm" ></p:datePicker>
 
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.listAllBills()}"/>
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                         action="#{searchController.listAllBills()}"/>
                         <p:commandButton value="Download" ajax="false" >
                             <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
@@ -38,7 +39,7 @@
 
                                  >
                         <p:column headerText="View" exportable="false">
-                            <p:commandButton value="View Bill" action="#{searchController.toSearchBills()}" ajax="false">
+                            <p:commandButton value="View Bill" action="#{searchController.toViewBillSummery()}" ajax="false">
                                 <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
                             </p:commandButton>
                         </p:column>

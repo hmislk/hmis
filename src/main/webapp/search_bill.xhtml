@@ -25,7 +25,8 @@
                         <h:outputLabel value="Bill ID"/>
                         <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.refBillNo}" />
 
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createSearchBill()}"/>
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                         action="#{searchController.createSearchBill()}"/>
                         <p:commandButton value="Download" ajax="false" >
                             <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
                         </p:commandButton>
@@ -44,8 +45,8 @@
 
                                  >
                         <p:column headerText="View" exportable="false">
-                            <p:commandButton value="View Bill" action="#{searchController.toSearchBills()}" ajax="false">
-                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
+                            <p:commandButton value="View Bill" action="/bill_summery" ajax="false">
+                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                             </p:commandButton>
                         </p:column>
 
