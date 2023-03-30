@@ -137,6 +137,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String departmentName;
     private String adminName;
 
+    public Date currentTime() {
+        return new Date();
+    }
+
     public String createFirstLogin() {
         Institution ins = new Institution();
         ins.setName(institutionName);
@@ -162,7 +166,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         wu.setDepartment(dep);
         wu.setCreatedAt(new Date());
         wu.setActivated(true);
-        wu.setActivatedAt( new Date());
+        wu.setActivatedAt(new Date());
         wu.setName(userName);
         wu.setWebUserPassword(getSecurityController().hash(passord));
         webUserController.save(wu);
@@ -479,8 +483,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             return checkUsers();
         }
     }
-
-    
 
     private void prepareFirstVisit() {
         WebUser user = new WebUser();

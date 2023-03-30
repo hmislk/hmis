@@ -32,7 +32,7 @@
                                 </p:calendar>  
 
                                 <h:outputLabel   value="Institution" />
-                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                    
                                                  requiredMessage="You must select a institution" >
                                     <f:selectItem itemLabel="Select Institution"/>
                                     <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />

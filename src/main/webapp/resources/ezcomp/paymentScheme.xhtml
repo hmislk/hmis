@@ -23,7 +23,7 @@
                 </p:selectOneMenu>
 
                 <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />                                
-                <p:inputMask mask="9999-9999-9999-9999" id="txtCardRef" autocomplete="off" maxlength="16" value="#{cc.attrs.controller.creditCardRefNo}" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />                                
+                <p:inputText id="txtCardRef" autocomplete="off" maxlength="16" value="#{cc.attrs.controller.creditCardRefNo}" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />                                
                 <h:selectOneMenu id="creditBank" value="#{cc.attrs.controller.creditBank}" style="display: #{cc.attrs.controller.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>

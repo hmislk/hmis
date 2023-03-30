@@ -137,11 +137,11 @@
                                                         </p:calendar>
                                                     </h:panelGrid>
 
-                                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                                    <p:inputText  id="txtNewPtPhone" 
                                                                  autocomplete="off" maxlength="11" placeholder="Phone Number"
                                                                  value="#{billController.newPatient.person.phone}"
                                                                  style="width: 135;">
-                                                    </p:inputMask>
+                                                    </p:inputText>
 
                                                     <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                                                                  style="width: 350px;" value="#{billController.newPatient.person.email}">

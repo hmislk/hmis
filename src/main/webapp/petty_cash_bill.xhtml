@@ -112,8 +112,8 @@
                                     <p:autoComplete id="acNewPtArea" converter="areaCon" completeMethod="#{areaController.completeArea}" var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{pettyCashBillController.newPerson.area}" ></p:autoComplete>
 
                                     <p:outputLabel value="Phone"/>
-                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{pettyCashBillController.newPerson.phone}">
-                                    </p:inputMask>
+                                    <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{pettyCashBillController.newPerson.phone}">
+                                    </p:inputText>
 
                                 </p:panelGrid>
                             </p:tab>
