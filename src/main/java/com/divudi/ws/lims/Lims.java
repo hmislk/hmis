@@ -5,6 +5,8 @@
  */
 package com.divudi.ws.lims;
 
+import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
+import ca.uhn.fhir.model.primitive.StringDt;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Bill;
@@ -39,6 +41,12 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import com.divudi.data.LoginRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.hl7.fhir.r5.model.OperationOutcome;
 
 /**
  * REST Web Service
@@ -70,6 +78,83 @@ public class Lims {
     public Lims() {
     }
 
+    public static OperationOutcome createSuccessfulOperationOutcome() {
+        OperationOutcome outcome = new OperationOutcome();
+        outcome.addIssue()
+                .setSeverity(IssueSeverity.INFORMATION)
+                .setCode(IssueType.INFORMATIONAL)
+                .setDetails(
+                        new CodeableConcept()
+                                .setText("The operation completed successfully.")
+                );
+        return outcome;
+    }
+
+    public OperationOutcome createOperationOutcomeForFailure(String details) {
+        OperationOutcome outcome = new OperationOutcome();
+        outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.SECURITY);
+        return outcome;
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/login/mw")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(LoginRequest request) {
+        System.out.println("login");
+        String username = request.getUsername();
+        String password = request.getPassword();
+        System.out.println("password = " + password);
+        System.out.println("username = " + username);
+
+        // Validate the username and password, such as checking them against a database or LDAP directory
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
+
+        if (requestSendingUser != null) {
+            // Return a 200 OK response indicating success
+            System.out.println("Return a 200 OK response indicating success");
+            return Response.ok().entity(createSuccessfulOperationOutcome()).build();
+        } else {
+            // Return an OperationOutcome resource indicating failure
+            System.out.println("Return an OperationOutcome resource indicating failure");
+            OperationOutcome outcome = createOperationOutcomeForFailure("Invalid username or password");
+            System.out.println("outcome = " + outcome);
+            return Response.status(Response.Status.UNAUTHORIZED).entity(outcome).build();
+        }
+    }
+
+//    @GET
+//    @Path("/samples/login/{username}/{password}")
+//    @Produces("application/json")
+//    public String checkUserCredentails(
+//            @PathParam("username") String username,
+//            @PathParam("password") String password) {
+//        boolean failed = false;
+//        JSONArray array = new JSONArray();
+//        JSONObject jSONObjectOut = new JSONObject();
+//        String errMsg = "";
+//        WebUser requestSendingUser = findRequestSendingUser(username, password);
+//        if (requestSendingUser == null) {
+//            errMsg += "Username / password mismatch.";
+//            failed = true;
+//        }
+//        if (failed) {
+//            JSONObject jSONObject = new JSONObject();
+//            jSONObject.put("result", "error");
+//            jSONObject.put("error", true);
+//            jSONObject.put("errorMessage", errMsg);
+//            jSONObject.put("errorCode", 1);
+//            return jSONObject.toString();
+//        } else {
+//            JSONObject jSONObject = new JSONObject();
+//            jSONObject.put("result", "success");
+//            jSONObject.put("error", false);
+//            jSONObject.put("successMessage", "Successfully Logged.");
+//            jSONObject.put("successCode", -1);
+//            return jSONObject.toString();
+//        }
+//    }
     @GET
     @Path("/samples/login/{username}/{password}")
     @Produces("application/json")
@@ -218,7 +303,6 @@ public class Lims {
 
         //// // System.out.println("password = " + password);
         //// // System.out.println("username = " + username);
-
         boolean failed = false;
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -295,13 +379,10 @@ public class Lims {
                     + " and pi.billItem.bill=:bill";
             List<PatientInvestigation> pis = patientInvestigationFacade.findBySQL(j, m);
 
-
             for (PatientInvestigation ptix : pis) {
 
                 //// // System.out.println("ptix = " + ptix);
-
                 Investigation ix = ptix.getInvestigation();
-
 
                 ptix.setCollected(true);
                 ptix.setSampleCollecter(wu);
@@ -312,9 +393,7 @@ public class Lims {
 
                 List<InvestigationItem> ixis = getItems(ix);
 
-
                 for (InvestigationItem ixi : ixis) {
-
 
                     if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template) {
                         j = "select ps from PatientSample ps "
@@ -491,7 +570,6 @@ public class Lims {
         WebUser u = webUserFacade.findFirstBySQL(temSQL, m);
 
         //// // System.out.println("temSQL = " + temSQL);
-
         if (u == null) {
             return null;
         }
