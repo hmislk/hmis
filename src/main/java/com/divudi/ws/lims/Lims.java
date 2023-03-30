@@ -46,6 +46,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.hl7.fhir.r5.model.CodeableConcept;
 import org.hl7.fhir.r5.model.OperationOutcome;
 
 /**
@@ -78,15 +79,10 @@ public class Lims {
     public Lims() {
     }
 
-    public static OperationOutcome createSuccessfulOperationOutcome() {
+
+    public OperationOutcome createOperationOutcomeForSuccess(String details) {
         OperationOutcome outcome = new OperationOutcome();
-        outcome.addIssue()
-                .setSeverity(IssueSeverity.INFORMATION)
-                .setCode(IssueType.INFORMATIONAL)
-                .setDetails(
-                        new CodeableConcept()
-                                .setText("The operation completed successfully.")
-                );
+        outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.INFORMATION).setCode(OperationOutcome.IssueType.INFORMATIONAL).setDetails(new CodeableConcept().setText(details));
         return outcome;
     }
 
@@ -114,7 +110,7 @@ public class Lims {
         if (requestSendingUser != null) {
             // Return a 200 OK response indicating success
             System.out.println("Return a 200 OK response indicating success");
-            return Response.ok().entity(createSuccessfulOperationOutcome()).build();
+            return Response.ok().entity(createOperationOutcomeForSuccess("Logged Successfully")).build();
         } else {
             // Return an OperationOutcome resource indicating failure
             System.out.println("Return an OperationOutcome resource indicating failure");

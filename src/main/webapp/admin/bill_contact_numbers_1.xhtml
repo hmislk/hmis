@@ -19,7 +19,7 @@
                             <h:outputLabel value="Import Pharmaceutical Items" ></h:outputLabel>
                             <p>Please make sure the following order of Columns.</p>
                             <p>Leave First Row for Row Headings.</p>
-                            <p style="color: red;" >Use only *.xls files. <b><i>NOT</i> xlsx files.</b></p>
+                            <p style="color: red;" >Use only 'xls' files. <b><i>NOT</i> xlsx files.</b></p>
                             <p:panelGrid columns="2" style="border: 1px solid blue;" >
                                 <h:outputLabel value ="0. No(Optional)" ></h:outputLabel>
                                 <h:outputLabel value ="1. Phone Number"></h:outputLabel>
@@ -29,7 +29,7 @@
                             <h:commandButton value="Submit" action="#{searchController.importToExcel}" />
                             <h:outputLabel></h:outputLabel>
                             <p:outputLabel value="Message" />
-                            <p:inputText mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputText>
+                            <p:inputText  maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputText>
 
                             <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}"  />
                         </h:panelGrid>
