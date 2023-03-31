@@ -20,7 +20,7 @@
                                         <h4>Patient Profile</h4>
                                     </div>
                                     <div class="card-body row">
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="card text-white bg-success">
                                                 <div class="card-header">
                                                     <h5>Basic Information</h5>
@@ -55,16 +55,30 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-md-8">
                                             <div class="card">
-                                                <div class="card-body d-grid gap-2">
-                                                    <h:commandButton value="OPD Billing" action="#{patientController.toOpdBilling}" styleClass="btn btn-primary btn-block mb-2"/>
-                                                    <h:commandButton value="Pharmacy Billing" action="#{patientController.toPharmacyBilling}" styleClass="btn btn-secondary mb-2"/>
-                                                    <h:commandButton value="EMR" action="#{patientController.toEmr}" styleClass="btn btn-success mb-2"/>
-                                                    <h:commandButton value="Channelling" action="#{patientController.toChannelling}" styleClass="btn btn-danger mb-2"/>
-                                                    <h:commandButton value="Queue" action="#{patientController.toQueue}" styleClass="btn btn-warning mb-2"/>
-                                                    <h:commandButton value="Admit" action="#{patientController.toAdmit}" styleClass="btn btn-info mb-2"/>
-                                                    <h:commandButton value="Records" action="#{patientController.toRecords}" styleClass="btn btn-light mb-2"/>
+                                                <div class="card-body">
+                                                    <div class="row" >
+                                                        <div class="col-md-4  d-grid gap-2" >
+                                                            <h:commandButton value="OPD Billing" action="#{patientController.toOpdBilling}" styleClass="btn btn-primary btn-block mb-2"/>
+                                                            <h:commandButton value="Pharmacy Billing" action="#{patientController.toPharmacyBilling}" styleClass="btn btn-primary mb-2"/>
+                                                            <h:commandButton value="Admit" action="#{patientController.toAdmit}" styleClass="btn btn-primary mb-2"/>
+                                                            <h:commandButton value="Channelling" action="#{patientController.toChannelling}" styleClass="btn btn-primary mb-2"/>
+                                                        </div>
+                                                        <div class="col-md-4  d-grid gap-2" >
+                                                            <h:commandButton value="Patient Details" action="#{patientController.toEmrPatientProfile()}" styleClass="btn btn-secondary mb-2"/>
+                                                            <h:commandButton value="Edit" action="#{patientController.toChannelling}" styleClass="btn btn-secondary mb-2"/>
+                                                            <h:commandButton value="Visit" action="#{patientController.toEmrPatientProfile}" styleClass="btn btn-secondary mb-2"/>
+                                                            <h:commandButton value="Queue" action="#{patientController.toQueue}" styleClass="btn btn-secondary mb-2"/>
+                                                        </div>
+                                                        <div class="col-md-4  d-grid gap-2" >
+                                                            <h:commandButton value="Lab Tests" action="#{patientController.toRecords}" styleClass="btn btn-info mb-2"/>
+                                                            <h:commandButton value="Radiology" action="#{patientController.toAdmit}" styleClass="btn btn-info mb-2"/>
+                                                            <h:commandButton value="Images" action="#{patientController.toRecords}" styleClass="btn btn-info mb-2"/>
+                                                            <h:commandButton value="History" action="#{patientController.toRecords}" styleClass="btn btn-info mb-2"/>
+
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

@@ -551,6 +551,7 @@ public class PharmacySaleController implements Serializable {
     }
 
     public String toPharmacyRetailSale() {
+        System.out.println("6");
         return "/pharmacy/pharmacy_bill_retail_sale";
     }
 

@@ -100,7 +100,7 @@ public class PatientController implements Serializable {
     @Inject
     PracticeBookingController practiceBookingController;
     @Inject
-    PatientEncounterController PatientEncounterController;
+    PatientEncounterController patientEncounterController;
     @Inject
     private CommonController commonController;
     @Inject
@@ -180,19 +180,29 @@ public class PatientController implements Serializable {
     }
 
     public String toPharmacyBilling() {
+        System.out.println("toPharmacyBilling");
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
+        System.out.println("1");
         pharmacySaleController.prepareForNewPharmacyRetailBill();
+        System.out.println("2");
         pharmacySaleController.setSearchedPatient(current);
+        System.out.println("3");
         pharmacySaleController.setPatientSearchTab(1);
+        System.out.println("4");
         return pharmacySaleController.toPharmacyRetailSale();
     }
 
-    public String toEmr() {
-        
-        return "";
+    public String toEmrPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        return "/emr/patient_profile";
     }
 
     public String toChannelling() {
@@ -1603,11 +1613,11 @@ public class PatientController implements Serializable {
     }
 
     public PatientEncounterController getPatientEncounterController() {
-        return PatientEncounterController;
+        return patientEncounterController;
     }
 
     public void setPatientEncounterController(PatientEncounterController PatientEncounterController) {
-        this.PatientEncounterController = PatientEncounterController;
+        this.patientEncounterController = PatientEncounterController;
     }
 
     public FamilyFacade getFamilyFacade() {
