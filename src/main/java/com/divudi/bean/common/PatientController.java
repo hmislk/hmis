@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -106,6 +107,10 @@ public class PatientController implements Serializable {
     private SecurityController securityController;
     @Inject
     ApplicationController applicationController;
+    @Inject
+    BillController billController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
     /**
      *
      * Class Variables
@@ -147,7 +152,6 @@ public class PatientController implements Serializable {
     private String searchSampleId;
     private List<Patient> searchPatients;
 
-    
     public void generateNewPhn() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient");
@@ -163,19 +167,62 @@ public class PatientController implements Serializable {
         current.setPhn(applicationController.createNewPersonalHealthNumber(ins));
         current.setCreatedInstitution(ins);
     }
-    
-    public String toSearchPatient() {
-        return "/clinical/patient_search";
+
+    public String toOpdBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        billController.prepareNewBill();
+        billController.setPatientSearchTab(1);
+        billController.setSearchedPatient(current);
+        return billController.toOpdBilling();
     }
 
-     public void generateNewCode() {
+    public String toPharmacyBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        pharmacySaleController.prepareForNewPharmacyRetailBill();
+        pharmacySaleController.setSearchedPatient(current);
+        pharmacySaleController.setPatientSearchTab(1);
+        return pharmacySaleController.toPharmacyRetailSale();
+    }
+
+    public String toEmr() {
+        
+        return "";
+    }
+
+    public String toChannelling() {
+        return "";
+    }
+
+    public String toQueue() {
+        return "";
+    }
+
+    public String toAdmit() {
+        return "";
+    }
+
+    public String toRecords() {
+        return "";
+    }
+
+    public String toSearchPatient() {
+        return "/emr/patient_search";
+    }
+
+    public void generateNewCode() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient");
             return;
         }
         current.setCode(getCountPatientCode());
     }
-    
+
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
         return "/membership/change_membership";
@@ -548,9 +595,9 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient";
+        return "/emr/patient_basic_info";
     }
-    
+
     public String toPatientFromSearchPatientsProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No Patient Selected");

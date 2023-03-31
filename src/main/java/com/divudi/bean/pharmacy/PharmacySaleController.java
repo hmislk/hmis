@@ -537,11 +537,24 @@ public class PharmacySaleController implements Serializable {
         searchController.createPreBillsNotPaid();
         billPreview = false;
     }
+    
+    public void prepareForNewPharmacyRetailBill() {
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        clearBill();
+        clearBillItem();
+        searchController.createPreBillsNotPaid();
+        billPreview = false;
+    }
 
     public String pharmacyRetailSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
     }
 
+    public String toPharmacyRetailSale() {
+        return "/pharmacy/pharmacy_bill_retail_sale";
+    }
+
+    
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();
         List<Item> items;

@@ -35,7 +35,7 @@
                                 <h:commandButton id="btnAddPt"  value="To Add New Patient"
                                                  action="#{patientController.prepareAdd()}" styleClass="btn btn-info me-2">
                                 </h:commandButton>
-                                <h:commandButton id="btnBack" action="/clinical/patient_search" value="Back"
+                                <h:commandButton id="btnBack" action="#{patientController.toSearchPatient()}" value="Back"
                                                  styleClass="btn btn-secondary">
                                 </h:commandButton>
                             </div>

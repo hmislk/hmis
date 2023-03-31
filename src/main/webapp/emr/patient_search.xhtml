@@ -119,7 +119,7 @@
                                             </p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Actions" styleClass="col-actions">
-                                            <h:commandButton value="View" styleClass="btn btn-primary" action="#{patientController.toPatientFromSearchPatientsProfile()}">
+                                            <h:commandButton value="View" styleClass="btn btn-primary" action="#{patientController.toPatientFromSearchPatients()}">
                                                 <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
                                             </h:commandButton>
                                             <h:commandButton value="Queue" styleClass="btn btn-secondary" action="#{patientController.toAddToQueueFromSearchPatients()}">

@@ -1967,6 +1967,10 @@ public class BillController implements Serializable {
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
     }
+    
+    public String toOpdBilling(){
+        return "/opd_bill";
+    }
 
     public void prepareNewBillForMember() {
         clearBillItemValues();
