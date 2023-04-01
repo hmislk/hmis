@@ -95,57 +95,106 @@ public class PatientDataUploadBean {
 
             patient.setPatientId((long) row.getCell(0).getNumericCellValue());
             patient.getPerson().setName(row.getCell(1).getStringCellValue());
-            patient.setCode(row.getCell(2).getStringCellValue());
+            Cell codeCell = row.getCell(2);
+            if (codeCell != null) {
+                String code = codeCell.getStringCellValue();
+                patient.setCode(code);
+            }
 
-            String dateOfBirthStr = dataFormatter.formatCellValue(row.getCell(3));
-            LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
-            Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
-            Date dateOfBirth = Date.from(instant);
-            patient.getPerson().setDob(dateOfBirth);
+            Cell dateOfBirthCell = row.getCell(3);
+            if (dateOfBirthCell != null) {
+                String dateOfBirthStr = dataFormatter.formatCellValue(dateOfBirthCell);
+                LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
+                if (localDateOfBirth != null) {
+                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+                    Date dateOfBirth = Date.from(instant);
+                    patient.getPerson().setDob(dateOfBirth);
+                }
+            }
 
-            patient.getPerson().setAddress(row.getCell(4).getStringCellValue());
-            patient.getPerson().setPhone(row.getCell(5).getStringCellValue());
-            patient.getPerson().setMobile(row.getCell(6).getStringCellValue());
-            patient.getPerson().setEmail(row.getCell(7).getStringCellValue());
+            Cell addressCell = row.getCell(4);
+            if (addressCell != null) {
+                patient.getPerson().setAddress(addressCell.getStringCellValue());
+            }
+
+            Cell phoneCell = row.getCell(5);
+            if (phoneCell != null) {
+                patient.getPerson().setPhone(phoneCell.getStringCellValue());
+            }
+
+            Cell mobileCell = row.getCell(6);
+            if (mobileCell != null) {
+                patient.getPerson().setMobile(mobileCell.getStringCellValue());
+            }
+
+            Cell emailCell = row.getCell(7);
+            if (emailCell != null) {
+                patient.getPerson().setEmail(emailCell.getStringCellValue());
+            }
 
             Title title;
             try {
-                title = Title.valueOf(row.getCell(8).getStringCellValue());
+                Cell titleCell = row.getCell(8);
+                if (titleCell != null) {
+                    title = Title.valueOf(titleCell.getStringCellValue());
+                } else {
+                    title = Title.Mr;
+                }
             } catch (IllegalArgumentException e) {
                 title = Title.Mr;
             }
             patient.getPerson().setTitle(title);
 
-            String sex = row.getCell(9).getStringCellValue();
-            if (sex.toLowerCase().contains("f")) {
-                patient.getPerson().setSex(Sex.Female);
-            } else {
-                patient.getPerson().setSex(Sex.Male);
+            Cell sexCell = row.getCell(9);
+            if (sexCell != null) {
+                String sex = sexCell.getStringCellValue();
+                if (sex.toLowerCase().contains("f")) {
+                    patient.getPerson().setSex(Sex.Female);
+                } else {
+                    patient.getPerson().setSex(Sex.Male);
+                }
             }
 
-            String strCivilStatus = row.getCell(10).getStringCellValue();
-            Item civilStatus = itemController.findItemByName(strCivilStatus, "civil_statuses");
-            patient.getPerson().setCivilStatus(civilStatus);
+            Cell civilStatusCell = row.getCell(10);
+            if (civilStatusCell != null) {
+                String strCivilStatus = civilStatusCell.getStringCellValue();
+                Item civilStatus = itemController.findItemByName(strCivilStatus, "civil_statuses");
+                patient.getPerson().setCivilStatus(civilStatus);
+            }
 
-            // Code for Race
-            String strRace = row.getCell(11).getStringCellValue();
-            Item race = itemController.findItemByName(strRace, "races");
-            patient.getPerson().setRace(race);
+            Cell raceCell = row.getCell(11);
+            if (raceCell != null) {
+                String strRace = raceCell.getStringCellValue();
+                Item race = itemController.findItemByName(strRace, "races");
+                patient.getPerson().setRace(race);
+            }
 
-// Code for BloodGroup
-            String strBloodGroup = row.getCell(12).getStringCellValue();
-            Item bloodGroup = itemController.findItemByName(strBloodGroup, "blood_groups");
-            patient.getPerson().setBloodGroup(bloodGroup);
+            Cell bloodGroupCell = row.getCell(12);
+            if (bloodGroupCell != null) {
+                String strBloodGroup = bloodGroupCell.getStringCellValue();
+                Item bloodGroup = itemController.findItemByName(strBloodGroup, "blood_groups");
+                patient.getPerson().setBloodGroup(bloodGroup);
+            }
 
-            patient.setComments(row.getCell(13).getStringCellValue());
-            patient.getPerson().setFullName(row.getCell(14).getStringCellValue());
+            Cell commentsCell = row.getCell(13);
+            if (commentsCell != null) {
+                patient.setComments(commentsCell.getStringCellValue());
+            }
 
-// Code for Occupation
-            String strOccupation = row.getCell(15).getStringCellValue();
-            Item occupation = itemController.findItemByName(strOccupation, "occupations");
-            patient.getPerson().setOccupation(occupation);
+            Cell fullNameCell = row.getCell(14);
+            if (fullNameCell != null) {
+                patient.getPerson().setFullName(fullNameCell.getStringCellValue());
+            }
+
+            Cell occupationCell = row.getCell(15);
+            if (occupationCell != null) {
+                String strOccupation = occupationCell.getStringCellValue();
+                Item occupation = itemController.findItemByName(strOccupation, "occupations");
+                patient.getPerson().setOccupation(occupation);
+            }
 
             patients.add(patient);
+
         }
 
         return patients;
