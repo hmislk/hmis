@@ -1,6 +1,7 @@
 package com.divudi.bean.emr;
 
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.Item;
@@ -35,6 +36,8 @@ public class PatientDataUploadBean {
 
     @Inject
     ItemController itemController;
+    @Inject
+    SessionController sessionController;
     private List<Patient> patients;
     @EJB
     PatientFacade patientFacade;
@@ -79,7 +82,7 @@ public class PatientDataUploadBean {
 
         List<Patient> patients = new ArrayList<>();
 
-        List<String> datePatterns = Arrays.asList("M/d/yy", "MM/dd/yyyy", "d/M/yy", "dd/MM,yyyy", "dd/MM/yyyy", "yyyy-MM-dd");
+        List<String> datePatterns = Arrays.asList("dd MMMM yyyy","M/d/yy", "MM/dd/yyyy", "d/M/yy", "dd/MM,yyyy", "dd/MM/yyyy", "yyyy-MM-dd");
 
         // Assuming the first row contains headers, skip it
         if (rowIterator.hasNext()) {
@@ -193,6 +196,10 @@ public class PatientDataUploadBean {
                 patient.getPerson().setOccupation(occupation);
             }
 
+            patient.setCreatedAt(new Date());
+            patient.setCreater(sessionController.getLoggedUser());
+            patient.setCreatedInstitution(sessionController.getInstitution());
+            
             patients.add(patient);
 
         }
