@@ -115,10 +115,16 @@ public class Person implements Serializable {
     String nameWithTitle;
     boolean foreigner = false;
 
+    @ManyToOne
     Item civilStatus;
+    @ManyToOne
     Item race;
+    @ManyToOne
     Item bloodGroup;
+    @ManyToOne
     Item occupation;
+    @ManyToOne
+    private Item religion;
 
     @ManyToOne
     @JsonIgnore
@@ -547,4 +553,14 @@ public class Person implements Serializable {
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
     }
+
+    public Item getReligion() {
+        return religion;
+    }
+
+    public void setReligion(Item religion) {
+        this.religion = religion;
+    }
+    
+    
 }

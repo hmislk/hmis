@@ -218,6 +218,42 @@ public class ItemController implements Serializable {
         }
         return item;
     }
+    
+    public Item findItemByName(String name, String parentCode) {
+        Item parentItem = findItemByCode(parentCode);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.parentItem=:pi "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("pi", parentItem);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " and i.parentItem=:pi "
+                    + " where i.name=:name";
+            m = new HashMap();
+            m.put("code", name);
+            m.put("pi", parentItem);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(name);
+                item.setCode(CommonController.nameToCode(name));
+                item.setParentItem(parentItem);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {

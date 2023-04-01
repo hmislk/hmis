@@ -7,7 +7,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-         <cc:attribute name="patient" type="com.divudi.entity.Patient" class="com.divudi.entity.Patient" />
+        <cc:attribute name="patient" type="com.divudi.entity.Patient" class="com.divudi.entity.Patient" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -31,6 +31,10 @@
                                 <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
                             </h:outputText> 
                         </p>
+                        <p><strong>Race:</strong> #{cc.attrs.patient.person.race.name}</p>
+                        <p><strong>Race:</strong> #{cc.attrs.patient.person.religion.name}</p>
+                        <p><strong>Occupation:</strong> #{cc.attrs.patient.person.occupation.name}</p>
+                        <p><strong>Civil Status:</strong> #{cc.attrs.patient.person.civilStatus.name}</p>
                     </div>
                     <div class="col-md-6 col-sm-12">
                         <p><strong>Phone:</strong> #{cc.attrs.patient.person.phone}</p>
@@ -39,6 +43,7 @@
                         <p><strong>ID:</strong> #{cc.attrs.patient.person.nic}</p>
                         <p><strong>Code:</strong> #{cc.attrs.patient.code}</p>
                         <p><strong>Address:</strong> #{cc.attrs.patient.person.address}</p>
+                        <p><strong>Blood Group:</strong> #{cc.attrs.patient.person.bloodGroup.name}</p>
                     </div>
                 </div>
 

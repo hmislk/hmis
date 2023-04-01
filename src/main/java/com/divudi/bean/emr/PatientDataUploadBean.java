@@ -124,17 +124,17 @@ public class PatientDataUploadBean {
             }
 
             String strCivilStatus = row.getCell(10).getStringCellValue();
-            Item civilStatus = itemController.findItemByCode(strCivilStatus, "civil_statuses");
+            Item civilStatus = itemController.findItemByName(strCivilStatus, "civil_statuses");
             patient.getPerson().setCivilStatus(civilStatus);
 
             // Code for Race
             String strRace = row.getCell(11).getStringCellValue();
-            Item race = itemController.findItemByCode(strRace, "races");
+            Item race = itemController.findItemByName(strRace, "races");
             patient.getPerson().setRace(race);
 
 // Code for BloodGroup
             String strBloodGroup = row.getCell(12).getStringCellValue();
-            Item bloodGroup = itemController.findItemByCode(strBloodGroup, "blood_groups");
+            Item bloodGroup = itemController.findItemByName(strBloodGroup, "blood_groups");
             patient.getPerson().setBloodGroup(bloodGroup);
 
             patient.setComments(row.getCell(13).getStringCellValue());
@@ -142,7 +142,7 @@ public class PatientDataUploadBean {
 
 // Code for Occupation
             String strOccupation = row.getCell(15).getStringCellValue();
-            Item occupation = itemController.findItemByCode(strOccupation, "occupations");
+            Item occupation = itemController.findItemByName(strOccupation, "occupations");
             patient.getPerson().setOccupation(occupation);
 
             patients.add(patient);
