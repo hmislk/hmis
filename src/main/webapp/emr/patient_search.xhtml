@@ -8,37 +8,14 @@
 
     <h:head>
         <title>Patient Search</title>
-        <style>
-            .col-name {
-                width: auto;
-            }
-
-            .col-age {
-                width: auto;
-            }
-
-            .col-sex {
-                width: auto;
-            }
-
-            .col-address {
-                width: auto;
-            }
-
-            .col-phone {
-                width: auto;
-            }
-
-            .col-actions {
-                width: auto;
-            }
-        </style>
+        <h:outputStylesheet library="css" name="styles.css" ></h:outputStylesheet>
     </h:head>
     <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
+                <h:outputStylesheet library="css" name="styles.css" ></h:outputStylesheet>
                 <h:form>
                     <div class="card" >
                         <div class="card-header" >
@@ -95,13 +72,12 @@
                                     </div>
 
                                     <p:dataTable value="#{patientController.searchPatients}" var="p" 
-                                                 class="w-100 b-2"
+                                                 class="w-100 table table-sm table-striped"
                                                  paginator="true"
                                                  rows="10"
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="5,10,20"
                                                  >
-
                                         <p:column headerText="Name" styleClass="col-name">
                                             <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
                                         </p:column>
@@ -120,9 +96,6 @@
                                         </p:column>
                                         <p:column headerText="Actions" styleClass="col-actions">
                                             <h:commandButton value="View" styleClass="btn btn-primary" action="#{patientController.toPatientFromSearchPatients()}">
-                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
-                                            </h:commandButton>
-                                            <h:commandButton value="Queue" styleClass="btn btn-secondary" action="#{patientController.toAddToQueueFromSearchPatients()}">
                                                 <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
                                             </h:commandButton>
                                         </p:column>
