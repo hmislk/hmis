@@ -295,7 +295,7 @@ public class StoreReportsStock implements Serializable {
         hm.put("dep", department);
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
-        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private StockHistory getPreviousStockHistoryByBatch(ItemBatch itemBatch, Department department, Date date) {
@@ -306,7 +306,7 @@ public class StoreReportsStock implements Serializable {
         hm.put("itmB", itemBatch);
         hm.put("dt", date);
         hm.put("dep", department);
-        return getStockHistoryFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getStockHistoryFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void fillDepartmentStocksError() {

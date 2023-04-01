@@ -931,7 +931,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("web", webUser);
         temMap.put("ins", getSessionController().getInstitution());
 
-        Bill b = getBillFacade().findFirstBySQL(sql, temMap, TemporalType.DATE);
+        Bill b = getBillFacade().findFirstByJpql(sql, temMap, TemporalType.DATE);
 
         if (b != null && institution == null) {
             //System.err.println("SYS "+b.getInstitution().getName());
@@ -2121,7 +2121,7 @@ public class CommonReport1 implements Serializable {
 
         m.put("staff", doctor);
 
-        PersonInstitution pi = personInstitutionFacade.findFirstBySQL(sql, m);
+        PersonInstitution pi = personInstitutionFacade.findFirstByJpql(sql, m);
         if (pi != null) {
             return false;
         } else {

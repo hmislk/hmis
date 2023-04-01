@@ -188,7 +188,7 @@ public class DepartmentController implements Serializable {
             String sql = "Select d From Department d "
                     + " where d.retired=false "
                     + " and d.institution=:ins ";
-            dep = getFacade().findFirstBySQL(sql, m);
+            dep = getFacade().findFirstByJpql(sql, m);
             if (dep == null) {
                 dep = new Department();
                 dep.setCreatedAt(new Date());

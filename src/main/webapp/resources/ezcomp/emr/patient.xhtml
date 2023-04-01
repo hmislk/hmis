@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+         <cc:attribute name="patient" type="com.divudi.entity.Patient" class="com.divudi.entity.Patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <div class="card text-white bg-success">
+            <div class="card-header">
+                <h5>Basic Information</h5>
+            </div>
+            <div class="card-body">
+
+                <div class="row w-100">
+                    <div class="col-md-6 col-sm-12">
+                        <p><strong>Title:</strong> #{cc.attrs.patient.person.title}</p>
+                        <p><strong>Name:</strong> #{cc.attrs.patient.person.name}</p>
+                        <p><strong>Number:</strong> #{cc.attrs.patient.phn}</p>
+                        <p><strong>Sex:</strong> #{cc.attrs.patient.person.sex}</p>
+                        <p><strong>Age:</strong> #{cc.attrs.patient.person.age}</p>
+                        <p><strong>Date of Birth:</strong> 
+                            <h:outputText value=" " ></h:outputText>
+                            <h:outputText value="#{cc.attrs.patient.person.dob}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                            </h:outputText> 
+                        </p>
+                    </div>
+                    <div class="col-md-6 col-sm-12">
+                        <p><strong>Phone:</strong> #{cc.attrs.patient.person.phone}</p>
+                        <p><strong>Mobile:</strong> #{cc.attrs.patient.person.mobile}</p>
+                        <p><strong>Email:</strong> #{cc.attrs.patient.person.email}</p>
+                        <p><strong>ID:</strong> #{cc.attrs.patient.person.nic}</p>
+                        <p><strong>Code:</strong> #{cc.attrs.patient.code}</p>
+                        <p><strong>Address:</strong> #{cc.attrs.patient.person.address}</p>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </cc:implementation>
+</html>

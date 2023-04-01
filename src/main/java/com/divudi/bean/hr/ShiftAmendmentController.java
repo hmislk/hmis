@@ -48,7 +48,7 @@ public class ShiftAmendmentController implements Serializable {
         hm.put("dt", date);
         hm.put("sh", shift);
 
-        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return staffShift != null;
     }
@@ -64,7 +64,7 @@ public class ShiftAmendmentController implements Serializable {
         hm.put("sh", shift);
         hm.put("stf", staff);
 
-        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return staffShift != null;
     }

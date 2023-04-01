@@ -197,7 +197,7 @@ public class InvestigationMonthSummeryOwnControllerSession implements Serializab
 
         hm.put("itm", investigation);
 
-        if (reportItemFacade.findFirstBySQL(sql, hm) != null) {
+        if (reportItemFacade.findFirstByJpql(sql, hm) != null) {
             exist = true;
         }
 

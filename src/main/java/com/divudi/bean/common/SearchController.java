@@ -1633,7 +1633,7 @@ public class SearchController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyTransferReceive);
-        return getBillFacade().findFirstBySQL(sql, hm);
+        return getBillFacade().findFirstByJpql(sql, hm);
     }
 
     private Bill getActiveRefBill(Bill b) {
@@ -1645,7 +1645,7 @@ public class SearchController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyTransferReceive);
-        return getBillFacade().findFirstBySQL(sql, hm);
+        return getBillFacade().findFirstByJpql(sql, hm);
     }
 
     private Bill getActiveRefBillnotApprove(Bill b, BillType billType) {
@@ -1657,7 +1657,7 @@ public class SearchController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", billType);
-        return getBillFacade().findFirstBySQL(sql, hm);
+        return getBillFacade().findFirstByJpql(sql, hm);
     }
 
     public void makeNull() {
@@ -3478,7 +3478,7 @@ public class SearchController implements Serializable {
                     + " and bi.bill.billType=:btp "
                     //                    + " and bi.bill.toStaff=:stf "
                     + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql, temMap);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql, temMap);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
@@ -3562,7 +3562,7 @@ public class SearchController implements Serializable {
                     + " and bi.bill.billType=:btp "
                     //                    + " and bi.bill.toStaff=:stf "
                     + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql, temMap);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql, temMap);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
@@ -7411,7 +7411,7 @@ public class SearchController implements Serializable {
                         //                        + " and type(bi.bill)=:class "
                         + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
             }
-            rbi = getBillItemFacade().findFirstBySQL(sql, m);
+            rbi = getBillItemFacade().findFirstByJpql(sql, m);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);

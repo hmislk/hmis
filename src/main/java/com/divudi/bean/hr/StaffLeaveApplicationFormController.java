@@ -246,7 +246,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("ltp", list);
         hm.put("frm", frm);
 //        hm.put("td", td);
-        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return stf;
 
@@ -265,7 +265,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("stf", staff);
         hm.put("ltp", leaveType);
         hm.put("frm", frm);
-        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return stf;
 
@@ -282,7 +282,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("stf", staff);
         hm.put("ltp", leaveType);
-        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
+        StaffLeaveEntitle stf = staffLeaveEntitleFacade.findFirstByJpql(sql, hm);
 
         return stf;
 
@@ -527,7 +527,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("dt", date);
         hm.put("lt", leaveType);
 
-        return staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        return staffLeaveFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
     }
 

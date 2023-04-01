@@ -264,7 +264,7 @@ public class StaffPaymentBillController implements Serializable {
                         + " and type(bi.bill)=:class "
                         + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
                 h.put("class",RefundBill.class);
-                BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
+                BillItem rbi = getBillItemFacade().findFirstByJpql(sql,h);
 
                 if (rbi != null) {
                     removeingBillFees.add(bf);

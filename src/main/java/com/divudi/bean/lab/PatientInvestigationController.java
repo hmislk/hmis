@@ -417,7 +417,7 @@ public class PatientInvestigationController implements Serializable {
 
         Map m = new HashMap();
         m.put("ma", "%dimension%");
-        PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
+        PatientSample ps = getPatientSampleFacade().findFirstByJpql(j, m);
         if (ps != null) {
             ps.setReadyTosentToAnalyzer(false);
             ps.setSentToAnalyzer(true);
@@ -545,7 +545,7 @@ public class PatientInvestigationController implements Serializable {
         String j = "select ps from PatientSample ps where ps.id = :id";
         Map m = new HashMap();
         m.put("id", id);
-        return getPatientSampleFacade().findFirstBySQL(j, m);
+        return getPatientSampleFacade().findFirstByJpql(j, m);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
@@ -586,7 +586,7 @@ public class PatientInvestigationController implements Serializable {
                 + " and pi.retired=false "
                 + " order by pi.id";
         m.put("bi", bi);
-        PatientInvestigation pi = getFacade().findFirstBySQL(j, m);
+        PatientInvestigation pi = getFacade().findFirstByJpql(j, m);
         pi.isRetired();
         return pi;
     }
@@ -1219,7 +1219,7 @@ public class PatientInvestigationController implements Serializable {
         String j = "Select b from Bill b where b.insId=:id";
         Map m = new HashMap();
         m.put("id", insId);
-        Bill b = getBillFacade().findFirstBySQL(j, m);
+        Bill b = getBillFacade().findFirstByJpql(j, m);
         List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
             JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
@@ -1284,7 +1284,7 @@ public class PatientInvestigationController implements Serializable {
                             m.put("sc", ixi.getSampleComponent());
                         }
 
-                        PatientSample pts = getPatientSampleFacade().findFirstBySQL(j, m);
+                        PatientSample pts = getPatientSampleFacade().findFirstByJpql(j, m);
                         if (pts == null) {
                             pts = new PatientSample();
                             pts.setTube(ixi.getTube());
@@ -1321,7 +1321,7 @@ public class PatientInvestigationController implements Serializable {
                         m.put("pt", b.getPatient());
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
-                        ptsc = getPatientSampleComponantFacade().findFirstBySQL(j, m);
+                        ptsc = getPatientSampleComponantFacade().findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);

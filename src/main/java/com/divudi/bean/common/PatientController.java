@@ -1052,7 +1052,7 @@ public class PatientController implements Serializable {
                     m.put("pm", PaymentMethod.OnlineSettlement);
                     m.put("d", cal.getTime());
                     m.put("p", p.getId());
-                    Bill b = getBillFacade().findFirstBySQL(sql, m);
+                    Bill b = getBillFacade().findFirstByJpql(sql, m);
                     if (b != null) {
                         p.setBill(b);
                     }
@@ -1200,7 +1200,7 @@ public class PatientController implements Serializable {
                 + " order by p.code desc ";
         m.put("q", "%" + s.toUpperCase() + "%");
 
-        Patient p = getEjbFacade().findFirstBySQL(sql, m);
+        Patient p = getEjbFacade().findFirstByJpql(sql, m);
         DecimalFormat df = new DecimalFormat("000000");
         String st = "";
         if (p != null) {
@@ -1294,7 +1294,7 @@ public class PatientController implements Serializable {
                 m.put("q", pt.getCode().toUpperCase());
                 m.put("p", pt);
 
-                p = getEjbFacade().findFirstBySQL(sql, m);
+                p = getEjbFacade().findFirstByJpql(sql, m);
                 if (p != null) {
                     JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(pt.getPerson().getMembershipScheme().getCode()));
                     return true;

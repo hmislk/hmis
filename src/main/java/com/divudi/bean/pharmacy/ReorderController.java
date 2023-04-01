@@ -771,7 +771,7 @@ public class ReorderController implements Serializable {
         m.put("dept", dept);
         m.put("item", item);
         sql = "select r from Reorder r where r.department=:dept and r.item=:item";
-        Reorder r = reorderFacade.findFirstBySQL(sql, m);
+        Reorder r = reorderFacade.findFirstByJpql(sql, m);
         if (r == null) {
             r = new Reorder();
             r.setDepartment(dept);

@@ -1458,7 +1458,7 @@ public class CommonReport implements Serializable {
         temMap.put("web", webUser);
         temMap.put("ins", getSessionController().getInstitution());
 
-        Bill b = getBillFacade().findFirstBySQL(sql, temMap, TemporalType.DATE);
+        Bill b = getBillFacade().findFirstByJpql(sql, temMap, TemporalType.DATE);
 
         if (b != null && institution == null) {
             //System.err.println("SYS " + b.getInstitution().getName());

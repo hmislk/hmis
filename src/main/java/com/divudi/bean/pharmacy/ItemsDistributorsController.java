@@ -102,7 +102,7 @@ public class ItemsDistributorsController implements Serializable {
                 + " order by i.id desc";
         Map m = new HashMap();
         m.put("item", i);
-        ItemsDistributors tmp = getFacade().findFirstBySQL(sql, m);
+        ItemsDistributors tmp = getFacade().findFirstByJpql(sql, m);
         if (tmp != null) {
             return tmp.getInstitution();
         } else {

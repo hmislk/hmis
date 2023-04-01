@@ -679,7 +679,7 @@ public class ShiftTableController implements Serializable {
 //                + " where ss.retired=false "
 //                + " and ss.shiftDate is not null";
 //
-//        StaffShift staffShift = staffShiftFacade.findFirstBySQL(sql);
+//        StaffShift staffShift = staffShiftFacade.findFirstByJpql(sql);
         Calendar nc = Calendar.getInstance();
         nc.setTime(new Date());
         nc.set(2015, 00, 01, 00, 00, 00);

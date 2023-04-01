@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:em="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
 
     <body>
 
@@ -21,39 +22,7 @@
                                     </div>
                                     <div class="card-body row">
                                         <div class="col-md-4">
-                                            <div class="card text-white bg-success">
-                                                <div class="card-header">
-                                                    <h5>Basic Information</h5>
-                                                </div>
-                                                <div class="card-body">
-
-                                                    <div class="row w-100">
-                                                        <div class="col-md-6 col-sm-12">
-                                                            <p><strong>Title:</strong> #{patientController.current.person.title}</p>
-                                                            <p><strong>Name:</strong> #{patientController.current.person.name}</p>
-                                                            <p><strong>Number:</strong> #{patientController.current.phn}</p>
-                                                            <p><strong>Sex:</strong> #{patientController.current.person.sex}</p>
-                                                            <p><strong>Age:</strong> #{patientController.current.person.age}</p>
-                                                            <p><strong>Date of Birth:</strong> 
-                                                                <h:outputText value=" " ></h:outputText>
-                                                                <h:outputText value="#{patientController.current.person.dob}" >
-                                                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
-                                                                </h:outputText> 
-                                                            </p>
-                                                        </div>
-                                                        <div class="col-md-6 col-sm-12">
-                                                            <p><strong>Phone:</strong> #{patientController.current.person.phone}</p>
-                                                            <p><strong>Mobile:</strong> #{patientController.current.person.mobile}</p>
-                                                            <p><strong>Email:</strong> #{patientController.current.person.email}</p>
-                                                            <p><strong>ID:</strong> #{patientController.current.person.nic}</p>
-                                                            <p><strong>Code:</strong> #{patientController.current.code}</p>
-                                                            <p><strong>Address:</strong> #{patientController.current.person.address}</p>
-                                                        </div>
-                                                    </div>
-
-
-                                                </div>
-                                            </div>
+                                            <em:patient patient="#{patientController.current}"/>
                                         </div>
                                         <div class="col-md-8">
                                             <div class="card">

@@ -593,7 +593,7 @@ public class ApiMembership {
         m.put("bTp", bt);
         m.put("class", BilledBill.class);
 
-        Bill b = getBillFacade().findFirstBySQL(sql, m);
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
 
 //        //// // System.out.println("b = " + b);
         return b;

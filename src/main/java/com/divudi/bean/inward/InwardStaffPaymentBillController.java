@@ -935,7 +935,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                     + " and bi.bill.billType=:btp "
 //                    + " and bi.bill.toStaff=:stf "
                     + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql,h);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);

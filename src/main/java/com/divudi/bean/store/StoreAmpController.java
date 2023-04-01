@@ -199,7 +199,7 @@ public class StoreAmpController implements Serializable {
         m.put("dep", DepartmentType.Store);
         m.put("cat", getCurrent().getCategory());
 
-        Amp amp = getFacade().findFirstBySQL(sql, m);
+        Amp amp = getFacade().findFirstByJpql(sql, m);
 
 
         DecimalFormat df = new DecimalFormat("0000");

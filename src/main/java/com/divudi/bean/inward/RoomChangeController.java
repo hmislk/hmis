@@ -286,7 +286,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt desc";
         hm.put("pe", getCurrent());
-        return getPatientRoomFacade().findFirstBySQL(sql, hm);
+        return getPatientRoomFacade().findFirstByJpql(sql, hm);
     }
 
     public void changeGurdianRoom() {

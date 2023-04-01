@@ -323,7 +323,7 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT p FROM PatientInvestigation p where p.retired=false and p.billItem=:bi";
         hm.put("bi", bit);
-        PatientInvestigation tmp = getPatientInvestigationFacade().findFirstBySQL(sql, hm);
+        PatientInvestigation tmp = getPatientInvestigationFacade().findFirstByJpql(sql, hm);
 
         if (tmp.getDataEntered()) {
             return true;
@@ -784,8 +784,8 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sbt", SurgeryBillType.TimedService);
         hm.put("bil", getBill());
-        ////// // System.out.println("getBillFacade().findFirstBySQL(sql, hm) = " + getBillFacade().findFirstBySQL(sql, hm));
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        ////// // System.out.println("getBillFacade().findFirstByJpql(sql, hm) = " + getBillFacade().findFirstByJpql(sql, hm));
+        Bill b = getBillFacade().findFirstByJpql(sql, hm);
         if (b == null && checkBathcReferenceBillTimeService()) {
             return false;
         } else {

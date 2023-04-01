@@ -426,7 +426,7 @@ public class PatientEncounterController implements Serializable {
                 + " where e.patient=:p "
                 + " and e.retired=:ret "
                 + " and e.clinicalFindingValueType in :ts "
-                + " order by e.oderNo";
+                + " order by e.orderNo";
         return clinicalFindingValueFacade.findBySQL(sql, m);
     }
 
@@ -447,6 +447,36 @@ public class PatientEncounterController implements Serializable {
 
 //        currentEncounterMedicines = fillCurrentEncounterMedicines();
 //        currentEncounterDiagnosis = fillCurrentEncounterDiagnosis();
+    }
+
+    public void removePatientAllergy() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select Allergy");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        getPatientAllergies().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
+    }
+
+    public void removePatientMedicine() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select Allergy");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        getPatientMedicines().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
+    }
+
+    public void removePatientDiagnosis() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select Allergy");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        getPatientDiagnoses().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
     }
 
     public void addPatientAllergy() {
@@ -1087,6 +1117,8 @@ public class PatientEncounterController implements Serializable {
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
+    
+    
 
 }
 

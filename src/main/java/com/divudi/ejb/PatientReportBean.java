@@ -172,7 +172,7 @@ public class PatientReportBean {
                     HashMap hm = new HashMap();
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
-                    val = getPtRivFacade().findFirstBySQL(sql, hm);
+                    val = getPtRivFacade().findFirstByJpql(sql, hm);
                     if (val == null) {
                         ////// // System.out.println("val is null");
                         val = new PatientReportItemValue();
@@ -257,7 +257,7 @@ public class PatientReportBean {
 //                    r.isRetired()
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
-                    val = getPtRivFacade().findFirstBySQL(sql, hm);
+                    val = getPtRivFacade().findFirstByJpql(sql, hm);
 //                    ////// // System.out.println("val is " + val);
                     if (val == null) {
                         val = new PatientReportItemValue();
@@ -291,7 +291,7 @@ public class PatientReportBean {
             hm.put("ptRp", ptReport);
             hm.put("inv", ii);
 
-            val = getPtRivFacade().findFirstBySQL(sql, hm);
+            val = getPtRivFacade().findFirstByJpql(sql, hm);
             if (val == null) {
                 val = new PatientReportItemValue();
                 val.setStrValue("");
@@ -325,7 +325,7 @@ public class PatientReportBean {
         m.put("i", i);
         m.put("a", a.getName());
         m.put("iit", InvestigationItemType.Antibiotic);
-        InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
+        InvestigationItem ii = getIiFacade().findFirstByJpql(sql, m);
         //// // System.out.println("-------");
 
         if (ii == null) {

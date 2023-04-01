@@ -413,7 +413,7 @@ public class Lims {
                         //// // System.out.println("j = " + j);
                         //// // System.out.println("m = " + m);
 
-                        PatientSample pts = patientSampleFacade.findFirstBySQL(j, m);
+                        PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
                         //// // System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
@@ -452,7 +452,7 @@ public class Lims {
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
                         //// // System.out.println("j = " + j);
-                        ptsc = patientSampleComponantFacade.findFirstBySQL(j, m);
+                        ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);
@@ -526,7 +526,7 @@ public class Lims {
         String j = "Select b from Bill b where b.insId=:id order by b.id desc";
         Map m = new HashMap();
         m.put("id", insId);
-        Bill b = billFacade.findFirstBySQL(j, m);
+        Bill b = billFacade.findFirstByJpql(j, m);
         if (b == null) {
             return null;
         }
@@ -563,7 +563,7 @@ public class Lims {
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = webUserFacade.findFirstBySQL(temSQL, m);
+        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
 
         //// // System.out.println("temSQL = " + temSQL);
         if (u == null) {

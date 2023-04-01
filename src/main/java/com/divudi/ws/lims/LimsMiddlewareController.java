@@ -96,7 +96,7 @@ public class LimsMiddlewareController {
 
         m.put("n", temUserName.trim().toLowerCase());
         m.put("ret", false);
-        WebUser u = webUserFacade.findFirstBySQL(temSQL, m);
+        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
 
         System.out.println("temSQL = " + temSQL);
         System.out.println("m = " + m);

@@ -940,7 +940,7 @@ public class CollectingCentreBillController implements Serializable {
         m.put("bt", BillType.CollectingCentreBill);
         m.put("ins", ins);
         List<Bill> tempBills = getFacade().findBySQL(jpql, m);
-//        Bill b = getFacade().findFirstBySQL(jpql, m);
+//        Bill b = getFacade().findFirstByJpql(jpql, m);
 //        //// // System.out.println(" Error find Number CheckTime 3 = " + new Date());
         if (tempBills == null || tempBills.isEmpty()) {
             return false;

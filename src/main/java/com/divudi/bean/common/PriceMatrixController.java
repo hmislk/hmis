@@ -143,7 +143,7 @@ public class PriceMatrixController implements Serializable {
         hm.put("tPrice", dbl);
         hm.put("cat", category);
 
-        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
     }
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, PaymentMethod paymentMethod) {
@@ -162,7 +162,7 @@ public class PriceMatrixController implements Serializable {
         hm.put("tPrice", dbl);
         hm.put("cat", category);
 
-        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
     }
 
     public InwardMemberShipDiscount getInwardMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Institution ins, InwardChargeType inwardChargeType, AdmissionType admissionType) {
@@ -216,7 +216,7 @@ public class PriceMatrixController implements Serializable {
             }
         }
 
-        InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
         if (imsd != null) {
         }
@@ -276,7 +276,7 @@ public class PriceMatrixController implements Serializable {
             }
         }
 
-        InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        InwardMemberShipDiscount imsd = (InwardMemberShipDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
         if (imsd != null) {
         }
@@ -324,7 +324,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat "
                 + " and i.department=:dep ";
-        return (PharmacyMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(jpql, hm);
+        return (PharmacyMemberShipDiscount) getPriceMatrixFacade().findFirstByJpql(jpql, hm);
     }
     
     public OpdMemberShipDiscount getOpdMemberDisCount(PaymentMethod paymentMethod, MembershipScheme membershipScheme, Department department) {
@@ -425,7 +425,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat ";
 
-        return (OpdMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (OpdMemberShipDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -441,7 +441,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -458,7 +458,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.category=:cat ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -474,7 +474,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.item=:i ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -491,7 +491,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.item=:i ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -506,7 +506,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.membershipScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
-        return (OpdMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (OpdMemberShipDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
     
@@ -522,7 +522,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.membershipScheme=:m "
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
-        return (ChannellingMemberShipDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (ChannellingMemberShipDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
     }
 
     public PaymentSchemeDiscount fetchPaymentSchemeDiscount(PaymentScheme paymentScheme, PaymentMethod paymentMethod, Department department) {
@@ -537,7 +537,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -552,7 +552,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.department is null ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 
@@ -569,7 +569,7 @@ public class PriceMatrixController implements Serializable {
                 + " and i.paymentMethod=:p"
                 + " and i.department=:dep ";
 
-        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstBySQL(sql, hm);
+        return (PaymentSchemeDiscount) getPriceMatrixFacade().findFirstByJpql(sql, hm);
 
     }
 

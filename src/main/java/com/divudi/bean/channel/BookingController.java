@@ -1255,7 +1255,7 @@ public class BookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
+        arrivalRecord = (ArrivalRecord) fpFacade.findFirstByJpql(sql, hh);
     }
 
     public Boolean findArrivals(ServiceSession ss) {
@@ -1267,7 +1267,7 @@ public class BookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", ss.getSessionDate());
         hh.put("ss", ss.getId());
-        arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
+        arrivalRecord = (ArrivalRecord) fpFacade.findFirstByJpql(sql, hh);
 
         if (arrivalRecord != null) {
             if (arrivalRecord.isApproved()) {

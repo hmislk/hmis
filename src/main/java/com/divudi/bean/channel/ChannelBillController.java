@@ -1651,7 +1651,7 @@ public class ChannelBillController implements Serializable {
                 } else {
                     sql = " select bi from BillItem bi where "
                             + " bi.bill=:b ";
-                    bi = getBillItemFacade().findFirstBySQL(sql, m);
+                    bi = getBillItemFacade().findFirstByJpql(sql, m);
                 }
                 if (bi != null) {
                     bi.setRetired(true);

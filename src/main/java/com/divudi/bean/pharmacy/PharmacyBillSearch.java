@@ -867,7 +867,7 @@ public class PharmacyBillSearch implements Serializable {
 
 //    private void updateRemainingQty(PharmaceuticalBillItem nB) {
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + nB.getBillItem().getReferanceBillItem().getId();
-//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 //        po.setRemainingQty(po.getRemainingQty() + nB.getQty());
 //
 //        //System.err.println("Added Remaini Qty " + nB.getQty());

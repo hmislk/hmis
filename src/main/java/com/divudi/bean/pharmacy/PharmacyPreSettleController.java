@@ -141,7 +141,7 @@ public class PharmacyPreSettleController implements Serializable {
                     + " and b.cancelled=false ";
             HashMap hm = new HashMap();
             hm.put("bil", args);
-            Bill b = getBillFacade().findFirstBySQL(sql, hm);
+            Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
             if (b != null) {
                 UtilityController.addErrorMessage("Allready Paid");
@@ -766,7 +766,7 @@ public class PharmacyPreSettleController implements Serializable {
                     + " and b.cancelled=false ";
             HashMap hm = new HashMap();
             hm.put("bil", args);
-            Bill b = getBillFacade().findFirstBySQL(sql, hm);
+            Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
             if (b != null) {
                 UtilityController.addErrorMessage("Allready Paid");

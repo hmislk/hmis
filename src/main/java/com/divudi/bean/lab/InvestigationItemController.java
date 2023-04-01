@@ -954,7 +954,7 @@ public class InvestigationItemController implements Serializable {
         }
         j += "order by i.id desc";
 
-        return getEjbFacade().findFirstBySQL(j, m);
+        return getEjbFacade().findFirstByJpql(j, m);
     }
 
     public InvestigationItem getLastReportItemComplete(InvestigationItemType type) {
