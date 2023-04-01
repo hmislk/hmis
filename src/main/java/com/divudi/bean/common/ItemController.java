@@ -218,7 +218,7 @@ public class ItemController implements Serializable {
         }
         return item;
     }
-    
+
     public Item findItemByName(String name, String parentCode) {
         Item parentItem = findItemByCode(parentCode);
         String jpql;
@@ -235,10 +235,10 @@ public class ItemController implements Serializable {
         if (item == null) {
             jpql = "select i "
                     + " from Item i "
-                    + " and i.parentItem=:pi "
-                    + " where i.name=:name";
+                    + " where i.parentItem=:pi "
+                    + " and i.name=:name";
             m = new HashMap();
-            m.put("code", name);
+            m.put("name", name);
             m.put("pi", parentItem);
             item = getFacade().findFirstByJpql(jpql, m);
             if (item != null) {
