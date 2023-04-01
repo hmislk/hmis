@@ -12,14 +12,124 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form enctype="multipart/form-data">
-                    <p:fileUpload value="#{patientDataUploadBean.file}"
-                                  mode="simple"
-                                  label="Choose File"/>
-                    <p:commandButton value="Upload"
-                                     action="#{patientDataUploadBean.upload}"
-                                     ajax="false"/>
-                </h:form>
+                <div class="container-fluid" >
+
+                    <div class="card" >
+                        <div class="card-header" >
+                            <h2>Upload patients</h2>
+                        </div>
+                        <div class="card-body" >
+
+                            <h:form enctype="multipart/form-data">
+                                <p:fileUpload value="#{patientDataUploadBean.file}"
+                                              mode="simple"
+                                              label="Choose File"/>
+                                <p:commandButton value="Upload"
+                                                 action="#{patientDataUploadBean.upload}"
+                                                 ajax="false"/>
+                            </h:form>
+
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Column</th>
+                                        <th>Title</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Patient ID</td>
+                                        <td>Unique patient identifier. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Patient</td>
+                                        <td>Patient name. Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>Patient Code</td>
+                                        <td>Patient code. Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>Date of Birth</td>
+                                        <td>Patient date of birth in the format specified above. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>5</td>
+                                        <td>Address</td>
+                                        <td>Patient address. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>6</td>
+                                        <td>Telephone</td>
+                                        <td>Patient phone number. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>7</td>
+                                        <td>Mobile</td>
+                                        <td>Patient mobile number. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>8</td>
+                                        <td>Email</td>
+                                        <td>Patient email address. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>9</td>
+                                        <td>Title</td>
+                                        <td>Patient title (Mr, Mrs, Miss, Dr, Prof). Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>10</td>
+                                        <td>Sex</td>
+                                        <td>Patient sex (M for Male, F for Female). Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>10</td>
+                                        <td>Civil Status</td>
+                                        <td>Patient civil status. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>11</td>
+                                        <td>Race</td>
+                                        <td>Patient race. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>12</td>
+                                        <td>Blood Group</td>
+                                        <td>Patient blood group. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>13</td>
+                                        <td>Comments</td>
+                                        <td>Any additional comments or notes about the patient. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>14</td>
+                                        <td>Full Name</td>
+                                        <td>Patient full name. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>15</td>
+                                        <td>Occupation</td>
+                                        <td>Patient occupation. Optional.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </div>
+
+
+
+
+                </div>
+
+
             </ui:define>
 
 
