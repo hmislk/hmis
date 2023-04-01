@@ -460,7 +460,7 @@ public class ApiInward {
                 + " and pe.bhtNo=:bht ";
         m.put("class", Admission.class);
         m.put("bht", bht_no);
-        PatientEncounter temp = getPatientEncounterFacade().findFirstBySQL(sql, m);
+        PatientEncounter temp = getPatientEncounterFacade().findFirstByJpql(sql, m);
 //        //// // System.out.println("temp = " + temp);
         return temp;
     }
@@ -487,7 +487,7 @@ public class ApiInward {
         m.put("bTp", BillType.InwardPaymentBill);
         m.put("class", BilledBill.class);
 
-        Bill b = getBillFacade().findFirstBySQL(sql, m);
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
 
 //        //// // System.out.println("b = " + b);
 

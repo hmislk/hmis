@@ -722,7 +722,7 @@ public class StoreStoreController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("bt", b);
 //
-//        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm);
+//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
 //    }
     private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"

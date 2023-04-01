@@ -1630,7 +1630,7 @@ public class SalaryCycleController implements Serializable {
         m.put("st", s);
         m.put("pc", psc);
         m.put("sc", salaryCycle);
-        return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
+        return staffSalaryComponantFacade.findFirstByJpql(jpql, m);
 
     }
 
@@ -1653,7 +1653,7 @@ public class SalaryCycleController implements Serializable {
         m.put("sses", ssids);
         m.put("pc", psc);
         m.put("sc", salaryCycle);
-        return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
+        return staffSalaryComponantFacade.findFirstByJpql(jpql, m);
 
     }
 
@@ -1708,7 +1708,7 @@ public class SalaryCycleController implements Serializable {
         m.put("st", s);
         m.put("pc", psc);
         //m.put("sc", salaryCycle);
-        return staffSalaryComponantFacade.findFirstBySQL(jpql, m);
+        return staffSalaryComponantFacade.findFirstByJpql(jpql, m);
 
     }
 

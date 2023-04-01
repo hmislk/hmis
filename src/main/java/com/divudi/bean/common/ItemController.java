@@ -49,8 +49,8 @@ import org.apache.commons.beanutils.BeanUtils;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -101,17 +101,17 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
 
     ReportKeyWord reportKeyWord;
-    
+
     public void fillInvestigations() {
         String j;
         j = "select i from Investigation i where i.retired=false order by i.name";
         items = getFacade().findBySQL(j);
     }
-    
-    public String toManageItemdIndex(){
+
+    public String toManageItemdIndex() {
         return "/admin/admin_items_index";
     }
-    
+
     public String toListInvestigations() {
         fillInvestigations();
         return "/admin/investigations";
@@ -139,22 +139,121 @@ public class ItemController implements Serializable {
         getFacade().edit(current);
         return toListInvestigations();
     }
-    
-    public String saveSelectedInvestigation(){
-         if (current == null) {
+
+    public String saveSelectedInvestigation() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-         if(current.getId()==null){
-             getFacade().create(current);
-         }else{
-             getFacade().edit(current);
-         }
-         return toListInvestigations();
+        if (current.getId() == null) {
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        return toListInvestigations();
     }
-    
-    
-    
+
+    public Item findItemByCode(String code) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.code=:code";
+        m.put("ret", false);
+        m.put("code", code);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.code=:code";
+            m = new HashMap();
+            m.put("code", code);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(code);
+                item.setCode(code);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
+
+    public Item findItemByCode(String code, String parentCode) {
+        Item parentItem = findItemByCode(parentCode);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.parentItem=:pi "
+                + " and i.code=:code";
+        m.put("ret", false);
+        m.put("code", code);
+        m.put("pi", parentItem);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " and i.parentItem=:pi "
+                    + " where i.code=:code";
+            m = new HashMap();
+            m.put("code", code);
+            m.put("pi", parentItem);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(code);
+                item.setCode(code);
+                item.setParentItem(parentItem);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
+
+    public Item findItemByName(String name, String parentCode) {
+        Item parentItem = findItemByCode(parentCode);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.parentItem=:pi "
+                + " and i.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        m.put("pi", parentItem);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        if (item == null) {
+            jpql = "select i "
+                    + " from Item i "
+                    + " where i.parentItem=:pi "
+                    + " and i.name=:name";
+            m = new HashMap();
+            m.put("name", name);
+            m.put("pi", parentItem);
+            item = getFacade().findFirstByJpql(jpql, m);
+            if (item != null) {
+                item.setRetired(false);
+                getFacade().edit(item);
+            } else {
+                item = new Item();
+                item.setName(name);
+                item.setCode(CommonController.nameToCode(name));
+                item.setParentItem(parentItem);
+                getFacade().create(item);
+            }
+        }
+        return item;
+    }
 
     public void fillInvestigationSampleComponents() {
         if (current == null) {
@@ -1178,8 +1277,8 @@ public class ItemController implements Serializable {
             getFacade().edit(i);
         }
     }
-    
-     public void toggleItemIctiveInactiveState() {
+
+    public void toggleItemIctiveInactiveState() {
         String j = "select i from Item i";
         List<Item> tis = getFacade().findBySQL(j);
         for (Item i : tis) {
@@ -1470,14 +1569,13 @@ public class ItemController implements Serializable {
      * @return
      */
     public List<Item> getItems() {
-        if(items==null){
+        if (items == null) {
             fillItemsWithInvestigationsAndServices();
         }
         return items;
     }
 
-    
-    public void fillItemsWithInvestigationsAndServices(){
+    public void fillItemsWithInvestigationsAndServices() {
         String temSql;
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
@@ -1485,7 +1583,7 @@ public class ItemController implements Serializable {
         h.put("t2", Service.class);
         items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
     }
-    
+
     public List<Item> getInwardItems() {
         String temSql;
         HashMap h = new HashMap();

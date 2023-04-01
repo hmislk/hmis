@@ -469,7 +469,7 @@ public class AmpController implements Serializable {
         m.put("dep", DepartmentType.Pharmacy);
         m.put("cat", getCurrent().getCategory());
 
-        Amp amp = getFacade().findFirstBySQL(sql, m);
+        Amp amp = getFacade().findFirstByJpql(sql, m);
 
         DecimalFormat df = new DecimalFormat("0000");
         if (amp != null && !amp.getCode().equals("")) {

@@ -295,7 +295,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("stf", staff);
         hm.put("ltp", list);
 
-        return staffLeaveEntitleFacade.findFirstBySQL(sql, hm);
+        return staffLeaveEntitleFacade.findFirstByJpql(sql, hm);
     }
 
     public void calLeaveCount() {
@@ -534,7 +534,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        LeaveForm lf = leaveFormFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        LeaveForm lf = leaveFormFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         return lf != null ? (LeaveFormSystem) lf : null;
 
     }
@@ -564,7 +564,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("stf", staffShift);
         hm.put("fr", form);
 
-        StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffLeave staffLeave = staffLeaveFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 
@@ -576,7 +576,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("stf", staffShift);
 
-        StaffLeave staffLeave = staffLeaveFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffLeave staffLeave = staffLeaveFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         return staffLeave != null ? (StaffLeaveSystem) staffLeave : null;
     }
 

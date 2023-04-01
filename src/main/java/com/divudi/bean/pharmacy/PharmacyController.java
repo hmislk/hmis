@@ -1527,7 +1527,7 @@ public class PharmacyController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("bt", b);
 //
-//        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm);
+//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
 //    }
     private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"
@@ -1648,7 +1648,7 @@ public class PharmacyController implements Serializable {
                 + " and i.bill.billType in :bts "
                 + " and i.bill.createdAt between :frm and :to  "
                 + " order by i.id";
-        BillItem d = getBillItemFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        BillItem d = getBillItemFacade().findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
         if (d == null) {
             return fd;
         } else if (d.getBill() != null && d.getBill().getCreatedAt() != null) {

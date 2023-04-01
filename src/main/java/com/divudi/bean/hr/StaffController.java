@@ -139,7 +139,7 @@ public class StaffController implements Serializable {
         Map m = new HashMap();
         m.put("p", p);
         m.put("ri", ri);
-        FormItemValue v = fivFacade.findFirstBySQL(jpql, m);
+        FormItemValue v = fivFacade.findFirstByJpql(jpql, m);
         if (v == null) {
             v = new FormItemValue();
             v.setPerson(p);

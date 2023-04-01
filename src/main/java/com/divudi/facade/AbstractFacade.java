@@ -95,7 +95,7 @@ public abstract class AbstractFacade<T> {
         return q.getResultList();
     }
 
-    public T findFirstBySQL(String temSQL, Map<String, Object> parameters) {
+    public T findFirstByJpql(String temSQL, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
@@ -760,7 +760,7 @@ public abstract class AbstractFacade<T> {
         }
     }
 
-    public T findFirstBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+    public T findFirstByJpql(String temSQL, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();

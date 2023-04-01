@@ -903,7 +903,7 @@ public class DataAdministrationController {
             sql += " order by b.createdAt desc";
         }
         m.put("bt", bt);
-        b = getBillFacade().findFirstBySQL(sql, m);
+        b = getBillFacade().findFirstByJpql(sql, m);
         return b;
     }
 

@@ -620,7 +620,7 @@ public class PatientReportController implements Serializable {
         //////System.out.println("sql = " + sql);
         m.put("pi", pi);
         //////System.out.println("m = " + m);
-        PatientReport r = getFacade().findFirstBySQL(sql, m);
+        PatientReport r = getFacade().findFirstByJpql(sql, m);
         //////System.out.println("r = " + r);
         if (r == null) {
             ////System.out.println("r is null");
@@ -1688,7 +1688,7 @@ public class PatientReportController implements Serializable {
         Map m = new HashMap();
         m.put("pi", pi);
         m.put("a", false);
-        PatientReport r = getFacade().findFirstBySQL(j, m);
+        PatientReport r = getFacade().findFirstByJpql(j, m);
         return r;
     }
 
@@ -1792,7 +1792,7 @@ public class PatientReportController implements Serializable {
         j = "select pr from PatientReport pr"
                 + " where pr.item=:ix "
                 + " order by pr.id desc";
-        pr = getFacade().findFirstBySQL(j, m);
+        pr = getFacade().findFirstByJpql(j, m);
         return pr;
     }
 

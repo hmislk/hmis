@@ -283,7 +283,7 @@ public class PersonInstitutionController implements Serializable {
         m.put("typ", PersonInstitutionType.Channelling);
         m.put("staff", s);
 
-        return getPersonInstitutionFacade().findFirstBySQL(sql, m);
+        return getPersonInstitutionFacade().findFirstByJpql(sql, m);
     }
 
     public List<PersonInstitution> findPersonInstitutions(Institution i, Staff s,Speciality sp) {

@@ -86,7 +86,7 @@ public class PaysheetComponentSystemController implements Serializable {
 
         hm.put("ct", PaysheetComponentType.addition.getSystemDefinedComponents());
 
-        PaysheetComponent tmp = getEjbFacade().findFirstBySQL(sql, hm);
+        PaysheetComponent tmp = getEjbFacade().findFirstByJpql(sql, hm);
 
         if (tmp != null) {
             return true;

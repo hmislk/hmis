@@ -272,7 +272,7 @@ public class PracticeBookingController implements Serializable {
         m.put("bs", getBillSession());
         String sql;
         sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
-        opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
+        opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
         //   ////// // System.out.println("opdVisit = " + opdVisit);
         if (opdVisit == null) {
             //   ////// // System.out.println("going for a new opd visit = ");
@@ -302,7 +302,7 @@ public class PracticeBookingController implements Serializable {
         m.put("bs", getBillSession());
         String sql;
         sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
-        opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
+        opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
         //   ////// // System.out.println("opdVisit = " + opdVisit);
         if (opdVisit == null) {
             //   ////// // System.out.println("going for a new opd visit = ");
@@ -331,7 +331,7 @@ public class PracticeBookingController implements Serializable {
         m.put("bs", getBillSession());
         String sql;
         sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
-        opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
+        opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
         if (opdVisit == null) {
             newOpdVisit();
             String tt = "";
@@ -616,7 +616,7 @@ public class PracticeBookingController implements Serializable {
         m.put("bs", getBillSession());
         String sql;
         sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
-        opdVisit = getPatientEncounterFacade().findFirstBySQL(sql, m);
+        opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
 
     }
 
@@ -656,7 +656,7 @@ public class PracticeBookingController implements Serializable {
         Map m = new HashMap();
         m.put("staff", staff);
         j = "Select s from SessionNumberGenerator s where s.staff=:staff";
-        SessionNumberGenerator s = sngFacade.findFirstBySQL(j, m);
+        SessionNumberGenerator s = sngFacade.findFirstByJpql(j, m);
         if (s == null) {
             s = new SessionNumberGenerator();
             s.setStaff(staff);
@@ -671,7 +671,7 @@ public class PracticeBookingController implements Serializable {
         m.put("s", doctor);
         m.put("d", sessionDate);
         sql = "select ss from ServiceSession ss where ss.staff=:s and ss.sessionDate=:d";
-        selectedServiceSession = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.DATE);
+        selectedServiceSession = getServiceSessionFacade().findFirstByJpql(sql, m, TemporalType.DATE);
         ////// // System.out.println("selectedServiceSession = " + selectedServiceSession);
         if (selectedServiceSession == null) {
             selectedServiceSession = new ServiceSession();

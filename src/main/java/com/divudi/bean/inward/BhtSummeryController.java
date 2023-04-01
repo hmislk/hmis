@@ -1276,7 +1276,7 @@ public class BhtSummeryController implements Serializable {
         String j = "select i from Item i where i.inwardChargeType=:ict and i.retired=false order by i.id desc";
         Map m = new HashMap();
         m.put("ict", InwardChargeType.VAT);
-        Item i = getItemFacade().findFirstBySQL(j, m);
+        Item i = getItemFacade().findFirstByJpql(j, m);
         
         
         if(i==null){

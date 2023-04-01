@@ -1257,7 +1257,7 @@ public class StaffSalaryController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
-        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstBySQL(sql, hm);
+        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         if (salaryComponant != null) {
             getCurrent().getStaffSalaryComponants().add(salaryComponant);
@@ -1788,7 +1788,7 @@ public class StaffSalaryController implements Serializable {
         hm.put("stf", getCurrent().getStaff());
         hm.put("tp", PaysheetComponentType.LoanNetSalary);
 
-        StaffPaysheetComponent staffPaysheetComponent = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffPaysheetComponent staffPaysheetComponent = getStaffPaysheetComponentFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
         if (staffPaysheetComponent != null) {
             getCurrent().setBankBranch(staffPaysheetComponent.getBankBranch());
             getCurrent().setAccountNo(staffPaysheetComponent.getAccountNo());
@@ -2029,7 +2029,7 @@ public class StaffSalaryController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        return getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        return getStaffSalaryFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffSalary> getItems() {

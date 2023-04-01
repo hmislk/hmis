@@ -3942,7 +3942,7 @@ public class Qb {
         m.put("ret", false);
         System.out.println("m = " + m);
         System.out.println("j = " + j);
-        Institution ins = institutionFacade.findFirstBySQL(j, m);
+        Institution ins = institutionFacade.findFirstByJpql(j, m);
         System.out.println("ins = " + ins);
         return ins;
     }
@@ -4005,7 +4005,7 @@ public class Qb {
             m.put("ins", ins);
         }
         j += " order by b.id desc ";
-        Bill b = billFacade.findFirstBySQL(j, m);
+        Bill b = billFacade.findFirstByJpql(j, m);
         if (b != null) {
             return b.getId();
         }

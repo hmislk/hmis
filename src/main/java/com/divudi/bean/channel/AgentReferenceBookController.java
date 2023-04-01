@@ -229,7 +229,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("ins", institution);
         m.put("ag", dbl);
 
-        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstBySQL(sql, m, TemporalType.DATE);
+        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
 
         if (agentReferenceBook == null) {
             return true;

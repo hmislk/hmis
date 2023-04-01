@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -99,13 +100,17 @@ public class PatientController implements Serializable {
     @Inject
     PracticeBookingController practiceBookingController;
     @Inject
-    PatientEncounterController PatientEncounterController;
+    PatientEncounterController patientEncounterController;
     @Inject
     private CommonController commonController;
     @Inject
     private SecurityController securityController;
     @Inject
     ApplicationController applicationController;
+    @Inject
+    BillController billController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
     /**
      *
      * Class Variables
@@ -147,7 +152,6 @@ public class PatientController implements Serializable {
     private String searchSampleId;
     private List<Patient> searchPatients;
 
-    
     public void generateNewPhn() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient");
@@ -163,19 +167,72 @@ public class PatientController implements Serializable {
         current.setPhn(applicationController.createNewPersonalHealthNumber(ins));
         current.setCreatedInstitution(ins);
     }
-    
-    public String toSearchPatient() {
-        return "/clinical/patient_search";
+
+    public String toOpdBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        billController.prepareNewBill();
+        billController.setPatientSearchTab(1);
+        billController.setSearchedPatient(current);
+        return billController.toOpdBilling();
     }
 
-     public void generateNewCode() {
+    public String toPharmacyBilling() {
+        System.out.println("toPharmacyBilling");
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        System.out.println("1");
+        pharmacySaleController.prepareForNewPharmacyRetailBill();
+        System.out.println("2");
+        pharmacySaleController.setSearchedPatient(current);
+        System.out.println("3");
+        pharmacySaleController.setPatientSearchTab(1);
+        System.out.println("4");
+        return pharmacySaleController.toPharmacyRetailSale();
+    }
+
+    public String toEmrPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        return "/emr/patient_profile";
+    }
+
+    public String toChannelling() {
+        return "";
+    }
+
+    public String toQueue() {
+        return "";
+    }
+
+    public String toAdmit() {
+        return "";
+    }
+
+    public String toRecords() {
+        return "";
+    }
+
+    public String toSearchPatient() {
+        return "/emr/patient_search";
+    }
+
+    public void generateNewCode() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient");
             return;
         }
         current.setCode(getCountPatientCode());
     }
-    
+
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
         return "/membership/change_membership";
@@ -548,9 +605,9 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient";
+        return "/emr/patient_basic_info";
     }
-    
+
     public String toPatientFromSearchPatientsProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No Patient Selected");
@@ -995,7 +1052,7 @@ public class PatientController implements Serializable {
                     m.put("pm", PaymentMethod.OnlineSettlement);
                     m.put("d", cal.getTime());
                     m.put("p", p.getId());
-                    Bill b = getBillFacade().findFirstBySQL(sql, m);
+                    Bill b = getBillFacade().findFirstByJpql(sql, m);
                     if (b != null) {
                         p.setBill(b);
                     }
@@ -1143,7 +1200,7 @@ public class PatientController implements Serializable {
                 + " order by p.code desc ";
         m.put("q", "%" + s.toUpperCase() + "%");
 
-        Patient p = getEjbFacade().findFirstBySQL(sql, m);
+        Patient p = getEjbFacade().findFirstByJpql(sql, m);
         DecimalFormat df = new DecimalFormat("000000");
         String st = "";
         if (p != null) {
@@ -1237,7 +1294,7 @@ public class PatientController implements Serializable {
                 m.put("q", pt.getCode().toUpperCase());
                 m.put("p", pt);
 
-                p = getEjbFacade().findFirstBySQL(sql, m);
+                p = getEjbFacade().findFirstByJpql(sql, m);
                 if (p != null) {
                     JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(pt.getPerson().getMembershipScheme().getCode()));
                     return true;
@@ -1556,11 +1613,11 @@ public class PatientController implements Serializable {
     }
 
     public PatientEncounterController getPatientEncounterController() {
-        return PatientEncounterController;
+        return patientEncounterController;
     }
 
     public void setPatientEncounterController(PatientEncounterController PatientEncounterController) {
-        this.PatientEncounterController = PatientEncounterController;
+        this.patientEncounterController = PatientEncounterController;
     }
 
     public FamilyFacade getFamilyFacade() {

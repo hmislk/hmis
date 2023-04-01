@@ -271,7 +271,7 @@ public class InstitutionController implements Serializable {
         m.put("n", name.toUpperCase());
         m.put("t", type);
         sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
-        Institution i = getFacade().findFirstBySQL(sql, m);
+        Institution i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
             i = new Institution();
             i.setName(name);

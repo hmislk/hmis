@@ -181,7 +181,7 @@ public class AttendanceUploadController implements Serializable {
 //                String sql = "select s from Staff s "
 //                        + " where s.retired=false"
 //                        + " and s.code=:d";
-//                Staff s = getStaffFacade().findFirstBySQL(sql, m);
+//                Staff s = getStaffFacade().findFirstByJpql(sql, m);
 //
 //                String str = strings[1] + " " + strings[2];
 //
@@ -218,7 +218,7 @@ public class AttendanceUploadController implements Serializable {
 //                        m.put("s", s);
 //                        m.put("t", date);
 //                        m.put("p", FingerPrintRecordType.Logged);
-//                        FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
+//                        FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
 //                        System.err.println(" 2 rffr = " + rffr);
 //                        if (rffr == null) {
 //                            getFingerPrintRecordFacade().create(ffr);
@@ -348,7 +348,7 @@ public class AttendanceUploadController implements Serializable {
                 Map m = new HashMap();
                 m.put("d", strCat);
                 String sql = "select s from Staff s where s.retired=false and s.acNo=:d";
-                Staff s = getStaffFacade().findFirstBySQL(sql, m);
+                Staff s = getStaffFacade().findFirstByJpql(sql, m);
                 cell = sheet.getCell(2, i);
                 String str = cell.getContents();
 
@@ -372,7 +372,7 @@ public class AttendanceUploadController implements Serializable {
                     m.put("s", s);
                     m.put("t", date);
                     m.put("p", FingerPrintRecordType.Logged);
-                    FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
+                    FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
                     if (rffr == null) {
                         getFingerPrintRecordFacade().create(ffr);
 

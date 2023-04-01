@@ -163,7 +163,7 @@ public class WebContentController implements Serializable {
                 + " and c.name=:q ";
         hm.put("q", word);
         hm.put("ret", false);
-        list = getFacade().findFirstBySQL(sql, hm);
+        list = getFacade().findFirstByJpql(sql, hm);
         return list;
     }
 

@@ -594,7 +594,7 @@ public class AdmissionController implements Serializable {
                 + " and s.bill=:b ";
         HashMap hm = new HashMap();
         hm.put("b", getAppointmentBill());
-        Appointment apt = getAppointmentFacade().findFirstBySQL(sql, hm);
+        Appointment apt = getAppointmentFacade().findFirstByJpql(sql, hm);
         apt.setPatientEncounter(getCurrent());
         getAppointmentFacade().edit(apt);
 

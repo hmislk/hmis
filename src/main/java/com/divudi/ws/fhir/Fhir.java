@@ -1396,7 +1396,7 @@ public class Fhir {
         Map m = new HashMap<>();
         m.put("c", strInstitutionCode);
         m.put("ret", false);
-        return institutionFacade.findFirstBySQL(j, m);
+        return institutionFacade.findFirstByJpql(j, m);
     }
 
     private List<PaymentMethod> getCashPaymentMethods() {

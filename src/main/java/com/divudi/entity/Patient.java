@@ -98,6 +98,8 @@ public class Patient implements Serializable {
     @Size(max = 10)
     String phn;
 
+    private Long patientId;
+
     @Transient
     Bill bill;
 
@@ -106,6 +108,8 @@ public class Patient implements Serializable {
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date cardIssuedDate;
 
+    
+    
     public Institution getCreatedInstitution() {
         return createdInstitution;
     }
@@ -294,6 +298,9 @@ public class Patient implements Serializable {
     }
 
     public Person getPerson() {
+        if (person == null) {
+            person = new Person();
+        }
         return person;
     }
 
@@ -489,6 +496,14 @@ public class Patient implements Serializable {
 
     public void setCardIssuedDate(Date cardIssuedDate) {
         this.cardIssuedDate = cardIssuedDate;
+    }
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
     }
 
 }
