@@ -44,8 +44,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -236,7 +236,7 @@ public class AmpController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
     }
-    
+
     public void createItemList() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -383,6 +383,22 @@ public class AmpController implements Serializable {
         return ampList;
     }
 
+    public Amp findAmpByName(String name) {
+        Map m = new HashMap();
+        m.put("n", name);
+        if (name == null || name.trim().equals("")) {
+            return null;
+        }
+        String jpql = "select c from Amp c "
+                + " where "
+                + " c.retired=:ret"
+                + " and c.name=:n";
+        m.put("ret", false);
+        m.put("name", name);
+        Amp amp = getFacade().findFirstByJpql(jpql, m);
+        return amp;
+    }
+
     public List<Vmp> completeVmpByName(String qry) {
 
         List<Vmp> vmps = new ArrayList<>();
@@ -483,7 +499,7 @@ public class AmpController implements Serializable {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());
                 if (!getCurrent().getCategory().equals(selectedAmp.getCategory())) {
                     getCurrent().setCode(getCurrent().getCategory().getDescription() + df.format(i));
-                }else{
+                } else {
                     getCurrent().setCode(selectedAmp.getCode());
                 }
             } else {

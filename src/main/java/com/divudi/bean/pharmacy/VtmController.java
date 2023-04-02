@@ -7,7 +7,9 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
+
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.Vtm;
@@ -17,11 +19,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -29,11 +34,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class VtmController implements Serializable {
+public class VtmController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -54,7 +59,7 @@ public  class VtmController implements Serializable {
     List<Vtm> vtmList;
 
     public List<Vtm> completeVtm(String query) {
-        
+
         String sql;
         if (query == null) {
             vtmList = new ArrayList<Vtm>();
@@ -64,6 +69,56 @@ public  class VtmController implements Serializable {
             vtmList = getFacade().findBySQL(sql);
         }
         return vtmList;
+    }
+
+    public Vtm findAndSaveVtmByNameAndCode(Vtm vtm) {
+        String jpql;
+        Map m = new HashMap();
+        Vtm nvtm;
+        if (vtm == null) {
+            return null;
+        } else {
+            m.put("ret", false);
+            m.put("name", vtm.getName());
+            m.put("code", vtm.getCode());
+            jpql = "select c "
+                    + " from Vtm c "
+                    + " where c.retired=:ret "
+                    + " and c.name=:name"
+                    + " and c.code=:code";
+            nvtm = getFacade().findFirstByJpql(jpql, m);
+        }
+        if (nvtm != null) {
+            return nvtm;
+        }
+        if (vtm.getId() == null) {
+            getFacade().create(vtm);
+        }
+        return vtm;
+    }
+
+    public Vtm findAndSaveVtmByName(String name) {
+        String jpql;
+        Map m = new HashMap();
+        Vtm nvtm;
+        if (name == null || name.trim().equals("")) {
+            return null;
+        } else {
+            m.put("ret", false);
+            m.put("name", name);
+            jpql = "select c "
+                    + " from Vtm c "
+                    + " where c.retired=:ret "
+                    + " and c.name=:name";
+            nvtm = getFacade().findFirstByJpql(jpql, m);
+        }
+        if (nvtm == null) {
+            nvtm = new Vtm();
+            nvtm.setName(name);
+            nvtm.setCode(CommonController.nameToCode("vtm_" + name));
+            getFacade().create(nvtm);
+        }
+        return nvtm;
     }
 
     public boolean isBilledAs() {
@@ -90,30 +145,6 @@ public  class VtmController implements Serializable {
         this.billBean = billBean;
     }
 
-    public void correctIx() {
-        List<Vtm> allItems = getEjbFacade().findAll();
-        for (Vtm i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Vtm> allItems = getEjbFacade().findAll();
-        for (Vtm i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
-
     public String getBulkText() {
 
         return bulkText;
@@ -124,13 +155,13 @@ public  class VtmController implements Serializable {
     }
 
     public List<Vtm> getSelectedItems() {
-         
-        if (selectText.trim().equals("")) {
+
+        if (selectText==null || selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Vtm c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vtm c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
             selectedItems = getFacade().findBySQL(sql);
-            
+
         }
         return selectedItems;
     }
@@ -150,13 +181,10 @@ public  class VtmController implements Serializable {
                 String f = w.get(4);
                 //////// // System.out.println(code + " " + ix + " " + ic + " " + f);
 
-
                 Vtm tix = new Vtm();
                 tix.setCode(code);
                 tix.setName(ix);
                 tix.setDepartment(null);
-
-
 
             } catch (Exception e) {
             }
@@ -288,7 +316,6 @@ public  class VtmController implements Serializable {
     /**
      *
      */
-   
     @FacesConverter("vtm")
     public static class VtmControllerConverter implements Converter {
 

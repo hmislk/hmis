@@ -16,11 +16,11 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{patientDataUploadBean.file}"
+                                <p:fileUpload value="#{dataUploadBean.file}"
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{patientDataUploadBean.upload}"
+                                                 action="#{dataUploadBean.uploadPatients}"
                                                  ajax="false"/>
                             </h:form>
 

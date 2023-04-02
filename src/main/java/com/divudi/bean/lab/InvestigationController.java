@@ -841,29 +841,6 @@ public class InvestigationController implements Serializable {
         this.listMasterItemsOnly = listMasterItemsOnly;
     }
 
-    public void correctIx() {
-        List<Investigation> allItems = getEjbFacade().findAll();
-        for (Investigation i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Investigation> allItems = getEjbFacade().findAll();
-        for (Investigation i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
 
     public String getBulkText() {
 

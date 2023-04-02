@@ -74,6 +74,8 @@ public class Item implements Serializable, Comparable<Item> {
     Long id;
     int orderNo;
 
+    private Long itemId;
+    
     @ManyToOne
     Category category;
     Double total = 0.0;
@@ -1149,6 +1151,16 @@ public class Item implements Serializable, Comparable<Item> {
     public void setTransCodeFromName(String transCodeFromName) {
         this.transCodeFromName = transCodeFromName;
     }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
