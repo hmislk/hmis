@@ -1,17 +1,28 @@
 package com.divudi.bean.emr;
 
+import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.AtmController;
+import com.divudi.bean.pharmacy.ImporterController;
+import com.divudi.bean.pharmacy.ManufacturerController;
+import com.divudi.bean.pharmacy.MeasurementUnitController;
+import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
+import com.divudi.data.InstitutionType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.entity.Category;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
+import com.divudi.entity.pharmacy.MeasurementUnit;
+import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
@@ -36,6 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import javax.resource.spi.work.DistributableWork;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
@@ -52,6 +64,14 @@ public class DataUploadBean {
     AtmController atmController;
     @Inject
     AmpController ampController;
+    @Inject
+    CategoryController categoryController;
+    @Inject
+    MeasurementUnitController measurementUnitController;
+    @Inject
+    InstitutionController institutionController;
+    @Inject
+    VmpController vmpController;
 
     @EJB
     PatientFacade patientFacade;
@@ -80,6 +100,14 @@ public class DataUploadBean {
 
     public String toUploadAtms() {
         return "/emr/setup/upload_atms";
+    }
+
+    public String toUploadAmps() {
+        return "/emr/setup/upload_amps";
+    }
+    
+    public String toUploadVmps() {
+        return "/emr/setup/upload_vmps";
     }
 
     public void uploadPatients() {
@@ -135,8 +163,19 @@ public class DataUploadBean {
             try ( InputStream inputStream = file.getInputStream()) {
                 amps = readAmpsFromExcel(inputStream);
                 for (Amp v : amps) {
-                    ampController.findAndSaveAtmByNameAndCode(v, v.getVtm());
+                    ampController.saveAmp(v);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadVmps() {
+        List<Vmp> vmps;
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                vmps = readVmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -364,6 +403,15 @@ public class DataUploadBean {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             Amp amp = new Amp();
+            Atm atm = null;
+            Vtm vtm = null;
+            Category category = null;
+            MeasurementUnit strengthUnit = null;
+            MeasurementUnit issueUnit = null;
+            MeasurementUnit packUnit = null;
+            Institution manufacturer = null;
+            Institution importer = null;
+            Institution supplier = null;
 
             /**
              * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
@@ -373,32 +421,32 @@ public class DataUploadBean {
              * LastSalePrice	LastPurchasePrice	MinIQty	MaxIQty	DivQty
              */
             Long id;
-            String ampName;
-            String code;
-            String atm;
-            String vtm;
-            String category;
-            String strengthUnit;
-            String issueUnit;
-            String packUnit;
+            String ampName = null;
+            String code = null;
+            String atmName = null;
+            String vtmName = null;
+            String categoryName = null;
+            String strengthUnitName = null;
+            String issueUnitName = null;
+            String packUnitName = null;
 
-            Double strengthUnitsPerIssueUnit;
-            Double issueUnitsPerPack;
-            Double ROL;
-            Double ROQ;
-            Double minROQ;
+            Double strengthUnitsPerIssueUnit = null;
+            Double issueUnitsPerPack = null;
+            Double rol = null;
+            Double roq = null;
+            Double minROQ = null;
 
-            String manufacturer;
-            String importer;
-            String supplier;
+            String manufacturerName = null;
+            String importerName = null;
+            String supplierName = null;
 
-            Double salePrice;
-            Double purchasePrice;
-            Double lastSalePrice;
-            Double lastPurchasePrice;
-            Double minIQty;
-            Double maxIQty;
-            Double divQty;
+            Double salePrice = null;
+            Double purchasePrice = null;
+            Double lastSalePrice = null;
+            Double lastPurchasePrice = null;
+            Double minIQty = null;
+            Double maxIQty = null;
+            Double divQty = null;
 
             Cell idCell = row.getCell(0);
             if (idCell != null) {
@@ -409,10 +457,15 @@ public class DataUploadBean {
             Cell nameCell = row.getCell(1);
             if (nameCell != null) {
                 ampName = nameCell.getStringCellValue();
+                if (ampName == null || ampName.trim().equals("")) {
+                    continue;
+                }
                 amp = ampController.findAmpByName(ampName);
                 if (amp != null) {
                     continue;
                 }
+            } else {
+                continue;
             }
 
             Cell codeCell = row.getCell(2);
@@ -420,35 +473,46 @@ public class DataUploadBean {
                 code = codeCell.getStringCellValue();
             }
 
-
             Cell atmCell = row.getCell(3);
             if (atmCell != null) {
-                atm = atmCell.getStringCellValue();
+                atmName = atmCell.getStringCellValue();
+                atm = atmController.findAtmByName(atmName);
             }
 
             Cell vtmCell = row.getCell(4);
             if (vtmCell != null) {
-                vtm = vtmCell.getStringCellValue();
+                vtmName = vtmCell.getStringCellValue();
+                vtm = vtmController.findAndSaveVtmByName(vtmName);
             }
 
             Cell categoryCell = row.getCell(5);
             if (categoryCell != null) {
-                category = categoryCell.getStringCellValue();
+                categoryName = categoryCell.getStringCellValue();
+                category = categoryController.findAndCreateCategoryByName(categoryName);
             }
 
             Cell strengthUnitCell = row.getCell(6);
             if (strengthUnitCell != null) {
-                strengthUnit = strengthUnitCell.getStringCellValue();
+                strengthUnitName = strengthUnitCell.getStringCellValue();
+                strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
+                strengthUnit.setStrengthUnit(true);
+                measurementUnitController.save(strengthUnit);
             }
 
             Cell issueUnitCell = row.getCell(7);
             if (issueUnitCell != null) {
-                issueUnit = issueUnitCell.getStringCellValue();
+                issueUnitName = issueUnitCell.getStringCellValue();
+                issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
+                issueUnit.setIssueUnit(true);
+                measurementUnitController.save(issueUnit);
             }
 
             Cell packUnitCell = row.getCell(8);
             if (packUnitCell != null) {
-                packUnit = packUnitCell.getStringCellValue();
+                packUnitName = packUnitCell.getStringCellValue();
+                packUnit = measurementUnitController.findAndSaveMeasurementUnitByName(packUnitName);
+                packUnit.setPackUnit(true);
+                measurementUnitController.save(packUnit);
             }
 
             Cell strengthUnitsPerIssueUnitCell = row.getCell(9);
@@ -461,34 +525,37 @@ public class DataUploadBean {
                 issueUnitsPerPack = issueUnitsPerPackCell.getNumericCellValue();
             }
 
-            Cell ROLCell = row.getCell(11);
-            if (ROLCell != null) {
-                ROL = ROLCell.getNumericCellValue();
+            Cell rolCell = row.getCell(11);
+            if (rolCell != null) {
+                rol = rolCell.getNumericCellValue();
             }
 
-            Cell ROQCell = row.getCell(12);
-            if (ROQCell != null) {
-                ROQ = ROQCell.getNumericCellValue();
+            Cell roqCell = row.getCell(12);
+            if (roqCell != null) {
+                roq = roqCell.getNumericCellValue();
             }
 
-            Cell minROQCell = row.getCell(13);
-            if (minROQCell != null) {
-                minROQ = minROQCell.getNumericCellValue();
+            Cell minRoqCell = row.getCell(13);
+            if (minRoqCell != null) {
+                minROQ = minRoqCell.getNumericCellValue();
             }
 
             Cell manufacturerCell = row.getCell(14);
             if (manufacturerCell != null) {
-                manufacturer = manufacturerCell.getStringCellValue();
+                manufacturerName = manufacturerCell.getStringCellValue();
+                manufacturer = institutionController.findAndSaveInstitutionByName(manufacturerName);
             }
 
             Cell importerCell = row.getCell(15);
             if (importerCell != null) {
-                importer = importerCell.getStringCellValue();
+                importerName = importerCell.getStringCellValue();
+                importer = institutionController.findAndSaveInstitutionByName(importerName);
             }
 
             Cell supplierCell = row.getCell(16);
             if (supplierCell != null) {
-                supplier = supplierCell.getStringCellValue();
+                supplierName = supplierCell.getStringCellValue();
+                supplier = institutionController.findAndSaveInstitutionByName(supplierName);
             }
 
             Cell salePriceCell = row.getCell(17);
@@ -526,8 +593,30 @@ public class DataUploadBean {
                 divQty = divQtyCell.getNumericCellValue();
             }
 
-            amp.setCreatedAt(new Date());
+            String vmpName = null;
+            Vmp vmp = null;
+            if (vtmName != null && strengthUnitsPerIssueUnit != null && strengthUnitName != null && categoryName != null) {
+                vmpName = vtmName + " " + strengthUnitsPerIssueUnit + " " + strengthUnitName + " " + categoryName;
+                vmp = vmpController.findVmpByName(vmpName);
+            }
+
+            if (vmp == null) {
+                continue;
+            }
+
+            amp = new Amp();
+            amp.setName(ampName);
+            amp.setCode("amp_" + CommonController.nameToCode(ampName));
+            if (atm != null) {
+                amp.setAtm(atm);
+            }
+            amp.setCategory(category);
+            amp.setVmp(vmp);
+            amp.setBarcode(code);
             amp.setCreater(sessionController.getLoggedUser());
+
+            ampController.saveAmp(amp);
+
             amps.add(amp);
 
         }
@@ -535,6 +624,180 @@ public class DataUploadBean {
         return amps;
     }
 
+    private List<Vmp> readVmpsFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Vmp> vmps = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            Vmp vmp = new Vmp();
+            Vtm vtm = null;
+            Category dosageForm = null;
+            MeasurementUnit strengthUnit = null;
+            MeasurementUnit issueUnit = null;
+            MeasurementUnit packUnit = null;
+            MeasurementUnit minimumIssueUnit = null;
+            MeasurementUnit issueMultipliesUnit = null;
+            /**
+             * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
+             * strength unit issue unit pack unit StrengthUnitsPerIssueUnit
+             * IssueUnitsPerPack	ROL	ROQ	MinROQ	manu_Institution
+             * importer_Institution	supplier_Institution	SalePrice	PurchasePrice
+             * LastSalePrice	LastPurchasePrice	MinIQty	MaxIQty	DivQty
+             */
+            Long id;
+            String vmpName;
+            String vtmName;
+            String dosageFormName;
+            String strengthUnitName;
+            String issueUnitName;
+            String packUnitName;
+            String minimumIssueUnitName;
+            String issueMultipliesUnitName;
+
+            Double strengthUnitsPerIssueUnit = null;
+            Double issueUnitsPerPack = null;
+            Double minimumIssueQuantity = null;
+            Double issueMultipliesQuantity = null;
+
+            Cell idCell = row.getCell(0);
+            if (idCell != null) {
+                id = (long) idCell.getNumericCellValue();
+                vmp.setItemId(id);
+            }
+
+            Cell nameCell = row.getCell(1);
+            if (nameCell != null) {
+                vmpName = nameCell.getStringCellValue();
+                if (vmpName == null || vmpName.trim().equals("")) {
+                    continue;
+                }
+                vmp = vmpController.findVmpByName(vmpName);
+                if (vmp != null) {
+                    vmps.add(vmp);
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            Cell vtmCell = row.getCell(3);
+            if (vtmCell != null) {
+                vtmName = vtmCell.getStringCellValue();
+                vtm = vtmController.findAndSaveVtmByName(vtmName);
+            }
+
+            Cell dosageFormCell = row.getCell(4);
+            if (dosageFormCell != null) {
+                dosageFormName = dosageFormCell.getStringCellValue();
+                dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName);
+            }
+
+            Cell strengthUnitsPerIssueUnitCell = row.getCell(5);
+            if (strengthUnitsPerIssueUnitCell != null) {
+                strengthUnitsPerIssueUnit = strengthUnitsPerIssueUnitCell.getNumericCellValue();
+            }
+
+            Cell strengthUnitCell = row.getCell(6);
+            if (strengthUnitCell != null) {
+                strengthUnitName = strengthUnitCell.getStringCellValue();
+                strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
+                strengthUnit.setStrengthUnit(true);
+                measurementUnitController.save(strengthUnit);
+            }
+
+            Cell issueUnitCell = row.getCell(7);
+            if (issueUnitCell != null) {
+                issueUnitName = issueUnitCell.getStringCellValue();
+                issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
+                issueUnit.setIssueUnit(true);
+                measurementUnitController.save(issueUnit);
+            }
+
+            Cell issueUnitsPerPackCell = row.getCell(8);
+            if (issueUnitsPerPackCell != null) {
+                issueUnitsPerPack = issueUnitsPerPackCell.getNumericCellValue();
+            }
+
+            Cell packUnitCell = row.getCell(9);
+            if (packUnitCell != null) {
+                packUnitName = packUnitCell.getStringCellValue();
+                packUnit = measurementUnitController.findAndSaveMeasurementUnitByName(packUnitName);
+                packUnit.setIssueUnit(true);
+                measurementUnitController.save(packUnit);
+            }
+
+            Cell minIQtyCell = row.getCell(10);
+            if (minIQtyCell != null) {
+                minimumIssueQuantity = minIQtyCell.getNumericCellValue();
+            }
+
+            Cell minimumIssueUnitCell = row.getCell(11);
+            if (minimumIssueUnitCell != null) {
+                minimumIssueUnitName = minimumIssueUnitCell.getStringCellValue();
+                minimumIssueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(minimumIssueUnitName);
+                minimumIssueUnit.setIssueUnit(true);
+                measurementUnitController.save(minimumIssueUnit);
+            }
+
+            Cell issueMultipliesQuentityCell = row.getCell(12);
+            if (issueMultipliesQuentityCell != null) {
+                issueMultipliesQuantity = issueMultipliesQuentityCell.getNumericCellValue();
+            }
+
+            Cell issueMultipliesUnitNameCell = row.getCell(13);
+            if (issueMultipliesUnitNameCell != null) {
+                issueMultipliesUnitName = issueMultipliesUnitNameCell.getStringCellValue();
+                issueMultipliesUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueMultipliesUnitName);
+                issueMultipliesUnit.setIssueUnit(true);
+                measurementUnitController.save(issueMultipliesUnit);
+            }
+
+            if (vtm == null
+                    || dosageForm == null
+                    || strengthUnitsPerIssueUnit == null
+                    || strengthUnit == null
+                    || issueUnitsPerPack == null
+                    || packUnit == null
+                    || minimumIssueQuantity == null
+                    || minimumIssueUnit == null
+                    || issueMultipliesQuantity == null
+                    || issueMultipliesUnit == null) {
+
+                System.err.println("One or more of the required parameters for createVmp are null.");
+                continue;
+            } else {
+                vmp = vmpController.createVmp(vmpName,
+                        vtm,
+                        dosageForm,
+                        strengthUnitsPerIssueUnit,
+                        strengthUnit,
+                        issueUnitsPerPack,
+                        packUnit,
+                        minimumIssueQuantity,
+                        minimumIssueUnit,
+                        issueMultipliesQuantity,
+                        issueMultipliesUnit
+                );
+            }
+
+            vmps.add(vmp);
+
+        }
+
+        return vmps;
+    }
+
+    
+    
     private LocalDate parseDate(String dateString, List<String> patterns) {
         for (String pattern : patterns) {
             try {

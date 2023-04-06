@@ -20,7 +20,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
@@ -64,7 +64,7 @@ public class AmpController implements Serializable {
     private List<Amp> items = null;
     String selectText = "";
     private String tabId = "tabVmp";
-    private VtmsVmps addingVtmInVmp;
+    private VirtualProductIngredient addingVtmInVmp;
     private Vmp currentVmp;
     @EJB
     private VmpFacade vmpFacade;
@@ -77,6 +77,17 @@ public class AmpController implements Serializable {
     List<ItemSupplierPrices> itemSupplierPrices;
     @Inject
     ItemsDistributorsController itemDistributorsController;
+
+    public String navigateToListAllAmps() {
+        String jpql = "Select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " order by amp.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findBySQL(jpql, m);
+        return "/emr/reports/amps?faces-redirect=true";
+    }
 
     public void fillItemsForItemSupplierPrices() {
         Date startTime = new Date();
@@ -394,7 +405,7 @@ public class AmpController implements Serializable {
                 + " c.retired=:ret"
                 + " and c.name=:n";
         m.put("ret", false);
-        m.put("name", name);
+        m.put("n", name);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
         return amp;
     }
@@ -417,7 +428,7 @@ public class AmpController implements Serializable {
     }
 
     public void prepareAddNewVmp() {
-        addingVtmInVmp = new VtmsVmps();
+        addingVtmInVmp = new VirtualProductIngredient();
     }
 
     public List<Amp> completeAmpByCode(String qry) {
@@ -464,7 +475,7 @@ public class AmpController implements Serializable {
     public void prepareAdd() {
         current = new Amp();
         currentVmp = new Vmp();
-        addingVtmInVmp = new VtmsVmps();
+        addingVtmInVmp = new VirtualProductIngredient();
         //(dangerous function dont touch)current.setCode(billNumberBean.pharmacyItemNumberGenerator());
     }
 
@@ -647,6 +658,17 @@ public class AmpController implements Serializable {
         // getItems();
     }
 
+    public void saveAmp(Amp amp) {
+        if (amp == null) {
+            return;
+        }
+        if (amp.getId() == null) {
+            getFacade().create(amp);
+        } else {
+            getFacade().edit(amp);
+        }
+    }
+
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
@@ -680,7 +702,7 @@ public class AmpController implements Serializable {
     public void setCurrent(Amp current) {
         this.current = current;
         currentVmp = new Vmp();
-        addingVtmInVmp = new VtmsVmps();
+        addingVtmInVmp = new VirtualProductIngredient();
     }
 
     public void delete() {
@@ -736,14 +758,14 @@ public class AmpController implements Serializable {
         this.tabId = tabId;
     }
 
-    public VtmsVmps getAddingVtmInVmp() {
+    public VirtualProductIngredient getAddingVtmInVmp() {
         if (addingVtmInVmp == null) {
-            addingVtmInVmp = new VtmsVmps();
+            addingVtmInVmp = new VirtualProductIngredient();
         }
         return addingVtmInVmp;
     }
 
-    public void setAddingVtmInVmp(VtmsVmps addingVtmInVmp) {
+    public void setAddingVtmInVmp(VirtualProductIngredient addingVtmInVmp) {
         this.addingVtmInVmp = addingVtmInVmp;
     }
 

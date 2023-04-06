@@ -10,7 +10,6 @@ import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 
-
 /**
  *
  * @author buddhika
@@ -18,10 +17,12 @@ import javax.persistence.InheritanceType;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class MeasurementUnit extends Category implements Serializable {
+
     private static final long serialVersionUID = 1L;
-   private boolean strengthUnit;
-   private boolean packUnit;
-   private boolean issueUnit;
+    private boolean strengthUnit;
+    private boolean packUnit;
+    private boolean issueUnit;
+    
 
     public boolean isStrengthUnit() {
         return strengthUnit;
@@ -46,7 +47,5 @@ public class MeasurementUnit extends Category implements Serializable {
     public void setIssueUnit(boolean issueUnit) {
         this.issueUnit = issueUnit;
     }
-   
-   
- 
+
 }

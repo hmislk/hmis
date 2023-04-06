@@ -48,6 +48,17 @@ public class AtmController implements Serializable {
     List<Atm> atmList;
     String selectText;
 
+    public String navigateToListAllAtms() {
+        String jpql = "Select atm "
+                + " from Atm atm "
+                + " where atm.retired=:ret "
+                + " order by atm.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findBySQL(jpql, m);
+        return "/emr/reports/atms?faces-redirect=trues";
+    }
+
     public List<Atm> completeAtm(String query) {
         String sql;
         if (query == null) {
@@ -84,7 +95,25 @@ public class AtmController implements Serializable {
         }
         return atm;
     }
-    
+
+    public Atm findAtmByName(String atm) {
+        String jpql;
+        Map m = new HashMap();
+        Atm natm;
+        if (atm == null) {
+            return null;
+        } else {
+            m.put("ret", false);
+            m.put("name", atm);
+            jpql = "select c "
+                    + " from Atm c "
+                    + " where c.retired=:ret "
+                    + " and c.name=:name";
+            natm = getFacade().findFirstByJpql(jpql, m);
+        }
+        return natm;
+    }
+
     public Atm findAndSaveAtmByNameAndCode(Atm atm, Vtm vtm) {
         String jpql;
         Map m = new HashMap();
@@ -116,7 +145,7 @@ public class AtmController implements Serializable {
 
     public List<Atm> getSelectedItems() {
 
-        if (selectText==null || selectText.trim().equals("")) {
+        if (selectText == null || selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Atm c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Atm c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
@@ -215,8 +244,6 @@ public class AtmController implements Serializable {
         items = getFacade().findAll("name", true);
         return items;
     }
-
-    
 
     /**
      *

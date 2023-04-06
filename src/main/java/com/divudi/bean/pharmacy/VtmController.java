@@ -58,6 +58,17 @@ public class VtmController implements Serializable {
     boolean reportedAs;
     List<Vtm> vtmList;
 
+    public String navigateToListAllVtms(){
+        String jpql = "Select vtm "
+                + " from Vtm vtm "
+                + " where vtm.retired=:ret "
+                + " order by vtm.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findBySQL(jpql, m);
+        return "/emr/reports/vtms?faces-redirect=true";
+    }
+    
     public List<Vtm> completeVtm(String query) {
 
         String sql;

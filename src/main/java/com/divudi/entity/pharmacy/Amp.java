@@ -17,10 +17,11 @@ import javax.persistence.ManyToOne;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Amp extends PharmaceuticalItem implements Serializable {
-
-    private static final long serialVersionUID = 1L;
     @ManyToOne
     private Vmp vmp;
+    
+    @ManyToOne
+    private Atm atm;
 
     public Vmp getVmp() {
         return vmp;
@@ -29,4 +30,14 @@ public class Amp extends PharmaceuticalItem implements Serializable {
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
     }
+
+    public Atm getAtm() {
+        return atm;
+    }
+
+    public void setAtm(Atm atm) {
+        this.atm = atm;
+    }
+    
+    
 }

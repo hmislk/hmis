@@ -32,7 +32,7 @@ import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.BillFacade;
@@ -1414,7 +1414,7 @@ public class PharmacyBean {
         m.put("su", strengthUnit);
         m.put("c", cat);
         sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VtmsVmps v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
+        VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
         ////System.out.println("m = " + m);
         Vmp vmp;
         if (v == null) {
@@ -1426,8 +1426,7 @@ public class PharmacyBean {
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
 
-            v = new VtmsVmps();
-            v.setCreatedAt(Calendar.getInstance().getTime());
+            v = new VirtualProductIngredient();
             v.setStrength(strength);
             v.setStrengthUnit(strengthUnit);
             v.setVtm(vtm);

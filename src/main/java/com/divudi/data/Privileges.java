@@ -392,10 +392,8 @@ public enum Privileges {
     ClinicalPatientNameChange,
     ClinicalMembershipAdd,
     ClinicalMembershipEdit,
-
-    
-    
-    
+     
+    ClinicalPatientPhoneNumberEdit,
     
     
     
