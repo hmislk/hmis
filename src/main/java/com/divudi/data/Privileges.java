@@ -126,6 +126,7 @@ public enum Privileges {
     LabItems,
     LabItemFeeUpadate,
     LabItemFeeDelete,
+    LabPatientDetailsEdit,
     LabLists,
     LabSetUp,
     LabInwardBilling,

@@ -105,7 +105,7 @@ public class DataUploadBean {
     public String toUploadAmps() {
         return "/emr/setup/upload_amps";
     }
-    
+
     public String toUploadVmps() {
         return "/emr/setup/upload_vmps";
     }
@@ -669,13 +669,13 @@ public class DataUploadBean {
             Double issueMultipliesQuantity = null;
 
             Cell idCell = row.getCell(0);
-            if (idCell != null) {
+            if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
                 vmp.setItemId(id);
             }
 
             Cell nameCell = row.getCell(1);
-            if (nameCell != null) {
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 vmpName = nameCell.getStringCellValue();
                 if (vmpName == null || vmpName.trim().equals("")) {
                     continue;
@@ -689,78 +689,104 @@ public class DataUploadBean {
                 continue;
             }
 
-            Cell vtmCell = row.getCell(3);
-            if (vtmCell != null) {
+            Cell vtmCell = row.getCell(2);
+            if (vtmCell != null && vtmCell.getCellType() == CellType.STRING) {
                 vtmName = vtmCell.getStringCellValue();
                 vtm = vtmController.findAndSaveVtmByName(vtmName);
             }
 
-            Cell dosageFormCell = row.getCell(4);
-            if (dosageFormCell != null) {
+            Cell dosageFormCell = row.getCell(3);
+            if (dosageFormCell != null && dosageFormCell.getCellType() == CellType.STRING) {
                 dosageFormName = dosageFormCell.getStringCellValue();
                 dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName);
             }
 
-            Cell strengthUnitsPerIssueUnitCell = row.getCell(5);
+            Cell strengthUnitsPerIssueUnitCell = row.getCell(4);
             if (strengthUnitsPerIssueUnitCell != null) {
-                strengthUnitsPerIssueUnit = strengthUnitsPerIssueUnitCell.getNumericCellValue();
+                // Check the cell type before retrieving the value
+                if (strengthUnitsPerIssueUnitCell.getCellType() == CellType.NUMERIC) {
+                    strengthUnitsPerIssueUnit = strengthUnitsPerIssueUnitCell.getNumericCellValue();
+                } else if (strengthUnitsPerIssueUnitCell.getCellType() == CellType.STRING) {
+                    // If the cell contains a string, you can either parse the string as a numeric value or handle the error
+                    try {
+                        strengthUnitsPerIssueUnit = Double.parseDouble(strengthUnitsPerIssueUnitCell.getStringCellValue());
+                    } catch (NumberFormatException e) {
+                        // Handle the error, e.g., log it, throw a custom exception, or set a default value
+                        System.err.println("Error: Cannot parse the string value as a number in the cell at row " + row.getRowNum() + ", column 5.");
+                        strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
+                    }
+                } else {
+                    // Handle other cell types or set a default value
+                    System.err.println("Error: Unexpected cell type in the cell at row " + row.getRowNum() + ", column 5.");
+                    strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
+                }
             }
 
-            Cell strengthUnitCell = row.getCell(6);
-            if (strengthUnitCell != null) {
+            Cell strengthUnitCell = row.getCell(5);
+            if (strengthUnitCell != null && strengthUnitCell.getCellType() == CellType.STRING) {
                 strengthUnitName = strengthUnitCell.getStringCellValue();
                 strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
                 strengthUnit.setStrengthUnit(true);
                 measurementUnitController.save(strengthUnit);
             }
 
-            Cell issueUnitCell = row.getCell(7);
-            if (issueUnitCell != null) {
+            Cell issueUnitCell = row.getCell(6);
+            if (issueUnitCell != null && issueUnitCell.getCellType() == CellType.STRING) {
                 issueUnitName = issueUnitCell.getStringCellValue();
                 issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
                 issueUnit.setIssueUnit(true);
                 measurementUnitController.save(issueUnit);
             }
 
-            Cell issueUnitsPerPackCell = row.getCell(8);
-            if (issueUnitsPerPackCell != null) {
+            Cell issueUnitsPerPackCell = row.getCell(7);
+            if (issueUnitsPerPackCell != null && issueUnitsPerPackCell.getCellType() == CellType.NUMERIC) {
                 issueUnitsPerPack = issueUnitsPerPackCell.getNumericCellValue();
             }
 
-            Cell packUnitCell = row.getCell(9);
-            if (packUnitCell != null) {
+            Cell packUnitCell = row.getCell(8);
+            if (packUnitCell != null && packUnitCell.getCellType() == CellType.STRING) {
                 packUnitName = packUnitCell.getStringCellValue();
                 packUnit = measurementUnitController.findAndSaveMeasurementUnitByName(packUnitName);
                 packUnit.setIssueUnit(true);
                 measurementUnitController.save(packUnit);
             }
 
-            Cell minIQtyCell = row.getCell(10);
-            if (minIQtyCell != null) {
+            Cell minIQtyCell = row.getCell(9);
+            if (minIQtyCell != null && minIQtyCell.getCellType() == CellType.NUMERIC) {
                 minimumIssueQuantity = minIQtyCell.getNumericCellValue();
             }
 
-            Cell minimumIssueUnitCell = row.getCell(11);
-            if (minimumIssueUnitCell != null) {
+            Cell minimumIssueUnitCell = row.getCell(10);
+            if (minimumIssueUnitCell != null && minimumIssueUnitCell.getCellType() == CellType.STRING) {
                 minimumIssueUnitName = minimumIssueUnitCell.getStringCellValue();
                 minimumIssueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(minimumIssueUnitName);
                 minimumIssueUnit.setIssueUnit(true);
                 measurementUnitController.save(minimumIssueUnit);
             }
 
-            Cell issueMultipliesQuentityCell = row.getCell(12);
-            if (issueMultipliesQuentityCell != null) {
+            Cell issueMultipliesQuentityCell = row.getCell(11);
+            if (issueMultipliesQuentityCell != null && issueMultipliesQuentityCell.getCellType() == CellType.NUMERIC) {
                 issueMultipliesQuantity = issueMultipliesQuentityCell.getNumericCellValue();
             }
 
-            Cell issueMultipliesUnitNameCell = row.getCell(13);
-            if (issueMultipliesUnitNameCell != null) {
+            Cell issueMultipliesUnitNameCell = row.getCell(12);
+            if (issueMultipliesUnitNameCell != null && issueMultipliesUnitNameCell.getCellType() == CellType.STRING) {
                 issueMultipliesUnitName = issueMultipliesUnitNameCell.getStringCellValue();
                 issueMultipliesUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueMultipliesUnitName);
                 issueMultipliesUnit.setIssueUnit(true);
                 measurementUnitController.save(issueMultipliesUnit);
             }
 
+            System.out.println("vtm = " + vtm);
+            System.out.println("dosageForm = " + dosageForm);
+            System.out.println("strengthUnitsPerIssueUnit = " + strengthUnitsPerIssueUnit);
+            System.out.println("strengthUnit = " + strengthUnit);
+            System.out.println("issueUnitsPerPack = " + issueUnitsPerPack);
+            System.out.println("packUnit = " + packUnit);
+            System.out.println("minimumIssueQuantity = " + minimumIssueQuantity);
+            System.out.println("minimumIssueUnit = " + minimumIssueUnit);
+            System.out.println("issueMultipliesQuantity = " + issueMultipliesQuantity);
+            System.out.println("issueMultipliesUnit = " + issueMultipliesUnit);
             if (vtm == null
                     || dosageForm == null
                     || strengthUnitsPerIssueUnit == null
@@ -796,8 +822,6 @@ public class DataUploadBean {
         return vmps;
     }
 
-    
-    
     private LocalDate parseDate(String dateString, List<String> patterns) {
         for (String pattern : patterns) {
             try {
