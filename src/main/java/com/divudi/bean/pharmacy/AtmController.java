@@ -185,6 +185,16 @@ public class AtmController implements Serializable {
         recreateModel();
         getItems();
     }
+    
+    public void saveAtm(Atm atm) {
+        if(atm==null) return;
+        
+        if (atm.getId() != null) {
+            getFacade().edit(atm);
+        } else {
+            getFacade().create(atm);
+        }
+    }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;

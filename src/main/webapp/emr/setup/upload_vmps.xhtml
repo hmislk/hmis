@@ -23,6 +23,10 @@
                                 <p:commandButton value="Upload"
                                                  action="#{dataUploadBean.uploadVmps()}"
                                                  ajax="false"/>
+
+                                <h5>Output</h5>
+                                <h6><h:outputText value="#{dataUploadBean.outputString}" ></h:outputText></h6>
+
                             </h:form>
 
                             <table>
@@ -39,13 +43,13 @@
                                     <th>Dosage Form</th>
                                 </tr>
                                 <tr>
-                                    <th>Strength Units per Issue Unit</th>
-                                </tr>
-                                <tr>
                                     <th>Strength Unit</th>
                                 </tr>
                                 <tr>
                                     <th>Issue Unit</th>
+                                </tr>
+                                <tr>
+                                    <th>Strength Units per Issue Unit</th>
                                 </tr>
                                 <tr>
                                     <th>Issue Units Per Pack</th>

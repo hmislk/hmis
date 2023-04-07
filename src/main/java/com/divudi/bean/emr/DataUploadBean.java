@@ -81,6 +81,7 @@ public class DataUploadBean {
     VtmFacade vtmFacade;
 
     private UploadedFile file;
+    private String outputString;
 
     public UploadedFile getFile() {
         return file;
@@ -172,6 +173,7 @@ public class DataUploadBean {
     }
 
     public void uploadVmps() {
+        outputString += "uploadVmps\n";
         List<Vmp> vmps;
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
@@ -352,7 +354,7 @@ public class DataUploadBean {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
-
+        outputString = "readAtmsFromExcel\n";
         List<Atm> atms = new ArrayList<>();
 
         // Assuming the first row contains headers, skip it
@@ -376,13 +378,14 @@ public class DataUploadBean {
             Cell vtmCell = row.getCell(2);
             if (vtmCell != null) {
                 String vtmName = vtmCell.getStringCellValue();
+                outputString += vtmName + "\n";
                 Vtm vtm = vtmController.findAndSaveVtmByName(vtmName);
+                outputString += vtm + "\n";
                 atm.setVtm(vtm);
             }
             atm.setCreatedAt(new Date());
-            atm.setCreater(sessionController.getLoggedUser());
             atms.add(atm);
-
+            atmController.saveAtm(atm);
         }
 
         return atms;
@@ -404,14 +407,7 @@ public class DataUploadBean {
             Row row = rowIterator.next();
             Amp amp = new Amp();
             Atm atm = null;
-            Vtm vtm = null;
-            Category category = null;
-            MeasurementUnit strengthUnit = null;
-            MeasurementUnit issueUnit = null;
-            MeasurementUnit packUnit = null;
-            Institution manufacturer = null;
-            Institution importer = null;
-            Institution supplier = null;
+            Vmp vmp = null;
 
             /**
              * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
@@ -424,38 +420,22 @@ public class DataUploadBean {
             String ampName = null;
             String code = null;
             String atmName = null;
-            String vtmName = null;
-            String categoryName = null;
-            String strengthUnitName = null;
-            String issueUnitName = null;
-            String packUnitName = null;
-
-            Double strengthUnitsPerIssueUnit = null;
-            Double issueUnitsPerPack = null;
-            Double rol = null;
-            Double roq = null;
-            Double minROQ = null;
-
+            String vmpName = null;
             String manufacturerName = null;
             String importerName = null;
             String supplierName = null;
-
-            Double salePrice = null;
-            Double purchasePrice = null;
-            Double lastSalePrice = null;
-            Double lastPurchasePrice = null;
-            Double minIQty = null;
-            Double maxIQty = null;
-            Double divQty = null;
+            Institution supplier;
+            Institution importer;
+            Institution manufacturer;
 
             Cell idCell = row.getCell(0);
-            if (idCell != null) {
+            if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
                 amp.setItemId(id);
             }
 
             Cell nameCell = row.getCell(1);
-            if (nameCell != null) {
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 ampName = nameCell.getStringCellValue();
                 if (ampName == null || ampName.trim().equals("")) {
                     continue;
@@ -469,139 +449,38 @@ public class DataUploadBean {
             }
 
             Cell codeCell = row.getCell(2);
-            if (codeCell != null) {
+            if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
                 code = codeCell.getStringCellValue();
             }
 
             Cell atmCell = row.getCell(3);
-            if (atmCell != null) {
+            if (atmCell != null && atmCell.getCellType() == CellType.STRING) {
                 atmName = atmCell.getStringCellValue();
                 atm = atmController.findAtmByName(atmName);
             }
 
-            Cell vtmCell = row.getCell(4);
-            if (vtmCell != null) {
-                vtmName = vtmCell.getStringCellValue();
-                vtm = vtmController.findAndSaveVtmByName(vtmName);
+            Cell vmpCell = row.getCell(4);
+            if (vmpCell != null && vmpCell.getCellType() == CellType.STRING) {
+                vmpName = vmpCell.getStringCellValue();
+                vmp = vmpController.findVmpByName(vmpName);
             }
 
-            Cell categoryCell = row.getCell(5);
-            if (categoryCell != null) {
-                categoryName = categoryCell.getStringCellValue();
-                category = categoryController.findAndCreateCategoryByName(categoryName);
-            }
-
-            Cell strengthUnitCell = row.getCell(6);
-            if (strengthUnitCell != null) {
-                strengthUnitName = strengthUnitCell.getStringCellValue();
-                strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
-                strengthUnit.setStrengthUnit(true);
-                measurementUnitController.save(strengthUnit);
-            }
-
-            Cell issueUnitCell = row.getCell(7);
-            if (issueUnitCell != null) {
-                issueUnitName = issueUnitCell.getStringCellValue();
-                issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
-                issueUnit.setIssueUnit(true);
-                measurementUnitController.save(issueUnit);
-            }
-
-            Cell packUnitCell = row.getCell(8);
-            if (packUnitCell != null) {
-                packUnitName = packUnitCell.getStringCellValue();
-                packUnit = measurementUnitController.findAndSaveMeasurementUnitByName(packUnitName);
-                packUnit.setPackUnit(true);
-                measurementUnitController.save(packUnit);
-            }
-
-            Cell strengthUnitsPerIssueUnitCell = row.getCell(9);
-            if (strengthUnitsPerIssueUnitCell != null) {
-                strengthUnitsPerIssueUnit = strengthUnitsPerIssueUnitCell.getNumericCellValue();
-            }
-
-            Cell issueUnitsPerPackCell = row.getCell(10);
-            if (issueUnitsPerPackCell != null) {
-                issueUnitsPerPack = issueUnitsPerPackCell.getNumericCellValue();
-            }
-
-            Cell rolCell = row.getCell(11);
-            if (rolCell != null) {
-                rol = rolCell.getNumericCellValue();
-            }
-
-            Cell roqCell = row.getCell(12);
-            if (roqCell != null) {
-                roq = roqCell.getNumericCellValue();
-            }
-
-            Cell minRoqCell = row.getCell(13);
-            if (minRoqCell != null) {
-                minROQ = minRoqCell.getNumericCellValue();
-            }
-
-            Cell manufacturerCell = row.getCell(14);
-            if (manufacturerCell != null) {
+            Cell manufacturerCell = row.getCell(5);
+            if (manufacturerCell != null && manufacturerCell.getCellType() == CellType.STRING) {
                 manufacturerName = manufacturerCell.getStringCellValue();
                 manufacturer = institutionController.findAndSaveInstitutionByName(manufacturerName);
             }
 
-            Cell importerCell = row.getCell(15);
-            if (importerCell != null) {
+            Cell importerCell = row.getCell(6);
+            if (importerCell != null && importerCell.getCellType() == CellType.STRING) {
                 importerName = importerCell.getStringCellValue();
                 importer = institutionController.findAndSaveInstitutionByName(importerName);
             }
 
-            Cell supplierCell = row.getCell(16);
-            if (supplierCell != null) {
+            Cell supplierCell = row.getCell(7);
+            if (supplierCell != null && supplierCell.getCellType() == CellType.STRING) {
                 supplierName = supplierCell.getStringCellValue();
                 supplier = institutionController.findAndSaveInstitutionByName(supplierName);
-            }
-
-            Cell salePriceCell = row.getCell(17);
-            if (salePriceCell != null) {
-                salePrice = salePriceCell.getNumericCellValue();
-            }
-
-            Cell purchasePriceCell = row.getCell(18);
-            if (purchasePriceCell != null) {
-                purchasePrice = purchasePriceCell.getNumericCellValue();
-            }
-
-            Cell lastSalePriceCell = row.getCell(19);
-            if (lastSalePriceCell != null) {
-                lastSalePrice = lastSalePriceCell.getNumericCellValue();
-            }
-
-            Cell lastPurchasePriceCell = row.getCell(20);
-            if (lastPurchasePriceCell != null) {
-                lastPurchasePrice = lastPurchasePriceCell.getNumericCellValue();
-            }
-
-            Cell minIQtyCell = row.getCell(21);
-            if (minIQtyCell != null) {
-                minIQty = minIQtyCell.getNumericCellValue();
-            }
-
-            Cell maxIQtyCell = row.getCell(22);
-            if (maxIQtyCell != null) {
-                maxIQty = maxIQtyCell.getNumericCellValue();
-            }
-
-            Cell divQtyCell = row.getCell(23);
-            if (divQtyCell != null) {
-                divQty = divQtyCell.getNumericCellValue();
-            }
-
-            String vmpName = null;
-            Vmp vmp = null;
-            if (vtmName != null && strengthUnitsPerIssueUnit != null && strengthUnitName != null && categoryName != null) {
-                vmpName = vtmName + " " + strengthUnitsPerIssueUnit + " " + strengthUnitName + " " + categoryName;
-                vmp = vmpController.findVmpByName(vmpName);
-            }
-
-            if (vmp == null) {
-                continue;
             }
 
             amp = new Amp();
@@ -610,7 +489,6 @@ public class DataUploadBean {
             if (atm != null) {
                 amp.setAtm(atm);
             }
-            amp.setCategory(category);
             amp.setVmp(vmp);
             amp.setBarcode(code);
             amp.setCreater(sessionController.getLoggedUser());
@@ -625,6 +503,8 @@ public class DataUploadBean {
     }
 
     private List<Vmp> readVmpsFromExcel(InputStream inputStream) throws IOException {
+        outputString += "readVmpsFromExcel";
+        StringBuilder output = new StringBuilder();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -637,6 +517,7 @@ public class DataUploadBean {
         }
 
         while (rowIterator.hasNext()) {
+            output.append("while").append("\n");
             Row row = rowIterator.next();
             Vmp vmp = new Vmp();
             Vtm vtm = null;
@@ -677,15 +558,19 @@ public class DataUploadBean {
             Cell nameCell = row.getCell(1);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 vmpName = nameCell.getStringCellValue();
+                output.append("vmpName").append(vmpName).append("/n");
                 if (vmpName == null || vmpName.trim().equals("")) {
+                    output.append("vmpName is null. exiting from Loop.").append("/n");
                     continue;
                 }
                 vmp = vmpController.findVmpByName(vmpName);
+                output.append("vmp").append(vmp).append("/n");
                 if (vmp != null) {
                     vmps.add(vmp);
                     continue;
                 }
             } else {
+                output.append("exiting from loop").append("/n");
                 continue;
             }
 
@@ -701,7 +586,23 @@ public class DataUploadBean {
                 dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName);
             }
 
-            Cell strengthUnitsPerIssueUnitCell = row.getCell(4);
+            Cell strengthUnitCell = row.getCell(4);
+            if (strengthUnitCell != null && strengthUnitCell.getCellType() == CellType.STRING) {
+                strengthUnitName = strengthUnitCell.getStringCellValue();
+                strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
+                strengthUnit.setStrengthUnit(true);
+                measurementUnitController.save(strengthUnit);
+            }
+
+            Cell issueUnitCell = row.getCell(5);
+            if (issueUnitCell != null && issueUnitCell.getCellType() == CellType.STRING) {
+                issueUnitName = issueUnitCell.getStringCellValue();
+                issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
+                issueUnit.setIssueUnit(true);
+                measurementUnitController.save(issueUnit);
+            }
+
+            Cell strengthUnitsPerIssueUnitCell = row.getCell(6);
             if (strengthUnitsPerIssueUnitCell != null) {
                 // Check the cell type before retrieving the value
                 if (strengthUnitsPerIssueUnitCell.getCellType() == CellType.NUMERIC) {
@@ -720,22 +621,6 @@ public class DataUploadBean {
                     System.err.println("Error: Unexpected cell type in the cell at row " + row.getRowNum() + ", column 5.");
                     strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
                 }
-            }
-
-            Cell strengthUnitCell = row.getCell(5);
-            if (strengthUnitCell != null && strengthUnitCell.getCellType() == CellType.STRING) {
-                strengthUnitName = strengthUnitCell.getStringCellValue();
-                strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
-                strengthUnit.setStrengthUnit(true);
-                measurementUnitController.save(strengthUnit);
-            }
-
-            Cell issueUnitCell = row.getCell(6);
-            if (issueUnitCell != null && issueUnitCell.getCellType() == CellType.STRING) {
-                issueUnitName = issueUnitCell.getStringCellValue();
-                issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
-                issueUnit.setIssueUnit(true);
-                measurementUnitController.save(issueUnit);
             }
 
             Cell issueUnitsPerPackCell = row.getCell(7);
@@ -776,17 +661,17 @@ public class DataUploadBean {
                 issueMultipliesUnit.setIssueUnit(true);
                 measurementUnitController.save(issueMultipliesUnit);
             }
+            output.append("vtm = ").append(vtm).append("\n");
+            output.append("dosageForm = ").append(dosageForm).append("\n");
+            output.append("strengthUnitsPerIssueUnit = ").append(strengthUnitsPerIssueUnit).append("\n");
+            output.append("strengthUnit = ").append(strengthUnit).append("\n");
+            output.append("issueUnitsPerPack = ").append(issueUnitsPerPack).append("\n");
+            output.append("packUnit = ").append(packUnit).append("\n");
+            output.append("minimumIssueQuantity = ").append(minimumIssueQuantity).append("\n");
+            output.append("minimumIssueUnit = ").append(minimumIssueUnit).append("\n");
+            output.append("issueMultipliesQuantity = ").append(issueMultipliesQuantity).append("\n");
+            output.append("issueMultipliesUnit = ").append(issueMultipliesUnit).append("\n");
 
-            System.out.println("vtm = " + vtm);
-            System.out.println("dosageForm = " + dosageForm);
-            System.out.println("strengthUnitsPerIssueUnit = " + strengthUnitsPerIssueUnit);
-            System.out.println("strengthUnit = " + strengthUnit);
-            System.out.println("issueUnitsPerPack = " + issueUnitsPerPack);
-            System.out.println("packUnit = " + packUnit);
-            System.out.println("minimumIssueQuantity = " + minimumIssueQuantity);
-            System.out.println("minimumIssueUnit = " + minimumIssueUnit);
-            System.out.println("issueMultipliesQuantity = " + issueMultipliesQuantity);
-            System.out.println("issueMultipliesUnit = " + issueMultipliesUnit);
             if (vtm == null
                     || dosageForm == null
                     || strengthUnitsPerIssueUnit == null
@@ -797,8 +682,7 @@ public class DataUploadBean {
                     || minimumIssueUnit == null
                     || issueMultipliesQuantity == null
                     || issueMultipliesUnit == null) {
-
-                System.err.println("One or more of the required parameters for createVmp are null.");
+                output.append("One or more of the required parameters for createVmp are null.").append("\n");
                 continue;
             } else {
                 vmp = vmpController.createVmp(vmpName,
@@ -813,11 +697,13 @@ public class DataUploadBean {
                         issueMultipliesQuantity,
                         issueMultipliesUnit
                 );
+                output.append("VMP Created.").append("\n");
             }
 
             vmps.add(vmp);
 
         }
+        outputString = output.toString();
 
         return vmps;
     }
@@ -832,6 +718,14 @@ public class DataUploadBean {
             }
         }
         throw new IllegalArgumentException("No matching date format found for: " + dateString);
+    }
+
+    public String getOutputString() {
+        return outputString;
+    }
+
+    public void setOutputString(String outputString) {
+        this.outputString = outputString;
     }
 
 }
