@@ -7,12 +7,12 @@
     <h:head>
     </h:head>
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/emr/admin/index.xhtml">
+            <ui:define name="subcontent">
                 <div class="container-fluid" >
                     <div class="card" >
                         <div class="card-header" >
-                            <h2>Upload ATMs</h2>
+                            <h2>Upload VTMs</h2>
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
@@ -20,12 +20,10 @@
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadAtms()}"
+                                                 action="#{dataUploadBean.uploadVtms()}"
                                                  ajax="false"/>
                             </h:form>
 
-                            <p>#{dataUploadBean.outputString}</p>
-                            
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -42,11 +40,6 @@
                                     </tr>
                                     <tr>
                                         <td>2</td>
-                                        <td>ATM</td>
-                                        <td>ATM name. (Trade Name) Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
                                         <td>VTM</td>
                                         <td>VTM name. (Generic Name) Required.</td>
                                     </tr>

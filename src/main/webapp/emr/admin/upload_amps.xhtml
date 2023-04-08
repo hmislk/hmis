@@ -7,12 +7,12 @@
     <h:head>
     </h:head>
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/emr/admin/index.xhtml">
+            <ui:define name="subcontent">
                 <div class="container-fluid" >
                     <div class="card" >
                         <div class="card-header" >
-                            <h2>Upload VTMs</h2>
+                            <h2>Upload AMPs</h2>
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
@@ -20,7 +20,7 @@
                                               mode="simple"
                                               label="Choose File"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadVtms()}"
+                                                 action="#{dataUploadBean.uploadAmps()}"
                                                  ajax="false"/>
                             </h:form>
 
@@ -36,12 +36,37 @@
                                     <tr>
                                         <td>1</td>
                                         <td>ID</td>
-                                        <td>Unique patient identifier. Optional.</td>
+                                        <td>Unique identifier. Optional.</td>
                                     </tr>
                                     <tr>
                                         <td>2</td>
-                                        <td>VTM</td>
-                                        <td>VTM name. (Generic Name) Required.</td>
+                                        <td>AMP</td>
+                                        <td>AMP name. (Trade Name) Required.</td>
+                                    </tr>
+                                     <tr>
+                                        <td>3</td>
+                                        <td>Code</td>
+                                        <td>Code</td>
+                                    </tr>
+                                    <tr>
+                                        <td>4</td>
+                                        <td>ATM</td>
+                                        <td>ATM name. (Generic Name) Required.</td>
+                                    </tr>
+                                     <tr>
+                                        <td>3</td>
+                                        <td>VMP</td>
+                                        <td>VMP name. (Generic Name) Required.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>Manufacturer</td>
+                                        <td>Manufacturer. Optional.</td>
+                                    </tr>
+                                    <tr>
+                                        <td>3</td>
+                                        <td>Importer</td>
+                                        <td>Importer. Optional.</td>
                                     </tr>
                                 </tbody>
                             </table>

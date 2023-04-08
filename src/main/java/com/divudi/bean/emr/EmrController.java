@@ -1,12 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
- */
 package com.divudi.bean.emr;
 
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import javax.faces.context.FacesContext;
+import org.primefaces.PrimeFaces;
+import org.primefaces.component.accordionpanel.AccordionPanel;
+import org.primefaces.event.TabChangeEvent;
 
 /**
  *
@@ -48,6 +48,28 @@ public class EmrController implements Serializable {
 
     public String navigateToClinicalAdministration() {
         return "/clinical/clinical_administration.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToEmrAdmin() {
+        return "/emr/admin/index.xhtml?faces-redirect=true";
+    }
+
+    private int activeIndex = -1;
+
+    public int getActiveIndex() {
+        return activeIndex;
+    }
+
+    public void setActiveIndex(int activeIndex) {
+        this.activeIndex = activeIndex;
+    }
+
+    public void onTabChange(TabChangeEvent event) {
+        String activeIndexStr = ((AccordionPanel) event.getComponent()).getActiveIndex();
+        activeIndex = Integer.parseInt(activeIndexStr);
+        FacesContext.getCurrentInstance().getPartialViewContext().getRenderIds().add("accordionForm:accordion"); //update accordion
+        PrimeFaces.current().ajax().update("accordionForm:accordion"); //update accordion
+        PrimeFaces.current().executeScript("PF('accordion').loadState();"); //load accordion state
     }
 
 }

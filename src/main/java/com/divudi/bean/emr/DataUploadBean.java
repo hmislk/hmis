@@ -91,24 +91,25 @@ public class DataUploadBean {
         this.file = file;
     }
 
+    
     public String toUploadPatients() {
-        return "/emr/setup/upload_patients";
+        return "/emr/admin/upload_patients";
     }
 
     public String toUploadVtms() {
-        return "/emr/setup/upload_vtms";
+        return "/emr/admin/upload_vtms";
     }
 
     public String toUploadAtms() {
-        return "/emr/setup/upload_atms";
+        return "/emr/admin/upload_atms";
     }
 
     public String toUploadAmps() {
-        return "/emr/setup/upload_amps";
+        return "/emr/admin/upload_amps";
     }
 
     public String toUploadVmps() {
-        return "/emr/setup/upload_vmps";
+        return "/emr/admin/upload_vmps";
     }
 
     public void uploadPatients() {
