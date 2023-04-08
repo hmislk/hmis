@@ -40,8 +40,10 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -51,7 +53,7 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
-@Entity
+@MappedSuperclass
 public class Item implements Serializable, Comparable<Item> {
 
 //    @JsonIgnore
@@ -120,7 +122,7 @@ public class Item implements Serializable, Comparable<Item> {
     @JsonIgnore
     Date createdAt;
     //Retairing properties 
-    @JsonIgnore
+//    @JsonIgnore
     boolean retired;
     @ManyToOne
     @JsonIgnore

@@ -191,10 +191,7 @@ public class DataUploadBean {
         List<Amp> amps;
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
-                amps = readAmpsFromExcel(inputStream);
-                for (Amp v : amps) {
-                    ampController.saveAmp(v);
-                }
+                readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
