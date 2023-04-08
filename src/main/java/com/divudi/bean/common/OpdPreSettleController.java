@@ -587,7 +587,7 @@ public class OpdPreSettleController implements Serializable {
 //                //// // System.out.println("bi = " + bi);
 //                String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 //
-//                List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+//                List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 //                //// // System.out.println("billFees = " + billFees.size());
 //                //for payments for billfees
 //

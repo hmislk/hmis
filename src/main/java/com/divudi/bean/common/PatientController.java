@@ -307,7 +307,7 @@ public class PatientController implements Serializable {
             temId = 0l;
         }
         j += " order by b.patient.person.name";
-        searchPatients = getFacade().findBySQL(j, m);
+        searchPatients = getFacade().findByJpql(j, m);
     }
 
     public void searchBySample() {
@@ -334,7 +334,7 @@ public class PatientController implements Serializable {
             }
         }
         j += " order by ps.patientInvestigation.billItem.bill.patient.person.name";
-        searchPatients = getFacade().findBySQL(j, m);
+        searchPatients = getFacade().findByJpql(j, m);
     }
 
     public void searchPatientByDetails() {
@@ -386,7 +386,7 @@ public class PatientController implements Serializable {
             return;
         }
 
-        searchPatients = getFacade().findBySQL(j, m);
+        searchPatients = getFacade().findByJpql(j, m);
 
     }
 
@@ -401,7 +401,7 @@ public class PatientController implements Serializable {
 
         }
         m.put("id", ptId);
-        searchPatients = getFacade().findBySQL(j, m);
+        searchPatients = getFacade().findByJpql(j, m);
 
     }
 
@@ -445,7 +445,7 @@ public class PatientController implements Serializable {
         }
         m.put("pn", searchText);
         m.put("mcn", mcn);
-        List<Family> fs = getFamilyFacade().findBySQL(j, m);
+        List<Family> fs = getFamilyFacade().findByJpql(j, m);
         if (fs == null) {
             JsfUtil.addErrorMessage("No matches");
             return "";
@@ -1124,6 +1124,15 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
+    public Patient findPatientByPatientId(Long pid){
+        String j = "select p "
+                + " from Patient p "
+                + " where p.patientId=:pid";
+        Map m = new HashMap();
+        m.put("pid", pid);
+        return getFacade().findFirstByJpql(j, m);
+    }
+    
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();
@@ -1167,7 +1176,7 @@ public class PatientController implements Serializable {
         Map m = new HashMap();
         m.put("dob", dob);
         sql = "select p from Patient p where p.retired = false and p.person.dob=:dob order by p.person.name";
-        return getFacade().findBySQL(sql, m);
+        return getFacade().findByJpql(sql, m);
     }
 
     public void membershipChangeListner() {

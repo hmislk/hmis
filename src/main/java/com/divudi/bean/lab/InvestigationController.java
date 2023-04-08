@@ -494,7 +494,7 @@ public class InvestigationController implements Serializable {
             m.put("cat", category);
         }
         sql += " order by i.name";
-        allIxs = getFacade().findBySQL(sql, m);
+        allIxs = getFacade().findByJpql(sql, m);
         return "/lab/investigation_list";
     }
 
@@ -555,7 +555,7 @@ public class InvestigationController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", getCurrent().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, m);
+            d = getDepartmentFacade().findByJpql(sql, m);
         }
 
         return d;
@@ -569,7 +569,7 @@ public class InvestigationController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", institution);
-            d = getDepartmentFacade().findBySQL(sql, m);
+            d = getDepartmentFacade().findByJpql(sql, m);
         }
         return d;
     }
@@ -640,7 +640,7 @@ public class InvestigationController implements Serializable {
                 Map m = new HashMap();
                 String sql = "select i from Investigation i where i.retired=false and i.investigationCategory = :cat order by i.department.name, i.name";
                 m.put("cat", getCategory());
-                catIxs = getFacade().findBySQL(sql, m);
+                catIxs = getFacade().findByJpql(sql, m);
             }
         }
         return catIxs;
@@ -672,7 +672,7 @@ public class InvestigationController implements Serializable {
             ins = getSessionController().getLoggedUser().getInstitution();
         }
         m.put("ins", ins);
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
         return suggestions;
     }
 
@@ -706,7 +706,7 @@ public class InvestigationController implements Serializable {
             m.put("n", "%" + query.toUpperCase() + "%");
         }
 
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
         return suggestions;
     }
 
@@ -739,7 +739,7 @@ public class InvestigationController implements Serializable {
 //        }
         sql += " order by c.name";
 
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
 
         return suggestions;
     }
@@ -773,7 +773,7 @@ public class InvestigationController implements Serializable {
 //        }
         sql += " order by c.name";
 
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
 
         List<InvestigationWithCount> ics = new ArrayList<>();
         for (Investigation ix : suggestions) {
@@ -841,29 +841,6 @@ public class InvestigationController implements Serializable {
         this.listMasterItemsOnly = listMasterItemsOnly;
     }
 
-    public void correctIx() {
-        List<Investigation> allItems = getEjbFacade().findAll();
-        for (Investigation i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Investigation> allItems = getEjbFacade().findAll();
-        for (Investigation i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
 
     public String getBulkText() {
 
@@ -910,7 +887,7 @@ public class InvestigationController implements Serializable {
             }
         }
         sql += " order by c.name";
-        selectedItems = getFacade().findBySQL(sql, m);
+        selectedItems = getFacade().findByJpql(sql, m);
         return selectedItems;
     }
 
@@ -1047,7 +1024,7 @@ public class InvestigationController implements Serializable {
 //                    + " and upper(c.name) like :qry "
 //                    + " and c.institution=:ins ";
 //            sql += "order by c.name";
-//            List<Investigation> completeItems = getFacade().findBySQL(sql, m);
+//            List<Investigation> completeItems = getFacade().findByJpql(sql, m);
 //            return completeItems;
 //        } else {
 //            return completeItem(qry);
@@ -1064,7 +1041,7 @@ public class InvestigationController implements Serializable {
             m.put("ins", getSessionController().getInstitution());
             sql = "select c from Item c where ( type(c) = Investigation or type(c) = Packege ) "
                     + "and c.retired=false and c.institution=:ins and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-            List<Investigation> completeItems = getFacade().findBySQL(sql, m);
+            List<Investigation> completeItems = getFacade().findByJpql(sql, m);
             return completeItems;
         } else {
             return completeItem(qry);
@@ -1237,7 +1214,7 @@ public class InvestigationController implements Serializable {
         }
         sql += " order by c.name";
 
-        investigations = getFacade().findBySQL(sql, m);
+        investigations = getFacade().findByJpql(sql, m);
         return investigations;
     }
 
@@ -1252,7 +1229,7 @@ public class InvestigationController implements Serializable {
         m.put("i", i);
         m.put("ixType", InvestigationItemType.DynamicLabel);
 
-        investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findBySQL(sql, m);
+        investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findByJpql(sql, m);
         return investigationItemsOfDynamicLabelType;
     }
 
@@ -1265,7 +1242,7 @@ public class InvestigationController implements Serializable {
                 + " i.investigationItemOfLabelType=:ii ";
 
         m.put("ii", ii);
-        dynamicLabels = getInvestigationItemValueFlagFacade().findBySQL(sql, m);
+        dynamicLabels = getInvestigationItemValueFlagFacade().findByJpql(sql, m);
         return dynamicLabels;
     }
 
@@ -1274,7 +1251,7 @@ public class InvestigationController implements Serializable {
             String j = "select i from Investigation i where i.reportFormat=:rf order by i.name";
             Map m = new HashMap();
             m.put("rf", categoryForFormat);
-            investigationWithSelectedFormat = getFacade().findBySQL(j, m);
+            investigationWithSelectedFormat = getFacade().findByJpql(j, m);
         }
         return investigationWithSelectedFormat;
     }

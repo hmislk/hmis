@@ -315,7 +315,7 @@ public class ItemController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", ix);
-        return getFacade().findBySQL(j, m);
+        return getFacade().findByJpql(j, m);
     }
 
     public void removeSampleComponent() {
@@ -400,7 +400,7 @@ public class ItemController implements Serializable {
         m.put("t", ItemType.AnalyzerTest);
         m.put("m", machine);
         m.put("r", false);
-        machineTests = getFacade().findBySQL(j, m);
+        machineTests = getFacade().findByJpql(j, m);
     }
 
     public List<Item> completeMachineTests(String qry) {
@@ -410,7 +410,7 @@ public class ItemController implements Serializable {
         m.put("t", ItemType.AnalyzerTest);
         m.put("m", "%" + qry.toLowerCase() + "%");
         m.put("r", false);
-        ts = getFacade().findBySQL(j, m);
+        ts = getFacade().findByJpql(j, m);
         return ts;
     }
 
@@ -713,7 +713,7 @@ public class ItemController implements Serializable {
         hm.put("ins", getInstituion());
 
         //////// // System.out.println(sql);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 
@@ -770,7 +770,7 @@ public class ItemController implements Serializable {
 //                    + " order by c.name";
 //            hm.put("q", "%" + query.toUpperCase() + "%");
 ////////// // System.out.println(sql);
-//            suggestions = getFacade().findBySQL(sql, hm, 20);
+//            suggestions = getFacade().findByJpql(sql, hm, 20);
 //        }
 //        return suggestions;
 //
@@ -864,7 +864,7 @@ public class ItemController implements Serializable {
 //            tmpMap.put("dep", DepartmentType.Store);
 //            tmpMap.put("inven", DepartmentType.Inventry);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
 //
@@ -892,7 +892,7 @@ public class ItemController implements Serializable {
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Inventry);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
 
@@ -920,7 +920,7 @@ public class ItemController implements Serializable {
 //            tmpMap.put("amp", Amp.class);
 //            tmpMap.put("dep", DepartmentType.Store);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
 //
@@ -944,7 +944,7 @@ public class ItemController implements Serializable {
 //            //////// // System.out.println(sql);
 //            tmpMap.put("amp", BillExpense.class);
 //            tmpMap.put("str", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+//            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
 //        }
 //        return suggestions;
     }
@@ -1403,7 +1403,7 @@ public class ItemController implements Serializable {
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
         ////// // System.out.println(sql);
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -1435,7 +1435,7 @@ public class ItemController implements Serializable {
         m.put("ser", Service.class);
         m.put("inv", Investigation.class);
         ////// // System.out.println(sql);
-        itemFees = getItemFeeFacade().findBySQL(sql, m);
+        itemFees = getItemFeeFacade().findByJpql(sql, m);
         return itemFees;
     }
 
@@ -1598,7 +1598,7 @@ public class ItemController implements Serializable {
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where i.category=:cat and i.retired=false order by i.name";
         h.put("cat", category);
-        return getFacade().findBySQL(temSql, h);
+        return getFacade().findByJpql(temSql, h);
     }
 
     /**

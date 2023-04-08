@@ -241,7 +241,7 @@ public class PersonInstitutionController implements Serializable {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        staffsWithInstitutionPersons = getStaffFacade().findBySQL(sql, m);
+        staffsWithInstitutionPersons = getStaffFacade().findByJpql(sql, m);
 
         m = new HashMap();
 
@@ -257,7 +257,7 @@ public class PersonInstitutionController implements Serializable {
 
         m.put("class", Consultant.class);
 
-        staffsAll = getStaffFacade().findBySQL(sql, m);
+        staffsAll = getStaffFacade().findByJpql(sql, m);
 
         withOutInstitutionPersonsStaffs.addAll(staffsAll);
         withOutInstitutionPersonsStaffs.removeAll(staffsWithInstitutionPersons);
@@ -313,7 +313,7 @@ public class PersonInstitutionController implements Serializable {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        return getPersonInstitutionFacade().findBySQL(sql, m);
+        return getPersonInstitutionFacade().findByJpql(sql, m);
     }
 
     public PagingInfo getPagingInfo() {

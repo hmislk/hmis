@@ -7,17 +7,22 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.pharmacy;
+
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.facade.MeasurementUnitFacade;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext; import javax.faces.convert.Converter;
+import javax.faces.context.FacesContext;
+import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,11 +30,11 @@ import javax.inject.Named;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- Informatics)
+ * Informatics)
  */
 @Named
 @SessionScoped
-public  class MeasurementUnitController implements Serializable {
+public class MeasurementUnitController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -41,7 +46,36 @@ public  class MeasurementUnitController implements Serializable {
     private List<MeasurementUnit> items = null;
     String selectText = "";
 
-   
+    public MeasurementUnit findAndSaveMeasurementUnitByName(String name) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select m "
+                + " from MeasurementUnit m "
+                + " where m.retired=:ret "
+                + " and m.name=:name";
+        m.put("ret", false);
+        m.put("name", name);
+        MeasurementUnit mu = getFacade().findFirstByJpql(jpql, m);
+        if (mu == null) {
+            mu = new MeasurementUnit();
+            mu.setName(name);
+            mu.setCode("measurement_unit_" + CommonController.nameToCode(name));
+            getFacade().create(mu);
+        }
+        return mu;
+    }
+
+    public void save(MeasurementUnit mu) {
+        if (mu == null) {
+            return;
+        }
+        if(mu.getId()==null){
+            getFacade().create(mu);
+        }else{
+            getFacade().edit(mu);
+        }
+    }
+
     public void prepareAdd() {
         current = new MeasurementUnit();
     }

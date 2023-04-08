@@ -220,7 +220,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("frmTime", from);
 //        hm.put("toTime", to);
 
-        return staffShiftFacade.findBySQL(sql, hm);
+        return staffShiftFacade.findByJpql(sql, hm);
     }
 
     public List<StaffShift> fetchStaffShiftEarlyOut(StaffShift staffShift, double from, double to, int count) {
@@ -668,14 +668,14 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         String sql = "Select l from StaffShift l where l.leaveFrom=:frm ";
         HashMap nm = new HashMap();
         nm.put("frm", form);
-        return staffShiftFacade.findBySQL(sql, nm);
+        return staffShiftFacade.findByJpql(sql, nm);
     }
 
     public void deleteStaffLeave(LeaveForm form) {
         String sql = "Select l from StaffLeave l where l.form=:frm ";
         HashMap nm = new HashMap();
         nm.put("frm", form);
-        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql, nm);
+        List<StaffLeave> list = staffLeaveFacade.findByJpql(sql, nm);
 
         for (StaffLeave stf : list) {
             stf.setRetired(true);

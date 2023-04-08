@@ -137,7 +137,7 @@ public class CommonReportItemController implements Serializable {
         m.put("cat", commenReportFormat);
 //        System.err.println("temSql = " + temSql);
 //        System.err.println("m = " + m);
-        items = getFacade().findBySQL(temSql, m);
+        items = getFacade().findByJpql(temSql, m);
         return items;
     }
 
@@ -280,7 +280,7 @@ public class CommonReportItemController implements Serializable {
             Map m = new HashMap();
             m.put("cat", category);
             //////// // System.out.println("common report cat sql is " + temSql + " and " + m.toString());
-            items = getFacade().findBySQL(temSql, m);
+            items = getFacade().findByJpql(temSql, m);
         } else {
             items = new ArrayList<>();
         }
@@ -303,7 +303,7 @@ public class CommonReportItemController implements Serializable {
             Map m = new HashMap();
             m.put("cat", cat);
             //////// // System.out.println("common report cat sql is " + temSql + " and " + m.toString());
-            cis = getFacade().findBySQL(temSql, m);
+            cis = getFacade().findByJpql(temSql, m);
         } else {
             cis = new ArrayList<>();
         }

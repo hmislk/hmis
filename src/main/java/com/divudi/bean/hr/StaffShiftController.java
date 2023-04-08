@@ -75,7 +75,7 @@ public class StaffShiftController implements Serializable {
                 + " or upper(c.staff.person.name) like :q)"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        lst = ejbFacade.findBySQL(sql, hm);
+        lst = ejbFacade.findByJpql(sql, hm);
         //   ////// // System.out.println("lst = " + lst);
         return lst;
     }
@@ -259,7 +259,7 @@ public class StaffShiftController implements Serializable {
 //        m.put("fd", fromDate);
 //        m.put("td", toDate);
 //
-//        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //
 //    }
     public void createStaffShiftTablebyShiftDate() {

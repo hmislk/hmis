@@ -128,7 +128,7 @@ public class MachineController implements Serializable {
             String j = "select m from Machine m where m.institution=:ins order by m.name";
             Map m = new HashMap();
             m.put("ins", institution);
-            institutionMachines = getEjbFacade().findBySQL(j, m);
+            institutionMachines = getEjbFacade().findByJpql(j, m);
         }
         return institutionMachines;
     }

@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <body>
+
+        <ui:composition template="/emr/reports_index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5 class="card-title">Vmp Data</h5>
+                            <div>
+                                <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel">
+                                    <p:dataExporter type="xls" target="vmpTable" fileName="vmpData" />
+                                </p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+
+                            <p:dataTable id="vmpsDataTable" value="#{vmpController.items}" var="vmp" 
+                                         paginator="true" rows="10" 
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="5,10,20,50"
+                                         emptyMessage="No VMP records found">
+
+                                <p:column headerText="ID" filterBy="#{vmp.itemId}" filterMatchMode="contains">
+                                    #{vmp.itemId}
+                                </p:column>
+                                <p:column headerText="VMP Name" filterBy="#{vmp.name}" filterMatchMode="contains">
+                                    #{vmp.name}
+                                </p:column>
+                                <p:column headerText="VTM Name" filterBy="#{vmp.vtm.name}" filterMatchMode="contains">
+                                    #{vmp.vtm.name}
+                                </p:column>
+                                <p:column headerText="Dosage Form" filterBy="#{vmp.dosageForm.name}" filterMatchMode="contains">
+                                    #{vmp.dosageForm.name}
+                                </p:column>
+                                <p:column headerText="Strength Units per Issue Unit" filterBy="#{vmp.strengthOfAnIssueUnit}" filterMatchMode="contains">
+                                    #{vmp.strengthOfAnIssueUnit}
+                                </p:column>
+                                <p:column headerText="Strength Unit" filterBy="#{vmp.strengthUnit.name}" filterMatchMode="contains">
+                                    #{vmp.strengthUnit.name}
+                                </p:column>
+                                <p:column headerText="Issue Units per Pack" filterBy="#{vmp.issueUnitsPerPackUnit}" filterMatchMode="contains">
+                                    #{vmp.issueUnitsPerPackUnit}
+                                </p:column>
+                                <p:column headerText="Pack Unit" filterBy="#{vmp.packUnit.name}" filterMatchMode="contains">
+                                    #{vmp.packUnit.name}
+                                </p:column>
+                                <p:column headerText="Minimum Issue Quantity" filterBy="#{vmp.minimumIssueQuantity}" filterMatchMode="contains">
+                                    #{vmp.minimumIssueQuantity}
+                                </p:column>
+                                <p:column headerText="Minimum Issue Unit" 
+                                          filterBy="#{vmp.minimumIssueQuantityUnit.name}" 
+                                          filterMatchMode="contains">
+                                    #{vmp.minimumIssueQuantityUnit.name}
+                                </p:column>
+                                <p:column headerText="Issue Multiplies Quantity" filterBy="#{vmp.issueMultipliesQuantity}" filterMatchMode="contains">
+                                    #{vmp.issueMultipliesQuantity}
+                                </p:column>
+                                <p:column headerText="Issue Multiplies Unit" filterBy="#{vmp.issueMultipliesUnit.name}" filterMatchMode="contains">
+                                    #{vmp.issueMultipliesUnit.name}
+                                </p:column>
+
+                            </p:dataTable>
+
+                        </div>
+                    </div>
+
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

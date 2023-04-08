@@ -611,7 +611,7 @@ public class ChannelBillController implements Serializable {
                 + " and bf.billItem=:bt ";
         hm.put("bt", bs.getBillItem());
 
-        listBillFees = billFeeFacade.findBySQL(sql, hm);
+        listBillFees = billFeeFacade.findByJpql(sql, hm);
         billSession = bs;
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
@@ -1670,7 +1670,7 @@ public class ChannelBillController implements Serializable {
                 sql = " select bf from BillFee bf where "
                         + " bf.bill=:b ";
 
-                BillFees = getBillFeeFacade().findBySQL(sql, m);
+                BillFees = getBillFeeFacade().findByJpql(sql, m);
                 if (!BillFees.isEmpty()) {
                     for (BillFee bf : BillFees) {
                         bf.setRetired(true);

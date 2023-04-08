@@ -102,7 +102,7 @@ public class PharmacyCalculation implements Serializable {
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findBySQL(temSql, hm);
+        tmp = getItemFacade().findByJpql(temSql, hm);
 
         if (tmp == null) {
             tmp = new ArrayList<>();
@@ -598,7 +598,7 @@ public class PharmacyCalculation implements Serializable {
 
         hm.put("am", amp);
 
-        return getItemFacade().findBySQL(sql, hm);
+        return getItemFacade().findByJpql(sql, hm);
 
     }
 

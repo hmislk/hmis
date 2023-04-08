@@ -36,7 +36,7 @@ public class ClinicalSearch {
                 + "order by pe.id desc";
         m = new HashMap();
         m.put("pt", pt);
-        return getPeFacade().findBySQL(sql, m);
+        return getPeFacade().findByJpql(sql, m);
     }
 
     public PatientEncounterFacade getPeFacade() {

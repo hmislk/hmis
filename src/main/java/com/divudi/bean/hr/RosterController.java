@@ -54,7 +54,7 @@ public class RosterController implements Serializable {
                 + " where c.retired=false "
                 + " and upper(c.name) like :q "
                 + " order by c.name";
-        List<Roster> a = getFacade().findBySQL(sql, hm);
+        List<Roster> a = getFacade().findByJpql(sql, hm);
 
         return a;
     }

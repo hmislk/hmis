@@ -72,7 +72,7 @@ public class SessionNumberGenerateConrtroller implements Serializable {
         m.put("sp", sheduleController.getSpeciality());
         m.put("s", sheduleController.getCurrentStaff());
 
-        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findBySQL(sql,m);
+        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findByJpql(sql,m);
 
         return SessionNumberGeneratorlst;
     }

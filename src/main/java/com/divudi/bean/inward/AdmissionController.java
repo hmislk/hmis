@@ -168,7 +168,7 @@ public class AdmissionController implements Serializable {
         hash.put("val", 0.1);
         hash.put("ins", institution);
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Admission> lst = getFacade().findBySQL(sql, hash);
+        List<Admission> lst = getFacade().findByJpql(sql, hash);
 
         return lst;
     }

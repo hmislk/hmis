@@ -153,7 +153,7 @@ public class ServiceSubCategoryController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("parent", getParentCategory());
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
 
         if (items == null) {
             return new ArrayList<>();

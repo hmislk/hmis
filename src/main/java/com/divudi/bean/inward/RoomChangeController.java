@@ -405,7 +405,7 @@ public class RoomChangeController implements Serializable {
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
         hm.put("class", GuardianRoom.class);
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -416,7 +416,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 

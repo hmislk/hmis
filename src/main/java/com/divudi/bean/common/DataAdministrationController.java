@@ -192,7 +192,7 @@ public class DataAdministrationController {
 
         sql = "SELECT c FROM PharmaceuticalItemCategory c ";
 
-        Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+        Set<Category> allCats = new HashSet<>(categoryFacade.findByJpql(sql, m));
 
         sql = "SELECT i.category "
                 + " FROM Item i "
@@ -201,7 +201,7 @@ public class DataAdministrationController {
         ////System.out.println("sql = " + sql);
         m = new HashMap();
 
-        Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+        Set<Category> usedCats = new HashSet<>(categoryFacade.findByJpql(sql, m));
 
         ////System.out.println("Used Cats " + usedCats.size());
         ////System.out.println("All Cats after removing " + allCats.size());
@@ -267,7 +267,7 @@ public class DataAdministrationController {
         m.put("bct", BilledBill.class);
         m.put("bt", BillType.PaymentBill);
 
-        bs = billFacade.findBySQL(s, m);
+        bs = billFacade.findByJpql(s, m);
         int i = 1;
         for (Bill b : bs) {
             Bill cb = b.getCancelledBill();
@@ -324,7 +324,7 @@ public class DataAdministrationController {
         m.put("bt", BillType.PaymentBill);
         m.put("rbt", BillType.OpdBill);
 
-//        bills = billFacade.findBySQL(s, m);
+//        bills = billFacade.findByJpql(s, m);
         bills = billFacade.findBySQL(s, m, 10);
         for (Bill cb : bills) {
             for (BillItem bi : cb.getBillItems()) {
@@ -375,7 +375,7 @@ public class DataAdministrationController {
 
         m.put("tps", Arrays.asList(new Class[]{Investigation.class, Service.class}));
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
         for (Item i : items) {
@@ -444,7 +444,7 @@ public class DataAdministrationController {
 //        m.put("bts", BillType.PharmacyTransferReceive);
 //        m.put("bts", BillType.PharmacyTransferRequest);
 //        
-        bills = getBillFacade().findBySQL(j, m);
+        bills = getBillFacade().findByJpql(j, m);
 
         for (Bill b : bills) {
             ////System.out.println("b = " + b);
@@ -613,7 +613,7 @@ public class DataAdministrationController {
 
         m.put("ins", reportKeyWord.getInstitution());
 
-        staffs = getStaffFacade().findBySQL(sql, m);
+        staffs = getStaffFacade().findByJpql(sql, m);
         for (Staff s : staffs) {
             s.getPerson().setZoneCode(reportKeyWord.getString());
             if (s.getPerson().getNic() != null && !s.getPerson().getNic().equals("")) {
@@ -666,7 +666,7 @@ public class DataAdministrationController {
             }
         }
         sql += " order by i.name ";
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
     }
 
@@ -801,7 +801,7 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("class", ServiceSession.class);
 
-        sessions = serviceSessionFacade.findBySQL(sql, m);
+        sessions = serviceSessionFacade.findByJpql(sql, m);
 
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.originatingSession is not null "
@@ -827,7 +827,7 @@ public class DataAdministrationController {
             m.put("depT", departmentType);
         }
 
-        departments = getDepartmentFacade().findBySQL(sql, m);
+        departments = getDepartmentFacade().findByJpql(sql, m);
 
     }
 
@@ -927,7 +927,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Pharmacy);
         m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         int j = 1;
@@ -956,7 +956,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Pharmacy);
 //        m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         int j = 1;
@@ -987,7 +987,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Store);
         m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         int j = 1;
@@ -1014,7 +1014,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Store);
 //        m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         for (Item i : items) {

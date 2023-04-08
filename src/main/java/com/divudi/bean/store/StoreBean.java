@@ -34,7 +34,7 @@ import com.divudi.entity.pharmacy.UserStockContainer;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.BillFacade;
@@ -213,7 +213,7 @@ public class StoreBean {
         HashMap hm = new HashMap();
         hm.put("wb", webUser);
 
-        List<UserStockContainer> usList = getUserStockContainerFacade().findBySQL(sql, hm);
+        List<UserStockContainer> usList = getUserStockContainerFacade().findByJpql(sql, hm);
 
         for (UserStockContainer usc : usList) {
             usc.setRetiredAt(new Date());
@@ -447,7 +447,7 @@ public class StoreBean {
         m.put("s", d);
         m.put("item", item);
         sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item=:item order by i.itemBatch.dateOfExpire ";
-        items = getStockFacade().findBySQL(sql, m);
+        items = getStockFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -460,7 +460,7 @@ public class StoreBean {
         m.put("s", d);
         m.put("item", item);
         sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item=:item order by i.itemBatch.dateOfExpire ";
-        items = getStockFacade().findBySQL(sql, m);
+        items = getStockFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -792,7 +792,7 @@ public class StoreBean {
         m.put("d", department);
         sql = "select s from Stock s where s.itemBatch.item=:i "
                 + " and s.department=:d order by s.itemBatch.dateOfExpire asc";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<ItemBatchQty> dl = new ArrayList<>();
         double toAddQty = qty;
         //System.err.println("QTY 1 : " + toAddQty);
@@ -826,7 +826,7 @@ public class StoreBean {
         m.put("q", 0.0);
         sql = "select s from Stock s where s.itemBatch.item=:i "
                 + " and s.department=:d and s.stock >:q order by s.itemBatch.dateOfExpire desc";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
@@ -1143,7 +1143,7 @@ public class StoreBean {
 //
 //        String sql;
 //        sql = "select s from Stock s where s.itemBatch.item.id = " + item.getId() + " and s.staff.id = " + staff.getId() + " order by s.itemBatch.dateOfExpire desc";
-//        List<Stock> stocks = getStockFacade().findBySQL(sql);
+//        List<Stock> stocks = getStockFacade().findByJpql(sql);
 //        List<ItemBatchQty> dl = new ArrayList<>();
 //        double toAddQty = qty;
 //        for (Stock s : stocks) {
@@ -1594,7 +1594,7 @@ public class StoreBean {
         m.put("su", strengthUnit);
         m.put("c", cat);
         sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VtmsVmps v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
+        VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
         Vmp vmp;
         if (v == null) {
             vmp = new Vmp();
@@ -1604,8 +1604,7 @@ public class StoreBean {
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
 
-            v = new VtmsVmps();
-            v.setCreatedAt(Calendar.getInstance().getTime());
+            v = new VirtualProductIngredient();
             v.setStrength(strength);
             v.setStrengthUnit(strengthUnit);
             v.setVtm(vtm);

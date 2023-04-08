@@ -67,7 +67,7 @@ public class PlanController implements Serializable {
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
         sql="select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
-        selectedItems = getFacade().findBySQL(sql,m);
+        selectedItems = getFacade().findByJpql(sql,m);
         return selectedItems;
     }
 
@@ -165,7 +165,7 @@ public class PlanController implements Serializable {
             m.put("t", SymanticType.Preventive_Procedure);
             String sql;
             sql = "select c from ClinicalFindingItem c where c.retired=false and c.symanticType=:t order by c.name";
-            items = getFacade().findBySQL(sql, m);
+            items = getFacade().findByJpql(sql, m);
         }
         return items;
 

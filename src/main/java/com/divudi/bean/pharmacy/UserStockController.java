@@ -173,7 +173,7 @@ public class UserStockController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("wb", webUser);
 
-        List<UserStockContainer> usList = getUserStockContainerFacade().findBySQL(sql, hm);
+        List<UserStockContainer> usList = getUserStockContainerFacade().findByJpql(sql, hm);
 
         for (UserStockContainer usc : usList) {
             usc.setRetiredAt(new Date());

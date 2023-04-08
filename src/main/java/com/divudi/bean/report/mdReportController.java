@@ -187,7 +187,7 @@ public class mdReportController implements Serializable {
                 String sql = "Select b From BillFee b where b.retired=false and b.bill=:bb";
                 HashMap hm = new HashMap();
                 hm.put("bb", b);
-                List<BillFee> bflist = getBillFeeFacade().findBySQL(sql, hm);
+                List<BillFee> bflist = getBillFeeFacade().findByJpql(sql, hm);
                 for (BillFee bf : bflist) {
                     if (bf.getFee() != null && (bf.getFee().getFeeType() == FeeType.OwnInstitution)) {
                         b.setHospitalFee(b.getHospitalFee() + bf.getFeeValue());

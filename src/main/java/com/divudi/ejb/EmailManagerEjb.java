@@ -52,7 +52,7 @@ public class EmailManagerEjb {
         String j = "Select e from AppEmail e where e.sentSuccessfully=:ret and e.retired=false";
         Map m = new HashMap();
         m.put("ret", false);
-        List<AppEmail> emails = getEmailFacade().findBySQL(j,m);
+        List<AppEmail> emails = getEmailFacade().findByJpql(j,m);
         for (AppEmail e : emails) {
             e.setSentSuccessfully(Boolean.TRUE);
             getEmailFacade().edit(e);
