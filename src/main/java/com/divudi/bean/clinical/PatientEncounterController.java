@@ -145,6 +145,25 @@ public class PatientEncounterController implements Serializable {
     Department department;
     Doctor doctor;
 
+    public void listInstitutionEncounters() {
+        System.out.println("listInstitutionEncounters = " );
+        String jpql = "select e "
+                + " from PatientEncounter e "
+                + " where e.retired=:ret "
+                + " and e.institution=:ins "
+                + " and e.encounterDate between :fd and :td "
+                + "order by e.id";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("ins", sessionController.getInstitution());
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("jpql = " + jpql);
+        items = getFacade().findByJpql(jpql, m);
+        System.out.println("items = " + items.size());
+    }
+
     public List<String> completeClinicalComments(String qry) {
         if (current == null || current.getComments() == null) {
             completeRx(qry);
@@ -292,6 +311,11 @@ public class PatientEncounterController implements Serializable {
         tmpMap.put("st", SymanticType.Pharmacologic_Substance);
         tmpMap.put("q", qry.toUpperCase() + "%");
         completeStrings = getFacade().findString(sql, tmpMap);
+    }
+    
+    public String navigateToListInstitutionEncounters() {
+        items=null;
+        return "/emr/reports/visits";
     }
 
     public String listAllEncounters() {
@@ -671,7 +695,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void saveSelected() {
-        current.setDateTime(new Date());
+        current.setEncounterDate(new Date());
         current.setDepartment(sessionController.getDepartment());
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -684,6 +708,15 @@ public class PatientEncounterController implements Serializable {
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         UtilityController.addSuccessMessage("Saved");
+    }
+
+    public void saveEncounter(PatientEncounter pe) {
+        if (pe.getId() != null && pe.getId() > 0) {
+            getFacade().edit(pe);
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            getFacade().create(pe);
+        }
     }
 
     public void updateComments() {

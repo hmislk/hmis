@@ -1124,6 +1124,15 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
+    public Patient findPatientByPatientId(Long pid){
+        String j = "select p "
+                + " from Patient p "
+                + " where p.patientId=:pid";
+        Map m = new HashMap();
+        m.put("pid", pid);
+        return getFacade().findFirstByJpql(j, m);
+    }
+    
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();

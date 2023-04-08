@@ -38,9 +38,14 @@
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Diagnosis" action="#{dataUploadBean.navigateToUploadDiagnoses()}"  ></p:commandButton>
                                                 </div>
                                             </p:tab>
-                                            <p:tab title="Medicines - Bulk Upload">
+                                            <p:tab title="Clinical Data - Bulkd Upload">
                                                 <div class="d-grid gap-2">
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Upload Patients" action="#{dataUploadBean.toUploadPatients()}"  ></p:commandButton>
+                                                    <p:commandButton styleClass="btn btn-block" ajax="false" value="Upload Visits" action="#{dataUploadBean.navigateToUploadVisits()}"  ></p:commandButton>
+                                                </div>
+                                            </p:tab>
+                                            <p:tab title="Medicines - Bulk Upload">
+                                                <div class="d-grid gap-2">
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Upload VTMs" action="#{dataUploadBean.toUploadVtms()}"  ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Upload ATMs" action="#{dataUploadBean.toUploadAtms()}"  ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Upload VMPs" action="#{dataUploadBean.toUploadVmps()}"  ></p:commandButton>
