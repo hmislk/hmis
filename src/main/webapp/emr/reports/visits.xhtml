@@ -37,7 +37,7 @@
                                             <p:calendar id="toDate" value="#{patientEncounterController.toDate}" showOn="button" />
                                         </div>
                                         <div class="col-md-3">
-                                            <p:commandButton value="Process" action="#{patientEncounterController.listInstitutionEncounters}" />
+                                            <p:commandButton ajax="false" value="Process" action="#{patientEncounterController.listInstitutionEncounters}" />
                                         </div>
                                         <div class="col-md-3">
                                             <p:commandButton value="Download Excel" ajax="false">
