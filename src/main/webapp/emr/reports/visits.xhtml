@@ -53,17 +53,17 @@
                                             </f:facet>
                                             <h:outputText value="#{visit.id}" />
                                         </p:column>
-                                        <p:column sortBy="#{visit.patientName}" filterBy="#{visit.patientName}">
+                                        <p:column sortBy="#{visit.patient.person.nameWithTitle}" filterBy="#{visit.patient.person.nameWithTitle}">
                                             <f:facet name="header">
                                                 <h:outputText value="Patient Name" />
                                             </f:facet>
-                                            <h:outputText value="#{visit.patientName}" />
+                                            <h:outputText value="#{visit.patient.person.nameWithTitle}" />
                                         </p:column>
-                                        <p:column sortBy="#{visit.completedTime}" filterBy="#{visit.completedTime}">
+                                        <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
                                             <f:facet name="header">
                                                 <h:outputText value="CompletedTime" />
                                             </f:facet>
-                                            <h:outputText value="#{visit.completedTime}" />
+                                            <h:outputText value="#{visit.encounterDate}" />
                                         </p:column>
                                         <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
                                             <f:facet name="header">
