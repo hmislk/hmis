@@ -1,11 +1,3 @@
-/*
- * Milk Payment System for Lucky Lanka Milk Processing Company
- *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * (94) 71 5812399
- * (94) 71 5812399
- */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
 import com.divudi.entity.Packege;

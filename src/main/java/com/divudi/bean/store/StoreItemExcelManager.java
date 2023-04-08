@@ -35,7 +35,7 @@ import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
@@ -429,7 +429,7 @@ public class StoreItemExcelManager implements Serializable {
         Amp amp;
 //        Ampp ampp;
         Vmpp vmpp;
-        VtmsVmps vtmsvmps;
+        VirtualProductIngredient vtmsvmps;
         MeasurementUnit issueUnit;
         MeasurementUnit strengthUnit;
         MeasurementUnit packUnit;
@@ -1127,7 +1127,7 @@ public class StoreItemExcelManager implements Serializable {
         Amp amp;
         Ampp ampp;
         Vmpp vmpp;
-        VtmsVmps vtmsvmps;
+        VirtualProductIngredient vtmsvmps;
         MeasurementUnit issueUnit;
         MeasurementUnit strengthUnit;
         MeasurementUnit packUnit;

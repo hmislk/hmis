@@ -146,29 +146,6 @@ public class TheatreServiceController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public void correctIx() {
-        List<TheatreService> allItems = getTheatreServiceFacade().findAll();
-        for (TheatreService i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getTheatreServiceFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<TheatreService> allItems = getTheatreServiceFacade().findAll();
-        for (TheatreService i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getTheatreServiceFacade().edit(i);
-        }
-
-    }
 
     public String getBulkText() {
 

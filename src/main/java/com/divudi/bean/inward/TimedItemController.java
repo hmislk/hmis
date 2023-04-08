@@ -164,30 +164,6 @@ public class TimedItemController implements Serializable {
         this.billBean = billBean;
     }
 
-    public void correctIx() {
-        List<TimedItem> allItems = getEjbFacade().findAll();
-        for (TimedItem i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<TimedItem> allItems = getEjbFacade().findAll();
-        for (TimedItem i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
-
     public String getBulkText() {
 
         return bulkText;

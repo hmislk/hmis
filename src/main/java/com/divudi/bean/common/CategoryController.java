@@ -97,9 +97,30 @@ public class CategoryController implements Serializable {
 
     public List<Category> completeCategory(String qry) {
         List<Category> c;
-        c = getFacade().findBySQL("select c from Category c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        c = getFacade().findBySQL("select c from Category c where c.retired=false and c.name like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
+        }
+        return c;
+    }
+    
+    public Category findAndCreateCategoryByName(String qry) {
+        Category c;
+        String jpql;
+        jpql = "select c from "
+                + " Category c "
+                + " where c.retired=:ret "
+                + " and c.name=:name "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("name", qry);
+        c = getFacade().findFirstByJpql(jpql, m);
+        if(c==null){
+            c = new Category();
+            c.setName(qry);
+            c.setCode("category_" + CommonController.nameToCode(qry));
+            getFacade().create(c);
         }
         return c;
     }
