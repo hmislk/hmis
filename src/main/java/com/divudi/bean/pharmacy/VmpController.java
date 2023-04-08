@@ -78,7 +78,7 @@ public class VmpController implements Serializable {
                 + " order by vmp.name";
         Map m = new HashMap();
         m.put("ret", false);
-        items = getFacade().findBySQL(jpql, m);
+        items = getFacade().findByJpql(jpql, m);
         return "/emr/reports/vmps?faces-redirect=true";
     }
 
@@ -186,7 +186,7 @@ public class VmpController implements Serializable {
             String j = "select v from VtmsVmps v where v.vmp=:vmp";
             Map m = new HashMap();
             m.put("vmp", vmp);
-            gs = getVivFacade().findBySQL(j, m);
+            gs = getVivFacade().findByJpql(j, m);
             if (gs == null) {
                 return new ArrayList<>();
             }

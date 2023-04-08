@@ -183,7 +183,7 @@ public class StaffLoanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
 
-        return getPaysheetComponentFacade().findBySQL(sql, hm);
+        return getPaysheetComponentFacade().findByJpql(sql, hm);
 
     }
 

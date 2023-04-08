@@ -33,6 +33,11 @@
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Treatements" action="/clinical/clinical_treatment" onclick="onSubmitButton();" ></p:commandButton>
                                                 </div>
                                             </p:tab>
+                                            <p:tab title="Clinical Metadata - Bulkd Upload">
+                                                <div class="d-grid gap-2">
+                                                    <p:commandButton styleClass="btn btn-block" ajax="false" value="Diagnosis" action="#{dataUploadBean.navigateToUploadDiagnoses()}"  ></p:commandButton>
+                                                </div>
+                                            </p:tab>
                                             <p:tab title="Medicines - Bulk Upload">
                                                 <div class="d-grid gap-2">
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Upload Patients" action="#{dataUploadBean.toUploadPatients()}"  ></p:commandButton>

@@ -804,7 +804,7 @@ public class Api {
 //        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         m.put("ss", ses_id);
 
-        return getBillSessionFacade().findBySQL(sql, m);
+        return getBillSessionFacade().findByJpql(sql, m);
 
     }
 
@@ -1016,7 +1016,7 @@ public class Api {
                 + " where bs.bill.id=:id ";
 
         m.put("id", billId);
-        billObjects = billSessionFacade.findBySQL(sql, m);
+        billObjects = billSessionFacade.findByJpql(sql, m);
 
 //        //// // System.out.println("m = " + m);
 //        //// // System.out.println("sql = " + sql);

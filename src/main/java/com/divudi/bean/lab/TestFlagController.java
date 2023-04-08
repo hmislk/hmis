@@ -389,7 +389,7 @@ public class TestFlagController implements Serializable {
             m.put("ix", getInvestigation());
             if (investigation != null) {
                 sql = "select i from TestFlag i where i.retired=false and i.item =:ix ";
-                items = getFacade().findBySQL(sql, m);
+                items = getFacade().findByJpql(sql, m);
             }
             //////// // System.out.println("item are " + items);
             if (items == null) {
@@ -405,7 +405,7 @@ public class TestFlagController implements Serializable {
         Map m = new HashMap();
         m.put("ix", ix);
         sql = "select i from TestFlag i where i.retired=false and i.investigationItemOfFlagType =:ix ";
-        f = getFacade().findBySQL(sql, m);
+        f = getFacade().findByJpql(sql, m);
         if (f == null) {
             f = new ArrayList<>();
         }

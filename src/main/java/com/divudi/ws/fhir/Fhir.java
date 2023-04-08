@@ -1307,7 +1307,7 @@ public class Fhir {
                 + " where bs.bill.id=:id ";
 
         m.put("id", billId);
-        billObjects = billSessionFacade.findBySQL(sql, m);
+        billObjects = billSessionFacade.findByJpql(sql, m);
 
 //        //System.out.println("m = " + m);
 //        //System.out.println("sql = " + sql);

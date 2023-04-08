@@ -1048,8 +1048,8 @@ public class ChannelReportController implements Serializable {
 
         m.put("cla", b.getClass());
         m.put("bt", bt);
-        ////// // System.out.println("getBillSessionFacade().findBySQL(sql, m) = " + getBillSessionFacade().findBySQL(sql, m));
-        List<BillSession> billSessions = getBillSessionFacade().findBySQL(sql, m);
+        ////// // System.out.println("getBillSessionFacade().findByJpql(sql, m) = " + getBillSessionFacade().findByJpql(sql, m));
+        List<BillSession> billSessions = getBillSessionFacade().findByJpql(sql, m);
         ////// // System.out.println("billSessions = " + billSessions.size());
         for (BillSession bs : billSessions) {
             ////// // System.out.println("In");
@@ -1398,7 +1398,7 @@ public class ChannelReportController implements Serializable {
         sql = " select d from Department d "
                 + " where d.retired=false "
                 + " order by d.name";
-        return getDepartmentFacade().findBySQL(sql, hm);
+        return getDepartmentFacade().findByJpql(sql, hm);
     }
 
     public List<Bill> getDepartmentBills(Department dep) {
@@ -2786,7 +2786,7 @@ public class ChannelReportController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime";
         m.put("doc", staff);
         m.put("class", ServiceSession.class);
-        serviceSessions = serviceSessionFacade.findBySQL(sql, m);
+        serviceSessions = serviceSessionFacade.findByJpql(sql, m);
     }
 
     public List<Bill> getChannelPaymentBillListbyClassTypes(List<BillType> bts, BillType bt, Date d, Date sessionFDate, Date sessionTDate, Staff stf, ServiceSession ss) {
@@ -5512,7 +5512,7 @@ public class ChannelReportController implements Serializable {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        return staffFacade.findBySQL(sql, m);
+        return staffFacade.findByJpql(sql, m);
     }
 
     public List<ServiceSession> fetchCreatedServiceSessions(Staff s) {

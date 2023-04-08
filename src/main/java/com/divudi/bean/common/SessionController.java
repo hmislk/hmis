@@ -793,7 +793,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL, m);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL, m);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (SecurityController.matchPassword(passord, u.getWebUserPassword())) {
@@ -1006,7 +1006,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                 + " and wd.department.retired=false "
                 + " and wd.webUser=:wu "
                 + " order by wd.department.name";
-        return departmentFacade.findBySQL(sql, m);
+        return departmentFacade.findByJpql(sql, m);
     }
 
     public ApplicationEjb getApplicationEjb() {

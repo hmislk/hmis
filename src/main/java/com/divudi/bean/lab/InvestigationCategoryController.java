@@ -146,7 +146,7 @@ public class InvestigationCategoryController implements Serializable {
                     + " order by c.name";
             Map m = new HashMap();
             m.put("ret", false);
-            items = getFacade().findBySQL(jpql, m);
+            items = getFacade().findByJpql(jpql, m);
         }
         return items;
     }

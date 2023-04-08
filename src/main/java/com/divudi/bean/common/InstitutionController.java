@@ -159,7 +159,7 @@ public class InstitutionController implements Serializable {
             sql += "  and c.institutionType in :types";
         }
         sql += " order by c.name";
-        return getFacade().findBySQL(sql, hm);
+        return getFacade().findByJpql(sql, hm);
     }
 
     public List<Institution> getSuppliers() {

@@ -342,7 +342,7 @@ public class StaffAdditionalFormController implements Serializable {
 //        sql += createKeyWord(m);
 //
 //        System.err.println("SQL " + sql);
-//        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 //
 ////        calMinitsAditional(additionalForms);
 //    }
@@ -1405,7 +1405,7 @@ public class StaffAdditionalFormController implements Serializable {
 //
 //        hm.put("dtp", new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.Poya, DayType.SleepingDay});
 //        hm.put("rs", getCurrentAdditionalForm().getStaff().getRoster());
-//        shifts = shiftFacade.findBySQL(sql, hm);
+//        shifts = shiftFacade.findByJpql(sql, hm);
 //    }
     public AdditionalForm getCurrentAdditionalForm() {
         if (currentAdditionalForm == null) {

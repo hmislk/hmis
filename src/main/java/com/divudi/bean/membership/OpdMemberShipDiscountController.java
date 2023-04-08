@@ -657,7 +657,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.category is null "
                 + " order by a.paymentScheme.name,a.department.name";
         hm.put("pm", paymentScheme);
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
     }
 
     public void createItemsChannelPaymentScheme() {
@@ -673,7 +673,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.paymentScheme.name ";
         hm.put("pm", paymentScheme);
         hm.put("bt", BillType.ChannelCash);
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
     }
 
     public void createItemsDepartmentsPaymentMethod() {
@@ -687,7 +687,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.membershipScheme is null "
                 + " order by a.department.name";
         //  hm.put("pm", paymentScheme);
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
     }
 
     public void createItemsCategoryOpd() {
@@ -704,7 +704,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         temMap.put("service", ServiceCategory.class);
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("invest", InvestigationCategory.class);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsCategoryOpdPaymentScheme() {
@@ -724,7 +724,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         temMap.put("service", ServiceCategory.class);
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("invest", InvestigationCategory.class);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsCategoryOpdPaymentMethod() {
@@ -744,7 +744,7 @@ public class OpdMemberShipDiscountController implements Serializable {
         temMap.put("service", ServiceCategory.class);
         temMap.put("sub", ServiceSubCategory.class);
         temMap.put("invest", InvestigationCategory.class);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsPaymentScheme() {
@@ -758,7 +758,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.paymentScheme.name,"
                 + " a.item.name";
         temMap.put("pm", paymentScheme);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsPaymentMethod() {
@@ -772,7 +772,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and a.membershipScheme is null "
                 + " order by a.item.name";
         // temMap.put("pm", paymentScheme);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsCategoryPharmacy() {
@@ -785,7 +785,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " and type(a.category)=:ph "
                 + " order by a.membershipScheme.name,a.category.name";
         temMap.put("ph", PharmaceuticalItemCategory.class);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsCategoryPharmacyPaymentScheme() {
@@ -800,7 +800,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.paymentScheme.name,a.category.name";
         temMap.put("pm", paymentScheme);
         temMap.put("ph", PharmaceuticalItemCategory.class);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void createItemsCategoryPharmacyPaymentMethod() {
@@ -816,7 +816,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " order by a.category.name";
         //  temMap.put("pm", paymentScheme);
         temMap.put("ph", PharmaceuticalItemCategory.class);
-        items = getFacade().findBySQL(sql, temMap);
+        items = getFacade().findByJpql(sql, temMap);
     }
 
     public void onEdit(PriceMatrix tmp) {

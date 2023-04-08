@@ -167,7 +167,7 @@ public class StaffController implements Serializable {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
             m.put("cat", formCategory);
-            formItems = criFacade.findBySQL(temSql, m);
+            formItems = criFacade.findByJpql(temSql, m);
         } else {
             formItems = new ArrayList<>();
         }
@@ -236,7 +236,7 @@ public class StaffController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("class1", Doctor.class);
         hm.put("class2", Consultant.class);
-        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm);
     }
 
     public void createDoctorsOnly() {
@@ -249,7 +249,7 @@ public class StaffController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("class1", Doctor.class);
         hm.put("class2", Consultant.class);
-        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm);
     }
 
     public void createStaffWithCode() {
@@ -263,7 +263,7 @@ public class StaffController implements Serializable {
                 + " order by p.codeInterger ";
 
         //////System.out.println(sql);
-        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
 
@@ -543,7 +543,7 @@ public class StaffController implements Serializable {
 
         sql += " order by ss.codeInterger ";
         //////System.out.println(sql);
-        staffWithCode = getEjbFacade().findBySQL(sql, hm);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
 
@@ -666,7 +666,7 @@ public class StaffController implements Serializable {
                     + " d.institution=:ins";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrent().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, hm);
+            d = getDepartmentFacade().findByJpql(sql, hm);
         }
 
         return d;
@@ -738,7 +738,7 @@ public class StaffController implements Serializable {
                 + "order by p.person.name";
 //            //////System.out.println(sql);
         hm.put("sp", speciality);
-        ss = getFacade().findBySQL(sql, hm);
+        ss = getFacade().findByJpql(sql, hm);
 
         return ss;
     }
@@ -904,7 +904,7 @@ public class StaffController implements Serializable {
         }
 
         hm.put("class", Consultant.class);
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
 
         return selectedItems;
     }
@@ -918,7 +918,7 @@ public class StaffController implements Serializable {
                 + " order by c.person.name";
 
         hm.put("class", Consultant.class);
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
 
         for (Staff stf : selectedItems) {
             stf.setWorkingTimeForOverTimePerWeek(45);
@@ -937,7 +937,7 @@ public class StaffController implements Serializable {
                 + " order by c.person.name";
 
         hm.put("class", Consultant.class);
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
 
         for (Staff stf : selectedItems) {
             stf.setAllowedEarlyOutLeave(true);

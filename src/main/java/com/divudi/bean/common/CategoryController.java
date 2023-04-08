@@ -131,7 +131,7 @@ public class CategoryController implements Serializable {
         HashMap tmpMap = new HashMap();
         sql = "select c from Category c where c.retired=false and c.parentCategory=:cat order by c.name";
         tmpMap.put("cat", cat);
-        suggestions = getFacade().findBySQL(sql, tmpMap);
+        suggestions = getFacade().findByJpql(sql, tmpMap);
         return suggestions;
     }
 

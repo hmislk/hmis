@@ -356,7 +356,7 @@ public class Lims {
         m = new HashMap();
         m.put("pts", ps);
 
-        ts = itemFacade.findBySQL(j, m);
+        ts = itemFacade.findByJpql(j, m);
         return ts;
     }
 
@@ -377,7 +377,7 @@ public class Lims {
             j = "Select pi from PatientInvestigation pi "
                     + " where pi.cancelled=:can "
                     + " and pi.billItem.bill=:bill";
-            List<PatientInvestigation> pis = patientInvestigationFacade.findBySQL(j, m);
+            List<PatientInvestigation> pis = patientInvestigationFacade.findByJpql(j, m);
 
             for (PatientInvestigation ptix : pis) {
 
@@ -496,7 +496,7 @@ public class Lims {
             Map m = new HashMap();
             m.put("item", temIx);
 
-            iis = investigationItemFacade.findBySQL(temSql, m);
+            iis = investigationItemFacade.findByJpql(temSql, m);
         } else {
             iis = new ArrayList<>();
         }
@@ -546,7 +546,7 @@ public class Lims {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findBySQL(j, m);
+        return billFacade.findByJpql(j, m);
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {

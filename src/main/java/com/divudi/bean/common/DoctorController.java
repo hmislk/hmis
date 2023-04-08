@@ -67,7 +67,7 @@ public class DoctorController implements Serializable {
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql,hm);
+            suggestions = getFacade().findByJpql(sql,hm);
         }
         return suggestions;
     }
@@ -102,7 +102,7 @@ public class DoctorController implements Serializable {
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
         }
 
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
 
         return selectedItems;
     }

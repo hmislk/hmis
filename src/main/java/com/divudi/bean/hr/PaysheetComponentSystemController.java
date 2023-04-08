@@ -186,7 +186,7 @@ public class PaysheetComponentSystemController implements Serializable {
                 + " and s.componentType in :tp ";
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.addition.getSystemDefinedComponents());
-        items = ejbFacade.findBySQL(sql, hm);
+        items = ejbFacade.findByJpql(sql, hm);
         return items;
     }
 

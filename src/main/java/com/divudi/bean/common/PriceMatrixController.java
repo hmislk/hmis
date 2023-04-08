@@ -584,7 +584,7 @@ public class PriceMatrixController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("pm", paymentMethod);
 
-        return getPriceMatrixFacade().findBySQL(sql, hm);
+        return getPriceMatrixFacade().findByJpql(sql, hm);
     }
 
     public List<PriceMatrix> getOpdMemberShipDiscountsDepartment(MembershipScheme membershipScheme) {
@@ -597,7 +597,7 @@ public class PriceMatrixController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("pm", membershipScheme);
 
-        return getPriceMatrixFacade().findBySQL(sql, hm);
+        return getPriceMatrixFacade().findByJpql(sql, hm);
     }
 
     public List<PriceMatrix> getOpdMemberShipDiscountsCategory(MembershipScheme membershipScheme) {
@@ -610,7 +610,7 @@ public class PriceMatrixController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("pm", membershipScheme);
 
-        return getPriceMatrixFacade().findBySQL(sql, hm);
+        return getPriceMatrixFacade().findByJpql(sql, hm);
     }
 
     public List<PriceMatrix> getInwardMemberShipDiscounts(Institution ins, PaymentMethod pay) {
@@ -624,7 +624,7 @@ public class PriceMatrixController implements Serializable {
         hm.put("pm", pay);
         hm.put("ins", ins);
 
-        return getPriceMatrixFacade().findBySQL(sql, hm);
+        return getPriceMatrixFacade().findByJpql(sql, hm);
     }
 
     public List<PriceMatrix> getInwardMemberShipDiscounts(MembershipScheme mem, PaymentMethod pay) {
@@ -638,7 +638,7 @@ public class PriceMatrixController implements Serializable {
         hm.put("pm", pay);
         hm.put("mem", mem);
 
-        return getPriceMatrixFacade().findBySQL(sql, hm);
+        return getPriceMatrixFacade().findByJpql(sql, hm);
     }
 
     public List<PriceMatrix> getInwardMemberShipDiscounts(Institution ins, MembershipScheme mem, PaymentMethod pay) {
@@ -653,7 +653,7 @@ public class PriceMatrixController implements Serializable {
         hm.put("mem", mem);
         hm.put("ins", ins);
 
-        return getPriceMatrixFacade().findBySQL(sql, hm);
+        return getPriceMatrixFacade().findByJpql(sql, hm);
     }
 
     public InwardMemberShipDiscount getInwardMemberShipDiscount(MembershipScheme membershipScheme, Institution institution, PaymentMethod paymentMethod, InwardChargeType inwardChargeType, AdmissionType admissionType, WebUser webUser) {

@@ -93,7 +93,7 @@ public  class ItemForItemController implements Serializable {
         Map m = new HashMap();
         m.put("it", i);
         sql = "select c.childItem from ItemForItem c where c.retired=false and c.parentItem=:it order by c.childItem.name ";
-        return getItemFacade().findBySQL(sql,m);
+        return getItemFacade().findByJpql(sql,m);
     }
     
     

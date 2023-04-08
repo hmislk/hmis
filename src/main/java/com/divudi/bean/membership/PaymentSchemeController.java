@@ -342,7 +342,7 @@ public class PaymentSchemeController implements Serializable {
                 + " and upper(c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -359,7 +359,7 @@ public class PaymentSchemeController implements Serializable {
                 + " and upper(c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -378,7 +378,7 @@ public class PaymentSchemeController implements Serializable {
         hm.put("mem", membershipScheme);
         hm.put("pay", paymentScheme);
 
-        allowedPaymentMethods = getAllowedPaymentMethodFacade().findBySQL(temSql, hm);
+        allowedPaymentMethods = getAllowedPaymentMethodFacade().findByJpql(temSql, hm);
     }
 
     public List<AllowedPaymentMethod> getAllowedPaymentMethods() {

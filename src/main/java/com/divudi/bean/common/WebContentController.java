@@ -201,7 +201,7 @@ public class WebContentController implements Serializable {
                 + " and c.name = :q "
                 + " order by c.name";
         hm.put("q", word);
-        list = getFacade().findBySQL(sql, hm);
+        list = getFacade().findByJpql(sql, hm);
         if (list == null) {
             list = new ArrayList<>();
         }
@@ -217,7 +217,7 @@ public class WebContentController implements Serializable {
                 + " and c.name like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findBySQL(sql, hm);
+        list = getFacade().findByJpql(sql, hm);
 
         if (list == null) {
             list = new ArrayList<>();

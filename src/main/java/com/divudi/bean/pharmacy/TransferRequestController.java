@@ -144,7 +144,7 @@ public class TransferRequestController implements Serializable {
         String jpql = "select s from Stock s where s.department=:dept";
         Map m = new HashMap();
         m.put("dept", getBill().getToDepartment());
-        List<Stock> allAvailableStocks = stockFacade.findBySQL(jpql, m);
+        List<Stock> allAvailableStocks = stockFacade.findByJpql(jpql, m);
         for (Stock s : allAvailableStocks) {
             currentBillItem = null;
             getCurrentBillItem().setItem(s.getItemBatch().getItem());

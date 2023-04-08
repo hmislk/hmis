@@ -274,7 +274,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.PharmacyGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() > 0) {
@@ -290,7 +290,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("class", CancelledBill.class);
         temMap.put("billType", BillType.PharmacyGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        bills = getBillFacade().findBySQL(sql, temMap);
+        bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() < 0) {
@@ -314,7 +314,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("fd", cal.getTime());
         temMap.put("td", new Date());
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             String str = "";
@@ -346,7 +346,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Service.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setSessionNumberType(null);
@@ -372,7 +372,7 @@ public class PharmacyItemExcelManager implements Serializable {
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
 
-        List<Bill> bills = billFacade.findBySQL(sql, hm);
+        List<Bill> bills = billFacade.findByJpql(sql, hm);
 
         for (Bill b : bills) {
             inwardBeanController.updateFinalFill(b.getPatientEncounter());
@@ -387,7 +387,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " and p.paymentMethod=:pm ";
         HashMap hm = new HashMap();
         hm.put("pm", PaymentMethod.Credit);
-        List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm);
+        List<PatientEncounter> list = patientEncounterFacade.findByJpql(sql, hm);
 
         for (PatientEncounter pe : list) {
             if (pe.getFinalBill() == null) {
@@ -407,7 +407,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Investigation.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
@@ -455,7 +455,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " and b.billType=:btp ";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.PharmacyBhtPre);
-        List<Bill> list = billFacade.findBySQL(sql, hm);
+        List<Bill> list = billFacade.findByJpql(sql, hm);
 
         for (Bill b : list) {
             sql = "select sum(b.marginValue),"
@@ -492,7 +492,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " and b.inwardChargeType=:inw ";
         temMap.put("tp", Service.class);
         temMap.put("inw", InwardChargeType.Investigations);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.MedicalServices);
@@ -512,7 +512,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("tp1", Service.class);
         temMap.put("tp2", TimedItem.class);
         temMap.put("tp3", InwardService.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.MedicalServices);
@@ -548,7 +548,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("inw9", InwardChargeType.ProfessionalCharge);
         temMap.put("inw10", InwardChargeType.MedicalCare);
 
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.MedicalServices);
             getItemFacade().edit(i);
@@ -561,7 +561,7 @@ public class PharmacyItemExcelManager implements Serializable {
 //
 //        sql = "select b from Bill b where b.paymentMethod is null";
 //
-//        List<Bill> list = getBillFacade().findBySQL(sql, temMap);
+//        List<Bill> list = getBillFacade().findByJpql(sql, temMap);
 //        System.err.println("Size  " + list.size());
 //        //  int ind = 1;
 //        for (Bill i : list) {
@@ -583,7 +583,7 @@ public class PharmacyItemExcelManager implements Serializable {
 //        temMap.put("class", BilledBill.class);
 //        temMap.put("billType", BillType.PharmacyPurchaseBill);
 //        //temMap.put("dep", getSessionController().getDepartment());
-//        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+//        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 //
 //        for (Bill b : bills) {
 //            System.err.println("Billed "+b.getPaymentScheme());
@@ -601,7 +601,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.PharmacyGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
         int index = 1;
         for (Bill b : bills) {
             if (b.getReferenceBill().getBillType() == BillType.PharmacyOrder) {
@@ -703,7 +703,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
         m.put("bt", BillType.StoreGrnBill);
 
-        bills = getBillFacade().findBySQL(sql, m);
+        bills = getBillFacade().findByJpql(sql, m);
         for (Bill b : bills) {
             //System.out.println("1. b.getGrnNetTotal() = " + b.getGrnNetTotal());
             //System.out.println("1. b.getNetTotal() = " + b.getNetTotal());
@@ -742,7 +742,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + "  and s.deptId is null ";
         HashMap hm = new HashMap();
         hm.put("btp", btpList);
-        List<Bill> list = billFacade.findBySQL(sql, hm);
+        List<Bill> list = billFacade.findByJpql(sql, hm);
         if (list == null) {
             return;
         }
@@ -891,7 +891,7 @@ public class PharmacyItemExcelManager implements Serializable {
         temMap.put("billType", BillType.PharmacyTransferIssue);
         temMap.put("billType2", BillType.PharmacyTransferReceive);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             temMap.clear();
@@ -919,7 +919,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " where b.retired=false "
                 + " and b.bill.billType=:bt ";
 
-        List<BillItem> list = billItemFacade.findBySQL(sql, m);
+        List<BillItem> list = billItemFacade.findByJpql(sql, m);
         if (list == null) {
             return;
         }
@@ -938,7 +938,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " where b.retired=false "
                 + " and b.billType=:bt ";
 
-        List<Bill> listB = billFacade.findBySQL(sql, m);
+        List<Bill> listB = billFacade.findByJpql(sql, m);
         if (listB == null) {
             return;
         }
@@ -961,7 +961,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " where b.retired=false "
                 + " and b.bill.billType=:bt ";
 
-        List<BillItem> list = billItemFacade.findBySQL(sql, m);
+        List<BillItem> list = billItemFacade.findByJpql(sql, m);
         if (list == null) {
             return;
         }
@@ -1004,7 +1004,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " where b.retired=false "
                 + " and b.billType=:bt ";
 
-        List<Bill> listB = billFacade.findBySQL(sql, m);
+        List<Bill> listB = billFacade.findByJpql(sql, m);
         if (listB == null) {
             return;
         }
@@ -1042,7 +1042,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " where b.retired=false "
                 + " and b.bill.billType=:bt ";
 
-        List<BillItem> list = billItemFacade.findBySQL(sql, m);
+        List<BillItem> list = billItemFacade.findByJpql(sql, m);
         if (list == null) {
             return;
         }
@@ -1087,7 +1087,7 @@ public class PharmacyItemExcelManager implements Serializable {
 //                + " where b.retired=false "
 //                + " and b.billType=:bt ";
 //
-//        List<Bill> listB = billFacade.findBySQL(sql, m);
+//        List<Bill> listB = billFacade.findByJpql(sql, m);
 //        if (listB == null) {
 //            return;
 //        }
@@ -1153,7 +1153,7 @@ public class PharmacyItemExcelManager implements Serializable {
 
         temMap.put("billType", BillType.PharmacyTransferIssue);
         temMap.put("billType2", BillType.PharmacyTransferReceive);
-        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap);
+        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findByJpql(sql, temMap);
 
         for (PharmaceuticalBillItem b : list) {
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());

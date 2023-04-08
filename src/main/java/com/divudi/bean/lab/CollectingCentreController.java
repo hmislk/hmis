@@ -66,7 +66,7 @@ public class CollectingCentreController implements Serializable {
             selectedItems=institutionController.completeInstitution(selectText, InstitutionType.CollectingCentre);
         }
         
-//        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false "
+//        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false "
 //                + "and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre  "
 //                + "and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;

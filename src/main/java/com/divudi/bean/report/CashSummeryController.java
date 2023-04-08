@@ -348,7 +348,7 @@ public class CashSummeryController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ins", getSessionController().getInstitution());
 
-        return getDepartmentFacade().findBySQL(sql, hm);
+        return getDepartmentFacade().findByJpql(sql, hm);
     }
 
     private double pharmacyTotal;
@@ -936,7 +936,7 @@ public class CashSummeryController implements Serializable {
 //        temMap.put("pm2", PaymentMethod.Card);
 //        temMap.put("pm3", PaymentMethod.Cheque);
 //        temMap.put("bTp", BilledBill.class);
-//        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        for (BillItem b : temps) {
 //            billed++;
@@ -953,7 +953,7 @@ public class CashSummeryController implements Serializable {
 //        temMap.put("pm2", PaymentMethod.Card);
 //        temMap.put("pm3", PaymentMethod.Cheque);
 //        temMap.put("bTp", CancelledBill.class);
-//        temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        for (BillItem b : temps) {
 //            cancelled++;
@@ -969,7 +969,7 @@ public class CashSummeryController implements Serializable {
 //        temMap.put("pm2", PaymentMethod.Card);
 //        temMap.put("pm3", PaymentMethod.Cheque);
 //        temMap.put("bTp", RefundBill.class);
-//        temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        for (BillItem b : temps) {
 //            refunded++;
@@ -1197,7 +1197,7 @@ public class CashSummeryController implements Serializable {
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
         temMap.put("itm", getService());
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 

@@ -281,7 +281,7 @@ public class PharmacyBean {
         m.put("s", d);
         m.put("item", item);
         sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item=:item order by i.itemBatch.dateOfExpire ";
-        items = getStockFacade().findBySQL(sql, m);
+        items = getStockFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -294,7 +294,7 @@ public class PharmacyBean {
         m.put("s", d);
         m.put("item", item);
         sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item=:item order by i.itemBatch.dateOfExpire ";
-        items = getStockFacade().findBySQL(sql, m);
+        items = getStockFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -579,7 +579,7 @@ public class PharmacyBean {
         m.put("d", department);
         sql = "select s from Stock s where s.itemBatch.item=:i "
                 + " and s.department=:d order by s.itemBatch.dateOfExpire asc";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<ItemBatchQty> dl = new ArrayList<>();
         double toAddQty = qty;
         //System.err.println("QTY 1 : " + toAddQty);
@@ -613,7 +613,7 @@ public class PharmacyBean {
         m.put("q", 1.0);
         sql = "select s from Stock s where s.itemBatch.item=:i "
                 + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
@@ -906,7 +906,7 @@ public class PharmacyBean {
 //
 //        String sql;
 //        sql = "select s from Stock s where s.itemBatch.item.id = " + item.getId() + " and s.staff.id = " + staff.getId() + " order by s.itemBatch.dateOfExpire desc";
-//        List<Stock> stocks = getStockFacade().findBySQL(sql);
+//        List<Stock> stocks = getStockFacade().findByJpql(sql);
 //        List<ItemBatchQty> dl = new ArrayList<>();
 //        double toAddQty = qty;
 //        for (Stock s : stocks) {

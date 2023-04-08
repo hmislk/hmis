@@ -65,7 +65,7 @@ public class VtmController implements Serializable {
                 + " order by vtm.name";
         Map m = new HashMap();
         m.put("ret", false);
-        items = getFacade().findBySQL(jpql, m);
+        items = getFacade().findByJpql(jpql, m);
         return "/emr/reports/vtms?faces-redirect=true";
     }
     

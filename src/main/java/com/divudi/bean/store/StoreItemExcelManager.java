@@ -217,7 +217,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() > 0) {
@@ -233,7 +233,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", CancelledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        bills = getBillFacade().findBySQL(sql, temMap);
+        bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() < 0) {
@@ -257,7 +257,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("fd", cal.getTime());
         temMap.put("td", new Date());
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             String str = "";
@@ -289,7 +289,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Service.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setSessionNumberType(null);
@@ -303,7 +303,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Investigation.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
@@ -317,7 +317,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Bill b where b.paymentMethod is null";
 
-        List<Bill> list = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> list = getBillFacade().findByJpql(sql, temMap);
         //  int ind = 1;
         for (Bill i : list) {
             //   System.err.println("index " + ind++);
@@ -339,7 +339,7 @@ public class StoreItemExcelManager implements Serializable {
 //        temMap.put("class", BilledBill.class);
 //        temMap.put("billType", BillType.PharmacyPurchaseBill);
 //        //temMap.put("dep", getSessionController().getDepartment());
-//        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+//        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 //
 //        for (Bill b : bills) {
 //            System.err.println("Billed "+b.getPaymentScheme());
@@ -872,7 +872,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
         int index = 1;
         for (Bill b : bills) {
             if (b.getReferenceBill().getBillType() == BillType.StoreOrder) {
@@ -1026,7 +1026,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("billType", BillType.StoreTransferIssue);
         temMap.put("billType2", BillType.StoreTransferReceive);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             temMap.clear();
@@ -1082,7 +1082,7 @@ public class StoreItemExcelManager implements Serializable {
 
         temMap.put("billType", BillType.StoreTransferIssue);
         temMap.put("billType2", BillType.StoreTransferReceive);
-        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap);
+        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findByJpql(sql, temMap);
 
         for (PharmaceuticalBillItem b : list) {
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
