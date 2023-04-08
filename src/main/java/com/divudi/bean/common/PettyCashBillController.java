@@ -204,7 +204,7 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
-        getCurrent().setComments(comment);
+//        getCurrent().setComments(comment);
 
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());

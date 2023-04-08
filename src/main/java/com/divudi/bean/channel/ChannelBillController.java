@@ -236,6 +236,7 @@ public class ChannelBillController implements Serializable {
 //        //// // System.out.println("getBillSession().getPaidBillSession().getBill() = " + getBillSession().getPaidBillSession().getBill());
 //        System.err.println("*** Channel Credit Bill Settled ***");
 //        editBillSession(b, bi);
+        settlePaymentMethod = PaymentMethod.Cash;
         UtilityController.addSuccessMessage("Channel Booking Added");
 
     }
@@ -1308,6 +1309,7 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSession("");
         comment = "";
         commentR = "";
+        settlePaymentMethod = PaymentMethod.Cash;
     }
 
     public void prepareForNewBill() {
@@ -1343,7 +1345,7 @@ public class ChannelBillController implements Serializable {
         bookingController.setSelectTextSession("");
         comment = "";
         commentR = "";
-
+        settlePaymentMethod = PaymentMethod.Cash;
     }
 
     public void clearForNewSearch() {
@@ -1371,7 +1373,6 @@ public class ChannelBillController implements Serializable {
 //        }
 
 //        removeAgencyNullBill(getbookingController().getSelectedServiceSession());
-
         if (getbookingController().getSelectedServiceSession().isDeactivated()) {
             errorText = "******** Doctor Leave day Can't Channel ********";
             UtilityController.addErrorMessage("Doctor Leave day Can't Channel.");
@@ -1609,7 +1610,6 @@ public class ChannelBillController implements Serializable {
 //        bookingController.fillBillSessions();
 //        bookingController.generateSessionsOnlyIdNew();
         //********************retier bill,billitem,billsession***********************************************
-        
 
         settleSucessFully = true;
         sessionController.setBill(printingBill);
