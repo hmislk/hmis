@@ -85,7 +85,7 @@ public class AmpController implements Serializable {
                 + " order by amp.name";
         Map m = new HashMap();
         m.put("ret", false);
-        items = getFacade().findBySQL(jpql, m);
+        items = getFacade().findByJpql(jpql, m);
         return "/emr/reports/amps?faces-redirect=true";
     }
 
@@ -243,7 +243,7 @@ public class AmpController implements Serializable {
                 + " or c.departmentType=:dep) "
                 + " order by c.name";
 
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
     }
@@ -261,7 +261,7 @@ public class AmpController implements Serializable {
                 + " or c.departmentType=:dep) "
                 + " order by c.name";
 
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Item Reports/Item List(/faces/pharmacy/list_amps.xhtml)");
     }
@@ -277,7 +277,7 @@ public class AmpController implements Serializable {
                 + " or c.departmentType!=:dep2 )"
                 + " order by c.name ";
 
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
     }
 
     public List<Amp> deleteOrNotItem(boolean b, DepartmentType dt) {
@@ -291,7 +291,7 @@ public class AmpController implements Serializable {
             sql += " and c.retired=true ";
         }
         m.put("dt", dt);
-        return getFacade().findBySQL(sql, m);
+        return getFacade().findByJpql(sql, m);
     }
 
     public List<Amp> deleteOrNotStoreItem(boolean b, DepartmentType dt) {
@@ -304,7 +304,7 @@ public class AmpController implements Serializable {
             sql += " and c.retired=true ";
         }
         m.put("dt", dt);
-        return getFacade().findBySQL(sql, m);
+        return getFacade().findByJpql(sql, m);
     }
 
     public void pharmacyDeleteItem() {

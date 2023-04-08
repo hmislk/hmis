@@ -81,7 +81,7 @@ public class StockController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
         String jpsql = "Select i from Item i where i.departmentType=:dt and i.retired=false ";
-        List<Item> items = getItemFacade().findBySQL(jpsql, m);
+        List<Item> items = getItemFacade().findByJpql(jpsql, m);
         for (Item i : items) {
             if (storeBean.getStockQty(i) < 0.0 || storeBean.getStockQty(i) == 0.0) {
                 i.setRetired(true);

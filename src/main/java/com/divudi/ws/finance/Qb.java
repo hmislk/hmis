@@ -3857,7 +3857,7 @@ public class Qb {
                 + " where bs.bill.id=:id ";
 
         m.put("id", billId);
-        billObjects = billSessionFacade.findBySQL(sql, m);
+        billObjects = billSessionFacade.findByJpql(sql, m);
 
         Map map = new HashMap();
         if (!billObjects.isEmpty()) {
@@ -3989,7 +3989,7 @@ public class Qb {
         Map m = new HashMap();
         m.put("b", b);
         m.put("ret", false);
-        return billFeeFacade.findBySQL(j, m);
+        return billFeeFacade.findByJpql(j, m);
     }
 
     private Long findLastInvoiceId(Date bd, Institution ins) {
@@ -4020,7 +4020,7 @@ public class Qb {
         Map m = new HashMap();
         m.put("b", b);
         m.put("ret", false);
-        return billItemFacade.findBySQL(j, m);
+        return billItemFacade.findByJpql(j, m);
     }
 
     private List<BillFee> findBillItemsForEncounter(PatientEncounter b) {
@@ -4034,7 +4034,7 @@ public class Qb {
         Map m = new HashMap();
         m.put("b", b);
         m.put("ret", false);
-        return billFeeFacade.findBySQL(j, m);
+        return billFeeFacade.findByJpql(j, m);
     }
 
 }

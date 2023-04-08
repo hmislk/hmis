@@ -39,7 +39,7 @@ public class EmrController implements Serializable {
     }
 
     public String navigateToClinicalReportsIndex() {
-        return "/emr/reports_index.xhtml?faces-redirect=true";
+        return "/emr/reports/index.xhtml?faces-redirect=true";
     }
 
     public String navigateToClinicalFavouriteIndex() {

@@ -1983,7 +1983,7 @@ public class BillSearch implements Serializable {
                 + "  WHERE b.retired=false "
                 + " and b.bill=:b";
         hm.put("b", getBillSearch());
-        billItems = getBillItemFacede().findBySQL(sql, hm);
+        billItems = getBillItemFacede().findByJpql(sql, hm);
 
         for (BillItem bi : billItems) {
             sql = "SELECT bi FROM BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getId();
@@ -2004,7 +2004,7 @@ public class BillSearch implements Serializable {
         sql = "SELECT b FROM BillItem b WHERE "
                 + " b.bill=:b";
         hm.put("b", getBillSearch());
-        billItems = getBillItemFacede().findBySQL(sql, hm);
+        billItems = getBillItemFacede().findByJpql(sql, hm);
 
     }
 
@@ -2409,7 +2409,7 @@ public class BillSearch implements Serializable {
 //            sql = "Select b from Bill b where "
 //                    + " b.billedBill.id=:bid";
 //            m.put("bid", getBill().getId());
-//            bills = getBillFacade().findBySQL(sql, m);
+//            bills = getBillFacade().findByJpql(sql, m);
 //            for (Bill b : bills) {
 //                createCollectingCenterfees(b);
 //            }

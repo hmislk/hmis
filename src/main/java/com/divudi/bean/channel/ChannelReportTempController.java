@@ -728,7 +728,7 @@ public class ChannelReportTempController implements Serializable {
 //        m.put("sp", sp);
 //        m.put("s", s);
 //
-//        List<Bill> bs = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        List<Bill> bs = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //
 //        Double[] d = new Double[3];
 //        d[0] = 0.0;
@@ -2649,7 +2649,7 @@ public class ChannelReportTempController implements Serializable {
                 sql+= " and c.inactive!=true ";   
             }
         }
-        agencies = getInstitutionFacade().findBySQL(sql, m);
+        agencies = getInstitutionFacade().findByJpql(sql, m);
         getChannelTotal().setNetTotal(0);
         for (Institution a : agencies) {
             getChannelTotal().setNetTotal(channelTotal.getNetTotal() + a.getBallance());
@@ -2669,7 +2669,7 @@ public class ChannelReportTempController implements Serializable {
 
         m.put("typ", InstitutionType.CollectingCentre);
 
-        agencies = getInstitutionFacade().findBySQL(sql, m);
+        agencies = getInstitutionFacade().findByJpql(sql, m);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Book issuing/Collecting center booki issuing/Collecting center current balance(/faces/reportLab/report_collecting_center_balance.xhtml)");
     }
@@ -2711,7 +2711,7 @@ public class ChannelReportTempController implements Serializable {
 
         m.put("class", ServiceSession.class);
 
-        list = getStaffFacade().findBySQL(sql, m);
+        list = getStaffFacade().findByJpql(sql, m);
 
         return list;
     }
@@ -2731,7 +2731,7 @@ public class ChannelReportTempController implements Serializable {
         m.put("s", s);
         m.put("class", ServiceSession.class);
 
-        list = getServiceSessionFacade().findBySQL(sql, m);
+        list = getServiceSessionFacade().findByJpql(sql, m);
 
         return list;
     }

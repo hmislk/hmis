@@ -80,7 +80,7 @@ public class FavouriteController implements Serializable {
 
         m.put("item", item);
         m.put("wu", sessionController.getLoggedUser());
-        items = favouriteItemFacade.findBySQL(j, m);
+        items = favouriteItemFacade.findByJpql(j, m);
     }
 
     public void prepareAddingFavouriteItem(){

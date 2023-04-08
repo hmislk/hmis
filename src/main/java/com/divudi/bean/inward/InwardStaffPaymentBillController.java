@@ -651,7 +651,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 //        temMap.put("fromDate", getFromDate());
 //        temMap.put("btp", BillType.InwardBill);
 //
-//        bhtBillItemList = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        bhtBillItemList = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        return bhtBillItemList;
 //
@@ -710,7 +710,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 //        temMap.put("fromDate", getFromDate());
 //        temMap.put("btp", BillType.InwardBill);
 //
-//        bhtBillItemList = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        bhtBillItemList = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        return bhtBillItemList;
 //
@@ -876,7 +876,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         } else {
             if (getReferringDoctorSpeciality() != null) {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
-                suggestions = getStaffFacade().findBySQL(sql, m);
+                suggestions = getStaffFacade().findByJpql(sql, m);
             } else {
                 sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
                 suggestions = getStaffFacade().findBySQL(sql);

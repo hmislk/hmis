@@ -2182,7 +2182,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", bi);
 
-        return getEncounterComponentFacade().findBySQL(sql, hm);
+        return getEncounterComponentFacade().findByJpql(sql, hm);
 
     }
 
@@ -2193,7 +2193,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", bi);
 
-        return getEncounterComponentFacade().findBySQL(sql, hm);
+        return getEncounterComponentFacade().findByJpql(sql, hm);
 
     }
 
@@ -2266,7 +2266,7 @@ public class BillBeanController implements Serializable {
                 + " and f.item=:itm";
         HashMap hm = new HashMap();
         hm.put("itm", billItem.getItem());
-        return getItemFeeFacade().findBySQL(sql, hm);
+        return getItemFeeFacade().findByJpql(sql, hm);
     }
 
     public ItemFee getItemFee(BillItem billItem, FeeType feeType) {
@@ -3593,7 +3593,7 @@ public class BillBeanController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("b", b);
-        return getBillFeeFacade().findBySQL(sql, hm);
+        return getBillFeeFacade().findByJpql(sql, hm);
     }
 
     public List<BillFee> getBillFee(BillItem b) {
@@ -3625,7 +3625,7 @@ public class BillBeanController implements Serializable {
                 + " and b.billItem=:b ";
         HashMap hs = new HashMap();
         hs.put("b", billItem);
-        List<EncounterComponent> list = getEncounterComponentFacade().findBySQL(sql, hs);
+        List<EncounterComponent> list = getEncounterComponentFacade().findByJpql(sql, hs);
 
         return list;
     }

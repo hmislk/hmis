@@ -141,7 +141,7 @@ public class StoreController1 implements Serializable {
         HashMap hm = new HashMap();
         String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
         hm.put("ins", ins);
-        d = getDepartmentFacade().findBySQL(sql, hm);
+        d = getDepartmentFacade().findByJpql(sql, hm);
 
         return d;
     }
@@ -254,7 +254,7 @@ public class StoreController1 implements Serializable {
         hm.put("type", InstitutionType.Company);
         sql = "select c from Institution c where c.retired=false and c.institutionType=:type order by c.name";
 
-        return getInstitutionFacade().findBySQL(sql, hm);
+        return getInstitutionFacade().findByJpql(sql, hm);
     }
 
     private List<InstitutionStock> institutionStocks;
@@ -1007,7 +1007,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase
         Map m = new HashMap();
         sql = "select p from Ampp p where p.retired=false and p.amp=:a order by p.dblValue";
         m.put("a", pharmacyItem);
-        return getAmppFacade().findBySQL(sql, m);
+        return getAmppFacade().findByJpql(sql, m);
     }
 
     public void setPharmacyItem(Item pharmacyItem) {

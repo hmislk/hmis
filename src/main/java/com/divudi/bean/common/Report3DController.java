@@ -309,8 +309,8 @@ public class Report3DController implements Serializable {
         m.put("dep", DepartmentType.Pharmacy);
         m.put("cat", category);
 
-//        items = getItemFacade().findBySQL(sql, m, 10);
-        items = getItemFacade().findBySQL(sql, m);
+//        items = getItemFacade().findByJpql(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m);
 
         return items;
     }
@@ -339,7 +339,7 @@ public class Report3DController implements Serializable {
         m.put("dep", d);
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
-        items = getItemFacade().findBySQL(sql, m);
+        items = getItemFacade().findByJpql(sql, m);
 
         return items;
     }

@@ -918,7 +918,7 @@ public class CreditCompanyDueController implements Serializable {
 //            //////// // System.out.println(sql);
 //            //      h.put("btp", BillType.InwardPaymentBill);
 //            h.put("q", "%" + query.toUpperCase() + "%");
-//            //suggestions = admissionFacade().findBySQL(sql, h);
+//            //suggestions = admissionFacade().findByJpql(sql, h);
 //        }
 //        //return suggestions;
 //    }

@@ -1,5 +1,6 @@
 package com.divudi.bean.emr;
 
+import com.divudi.bean.clinical.DiagnosisController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.InstitutionController;
@@ -7,18 +8,16 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.AtmController;
-import com.divudi.bean.pharmacy.ImporterController;
-import com.divudi.bean.pharmacy.ManufacturerController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
@@ -32,7 +31,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Named;
-import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Instant;
@@ -45,9 +43,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.inject.Inject;
-import javax.resource.spi.work.DistributableWork;
 import org.primefaces.model.file.UploadedFile;
 
 @Named
@@ -72,6 +71,8 @@ public class DataUploadBean {
     InstitutionController institutionController;
     @Inject
     VmpController vmpController;
+    @Inject
+    DiagnosisController diagnosisController;
 
     @EJB
     PatientFacade patientFacade;
@@ -91,6 +92,9 @@ public class DataUploadBean {
         this.file = file;
     }
 
+    public String navigateToUploadDiagnoses(){
+        return "/emr/admin/upload_diagnoses";
+    }
     
     public String toUploadPatients() {
         return "/emr/admin/upload_patients";
@@ -169,6 +173,17 @@ public class DataUploadBean {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+    
+    public void uploadDiagnoses() {
+        if (file != null) {
+            try {
+                InputStream inputStream = file.getInputStream();
+                readDiagnosesFromExcel(inputStream);
+            } catch (IOException ex) {
+                Logger.getLogger(DataUploadBean.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -392,6 +407,60 @@ public class DataUploadBean {
         return atms;
     }
 
+    private List<ClinicalEntity> readDiagnosesFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<ClinicalEntity> dxx = new ArrayList<>();
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+            ClinicalEntity dx = new ClinicalEntity();
+           
+
+            /**
+             * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
+             * strength unit issue unit pack unit StrengthUnitsPerIssueUnit
+             * IssueUnitsPerPack	ROL	ROQ	MinROQ	manu_Institution
+             * importer_Institution	supplier_Institution	SalePrice	PurchasePrice
+             * LastSalePrice	LastPurchasePrice	MinIQty	MaxIQty	DivQty
+             */
+            Long id;
+            String dxName = null;
+            
+
+            Cell idCell = row.getCell(0);
+            if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
+                id = (long) idCell.getNumericCellValue();
+                dx.setItemId(id);
+            }
+
+            Cell nameCell = row.getCell(1);
+            if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
+                dxName = nameCell.getStringCellValue();
+                if (dxName == null || dxName.trim().equals("")) {
+                    continue;
+                }
+                dx = diagnosisController.findAndSaveDiagnosis(dxName);
+                if (dx != null) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+            dxx.add(dx);
+        }
+
+        return dxx;
+    }
+    
     private List<Amp> readAmpsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);

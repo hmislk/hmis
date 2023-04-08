@@ -229,7 +229,7 @@ public class BillController implements Serializable {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findBySQL(j, m);
+        return billFacade.findByJpql(j, m);
     }
 
     public List<Bill> getSelectedBills() {
@@ -479,7 +479,7 @@ public class BillController implements Serializable {
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findBySQL(sql, hash);
+            a = getFacade().findByJpql(sql, hash);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -516,7 +516,7 @@ public class BillController implements Serializable {
 //            //// // System.out.println("sql = " + sql);
 //            //// // System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
 //            //// // System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
-            a = getFacade().findBySQL(sql, hash);
+            a = getFacade().findByJpql(sql, hash);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -629,7 +629,7 @@ public class BillController implements Serializable {
         hash.put("val", 0.1);
         hash.put("ins", institution);
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
+        List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -657,7 +657,7 @@ public class BillController implements Serializable {
         hash.put("val", 0.1);
         hash.put("ins", institution);
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
+        List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -689,7 +689,7 @@ public class BillController implements Serializable {
         hash.put("ins", getSessionController().getInstitution());
 //        hash.put("dep", getSessionController().getDepartment());
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
+        List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -1410,7 +1410,7 @@ public class BillController implements Serializable {
                 + "b.retired = false and "
                 + "upper(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
         }
@@ -2530,7 +2530,7 @@ public class BillController implements Serializable {
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 

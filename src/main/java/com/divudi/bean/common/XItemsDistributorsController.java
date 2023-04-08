@@ -163,7 +163,7 @@ public class XItemsDistributorsController implements Serializable {
 //    public List<Institution> getItems() {
 //        List<Institution> tmp;
 //        String sql = "SELECT i.institution FROM ItemsDistributors i where i.retired=false  order by i.institution.name";
-//        tmp = getInstitutionFacade().findBySQL(sql);
+//        tmp = getInstitutionFacade().findByJpql(sql);
 //
 //        if (tmp == null) {
 //            tmp = new ArrayList<Institution>();

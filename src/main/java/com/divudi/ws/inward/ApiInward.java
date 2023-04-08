@@ -332,7 +332,7 @@ public class ApiInward {
                 + " order by pe.bhtNo";
         m.put("class", Admission.class);
         m.put("bht", bhtNo);
-        List<PatientEncounter> temps = getPatientEncounterFacade().findBySQL(sql, m);
+        List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m);
 //        //// // System.out.println("1.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;
@@ -346,7 +346,7 @@ public class ApiInward {
                 + " order by pe.bhtNo ";
 
         m.put("d", 0.1);
-        temps = getPatientEncounterFacade().findBySQL(sql, m);
+        temps = getPatientEncounterFacade().findByJpql(sql, m);
 //        //// // System.out.println("2.temps.size() = " + temps.size());
         if (temps.size() > 0) {
             return true;

@@ -58,7 +58,7 @@ public class StaffLeaveEntitleController implements Serializable {
     double leaved;
 
     public List<StaffLeaveEntitle> getSelectedItems() {
-//        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findByJpql("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -299,7 +299,7 @@ public class StaffLeaveEntitleController implements Serializable {
 
         sql += "  order by c.staff.code";
 
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
     }
 
     public void resetDate() {
@@ -327,7 +327,7 @@ public class StaffLeaveEntitleController implements Serializable {
                 + " where c.retired=false "
                 + " order by c.staff.codeInterger ";
 
-        selectedAllItems = getFacade().findBySQL(sql, hm);
+        selectedAllItems = getFacade().findByJpql(sql, hm);
     }
 
     public List<StaffLeaveEntitle> getItems() {

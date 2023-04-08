@@ -294,7 +294,7 @@ public class PatientEncounterController implements Serializable {
         completeStrings = getFacade().findString(sql, tmpMap);
     }
 
-    public void listAllEncounters() {
+    public String listAllEncounters() {
         Date startTime = new Date();
 
         String jpql;
@@ -320,6 +320,7 @@ public class PatientEncounterController implements Serializable {
         ////// // System.out.println("3. items = " + items);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
+        return "/clinical/clinical_reports_all_opd_visits?faces-redirect=true";
     }
 
     public void listPeriodEncounters() {
@@ -342,7 +343,7 @@ public class PatientEncounterController implements Serializable {
         }
         //   ////// // System.out.println("m = " + m);
         //   ////// // System.out.println("sql = " + jpql);
-        items = getFacade().findBySQL(jpql, m);
+        items = getFacade().findByJpql(jpql, m);
 
     }
 
@@ -380,7 +381,7 @@ public class PatientEncounterController implements Serializable {
         m.put("pe", pe);
         String sql;
         sql = "Select e from PatientEncounter e where e.patient=:p and e!=:pe order by e.id desc";
-        return getFacade().findBySQL(sql, m);
+        return getFacade().findByJpql(sql, m);
     }
 
     public List<ClinicalFindingValue> fillPatientAllergies(Patient patient) {
@@ -427,7 +428,7 @@ public class PatientEncounterController implements Serializable {
                 + " and e.retired=:ret "
                 + " and e.clinicalFindingValueType in :ts "
                 + " order by e.orderNo";
-        return clinicalFindingValueFacade.findBySQL(sql, m);
+        return clinicalFindingValueFacade.findByJpql(sql, m);
     }
 
     public void fillCurrentPatientLists(Patient patient) {
@@ -528,7 +529,7 @@ public class PatientEncounterController implements Serializable {
                 + " where e.patientEncounter=:pe "
                 + " and e.type=:t "
                 + " order by e.id desc";
-        return itemUsageFacade.findBySQL(sql, m);
+        return itemUsageFacade.findByJpql(sql, m);
     }
 
     public List<ItemUsage> fillCurrentEncounterDiagnosis() {
@@ -541,7 +542,7 @@ public class PatientEncounterController implements Serializable {
                 + " where e.patientEncounter=:pe "
                 + " and e.type=:t "
                 + " order by e.id desc";
-        return itemUsageFacade.findBySQL(sql, m);
+        return itemUsageFacade.findByJpql(sql, m);
     }
 
     public List<Bill> fillPatientBills(Patient patient, List<BillType> bts, Integer count) {
@@ -561,7 +562,7 @@ public class PatientEncounterController implements Serializable {
         if (count != null) {
             return getBillFacade().findBySQL(sql, m, count);
         } else {
-            return getBillFacade().findBySQL(sql, m);
+            return getBillFacade().findByJpql(sql, m);
         }
     }
 
@@ -591,7 +592,7 @@ public class PatientEncounterController implements Serializable {
         m.put("bts", billTypes);
         String sql;
         sql = "Select b from Bill b where b.patient=:p and b.billType in :bts order by b.id desc";
-        return getBillFacade().findBySQL(sql, m);
+        return getBillFacade().findByJpql(sql, m);
     }
 
     public List<PatientInvestigation> fillPatientInvestigations(Patient patient) {
@@ -604,7 +605,7 @@ public class PatientEncounterController implements Serializable {
                 + " where e.patient=:p "
                 + " and e.retired=:ret "
                 + "order by e.id desc";
-        return getPiFacade().findBySQL(sql, m);
+        return getPiFacade().findByJpql(sql, m);
     }
 
     public List<PatientEncounter> fillPatientEncounters(Patient patient, Integer count) {
@@ -615,7 +616,7 @@ public class PatientEncounterController implements Serializable {
         if (count != null) {
             return getFacade().findBySQL(sql, m, count);
         } else {
-            return getFacade().findBySQL(sql, m);
+            return getFacade().findByJpql(sql, m);
         }
     }
 
@@ -654,7 +655,7 @@ public class PatientEncounterController implements Serializable {
     }
 
 //    public List<PatientEncounter> getSelectedItems() {
-//        selectedItems = getFacade().findBySQL("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.data.PatientEncounterType.Agency and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findByJpql("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.data.PatientEncounterType.Agency and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 //        return selectedItems;
 //    }
     public void prepareAdd() {
@@ -1117,8 +1118,6 @@ public class PatientEncounterController implements Serializable {
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
-    
-    
 
 }
 

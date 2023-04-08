@@ -142,7 +142,7 @@ public class StoreDealorController implements Serializable {
                     + " order by i.name";
             HashMap hm = new HashMap();
             hm.put("tp", InstitutionType.StoreDealor);
-            items = getEjbFacade().findBySQL(sql, hm);
+            items = getEjbFacade().findByJpql(sql, hm);
         }
         return items;
     }

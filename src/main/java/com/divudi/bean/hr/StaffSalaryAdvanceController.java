@@ -1288,7 +1288,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 //        hm.put("fd", getSalaryCycle().getSalaryFromDate());
 //        hm.put("td", getSalaryCycle().getSalaryToDate());
 //
-//        items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.DATE);
+//        items = getStaffSalaryFacade().findByJpql(sql, hm, TemporalType.DATE);
 //    }
     public StaffSalary fetchStaffSalaryTable(Staff stf, Date fromDate, Date toDate) {
         String sql = "Select s From StaffSalary s"

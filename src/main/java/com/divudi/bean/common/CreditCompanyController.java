@@ -155,7 +155,7 @@ public class CreditCompanyController implements Serializable {
             m.put("insT", institutionType);
         }
         
-        institutions = getEjbFacade().findBySQL(sql,m);
+        institutions = getEjbFacade().findByJpql(sql,m);
 
     }
 

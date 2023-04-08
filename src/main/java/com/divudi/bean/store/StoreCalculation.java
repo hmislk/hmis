@@ -549,7 +549,7 @@ public class StoreCalculation {
 
         hm.put("am", amp);
 
-        return getItemFacade().findBySQL(sql, hm);
+        return getItemFacade().findByJpql(sql, hm);
 
     }
 

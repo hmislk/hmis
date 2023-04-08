@@ -72,7 +72,7 @@ public class TimedItemController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrent().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, hm);
+            d = getDepartmentFacade().findByJpql(sql, hm);
         }
 
         return d;
@@ -134,7 +134,7 @@ public class TimedItemController implements Serializable {
                         + " order by c.name";
                 Map m = new HashMap();
                 m.put("dt", departmentType);
-                suggestions = getFacade().findBySQL(sql,m);
+                suggestions = getFacade().findByJpql(sql,m);
             }
         }
         return suggestions;
@@ -192,7 +192,7 @@ public class TimedItemController implements Serializable {
                 + " order by c.name";
         Map m = new HashMap();
         m.put("dt", DepartmentType.Theatre);
-        selectedItems = getFacade().findBySQL(sql, m);
+        selectedItems = getFacade().findByJpql(sql, m);
         ////System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }
@@ -204,7 +204,7 @@ public class TimedItemController implements Serializable {
                 + " order by c.name";
         Map m = new HashMap();
         m.put("dt", DepartmentType.Inward);
-        selectedItems = getFacade().findBySQL(sql, m);
+        selectedItems = getFacade().findByJpql(sql, m);
         ////System.out.println("selectedItems = " + selectedItems);
         return selectedItems;
     }

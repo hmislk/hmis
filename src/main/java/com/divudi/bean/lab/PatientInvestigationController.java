@@ -552,7 +552,7 @@ public class PatientInvestigationController implements Serializable {
         String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
         Map m = new HashMap();
         m.put("ps", ps);
-        return patientSampleComponantFacade.findBySQL(j, m);
+        return patientSampleComponantFacade.findByJpql(j, m);
     }
 
     private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
@@ -597,7 +597,7 @@ public class PatientInvestigationController implements Serializable {
         jpql = "select pi from PatientInvestigation pi where pi.billItem.bill=:b";
         Map m = new HashMap();
         m.put("b", bill);
-        List<PatientInvestigation> pis = getFacade().findBySQL(jpql, m);
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
         ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
             ////System.out.println("pi = " + pi);
@@ -615,7 +615,7 @@ public class PatientInvestigationController implements Serializable {
         jpql = "select pi from PatientInvestigation pi where pi.billItem=:b";
         Map m = new HashMap();
         m.put("b", billItem);
-        List<PatientInvestigation> pis = getFacade().findBySQL(jpql, m);
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
         ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
             ////System.out.println("pi = " + pi);
@@ -866,7 +866,7 @@ public class PatientInvestigationController implements Serializable {
         Map m = new HashMap();
         sql = "select i from ReportItem i where i.item=:ix order by i.cssTop";
         m.put("ix", getCurrent().getInvestigation());
-        currentReportItems = getReportItemFacade().findBySQL(sql, m);
+        currentReportItems = getReportItemFacade().findByJpql(sql, m);
         return currentReportItems;
     }
 
@@ -1251,7 +1251,7 @@ public class PatientInvestigationController implements Serializable {
             j = "Select pi from PatientInvestigation pi "
                     + " where pi.cancelled=:can "
                     + " and pi.billItem.bill=:bill";
-            List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
+            List<PatientInvestigation> pis = getFacade().findByJpql(j, m);
             for (PatientInvestigation ptix : pis) {
                 Investigation ix = ptix.getInvestigation();
 
@@ -1351,7 +1351,7 @@ public class PatientInvestigationController implements Serializable {
         m = new HashMap();
         m.put("pts", ps);
 
-        ts = getItemFacade().findBySQL(j, m);
+        ts = getItemFacade().findByJpql(j, m);
         return ts;
     }
 
@@ -1365,7 +1365,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", ix);
-        return getItemFacade().findBySQL(j, m);
+        return getItemFacade().findByJpql(j, m);
     }
 
     private PatientInvestigation patientInvestigationOfBillComponant(List<PatientInvestigation> bcs, BillComponent bc) {
@@ -1419,7 +1419,7 @@ public class PatientInvestigationController implements Serializable {
         sql = "select bi from BillItem bi "
                 + " where bi.referanceBillItem.id=:bi ";
         m.put("bi", pi.getBillItem().getId());
-        List<BillItem> bis = billItemFacade.findBySQL(sql, m);
+        List<BillItem> bis = billItemFacade.findByJpql(sql, m);
         if (bis.isEmpty()) {
             pi.getBillItem().setTransRefund(false);
         } else {

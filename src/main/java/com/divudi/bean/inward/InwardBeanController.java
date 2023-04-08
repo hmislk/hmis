@@ -135,7 +135,7 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardBill);
         hm.put("pe", patientEncounter);
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
     }
 
     public List<BillItem> fetchEagerBillItems(PatientEncounter patientEncounter) {
@@ -157,7 +157,7 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("btp", billType);
         hm.put("class", bill.getClass());
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
     }
 
     public List<BillItem> fetchBillItems(PatientEncounter patientEncounter, InwardChargeType inwardChargeType) {
@@ -240,7 +240,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
         hm.put("pe", patientEncounter);
 
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
 
     }
 
@@ -279,7 +279,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", billType);
         hm.put("pe", patientEncounter);
 
-        return billFacade.findBySQL(sql, hm);
+        return billFacade.findByJpql(sql, hm);
 
     }
 
@@ -326,7 +326,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("cls", TimedItem.class);
         hm.put("inw", inwardChargeType);
-        return getPatientItemFacade().findBySQL(sql, hm);
+        return getPatientItemFacade().findByJpql(sql, hm);
 
     }
 
@@ -337,7 +337,7 @@ public class InwardBeanController implements Serializable {
                 + " and pr.patientEncounter=:pe "
                 + " order by pr.createdAt";
         hm.put("pe", patientEncounter);
-        return getPatientRoomFacade().findBySQL(sql, hm);
+        return getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -428,7 +428,7 @@ public class InwardBeanController implements Serializable {
         //  hm.put("billedClass", BilledBill.class);
         hm.put("st", FeeType.Staff);
 
-        return getBillFeeFacade().findBySQL(sql, hm);
+        return getBillFeeFacade().findByJpql(sql, hm);
 
     }
 
@@ -443,7 +443,7 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
 
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
 
     }
 
@@ -519,7 +519,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", BillType.InwardProfessional);
         hm.put("pe", patientEncounter);
 
-        List<BillFee> list = getBillFeeFacade().findBySQL(sql, hm);
+        List<BillFee> list = getBillFeeFacade().findByJpql(sql, hm);
 
         for (BillFee bf : list) {
             bf.setFeeAdjusted(bf.getFeeValue());
@@ -544,7 +544,7 @@ public class InwardBeanController implements Serializable {
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
 
-        List<Bill> bills = getBillFacade().findBySQL(sql, hm);
+        List<Bill> bills = getBillFacade().findByJpql(sql, hm);
 
         hm.clear();
         sql = "SELECT  b FROM Bill b "
@@ -559,7 +559,7 @@ public class InwardBeanController implements Serializable {
         hm.put("billedClass", PreBill.class);
         hm.put("pe", patientEncounter);
 
-        List<Bill> bills2 = getBillFacade().findBySQL(sql, hm);
+        List<Bill> bills2 = getBillFacade().findByJpql(sql, hm);
 
         list.addAll(bills);
         list.addAll(bills2);
@@ -581,7 +581,7 @@ public class InwardBeanController implements Serializable {
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
 
-        List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list = getBillItemFacade().findByJpql(sql, hm);
 
         hm.clear();
         sql = "SELECT  b FROM BillItem b "
@@ -594,7 +594,7 @@ public class InwardBeanController implements Serializable {
         hm.put("class", RefundBill.class);
         hm.put("pe", patientEncounter);
 
-        List<BillItem> list2 = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list2 = getBillItemFacade().findByJpql(sql, hm);
 
         grantList.addAll(list);
         grantList.addAll(list2);
@@ -616,7 +616,7 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", billType);
 
-        List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list = getBillItemFacade().findByJpql(sql, hm);
         return list;
 
     }
@@ -634,7 +634,7 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", billType);
 
-        List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
+        List<BillFee> list = billFeeFacade.findByJpql(sql, hm);
         return list;
 
     }
@@ -652,7 +652,7 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", billType);
 
-        List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list = getBillItemFacade().findByJpql(sql, hm);
         return list;
 
     }
@@ -670,7 +670,7 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", billType);
 
-        List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
+        List<BillFee> list = billFeeFacade.findByJpql(sql, hm);
         return list;
 
     }
@@ -688,7 +688,7 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", billType);
 
-        List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list = getBillItemFacade().findByJpql(sql, hm);
         return list;
 
     }
@@ -706,7 +706,7 @@ public class InwardBeanController implements Serializable {
         hm = new HashMap();
         hm.put("btp", billType);
 
-        List<BillFee> list = billFeeFacade.findBySQL(sql, hm);
+        List<BillFee> list = billFeeFacade.findByJpql(sql, hm);
         return list;
 
     }
@@ -726,7 +726,7 @@ public class InwardBeanController implements Serializable {
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
 
-        List<BillItem> list = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list = getBillItemFacade().findByJpql(sql, hm);
 
         hm.clear();
         sql = "SELECT  b FROM BillItem b "
@@ -741,7 +741,7 @@ public class InwardBeanController implements Serializable {
         hm.put("billedClass", PreBill.class);
         hm.put("pe", patientEncounter);
 
-        List<BillItem> list2 = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> list2 = getBillItemFacade().findByJpql(sql, hm);
 
         grantList.addAll(list);
         grantList.addAll(list2);
@@ -761,7 +761,7 @@ public class InwardBeanController implements Serializable {
         hm.put("btp", BillType.StoreBhtPre);
         hm.put("class", PreBill.class);
         hm.put("pe", patientEncounter);
-        return getBillFacade().findBySQL(sql, hm);
+        return getBillFacade().findByJpql(sql, hm);
 
     }
 
@@ -1148,7 +1148,7 @@ public class InwardBeanController implements Serializable {
                 + " and i.retired=false "
                 + " and i.patientEncounter=:pe";
         hm.put("pe", patientEncounter);
-        return getPatientItemFacade().findBySQL(sql, hm);
+        return getPatientItemFacade().findByJpql(sql, hm);
     }
 
     public List<Bill> fetchPaymentBill(PatientEncounter patientEncounter) {
@@ -1401,7 +1401,7 @@ public class InwardBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
 
-        return getBillFacade().findBySQL(sql, hm);
+        return getBillFacade().findByJpql(sql, hm);
     }
 
     public void updateFinalFill(PatientEncounter patientEncounter) {
@@ -1610,7 +1610,7 @@ public class InwardBeanController implements Serializable {
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
                 + " and pr.patientEncounter=:pe order by pr.createdAt";
         hm.put("pe", patientEncounter);
-        List<PatientRoom> tmp = getPatientRoomFacade().findBySQL(sql, hm);
+        List<PatientRoom> tmp = getPatientRoomFacade().findByJpql(sql, hm);
 
         if (tmp == null) {
             tmp = new ArrayList<>();

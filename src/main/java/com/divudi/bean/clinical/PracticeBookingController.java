@@ -209,7 +209,7 @@ public class PracticeBookingController implements Serializable {
         } else {
             sql = "select d from Doctor d where d.retired=false and d.speciality=:sp order by d.person.name";
             m.put("sp", speciality);
-            docs = getDoctorFacade().findBySQL(sql, m);
+            docs = getDoctorFacade().findByJpql(sql, m);
         }
         return docs;
     }

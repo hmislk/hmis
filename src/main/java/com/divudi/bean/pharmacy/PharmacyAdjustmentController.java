@@ -733,7 +733,7 @@ public class PharmacyAdjustmentController implements Serializable {
         Map m = new HashMap();
         m.put("dept", fromDepartment);
         sql = "select s from Stock s where s.department=:dept";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         int i = 0;
         for (Stock s : stocks) {
             BillItem fromBi = new BillItem();
@@ -1017,7 +1017,7 @@ public class PharmacyAdjustmentController implements Serializable {
                 + " and i.itemBatch.item=:i "
                 + " and i.stock>0 "
                 + " order by i.stock desc ";
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         total = 0.0;
         for (Stock s : stocks) {
             s.setCalculated(s.getStock());

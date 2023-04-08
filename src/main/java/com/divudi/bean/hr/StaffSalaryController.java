@@ -1377,7 +1377,7 @@ public class StaffSalaryController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("stf", stfCurrent);
         List<StaffShift> listReturn = new ArrayList<>();
-        List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm);
+        List<StaffShift> list = staffShiftFacade.findByJpql(sql, hm);
 
         if (list != null) {
             listReturn.addAll(list);
@@ -1390,7 +1390,7 @@ public class StaffSalaryController implements Serializable {
         hm = new HashMap();
         hm.put("stf", stfCurrent);
 
-        list = staffShiftFacade.findBySQL(sql, hm);
+        list = staffShiftFacade.findByJpql(sql, hm);
 
         if (list != null) {
             listReturn.addAll(list);

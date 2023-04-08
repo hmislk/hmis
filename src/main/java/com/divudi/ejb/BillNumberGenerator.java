@@ -352,7 +352,7 @@ public class BillNumberGenerator {
         HashMap h = new HashMap();
         h.put("btp1", BillType.ClinicalOpdBooking);
         Long l = getBillFacade().countBySql(sql, h);
-        List<Bill> b = getBillFacade().findBySQL(sql, h);
+        List<Bill> b = getBillFacade().findByJpql(sql, h);
         if (l != null) {
             l = l + 1;
             return "GPV" + l;

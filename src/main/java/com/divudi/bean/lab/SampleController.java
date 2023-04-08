@@ -140,7 +140,7 @@ public class SampleController implements Serializable {
                     + " order by s.name";
             Map m = new HashMap();
             m.put("ret", false);
-            items = getFacade().findBySQL(j, m);
+            items = getFacade().findByJpql(j, m);
         }
         return items;
     }
