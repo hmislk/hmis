@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -55,7 +56,7 @@ import javax.persistence.TemporalType;
  * @author safrin
  */
 @Named
-@RequestScoped
+@SessionScoped
 public class mdInwardReportController implements Serializable {
 
     private Date fromDate;

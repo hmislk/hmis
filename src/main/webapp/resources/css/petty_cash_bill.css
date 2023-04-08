@@ -1,0 +1,49 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : Apr 2, 2023, 10:17:24 AM
+    Author     : buddhika
+*/
+
+/* Set page size and margins */
+@media print {
+  @page {
+    size: A5;
+    margin: 10mm;
+  }
+}
+
+/* Set font size and family */
+body {
+  font-size: 12pt;
+  font-family: Arial, sans-serif;
+}
+
+/* Center align the bill heading */
+h1 {
+  text-align: center;
+}
+
+/* Add padding and border to the bill subheadings */
+h2 {
+  padding: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Add padding to the bill details */
+dl {
+  padding: 5px;
+}
+
+/* Add margin to the bill footer */
+footer {
+  margin-top: 50px;
+}
+
+/* Add text alignment to the bill footer */
+footer p {
+  text-align: right;
+}
+
