@@ -28,18 +28,21 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <label for="fromDate">From date</label>
-                                            <p:calendar id="fromDate" value="#{patientEncounterController.fromDate}" showOn="button" />
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-8">
+                                            <p:calendar id="fromDate" value="#{patientEncounterController.fromDate}" />
+                                        </div>
+                                        <div class="col-md-4">
                                             <label for="toDate">To date</label>
-                                            <p:calendar id="toDate" value="#{patientEncounterController.toDate}" showOn="button" />
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-8">
+                                            <p:calendar id="toDate" value="#{patientEncounterController.toDate}" />
+                                        </div>
+                                        <div class="col-md-4"></div>
+                                        <div class="col-md-8">
                                             <p:commandButton ajax="false" value="Process" action="#{patientEncounterController.listInstitutionEncounters}" />
-                                        </div>
-                                        <div class="col-md-3">
                                             <p:commandButton value="Download Excel" ajax="false">
                                                 <p:dataExporter type="xls" target="tblVisits" fileName="visits" />
                                             </p:commandButton>
@@ -47,12 +50,6 @@
                                     </div>
 
                                     <p:dataTable id="tblVisits" value="#{patientEncounterController.items}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                        <p:column sortBy="#{visit.id}" filterBy="#{visit.id}">
-                                            <f:facet name="header">
-                                                <h:outputText value="VisitID" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.id}" />
-                                        </p:column>
                                         <p:column sortBy="#{visit.patient.person.nameWithTitle}" filterBy="#{visit.patient.person.nameWithTitle}">
                                             <f:facet name="header">
                                                 <h:outputText value="Patient Name" />
@@ -61,9 +58,11 @@
                                         </p:column>
                                         <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
                                             <f:facet name="header">
-                                                <h:outputText value="CompletedTime" />
+                                                <h:outputText value="Date / Time" />
                                             </f:facet>
-                                            <h:outputText value="#{visit.encounterDate}" />
+                                            <h:outputText value="#{visit.encounterDate}" >
+                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                            </h:outputText>
                                         </p:column>
                                         <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
                                             <f:facet name="header">
@@ -79,26 +78,22 @@
                                         </p:column>
                                         <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
                                             <f:facet name="header">
-                                                <h:outputText value="SBP" />
+                                                <h:outputText value="BP" />
                                             </f:facet>
                                             <h:outputText value="#{visit.sbp}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.dbp}" filterBy="#{visit.dbp}">
-
-                                            <f:facet name="header">
-                                                <h:outputText value="DBP" />
-                                            </f:facet>
+                                            <h:outputText value="/" />
                                             <h:outputText value="#{visit.dbp}" />
+                                            <h:outputText value=" mmHg" />
                                         </p:column>
                                         <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
                                             <f:facet name="header">
-                                                <h:outputText value="Bmi" />
+                                                <h:outputText value="BMI" />
                                             </f:facet>
                                             <h:outputText value="#{visit.bmi}" />
                                         </p:column>
                                         <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
                                             <f:facet name="header">
-                                                <h:outputText value="pr" />
+                                                <h:outputText value="PR" />
                                             </f:facet>
                                             <h:outputText value="#{visit.pr}" />
                                         </p:column>
