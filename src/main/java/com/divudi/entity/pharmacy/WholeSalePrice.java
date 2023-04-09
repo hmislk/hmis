@@ -13,8 +13,6 @@ import javax.persistence.Inheritance;
  * @author Buddhika
  */
 @Entity
-@Inheritance
 public class WholeSalePrice extends Price implements Serializable {
-    private static final long serialVersionUID = 1L;
 
 }

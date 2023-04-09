@@ -15,7 +15,6 @@ import javax.persistence.InheritanceType;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class AssetCategory extends StoreItemCategory implements Serializable {
     private static final long serialVersionUID = 1L;
     

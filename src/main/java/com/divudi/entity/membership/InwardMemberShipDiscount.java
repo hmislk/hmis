@@ -16,8 +16,6 @@ import javax.persistence.InheritanceType;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class InwardMemberShipDiscount extends PriceMatrix implements Serializable {
-    private static final long serialVersionUID = 1L;
     
 }

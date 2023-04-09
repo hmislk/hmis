@@ -43,7 +43,6 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
-import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -53,7 +52,8 @@ import javax.persistence.Transient;
  *
  * @author buddhika
  */
-@MappedSuperclass
+@Entity
+@Inheritance
 public class Item implements Serializable, Comparable<Item> {
 
 //    @JsonIgnore

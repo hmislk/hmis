@@ -14,10 +14,7 @@ import javax.persistence.InheritanceType;
  * @author Buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class WorksheetItem extends ReportItem implements Serializable {
-
-    
     
     
 }

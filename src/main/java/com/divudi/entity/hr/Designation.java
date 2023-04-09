@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @XmlRootElement
 public class Designation extends Category implements Serializable {
    

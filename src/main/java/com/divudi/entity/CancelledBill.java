@@ -15,7 +15,6 @@ import javax.persistence.InheritanceType;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class CancelledBill extends Bill implements Serializable {
 
     public CancelledBill() {

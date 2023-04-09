@@ -11,7 +11,6 @@ import javax.persistence.InheritanceType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @XmlRootElement
 public class TransferForm extends HrForm {
 }

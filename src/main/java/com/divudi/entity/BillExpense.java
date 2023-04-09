@@ -15,7 +15,6 @@ import javax.persistence.Inheritance;
  * @author pdhs
  */
 @Entity
-@Inheritance
 public class BillExpense extends Item implements Serializable {
     
 }

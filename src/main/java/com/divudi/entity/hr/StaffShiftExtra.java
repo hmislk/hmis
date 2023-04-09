@@ -15,7 +15,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @XmlRootElement
 public class StaffShiftExtra extends StaffShift implements Serializable {
   

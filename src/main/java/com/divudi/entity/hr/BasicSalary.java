@@ -16,7 +16,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author Buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @XmlRootElement
 public class BasicSalary extends PaysheetComponent implements Serializable {
 

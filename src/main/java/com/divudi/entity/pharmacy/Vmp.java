@@ -18,7 +18,6 @@ import javax.persistence.ManyToOne;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Vmp extends PharmaceuticalItem implements Serializable {
 
     @ManyToOne

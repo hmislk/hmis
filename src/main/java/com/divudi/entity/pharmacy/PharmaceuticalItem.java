@@ -7,15 +7,13 @@ package com.divudi.entity.pharmacy;
 import com.divudi.entity.Item;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.MappedSuperclass;
 
 
 /**
  *
  * @author buddhika
  */
-@MappedSuperclass
+@Entity
 public class PharmaceuticalItem extends Item implements Serializable {
    
    

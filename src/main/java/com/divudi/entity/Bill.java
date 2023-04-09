@@ -26,6 +26,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -41,6 +42,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Inheritance
 @NamedQueries({
     @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b")
     ,

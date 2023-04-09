@@ -15,7 +15,6 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class AmendmentForm extends HrForm {
 
     @Temporal(TemporalType.TIMESTAMP)

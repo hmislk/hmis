@@ -11,7 +11,6 @@ import javax.persistence.InheritanceType;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class PreBill extends Bill implements Serializable {
 
     public PreBill() {

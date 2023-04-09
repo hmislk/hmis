@@ -15,8 +15,6 @@ import javax.persistence.InheritanceType;
  * @author www.divudi.com
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class ReportFormat extends Category implements Serializable {
-    private static final long serialVersionUID = 1L;
     
 }

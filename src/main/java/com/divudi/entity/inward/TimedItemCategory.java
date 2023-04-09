@@ -15,8 +15,6 @@ import javax.persistence.InheritanceType;
  * @author Buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class TimedItemCategory extends Category implements Serializable {
-    private static final long serialVersionUID = 1L;
    
 }

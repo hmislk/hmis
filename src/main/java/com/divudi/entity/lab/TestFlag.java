@@ -20,10 +20,8 @@ import javax.persistence.ManyToOne;
  * @author Buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class TestFlag extends InvestigationItemValue implements Serializable {
 
-    private static final long serialVersionUID = 1L;
     @Enumerated(EnumType.STRING)
     Sex sex;
     @ManyToOne

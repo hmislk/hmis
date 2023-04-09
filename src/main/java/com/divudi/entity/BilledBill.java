@@ -20,7 +20,6 @@ import javax.persistence.OrderBy;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class BilledBill extends Bill implements Serializable {
 //     static final long serialVersionUID = 1L;
     
