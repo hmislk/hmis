@@ -6,15 +6,12 @@ package com.divudi.entity.pharmacy;
 
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
-import com.divudi.entity.WebUser;
 import java.io.Serializable;
-import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
 
 /**
  * Represents an active ingredient within a Virtual Medicinal Product (VMP) in

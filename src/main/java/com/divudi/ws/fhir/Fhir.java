@@ -5,7 +5,6 @@
  */
 package com.divudi.ws.fhir;
 
-import com.divudi.ws.finance.*;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.CommonController;

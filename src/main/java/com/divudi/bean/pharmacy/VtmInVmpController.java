@@ -13,7 +13,6 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.VtmsVmpsFacade;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;

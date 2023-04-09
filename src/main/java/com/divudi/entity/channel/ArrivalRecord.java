@@ -10,8 +10,6 @@ import com.divudi.entity.hr.FingerPrintRecord;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -20,7 +18,6 @@ import javax.persistence.Temporal;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class ArrivalRecord extends FingerPrintRecord implements Serializable {
 
     @ManyToOne

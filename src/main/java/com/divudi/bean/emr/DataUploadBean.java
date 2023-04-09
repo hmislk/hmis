@@ -21,9 +21,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
 import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
@@ -191,10 +189,7 @@ public class DataUploadBean {
         List<Amp> amps;
         if (file != null) {
             try ( InputStream inputStream = file.getInputStream()) {
-                amps = readAmpsFromExcel(inputStream);
-                for (Amp v : amps) {
-                    ampController.saveAmp(v);
-                }
+                readAmpsFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }

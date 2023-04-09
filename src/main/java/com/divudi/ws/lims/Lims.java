@@ -5,8 +5,6 @@
  */
 package com.divudi.ws.lims;
 
-import ca.uhn.fhir.model.api.ResourceMetadataKeyEnum;
-import ca.uhn.fhir.model.primitive.StringDt;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Bill;

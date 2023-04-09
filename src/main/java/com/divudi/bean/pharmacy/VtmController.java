@@ -58,17 +58,33 @@ public class VtmController implements Serializable {
     boolean reportedAs;
     List<Vtm> vtmList;
 
-    public String navigateToListAllVtms(){
-        String jpql = "Select vtm "
-                + " from Vtm vtm "
-                + " where vtm.retired=:ret "
-                + " order by vtm.name";
-        Map m = new HashMap();
-        m.put("ret", false);
-        items = getFacade().findByJpql(jpql, m);
-        return "/emr/reports/vtms?faces-redirect=true";
-    }
+public String navigateToListAllVtms() {
+    System.out.println("navigateToListAllVtms");
+    String jpql = "Select vtm "
+            + " from Vtm vtm "
+            + " where vtm.retired=:ret "
+            + " order by vtm.name";
+    System.out.println("JPQL: " + jpql);
+
+    Map<String, Object> m = new HashMap<>();
+    m.put("ret", false);
+    System.out.println("Parameters: " + m);
+
+    items = getFacade().findByJpql(jpql, m);
     
+    if (items == null) {
+        System.out.println("Items list is null");
+    } else {
+        System.out.println("Items list size: " + items.size());
+        for (Vtm item : items) {
+            System.out.println("Vtm: " + item);
+        }
+    }
+
+    return "/emr/reports/vtms?faces-redirect=true";
+}
+
+
     public List<Vtm> completeVtm(String query) {
 
         String sql;
@@ -85,19 +101,26 @@ public class VtmController implements Serializable {
     public Vtm findAndSaveVtmByNameAndCode(Vtm vtm) {
         String jpql;
         Map m = new HashMap();
-        Vtm nvtm;
+        Vtm nvtm=null;
         if (vtm == null) {
             return null;
         } else {
-            m.put("ret", false);
+            m.put("retired", false);
             m.put("name", vtm.getName());
             m.put("code", vtm.getCode());
             jpql = "select c "
                     + " from Vtm c "
-                    + " where c.retired=:ret "
+                    + " where c.retired=:retired "
                     + " and c.name=:name"
                     + " and c.code=:code";
-            nvtm = getFacade().findFirstByJpql(jpql, m);
+            List<Vtm> vtms = getFacade().findByJpql(jpql, m);
+            if (vtms != null) {
+                if (!vtms.isEmpty()) {
+                    nvtm = vtms.get(0);
+                }
+            } else {
+                nvtm = null;
+            }
         }
         if (nvtm != null) {
             return nvtm;
@@ -167,7 +190,7 @@ public class VtmController implements Serializable {
 
     public List<Vtm> getSelectedItems() {
 
-        if (selectText==null || selectText.trim().equals("")) {
+        if (selectText == null || selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Vtm c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vtm c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
@@ -312,7 +335,6 @@ public class VtmController implements Serializable {
     }
 
     public List<Vtm> getItems() {
-        items = getFacade().findAll("name", true);
         return items;
     }
 

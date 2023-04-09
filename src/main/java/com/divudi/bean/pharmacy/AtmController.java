@@ -251,7 +251,7 @@ public class AtmController implements Serializable {
     }
 
     public List<Atm> getItems() {
-        items = getFacade().findAll("name", true);
+//        items = getFacade().findAll("name", true);
         return items;
     }
 

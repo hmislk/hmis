@@ -25,6 +25,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -36,6 +37,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Inheritance
 public class PatientEncounter implements Serializable {
 //    @OneToMany(mappedBy = "patientEncounter",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
 //     List<PatientRoom> patientRooms;

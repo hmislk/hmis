@@ -40,6 +40,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -52,6 +53,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Inheritance
 public class Item implements Serializable, Comparable<Item> {
 
 //    @JsonIgnore
@@ -120,7 +122,7 @@ public class Item implements Serializable, Comparable<Item> {
     @JsonIgnore
     Date createdAt;
     //Retairing properties 
-    @JsonIgnore
+//    @JsonIgnore
     boolean retired;
     @ManyToOne
     @JsonIgnore
