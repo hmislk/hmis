@@ -7,8 +7,6 @@ package com.divudi.entity.membership;
 import com.divudi.entity.PriceMatrix;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 
 
 /**

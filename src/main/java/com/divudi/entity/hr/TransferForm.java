@@ -6,8 +6,6 @@
 package com.divudi.entity.hr;
 
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @Entity

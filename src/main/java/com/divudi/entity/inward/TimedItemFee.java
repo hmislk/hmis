@@ -7,8 +7,6 @@ package com.divudi.entity.inward;
 import com.divudi.entity.Fee;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 
 
 /**

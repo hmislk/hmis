@@ -7,8 +7,6 @@ package com.divudi.entity.lab;
 import com.divudi.entity.Department;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 
 
 /**

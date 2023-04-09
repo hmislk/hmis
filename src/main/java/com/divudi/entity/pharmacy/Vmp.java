@@ -9,8 +9,6 @@ import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 
 /**

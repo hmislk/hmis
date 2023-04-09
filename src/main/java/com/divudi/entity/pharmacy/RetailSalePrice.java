@@ -6,7 +6,6 @@ package com.divudi.entity.pharmacy;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
 
 /**
  *

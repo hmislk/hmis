@@ -7,8 +7,6 @@ package com.divudi.entity.hr;
 import com.divudi.data.hr.PaysheetComponentType;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**

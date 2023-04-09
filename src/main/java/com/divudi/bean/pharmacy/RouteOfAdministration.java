@@ -3,9 +3,6 @@ package com.divudi.bean.pharmacy;
 import com.divudi.entity.Category;
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 
 /**
  * Represents the route of administration for a drug in the NHS UK dm+d (Dictionary of Medicines and Devices).
