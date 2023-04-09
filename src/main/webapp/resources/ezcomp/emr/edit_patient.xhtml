@@ -16,6 +16,67 @@
 
         <h:panelGroup rendered="#{cc.attrs.patient ne null}" >
 
+            <p:panelGrid columns="2" class="w-100 table table-striped">
+
+                <p:outputLabel  value="Title:"/>
+                <p:selectOneMenu class="form-control" id="cmbTitle" value="#{cc.attrs.patient.person.title}">
+                    <f:selectItem itemLabel="Select Title"/>
+                    <f:selectItems value="#{billController.title}" var="i"
+                                   itemLabel="#{i.label}" itemValue="#{i}"/>
+                </p:selectOneMenu>
+
+                <p:outputLabel value="Name:" />
+                <p:inputText value="#{cc.attrs.patient.person.nameWithTitle}" />
+
+                <p:outputLabel value="Age:" />
+                <p:inputText value="#{cc.attrs.patient.person.age}" />
+
+                <p:outputLabel value="Sex:" />
+                <p:inputText value="#{cc.attrs.patient.person.sex}" />
+
+                <p:outputLabel value="Number:" />
+                <p:inputText value="#{cc.attrs.patient.phn}" />
+
+                <p:outputLabel value="Date of Birth:" />
+                <p:inputText value="#{cc.attrs.patient.person.dob}">
+                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                </p:inputText>
+
+                <p:outputLabel value="Race:" />
+                <p:inputText value="#{cc.attrs.patient.person.race.name}" />
+
+                <p:outputLabel value="Religion:" />
+                <p:inputText value="#{cc.attrs.patient.person.religion.name}" />
+
+                <p:outputLabel value="Occupation:" />
+                <p:inputText value="#{cc.attrs.patient.person.occupation.name}" />
+
+                <p:outputLabel value="Civil Status:" />
+                <p:inputText value="#{cc.attrs.patient.person.civilStatus.name}" />
+
+                <p:outputLabel value="Phone:" />
+                <p:inputText value="#{cc.attrs.patient.person.phone}" />
+
+                <p:outputLabel value="Mobile:" />
+                <p:inputText value="#{cc.attrs.patient.person.mobile}" />
+
+                <p:outputLabel value="Email:" />
+                <p:inputText value="#{cc.attrs.patient.person.email}" />
+
+                <p:outputLabel value="ID:" />
+                <p:inputText value="#{cc.attrs.patient.person.nic}" />
+
+                <p:outputLabel value="Code:" />
+                <p:inputText value="#{cc.attrs.patient.code}" />
+
+                <p:outputLabel value="Address:" />
+                <p:inputText value="#{cc.attrs.patient.person.address}" />
+
+                <p:outputLabel value="Blood Group:" />
+                <p:inputText value="#{cc.attrs.patient.person.bloodGroup.name}" />
+            </p:panelGrid>
+
+
 
             <div class="container-fluid">
 
@@ -121,7 +182,7 @@
                                                  action="#{patientController.generateNewCode}" 
                                                  process="@this" update="txtMrn" >
                                 </p:commandButton>
-                                
+
                             </div>
                             <div class="col-md-3 mb-3">
                                 <h:outputLabel class="form-label" value="PHN No"/>

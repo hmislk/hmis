@@ -146,7 +146,7 @@ public class PatientEncounterController implements Serializable {
     Doctor doctor;
 
     public void listInstitutionEncounters() {
-        System.out.println("listInstitutionEncounters = " );
+        System.out.println("listInstitutionEncounters = ");
         String jpql = "select e "
                 + " from PatientEncounter e "
                 + " where e.retired=:ret "
@@ -312,9 +312,9 @@ public class PatientEncounterController implements Serializable {
         tmpMap.put("q", qry.toUpperCase() + "%");
         completeStrings = getFacade().findString(sql, tmpMap);
     }
-    
+
     public String navigateToListInstitutionEncounters() {
-        items=null;
+        items = null;
         return "/emr/reports/visits";
     }
 
@@ -475,13 +475,18 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void removePatientAllergy() {
+        System.out.println("removePatientAllergy");
+        System.out.println("getRemovingClinicalFindingValue() = " + getRemovingClinicalFindingValue());
         if (getRemovingClinicalFindingValue() == null) {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
         }
+        System.out.println("getPatientAllergies() = " + getPatientAllergies().size());
         getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getPatientAllergies().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
+        System.out.println("getPatientAllergies() = " + getPatientAllergies().size());
     }
 
     public void removePatientMedicine() {
@@ -490,6 +495,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getPatientMedicines().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
@@ -500,6 +506,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getPatientDiagnoses().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
@@ -523,7 +530,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         getPatientDiagnosis().setPatient(patient);
-        getPatientDiagnosis().setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+        getPatientDiagnosis().setClinicalFindingValueType(ClinicalFindingValueType.PatientDiagnosis);
         clinicalFindingValueFacade.create(getPatientDiagnosis());
         getPatientDiagnoses().add(getPatientDiagnosis());
         setPatientDiagnosis(null);
@@ -536,7 +543,7 @@ public class PatientEncounterController implements Serializable {
             return;
         }
         getPatientMedicine().setPatient(patient);
-        getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
+        getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
         clinicalFindingValueFacade.create(getPatientMedicine());
         getPatientMedicines().add(getPatientMedicine());
         setPatientMedicine(null);
