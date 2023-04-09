@@ -1,0 +1,23 @@
+/* Set the font size for Bootstrap controls */
+.form-control, .btn, .input-group-text {
+    font-size: 01rem !important;;
+}
+
+/* Set the font size for PrimeFaces controls */
+.ui-inputfield, .ui-button, .ui-widget {
+    font-size: 01rem !important;;
+}
+
+/* Set the font size for Bootstrap controls */
+.form-control, .btn, .input-group-text, .form-label {
+  font-size: 01rem !important;
+}
+
+/* Set the font size for PrimeFaces controls */
+body .ui-inputfield, body .ui-button, body .ui-widget {
+  font-size: 01rem !important;
+}
+
+body {
+  font-size: 01rem !important;
+}
