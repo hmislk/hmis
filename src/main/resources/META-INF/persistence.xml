@@ -4,7 +4,7 @@
     <description>For Object DB</description>
     <provider>com.objectdb.jpa.Provider</provider>
     <properties>
-      <property name="javax.persistence.jdbc.url" value="objectdb://localhost/emr.odb"/>
+      <property name="javax.persistence.jdbc.url" value="objectdb://localhost:6136/home/buddhika/data/emr1.odb"/>
       <property name="javax.persistence.jdbc.user" value="admin"/>
       <property name="javax.persistence.jdbc.password" value="admin"/>
       <property name="javax.persistence.schema-generation.database.action" value="create"/>
