@@ -47,9 +47,6 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +60,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -7255,56 +7249,6 @@ public class SearchController implements Serializable {
             }
         }
 
-    }
-
-    public void importToExcel() {
-//        if (file == null) {
-//            UtilityController.addErrorMessage("Select File");
-//            return;
-//        }
-        telephoneNumbers = new ArrayList<>();
-        String number;
-        File inputWorkbook;
-        Workbook w;
-        Cell cell;
-        InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
-        try {
-            System.err.println("in 1");
-            UtilityController.addSuccessMessage(file.getFileName());
-            System.err.println("in 2");
-            in = file.getInputStream();
-            File f;
-            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
-            FileOutputStream out = new FileOutputStream(f);
-            int read = 0;
-            byte[] bytes = new byte[1024];
-            while ((read = in.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-            in.close();
-            out.flush();
-            out.close();
-
-            inputWorkbook = new File(f.getAbsolutePath());
-
-            UtilityController.addSuccessMessage("Excel File Opened");
-            w = Workbook.getWorkbook(inputWorkbook);
-            Sheet sheet = w.getSheet(0);
-
-            for (int i = 0; i < sheet.getRows(); i++) {
-                cell = sheet.getCell(1, i);
-                number = cell.getContents();
-                if (number.contains("077") || number.contains("076")
-                        || number.contains("070")
-                        || number.contains("071") || number.contains("072")
-                        || number.contains("075") || number.contains("078")) {
-                    telephoneNumbers.add(number);
-                }
-            }
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted.");
-        } catch (Exception e) {
-        }
     }
 
     public void sendSms() {

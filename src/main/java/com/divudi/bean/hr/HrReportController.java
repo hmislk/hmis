@@ -71,10 +71,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
@@ -248,88 +244,7 @@ public class HrReportController implements Serializable {
         this.file = file;
     }
 
-    public String importToExcel() throws IOException {
-
-        String zoneCode;
-        String employerNumber;
-        String epfNumber;
-        String empNo;
-        String nicNo;
-        String fullname;
-        String initials;
-        String surnames;
-        String name;
-        String address;
-        Sex sex;
-        Date dob;
-        Date doj;
-        String department;
-        String designation;
-        String acNo;
-
-        int zoneCodeCol = 0;
-        int employerNumberCol = 1;
-        int epfNumberCol;
-        int empNoCol;
-        int nicNoCol;
-        int fullnameCol;
-        int initialsCol;
-        int surnamesCol;
-        int nameCol;
-        int addressCol;
-        int sexCol;
-        int dobCol;
-        int dojCol;
-        int departmentCol;
-        int designationCol;
-        int acNoCol;
-
-        int startRow = 2;
-
-        File inputWorkbook;
-        Workbook w;
-        Cell cell;
-        InputStream in;
-        UtilityController.addSuccessMessage(file.getFileName());
-        try {
-            UtilityController.addSuccessMessage(file.getFileName());
-            in = file.getInputStream();
-            File f;
-            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
-            FileOutputStream out = new FileOutputStream(f);
-            int read = 0;
-            byte[] bytes = new byte[1024];
-            while ((read = in.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-            in.close();
-            out.flush();
-            out.close();
-
-            inputWorkbook = new File(f.getAbsolutePath());
-
-            UtilityController.addSuccessMessage("Excel File Opened");
-
-            w = Workbook.getWorkbook(inputWorkbook);
-            Sheet sheet = w.getSheet(0);
-
-            for (int i = startRow; i < sheet.getRows(); i++) {
-
-                Map m = new HashMap();
-
-                //Category
-                cell = sheet.getCell(employerNumberCol, i);
-                acNo = cell.getContents();
-
-            }
-
-            UtilityController.addSuccessMessage("Succesful. All the data in Excel File Impoted to the database");
-            return "";
-        } catch (IOException | BiffException ex) {
-            UtilityController.addErrorMessage(ex.getMessage());
-            return "";
-        }
-    }
+  
 
     public SessionController getSessionController() {
         return sessionController;

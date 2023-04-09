@@ -1200,22 +1200,24 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.defLocale = defLocale;
     }
 
-//    public String getPrimeTheme() {
-//        if (primeTheme == null || primeTheme.equals("")) {
-//            primeTheme = "hot-sneaks";
-//        }
-//        if (getLoggedUser() != null) {
-//            if (getLoggedUser().getPrimeTheme() != null) {
-//                if (!getLoggedUser().getPrimeTheme().equals("")) {
-//                    return getLoggedUser().getPrimeTheme();
-//                }
-//            }
-//        }
-//        return primeTheme;
-//    }
-//    public void setPrimeTheme(String primeTheme) {
-//        this.primeTheme = primeTheme;
-//    }
+    public String getPrimeTheme() {
+        if (primeTheme == null || primeTheme.equals("")) {
+            primeTheme = "nova-light";
+        }
+        if (getLoggedUser() != null) {
+            if (getLoggedUser().getPrimeTheme() != null) {
+                if (!getLoggedUser().getPrimeTheme().equals("")) {
+                    return getLoggedUser().getPrimeTheme();
+                }
+            }
+        }
+        return primeTheme;
+    }
+    
+    
+    public void setPrimeTheme(String primeTheme) {
+        this.primeTheme = primeTheme;
+    }
     /**
      *
      * @return
@@ -1542,13 +1544,9 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.websiteUserGoingToLog = websiteUserGoingToLog;
     }
 
-    public String getPrimeTheme() {
-        return primeTheme;
-    }
+ 
 
-    public void setPrimeTheme(String primeTheme) {
-        this.primeTheme = primeTheme;
-    }
+  
 
     public UserPreference getDepartmentPreference() {
         return departmentPreference;
