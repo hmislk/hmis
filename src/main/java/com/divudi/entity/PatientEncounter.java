@@ -4,6 +4,7 @@
  */
 package com.divudi.entity;
 
+import com.divudi.data.EncounterType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.SymanticType;
 import com.divudi.data.inward.PatientEncounterType;
@@ -48,7 +49,10 @@ public class PatientEncounter implements Serializable {
     //Main Properties   
     Long id;
     String bhtNo;
+    @Enumerated
+    private EncounterType encounterType;
     long bhtLong;
+    private Long encounterId;
     @ManyToOne
     Patient patient;
     @ManyToOne
@@ -103,7 +107,9 @@ public class PatientEncounter implements Serializable {
     List<ClinicalFindingValue> clinicalFindingValues;
     String name;
     @Temporal(javax.persistence.TemporalType.DATE)
-    Date dateTime;
+    Date encounterDate;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date encounterDateTime;
     @ManyToOne
     PatientEncounter parentEncounter;
     @ManyToOne
@@ -135,6 +141,12 @@ public class PatientEncounter implements Serializable {
     @ManyToOne
     Institution referredByInstitution;
     String referralId;
+
+    private Double visitWeight = null;
+    private Long sbp = null;
+    private Long dbp = null;
+    private Double bmi = null;
+    private Long pr = null;
 
     public double getTransPaidByCompany() {
         return transPaidByCompany;
@@ -245,6 +257,8 @@ public class PatientEncounter implements Serializable {
     List<ClinicalFindingValue> diagnosis;
     @ManyToOne
     Department department;
+    @ManyToOne
+    private Institution institution;
 
     @Transient
     List<ClinicalFindingValue> investigations;
@@ -617,12 +631,12 @@ public class PatientEncounter implements Serializable {
         this.name = name;
     }
 
-    public Date getDateTime() {
-        return dateTime;
+    public Date getEncounterDate() {
+        return encounterDate;
     }
 
-    public void setDateTime(Date dateTime) {
-        this.dateTime = dateTime;
+    public void setEncounterDate(Date encounterDate) {
+        this.encounterDate = encounterDate;
     }
 
     public List<EncounterComponent> getEncounterComponents() {
@@ -797,5 +811,82 @@ public class PatientEncounter implements Serializable {
     public void setTransDayCount(long transDayCount) {
         this.transDayCount = transDayCount;
     }
+
+    public EncounterType getEncounterType() {
+        if (encounterType == null) {
+            encounterType = EncounterType.Admission;
+        }
+        return encounterType;
+    }
+
+    public void setEncounterType(EncounterType encounterType) {
+        this.encounterType = encounterType;
+    }
+
+    public Long getEncounterId() {
+        return encounterId;
+    }
+
+    public void setEncounterId(Long encounterId) {
+        this.encounterId = encounterId;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Double getVisitWeight() {
+        return visitWeight;
+    }
+
+    public void setVisitWeight(Double visitWeight) {
+        this.visitWeight = visitWeight;
+    }
+
+    public Long getSbp() {
+        return sbp;
+    }
+
+    public void setSbp(Long sbp) {
+        this.sbp = sbp;
+    }
+
+    public Long getDbp() {
+        return dbp;
+    }
+
+    public void setDbp(Long dbp) {
+        this.dbp = dbp;
+    }
+
+    public Double getBmi() {
+        return bmi;
+    }
+
+    public void setBmi(Double bmi) {
+        this.bmi = bmi;
+    }
+
+    public Long getPr() {
+        return pr;
+    }
+
+    public void setPr(Long pr) {
+        this.pr = pr;
+    }
+
+    public Date getEncounterDateTime() {
+        return encounterDateTime;
+    }
+
+    public void setEncounterDateTime(Date encounterDateTime) {
+        this.encounterDateTime = encounterDateTime;
+    }
+    
+    
 
 }

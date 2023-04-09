@@ -1,23 +1,29 @@
 package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.DiagnosisController;
+import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.AmpController;
 import com.divudi.bean.pharmacy.AtmController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.bean.pharmacy.VtmController;
+import com.divudi.data.EncounterType;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.entity.Category;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
+import com.divudi.entity.Person;
 import com.divudi.entity.clinical.ClinicalEntity;
+import com.divudi.entity.inward.EncounterComponent;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.MeasurementUnit;
@@ -73,6 +79,10 @@ public class DataUploadBean {
     VmpController vmpController;
     @Inject
     DiagnosisController diagnosisController;
+    @Inject
+    PatientController patientController;
+    @Inject
+    PatientEncounterController patientEncounterController;
 
     @EJB
     PatientFacade patientFacade;
@@ -92,10 +102,14 @@ public class DataUploadBean {
         this.file = file;
     }
 
-    public String navigateToUploadDiagnoses(){
+    public String navigateToUploadDiagnoses() {
         return "/emr/admin/upload_diagnoses";
     }
-    
+
+    public String navigateToUploadVisits() {
+        return "/emr/admin/upload_visits";
+    }
+
     public String toUploadPatients() {
         return "/emr/admin/upload_patients";
     }
@@ -129,6 +143,16 @@ public class DataUploadBean {
                 }
                 // Persist patients to the database or perform other operations
                 // patientService.save(patients);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadVisits() {
+        if (file != null) {
+            try ( InputStream inputStream = file.getInputStream()) {
+                readVisitDataFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -176,7 +200,7 @@ public class DataUploadBean {
             }
         }
     }
-    
+
     public void uploadDiagnoses() {
         if (file != null) {
             try {
@@ -198,6 +222,118 @@ public class DataUploadBean {
                 e.printStackTrace();
             }
         }
+    }
+
+    private List<PatientEncounter> readVisitDataFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<PatientEncounter> visits = new ArrayList<>();
+
+        List<String> datePatterns = Arrays.asList("dd MMMM yyyy", "dd/MMM/yyyy hh:mm", "M/d/yy", "MM/dd/yyyy", "d/M/yy", "dd/MM,yyyy", "dd/MM/yyyy", "yyyy-MM-dd");
+
+        Long visitID = 0l;
+        Long patientID = 0l;
+        Date completedTime = null;
+        String Comments = "";
+        Double visitWeight = null;
+        Long sbp = null;
+        Long dbp = null;
+        Double bmi = null;
+        Long pr = null;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        // Use a DataFormatter to read cell values, as date cells are typically formatted as strings
+        DataFormatter dataFormatter = new DataFormatter();
+
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+//...
+            Cell visitIdCell = row.getCell(0);
+            if (visitIdCell != null && visitIdCell.getCellType() == CellType.NUMERIC) {
+                visitID = (long) Math.round(visitIdCell.getNumericCellValue());
+            }
+
+            Cell patientIdCell = row.getCell(1);
+            if (patientIdCell != null && patientIdCell.getCellType() == CellType.NUMERIC) {
+                patientID = (long) Math.round(patientIdCell.getNumericCellValue());
+            }
+
+            Cell completedTimeCell = row.getCell(2);
+            if (completedTimeCell != null) {
+                if (completedTimeCell.getCellType() == CellType.STRING) {
+                    String dateOfBirthStr = dataFormatter.formatCellValue(completedTimeCell);
+                    System.out.println("dateOfBirthStr = " + dateOfBirthStr);
+                    LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
+                    Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
+                    completedTime = Date.from(instant);
+                } else if (completedTimeCell.getCellType() == CellType.NUMERIC) {
+                    if (DateUtil.isCellDateFormatted(completedTimeCell)) {
+                        completedTime = completedTimeCell.getDateCellValue();
+                    } else {
+                    }
+                }
+            }
+
+            Cell commentsCell = row.getCell(3);
+            if (commentsCell != null && commentsCell.getCellType() == CellType.STRING) {
+                Comments = commentsCell.getStringCellValue();
+            }
+
+            Cell visitWeightCell = row.getCell(4);
+            if (visitWeightCell != null && visitWeightCell.getCellType() == CellType.NUMERIC) {
+                visitWeight = visitWeightCell.getNumericCellValue();
+            }
+
+            Cell sbpCell = row.getCell(5);
+            if (sbpCell != null && sbpCell.getCellType() == CellType.NUMERIC) {
+                sbp = (long) Math.round(sbpCell.getNumericCellValue());
+            }
+
+            Cell dbpCell = row.getCell(6);
+            if (dbpCell != null && dbpCell.getCellType() == CellType.NUMERIC) {
+                dbp = (long) Math.round(dbpCell.getNumericCellValue());
+            }
+
+            Cell bmiCell = row.getCell(7);
+            if (bmiCell != null && bmiCell.getCellType() == CellType.NUMERIC) {
+                bmi = bmiCell.getNumericCellValue();
+            }
+
+            Cell prCell = row.getCell(8);
+            if (prCell != null && prCell.getCellType() == CellType.NUMERIC) {
+                pr = (long) Math.round(prCell.getNumericCellValue());
+            }
+
+            PatientEncounter visit = new PatientEncounter();
+            visit.setEncounterType(EncounterType.Opd);
+            visit.setEncounterId(visitID);
+            Patient patient = patientController.findPatientByPatientId(patientID);
+            if (patient == null) {
+                continue;
+            }
+            visit.setPatient(patient);
+            visit.setCreatedAt(new Date());
+            visit.setEncounterDate(completedTime);
+            visit.setEncounterDateTime(completedTime);
+            visit.setDepartment(sessionController.getDepartment());
+            visit.setInstitution(sessionController.getInstitution());
+            visit.setComments(Comments);
+            visit.setSbp(sbp);
+            visit.setDbp(dbp);
+            visit.setBmi(bmi);
+            visit.setPr(pr);
+            visit.setVisitWeight(visitWeight);
+            patientEncounterController.saveEncounter(visit);
+            visits.add(visit);
+        }
+        return visits;
     }
 
     private List<Patient> readPatientDataFromExcel(InputStream inputStream) throws IOException {
@@ -422,7 +558,6 @@ public class DataUploadBean {
         while (rowIterator.hasNext()) {
             Row row = rowIterator.next();
             ClinicalEntity dx = new ClinicalEntity();
-           
 
             /**
              * ItemID tblItem_Item ItemCode tradename_Item generic_Item Category
@@ -433,7 +568,6 @@ public class DataUploadBean {
              */
             Long id;
             String dxName = null;
-            
 
             Cell idCell = row.getCell(0);
             if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
@@ -460,7 +594,7 @@ public class DataUploadBean {
 
         return dxx;
     }
-    
+
     private List<Amp> readAmpsFromExcel(InputStream inputStream) throws IOException {
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -682,14 +816,12 @@ public class DataUploadBean {
                     try {
                         strengthUnitsPerIssueUnit = Double.parseDouble(strengthUnitsPerIssueUnitCell.getStringCellValue());
                     } catch (NumberFormatException e) {
-                        // Handle the error, e.g., log it, throw a custom exception, or set a default value
-                        System.err.println("Error: Cannot parse the string value as a number in the cell at row " + row.getRowNum() + ", column 5.");
-                        strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
+// Handle the error, e.g., log it, throw a custom exception, or set a default value
+                                                strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
                     }
                 } else {
-                    // Handle other cell types or set a default value
-                    System.err.println("Error: Unexpected cell type in the cell at row " + row.getRowNum() + ", column 5.");
-                    strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
+// Handle other cell types or set a default value
+                                        strengthUnitsPerIssueUnit = 0.0; // Set a default value or any other appropriate value
                 }
             }
 

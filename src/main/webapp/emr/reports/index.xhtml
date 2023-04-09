@@ -27,10 +27,10 @@
                                             </p:tab>
                                             <p:tab title="Clinical Data">
                                                 <div class="d-grid gap-2">
-                                                    <h:commandButton value="All Visits" 
-                                                                     action="#{patientEncounterController.listAllEncounters()}"  >
+                                                    <h:commandButton value="List Visits"  styleClass="btn btn-primary mb-2"
+                                                                     action="#{patientEncounterController.navigateToListInstitutionEncounters()}"  >
                                                     </h:commandButton>
-                                                    <h:commandButton  value="Daily Visits" 
+                                                    <h:commandButton  value="Daily Visits"  styleClass="btn btn-primary mb-2"
                                                                       action="#{patientEncounterController.listAllEncounters()}" >
                                                     </h:commandButton><!-- comment -->
                                                 </div>
