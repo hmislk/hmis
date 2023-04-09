@@ -4,10 +4,12 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.facade.WebUserFacade;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -20,8 +22,8 @@ import javax.inject.Named;
 @SessionScoped
 public class ThemeController implements Serializable {
 
-//    @EJB
-//    WebUserFacade facade;
+    @EJB
+    WebUserFacade facade;
     /**
      * Managed Properties
      */
@@ -42,7 +44,7 @@ public class ThemeController implements Serializable {
 
     public String getTheme() {
         if (getSessionController().getLoggedUser() != null) {
-            theme = getSessionController().getLoggedUser().getPrimeTheme();
+           theme = getSessionController().getLoggedUser().getPrimeTheme();
         }
         if (theme == null) {
             theme = "nova-light";
@@ -70,18 +72,14 @@ public class ThemeController implements Serializable {
     public void saveTheme() {
         if (getSessionController().getLoggedUser() != null) {
             getSessionController().getLoggedUser().setPrimeTheme(theme);
-//            getFacade().edit(getSessionController().getLoggedUser());
+            getFacade().edit(getSessionController().getLoggedUser());
             UtilityController.addSuccessMessage("Theme updated");
         }
     }
 
-//    public WebUserFacade getFacade() {
-//        return facade;
-//    }
-//
-//    public void setFacade(WebUserFacade facade) {
-//        this.facade = facade;
-//    }
+    public WebUserFacade getFacade() {
+        return facade;
+    }
 
     public SessionController getSessionController() {
         return sessionController;
@@ -101,37 +99,5 @@ public class ThemeController implements Serializable {
         themes.put("luna-blue", "luna-blue");
         themes.put("luna-green", "luna-green");
         themes.put("luna-pink", "luna-pink");
-
-//        themes.put("Aristo", "aristo");
-//        themes.put("Black-Tie", "black-tie");
-//        themes.put("Blitzer", "blitzer");
-//        themes.put("Bluesky", "bluesky");
-//        themes.put("Casablanca", "casablanca");
-//        themes.put("Cupertino", "cupertino");
-//        themes.put("Dark-Hive", "dark-hive");
-//        themes.put("Dot-Luv", "dot-luv");
-//        themes.put("Eggplant", "eggplant");
-//        themes.put("Excite-Bike", "excite-bike");
-//        themes.put("Flick", "flick");
-//        themes.put("Glass-X", "glass-x");
-//        themes.put("Hot-Sneaks", "hot-sneaks");
-//        themes.put("Humanity", "humanity");
-//        themes.put("Le-Frog", "le-frog");
-//        themes.put("Midnight", "midnight");
-//        themes.put("Mint-Choc", "mint-choc");
-//        themes.put("Overcast", "overcast");
-//        themes.put("Pepper-Grinder", "pepper-grinder");
-//        themes.put("Redmond", "redmond");
-//        themes.put("Rocket", "rocket");
-//        themes.put("Sam", "sam");
-//        themes.put("Smoothness", "smoothness");
-//        themes.put("South-Street", "south-street");
-//        themes.put("Start", "start");
-//        themes.put("Sunny", "sunny");
-//        themes.put("Swanky-Purse", "swanky-purse");
-//        themes.put("Trontastic", "trontastic");
-//        themes.put("UI-Darkness", "ui-darkness");
-//        themes.put("UI-Lightness", "ui-lightness");
-//        themes.put("Vader", "vader");
     }
 }
