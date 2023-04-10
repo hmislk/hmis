@@ -129,6 +129,7 @@ public class PatientEncounterController implements Serializable {
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
     List<Bill> opdBills;
+    List<Bill> opdVisits;
     private List<Bill> pharmacyBills;
     List<Bill> channelBills;
     List<PatientInvestigation> investigations;
