@@ -14,6 +14,7 @@ import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.facade.MeasurementUnitFacade;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,51 @@ public class MeasurementUnitController implements Serializable {
     private MeasurementUnit current;
     private List<MeasurementUnit> items = null;
     String selectText = "";
+    List<MeasurementUnit> doseUnits;
+    List<MeasurementUnit> durationUnits;
+    List<MeasurementUnit> frequencyUnits;
+    List<MeasurementUnit> issueUnits;
+    List<MeasurementUnit> packUnits;
+    List<MeasurementUnit> strengthUnits;
+    List<MeasurementUnit> allUnits;
+
+    public void fillAllUnits() {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select m "
+                + " from MeasurementUnit m "
+                + " where m.retired=:ret "
+                + " order by m.name";
+        m.put("ret", false);
+        allUnits = getFacade().findByJpql(jpql, m);
+        doseUnits = new ArrayList<>();
+        durationUnits = new ArrayList<>();
+        frequencyUnits = new ArrayList<>();
+        issueUnits = new ArrayList<>();
+        packUnits = new ArrayList<>();
+        strengthUnits = new ArrayList<>();
+        if (allUnits == null) {
+            return;
+        }
+        for (MeasurementUnit mu : allUnits) {
+            if (mu.isIssueUnit()) {
+                issueUnits.add(mu);
+                doseUnits.add(mu);
+                durationUnits.add(mu);
+            } else if (mu.isPackUnit()) {
+                doseUnits.add(mu);
+                packUnits.add(mu);
+                durationUnits.add(mu);
+            } else if (mu.isStrengthUnit()) {
+                strengthUnits.add(mu);
+                doseUnits.add(mu);
+            } else if (mu.isDurationUnit()) {
+                durationUnits.add(mu);
+            } else if (mu.isFrequencyUnit()) {
+                frequencyUnits.add(mu);
+            }
+        }
+    }
 
     public MeasurementUnit findAndSaveMeasurementUnitByName(String name) {
         String jpql;
@@ -69,9 +115,9 @@ public class MeasurementUnitController implements Serializable {
         if (mu == null) {
             return;
         }
-        if(mu.getId()==null){
+        if (mu.getId() == null) {
             getFacade().create(mu);
-        }else{
+        } else {
             getFacade().edit(mu);
         }
     }
@@ -162,6 +208,55 @@ public class MeasurementUnitController implements Serializable {
     public List<MeasurementUnit> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+
+    public List<MeasurementUnit> getDoseUnits() {
+        if (doseUnits == null) {
+            fillAllUnits();
+        }
+        return doseUnits;
+    }
+
+    public List<MeasurementUnit> getDurationUnits() {
+        if (durationUnits == null) {
+            fillAllUnits();
+        }
+        return durationUnits;
+    }
+
+    public List<MeasurementUnit> getFrequencyUnits() {
+        if (frequencyUnits == null) {
+            fillAllUnits();
+        }
+        return frequencyUnits;
+    }
+
+    public List<MeasurementUnit> getIssueUnits() {
+        if (issueUnits == null) {
+            fillAllUnits();
+        }
+        return issueUnits;
+    }
+
+    public List<MeasurementUnit> getPackUnits() {
+        if (packUnits == null) {
+            fillAllUnits();
+        }
+        return packUnits;
+    }
+
+    public List<MeasurementUnit> getStrengthUnits() {
+        if (strengthUnits == null) {
+            fillAllUnits();
+        }
+        return strengthUnits;
+    }
+
+    public List<MeasurementUnit> getAllUnits() {
+        if (allUnits == null) {
+            fillAllUnits();
+        }
+        return allUnits;
     }
 
     /**

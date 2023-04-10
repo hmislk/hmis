@@ -28,6 +28,7 @@ import com.divudi.entity.Person;
 import com.divudi.entity.clinical.ClinicalFindingItem;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.clinical.ItemUsage;
+import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.pharmacy.Amp;
@@ -1102,6 +1103,8 @@ public class PatientEncounterController implements Serializable {
     public ClinicalFindingValue getPatientMedicine() {
         if (patientMedicine == null) {
             patientMedicine = new ClinicalFindingValue();
+            Prescription p = new Prescription();
+            patientMedicine.setPrescription(p);
         }
         return patientMedicine;
     }

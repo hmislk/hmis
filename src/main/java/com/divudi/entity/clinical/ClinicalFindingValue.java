@@ -57,6 +57,8 @@ public class ClinicalFindingValue implements Serializable {
     @ManyToOne
     Category categoryValue;
     private boolean retired;
+    @ManyToOne
+    private Prescription prescription;
     
     
     
@@ -210,6 +212,19 @@ public class ClinicalFindingValue implements Serializable {
 
     public void setOrderNo(double orderNo) {
         this.orderNo = orderNo;
+    }
+
+    public Prescription getPrescription() {
+        if(this.clinicalFindingValueType!=null && this.clinicalFindingValueType==ClinicalFindingValueType.PatientMedicine){
+            if(this.prescription==null){
+                prescription = new Prescription();
+            }
+        }
+        return prescription;
+    }
+
+    public void setPrescription(Prescription prescription) {
+        this.prescription = prescription;
     }
 
 }

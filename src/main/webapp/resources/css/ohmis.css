@@ -1,35 +1,5 @@
-/* Set the font size for Bootstrap controls */
-.form-control, .btn, .input-group-text {
-    font-size: 01rem !important;
-    ;
-    font-family: 'Roboto', sans-serif !important;
-}
 
-/* Set the font size for PrimeFaces controls */
-.ui-inputfield, .ui-button, .ui-widget {
-    font-size: 01rem !important;
-    ;
-    font-family: 'Roboto', sans-serif !important;
-}
-
-/* Set the font size for Bootstrap controls */
-.form-control, .btn, .input-group-text, .form-label {
-    font-size: 01rem !important;
-    font-family: 'Roboto', sans-serif !important;
-}
-
-/* Set the font size for PrimeFaces controls */
-body .ui-inputfield, body .ui-button, body .ui-widget {
-    font-size: 01rem !important;
-    font-family: 'Roboto', sans-serif !important;
-}
-
-body {
-    font-size: 01rem !important;
-}
-
-root {
-    font-size: 02rem !important;
-    font-family: Verdana !important;
-    color: red;
+.auto-width-datatable {
+    table-layout: auto !important;
+    width: 100% !important;
 }
