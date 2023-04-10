@@ -41,6 +41,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.PrescriptionFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -83,6 +84,8 @@ public class PatientEncounterController implements Serializable {
     PatientInvestigationFacade piFacade;
     @EJB
     ItemUsageFacade itemUsageFacade;
+    @EJB
+    PrescriptionFacade prescriptionFacade;
     /**
      * Controllers
      */
@@ -539,14 +542,19 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void addPatientMedicine() {
-        if (getPatientMedicine().getItemValue() == null) {
-            JsfUtil.addErrorMessage("Select Allergy");
+        System.out.println("addPatientMedicine");
+        System.out.println("getPatientMedicine().getPrescription().getItem() = " + getPatientMedicine().getPrescription().getItem());
+        if (getPatientMedicine().getPrescription().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
         getPatientMedicine().setPatient(patient);
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
+        prescriptionFacade.create(getPatientMedicine().getPrescription());
         clinicalFindingValueFacade.create(getPatientMedicine());
+        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         getPatientMedicines().add(getPatientMedicine());
+        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         setPatientMedicine(null);
         JsfUtil.addSuccessMessage("Added");
     }

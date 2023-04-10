@@ -9,6 +9,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <p:growl ></p:growl>
                 <p:panel class="w-100" style="height: 100vh;">
                     <f:facet name="header" >
                         <p:outputLabel value="Patient Details" ></p:outputLabel>
@@ -26,9 +27,9 @@
                                 </p:graphicImage>
                             </p:outputPanel>
                             <em:patient patient="#{patientController.current}" ></em:patient>
-                            
-                            
-                            
+
+
+
                         </div>
                         <div class="col-md-8" >
                             <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
@@ -84,9 +85,9 @@
                                                         </p:outputLabel>
                                                         <p:spacer height="1" width="5" ></p:spacer>
                                                         <p:commandLink value="X" class="text-danger" 
-                                                                       id="btnDeleteRx"
-                                                                       process="btnDeleteRx"
-                                                                       update="tblRxx"
+                                                                       id="btnDeleteDx"
+                                                                       process="btnDeleteDx"
+                                                                       update="tblDxx"
                                                                        onclick="if (!confirm('Are you sure you want to delete this allergy?'))
                                                                                    return false;"
 
@@ -110,8 +111,9 @@
                                 </p:tab>
                                 <p:tab title="Medications" >
                                     <h:form>
-                                        <div class="row m-2">
-                                            <div class="col-md-3" >
+                                        <div class="container-fluid m-2 w-100">
+                                            <div class="d-flex w-100">
+
                                                 <p:autoComplete 
                                                     id="acMedicine"
                                                     completeMethod="#{pharmaceuticalItemController.completeItem}"
@@ -119,63 +121,80 @@
                                                     var="item"
                                                     itemLabel="#{item}"
                                                     itemValue="#{item}"
-                                                    class="w-100"
-                                                    inputStyleClass="w-100"
-                                                    placeholder="Select Diagnosis"
+                                                    placeholder="Select Medicine"
                                                     />
-                                            </div>
-                                            <div class="col-md-3" >
-                                                <p:inputText
-                                                    id="txtDose"
-                                                    class="w-100"
-                                                    value="#{patientEncounterController.patientMedicine.prescription.dose}"
-                                                    placeholder="Details"/>
-                                                <p:selectOneMenu value="#{patientEncounterController.patientMedicine.prescription.doseUnit}" >
+                                                <p:inputText style="width: 6em;"
+                                                             id="txtDose"
+                                                             value="#{patientEncounterController.patientMedicine.prescription.dose}"
+                                                             placeholder="Dose"/>
+                                                <p:selectOneMenu id="cmbDose" value="#{patientEncounterController.patientMedicine.prescription.doseUnit}" >
                                                     <f:selectItem itemLabel="Select" ></f:selectItem>
                                                     <f:selectItems value="#{measurementUnitController.doseUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
                                                 </p:selectOneMenu>
-                                            </div>
-                                            <div class="col-md-3" >
+                                                <p:selectOneMenu id="cmbFrequency" value="#{patientEncounterController.patientMedicine.prescription.frequencyUnit}" >
+                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                    <f:selectItems value="#{measurementUnitController.frequencyUnits}" 
+                                                                   var="du" 
+                                                                   itemLabel="#{du.name}"
+                                                                   itemValue="#{du}" ></f:selectItems>
+                                                </p:selectOneMenu>
+                                                <p:inputText style="width: 6em;"
+                                                             id="txtDuration"
+                                                             value="#{patientEncounterController.patientMedicine.prescription.duration}"
+                                                             placeholder="Duration"/>
+                                                <p:selectOneMenu id="cmbDuration" 
+                                                                 value="#{patientEncounterController.patientMedicine.prescription.durationUnit}" >
+                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                    <f:selectItems value="#{measurementUnitController.durationUnits}" var="du" itemLabel="#{du.name}" itemValue="#{du}" ></f:selectItems>
+                                                </p:selectOneMenu>
+
                                                 <p:commandButton value="Add"
                                                                  id="btnAddRx"
-                                                                 class="w-100"
-                                                                 process="btnAddRx acMedicine"
-                                                                 update="tblRxx acMedicine"
-                                                                 action="#{patientEncounterController.addPatientDiagnosis()}"
+                                                                 process="btnAddRx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                 update="tblRxx acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                                 action="#{patientEncounterController.addPatientMedicine}"
                                                                  />
-                                            </div><!-- comment -->
-                                        </div>
 
-                                        <div class="row m-2" >
-                                            <div class="col-md-12" >
-                                                <p:dataTable
-                                                    id="tblRxx"
-                                                    value="#{patientEncounterController.patientDiagnoses}"
-                                                    var="dx">
-                                                    <p:column headerText="Diagnosis">
-                                                        <p:outputLabel value="#{dx.itemValue.name}">
-                                                        </p:outputLabel>
-                                                        <p:spacer height="1" width="5" ></p:spacer>
-                                                        <p:commandLink value="X" class="text-danger" 
-                                                                       id="btnDeleteDx"
-                                                                       process="btnDeleteDx"
-                                                                       update="tblDxx"
-                                                                       onclick="if (!confirm('Are you sure you want to delete this allergy?'))
-                                                                                   return false;"
-
-                                                                       action="#{patientEncounterController.removePatientDiagnosis()}"
-                                                                       >
-                                                            <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{dx}"/>
-                                                        </p:commandLink>
-                                                        <p:tooltip value="Delete" for="btnDeleteDx" ></p:tooltip>
-                                                    </p:column>
-                                                    <p:column headerText="Details">
-                                                        <h:outputText value="#{dx.stringValue}"/>
-                                                    </p:column>
-                                                </p:dataTable>
                                             </div>
                                         </div>
-
+                                        <div class="row m-2">
+                                            <div class="row m-2" >
+                                                <div class="col-md-12" >
+                                                    <p:dataTable
+                                                        id="tblRxx"
+                                                        value="#{patientEncounterController.patientMedicines}"
+                                                        var="rx">
+                                                        <p:column headerText="Medicine">
+                                                            <p:outputLabel value="#{rx.prescription.item.name}">
+                                                            </p:outputLabel>
+                                                            <p:spacer height="1" width="5" ></p:spacer>
+                                                            <p:commandLink value="X" class="text-danger" 
+                                                                           id="btnDeleteRx"
+                                                                           process="btnDeleteRx"
+                                                                           update="tblRxx"
+                                                                           onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                                       return false;"
+                                                                           action="#{patientEncounterController.removePatientDiagnosis()}"
+                                                                           >
+                                                                <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
+                                                            </p:commandLink>
+                                                            <p:tooltip value="Delete" for="btnDeleteRx" ></p:tooltip>
+                                                        </p:column>
+                                                        <p:column headerText="Dose">
+                                                            <h:outputText value="#{rx.prescription.dose}"/>
+                                                            <h:outputText value="#{rx.prescription.doseUnit.name}"/>
+                                                        </p:column>
+                                                        <p:column headerText="Frequency">
+                                                            <h:outputText value="#{rx.prescription.frequencyUnit.name}"/>
+                                                        </p:column>
+                                                        <p:column headerText="Duration">
+                                                            <h:outputText value="#{rx.prescription.duration}"/>
+                                                            <h:outputText value="#{rx.prescription.durationUnit.name}"/>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </div>
+                                            </div>
+                                        </div>
 
 
 
@@ -250,7 +269,6 @@
                                             </div>
                                         </div>
                                     </h:form>
-
                                 </p:tab>
                             </p:tabView>
                         </div>
