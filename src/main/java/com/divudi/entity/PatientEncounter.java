@@ -144,11 +144,16 @@ public class PatientEncounter implements Serializable {
     Institution referredByInstitution;
     String referralId;
 
+    @Deprecated
     private Double visitWeight = null;
+    private Double weight = null;
     private Long sbp = null;
     private Long dbp = null;
     private Double bmi = null;
     private Long pr = null;
+    private Double height;
+    
+    
 
     public double getTransPaidByCompany() {
         return transPaidByCompany;
@@ -887,6 +892,22 @@ public class PatientEncounter implements Serializable {
 
     public void setEncounterDateTime(Date encounterDateTime) {
         this.encounterDateTime = encounterDateTime;
+    }
+
+    public Double getHeight() {
+        return height;
+    }
+
+    public void setHeight(Double height) {
+        this.height = height;
+    }
+
+    public Double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
     }
     
     

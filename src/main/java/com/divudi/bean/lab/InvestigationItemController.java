@@ -161,6 +161,23 @@ public class InvestigationItemController implements Serializable {
         }
     }
 
+     public List<InvestigationItem> completeIxValues(String qry) {
+        List<InvestigationItem> iivs;
+        String sql;
+        Map m = new HashMap();
+        sql = "select i from InvestigationItem i "
+                + " where i.retired=false "
+                + " and i.ixItemType =:vt "
+                + " and upper(i.name) like :qry";
+        m.put("vt", InvestigationItemType.Value);
+        m.put("qry", "%" + qry.toUpperCase() + "%");
+        iivs = getFacade().findByJpql(sql,m);
+        if (iivs == null) {
+            iivs = new ArrayList<>();
+        }
+        return iivs;
+    }
+     
     public void previousInvestigation() {
         Investigation thisOne = getCurrentInvestigation();
         for (int i = 0; i < investigationController.getItems().size(); i++) {

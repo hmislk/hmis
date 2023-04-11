@@ -8,6 +8,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -15,6 +16,7 @@ import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
@@ -151,6 +153,24 @@ public class PatientController implements Serializable {
     private String searchBillId;
     private String searchSampleId;
     private List<Patient> searchPatients;
+
+    public String navigateToNewOpdVisitFromSearch() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        PatientEncounter opdVisit;
+        opdVisit = new PatientEncounter();
+        opdVisit.setCreatedAt(Calendar.getInstance().getTime());
+        opdVisit.setCreater(getSessionController().getLoggedUser());
+        opdVisit.setPatient(current);
+        opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
+        getPatientEncounterController().setCurrent(opdVisit);
+        getPatientEncounterController().setStartedEncounter(opdVisit);
+        getPatientEncounterController().fillCurrentPatientLists(current);
+        getPatientEncounterController().saveSelected();
+        return "/emr/opd_visit";
+    }
 
     public void generateNewPhn() {
         if (current == null) {
@@ -1124,7 +1144,7 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
-    public Patient findPatientByPatientId(Long pid){
+    public Patient findPatientByPatientId(Long pid) {
         String j = "select p "
                 + " from Patient p "
                 + " where p.patientId=:pid";
@@ -1132,7 +1152,7 @@ public class PatientController implements Serializable {
         m.put("pid", pid);
         return getFacade().findFirstByJpql(j, m);
     }
-    
+
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();
