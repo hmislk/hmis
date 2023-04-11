@@ -62,7 +62,7 @@ public class Prescription implements Serializable {
     private Double dose;
 
     @ManyToOne
-    private FrequencyUnit frequencyUnit;
+    private MeasurementUnit frequencyUnit;
 
     private Double orderNo;
     
@@ -171,11 +171,11 @@ public class Prescription implements Serializable {
         this.dose = dose;
     }
 
-    public FrequencyUnit getFrequencyUnit() {
+    public MeasurementUnit getFrequencyUnit() {
         return frequencyUnit;
     }
 
-    public void setFrequencyUnit(FrequencyUnit frequencyUnit) {
+    public void setFrequencyUnit(MeasurementUnit frequencyUnit) {
         this.frequencyUnit = frequencyUnit;
     }
 

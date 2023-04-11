@@ -18,6 +18,8 @@ import com.divudi.data.BillType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.clinical.ItemUsageType;
+import com.divudi.data.clinical.PrescriptionTemplateType;
+import com.divudi.data.lab.InvestigationResultForGraph;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
@@ -29,8 +31,11 @@ import com.divudi.entity.clinical.ClinicalFindingItem;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.clinical.ItemUsage;
 import com.divudi.entity.clinical.Prescription;
+import com.divudi.entity.clinical.PrescriptionTemplate;
 import com.divudi.entity.lab.Investigation;
+import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
+import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.BillFacade;
@@ -41,10 +46,13 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.PrescriptionFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -72,7 +80,7 @@ public class PatientEncounterController implements Serializable {
     @EJB
     ClinicalFindingItemFacade clinicalFindingItemFacade;
     @EJB
-    ClinicalFindingValueFacade clinicalFindingValueFacade;
+    private ClinicalFindingValueFacade clinicalFindingValueFacade;
     @EJB
     PersonFacade personFacade;
     @EJB
@@ -82,7 +90,9 @@ public class PatientEncounterController implements Serializable {
     @EJB
     PatientInvestigationFacade piFacade;
     @EJB
-    ItemUsageFacade itemUsageFacade;
+    private ItemUsageFacade itemUsageFacade;
+    @EJB
+    private PrescriptionFacade prescriptionFacade;
     /**
      * Controllers
      */
@@ -107,6 +117,9 @@ public class PatientEncounterController implements Serializable {
     private PatientEncounter current;
     private List<PatientEncounter> items = null;
     List<PatientEncounter> encounters;
+    
+    @Inject
+    private FavouriteController favouriteController;
 
     private Patient patient;
 
@@ -122,10 +135,14 @@ public class PatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> patientImages;
     private List<ClinicalFindingValue> patientDiagnoses;
     private List<ClinicalFindingValue> patientDiagnosticImages;
+    
+    private ClinicalFindingValue encounterMedicine;
+    private List<ClinicalFindingValue> encounterMedicines;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
     List<Bill> opdBills;
+    private List<Bill> opdVisits;
     private List<Bill> pharmacyBills;
     List<Bill> channelBills;
     List<PatientInvestigation> investigations;
@@ -145,6 +162,17 @@ public class PatientEncounterController implements Serializable {
     Institution institution;
     Department department;
     Doctor doctor;
+
+    private String chartNameSeries;
+    private String chartDataSeries1;
+    private String chartDataSeries2;
+    private String chartName;
+    private String values1Name;
+    private String values2Name;
+
+    private String chartString;
+    
+    private InvestigationItem graphInvestigationItem;
 
     public void listInstitutionEncounters() {
         System.out.println("listInstitutionEncounters = ");
@@ -237,6 +265,75 @@ public class PatientEncounterController implements Serializable {
         Map tmpMap = new HashMap();
         tmpMap.put("q", qry.toUpperCase() + "%");
         return getFacade().findString(sql, tmpMap);
+    }
+    
+    public String createInvestigationChart() {
+
+        String s = "";
+        int i = 0;
+        SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd");
+        String val = "";
+
+        List<PatientReportItemValue> privs = fillPatientReportItemValue(current.getPatient(), graphInvestigationItem);
+        List<InvestigationResultForGraph> grs = new ArrayList<>();
+
+        for (PatientReportItemValue v : privs) {
+            boolean dateFound = false;
+            Double dblVal = null;
+            try {
+                if (v.getDoubleValue() != null) {
+                    dblVal = v.getDoubleValue();
+                } else if (v.getStrValue() != null) {
+                    dblVal = Double.parseDouble(v.getStrValue());
+                }
+                if (dblVal != null) {
+
+                    i++;
+
+                    dateFound = true;
+
+                    s += "'" + format.format(v.getPatientReport().getPatientInvestigation().getSampledAt()) + "'";
+                    if (i != getEncounters().size()) {
+                        s += ", ";
+                    }
+
+                    val += dblVal + "";
+                    if (i != getEncounters().size()) {
+                        val += ", ";
+                    }
+                }
+
+            } catch (Exception e) {
+
+            }
+            for (InvestigationResultForGraph g : grs) {
+                if (g.getDates().equals(v.getPatientReport().getApproveAt())) {
+
+                }
+            }
+
+        }
+
+        setChartNameSeries(s);
+        setChartDataSeries1(val);
+        setValues1Name(graphInvestigationItem.getName());
+        setChartName(graphInvestigationItem.getName() + " Chart");
+        setChartString(getSingleLineChartString());
+        return "/emr/chart";
+    }
+    
+    public List<PatientReportItemValue> fillPatientReportItemValue(Patient patient, InvestigationItem ii) {
+        Map m = new HashMap();
+        m.put("p", patient);
+        m.put("it", ii);
+        String sql;
+        sql = "Select v "
+                + " from PatientReportItemValue v "
+                + " where "
+                + " v.patientReport.patientInvestigation.patient=:p "
+                + " and v.investigationItem=:it "
+                + " order by v.patientReport.patientInvestigation.id";
+        return getPiFacade().findByJpql(sql, m);
     }
 
     public void completeHx(String qry) {
@@ -372,7 +469,7 @@ public class PatientEncounterController implements Serializable {
 
     }
 
-    public void addDx() {
+     public void addDx() {
         if (diagnosis == null) {
             UtilityController.addErrorMessage("Please select a diagnosis");
             return;
@@ -390,10 +487,239 @@ public class PatientEncounterController implements Serializable {
         dx.setLobValue(diagnosisComments);
         current.getClinicalFindingValues().add(dx);
         getFacade().edit(current);
-        diagnosis = new ClinicalFindingItem();
+        diagnosis = null;
+//        diagnosis = new ClinicalFindingItem();
         diagnosisComments = "";
         UtilityController.addSuccessMessage("Diagnosis added");
         setCurrent(getFacade().find(current.getId()));
+    }
+
+    public void addDxAndRx() {
+        if (diagnosis == null) {
+            UtilityController.addErrorMessage("Please select a diagnosis");
+            return;
+        }
+        if (current == null) {
+            UtilityController.addErrorMessage("Please select a visit");
+            return;
+        }
+        ClinicalFindingValue dx = new ClinicalFindingValue();
+        dx.setItemValue(diagnosis);
+        dx.setClinicalFindingItem(diagnosis);
+        dx.setEncounter(current);
+        dx.setPerson(current.getPatient().getPerson());
+        dx.setStringValue(diagnosis.getName());
+        dx.setLobValue(diagnosisComments);
+        current.getClinicalFindingValues().add(dx);
+        getFacade().edit(current);
+
+        List<PrescriptionTemplate> dxitems;
+
+        if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
+            dxitems = favouriteController.listFavouriteItems(diagnosis, PrescriptionTemplateType.FavouriteDiagnosis, current.getWeight());
+        } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
+            System.out.println("by age");
+            Long ageInDays = getCurrent().getPatient().getAgeInDays();
+            System.out.println("ageInDays = " + ageInDays);
+            dxitems = favouriteController.listFavouriteItems(diagnosis, PrescriptionTemplateType.FavouriteDiagnosis, null, ageInDays);
+        } else {
+            return;
+        }
+        if (dxitems == null) {
+            return;
+        }
+        if (dxitems.isEmpty()) {
+            return;
+        }
+        for (PrescriptionTemplate iu : dxitems) {
+            if (iu.getItem() == null) {
+                continue;
+            }
+
+            List<PrescriptionTemplate> availableFavouriteMedicines = null;
+            PrescriptionTemplate addingMedicine;
+
+            if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
+                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplateType.FavouriteMedicine, current.getWeight());
+            } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
+                System.out.println("by age");
+                Long ageInDays = getCurrent().getPatient().getAgeInDays();
+                System.out.println("ageInDays = " + ageInDays);
+//                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplate.FavouriteMedicine, null, ageInDays);
+            }
+
+            System.out.println("availableFavouriteMedicines = " + availableFavouriteMedicines);
+            if (availableFavouriteMedicines == null) {
+                continue;
+            }
+
+            System.out.println("availableFavouriteMedicines.isEmpty() = " + availableFavouriteMedicines.isEmpty());
+            if (availableFavouriteMedicines.isEmpty()) {
+                continue;
+            }
+
+            System.out.println("availableFavouriteMedicines.size() = " + availableFavouriteMedicines.size());
+            if (availableFavouriteMedicines.size() > 1) {
+                //TODO: Need to select the best out of the available
+                addingMedicine = availableFavouriteMedicines.get(0);
+            } else {
+                addingMedicine = availableFavouriteMedicines.get(0);
+
+            }
+            Prescription p = new Prescription();
+            System.out.println("addingMedicine = " + addingMedicine);
+            p.setItem(addingMedicine.getItem());
+            p.setCategory(addingMedicine.getCategory());
+            p.setDepartment(sessionController.getDepartment());
+            p.setInstitution(sessionController.getInstitution());
+            p.setDose(addingMedicine.getDose());
+            p.setDoseUnit(addingMedicine.getDoseUnit());
+            p.setDuration(addingMedicine.getDuration());
+            p.setDurationUnit(addingMedicine.getDurationUnit());
+            p.setEncounter(getCurrent());
+            p.setFrequencyUnit(addingMedicine.getFrequencyUnit());
+            p.setIssue(addingMedicine.getIssue());
+            p.setIssueUnit(addingMedicine.getIssueUnit());
+            //to do
+            p.setOrderNo((double) getCurrent().getClinicalFindingValues().size() + 1);
+            p.setPatient(getCurrent().getPatient());
+            p.setWebUser(sessionController.getLoggedUser());
+
+            p.setCreatedAt(new Date());
+            p.setCreater(sessionController.getLoggedUser());
+            try {
+
+            } catch (Exception e) {
+
+            }
+            
+            encounterMedicine.setPrescription(p);
+            encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            clinicalFindingValueFacade.create(encounterMedicine);
+            
+            //TO Do
+            System.out.println("p = " + p);
+
+        }
+
+        save(getCurrent());
+
+        diagnosis = null;
+        diagnosisComments = "";
+        UtilityController.addSuccessMessage("Diagnosis and Medicines added");
+//        setCurrent(getFacade().find(current.getId()));
+    }
+
+    public void save(PatientEncounter encounter) {
+        if (encounter.getId() != null) {
+            getFacade().edit(encounter);
+        } else {
+            getFacade().create(encounter);
+        }
+    }
+    
+    public void addRxWithoutDx() {
+//        if (diagnosis == null) {
+//            UtilityController.addErrorMessage("Please select a diagnosis");
+//            return;
+//        }
+//        if (current == null) {
+//            UtilityController.addErrorMessage("Please select a visit");
+//            return;
+//        }
+//        List<PrescriptionTemplate> dxitems;
+//
+//        if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
+//            To Do
+////            dxitems = favouriteController.listFavouriteItems(diagnosis, ItemUsageType.FavouriteDiagnosis, current.getWeight());
+//        } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
+//            System.out.println("by age");
+//            Long ageInDays = getCurrent().getPatient().getAgeInDays();
+//            System.out.println("ageInDays = " + ageInDays);
+//           To Do
+//            //dxitems = favouriteController.listFavouriteItems(diagnosis, ItemUsageType.FavouriteDiagnosis, null, ageInDays);
+//        } else {
+//            return;
+//        }
+//        if (dxitems == null) {
+//            return;
+//        }
+//        if (dxitems.isEmpty()) {
+//            return;
+//        }
+//        for (PrescriptionTemplate iu : dxitems) {
+//            if (iu.getItem() == null) {
+//                continue;
+//            }
+//
+//            List<ItemUsage> availableFavouriteMedicines = null;
+//            ItemUsage addingMedicine;
+//
+//            if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
+////                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), ItemUsageType.FavouriteMedicine, current.getWeight());
+//            } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
+//                System.out.println("by age");
+//                Long ageInDays = getCurrent().getPatient().getAgeInDays();
+//                System.out.println("ageInDays = " + ageInDays);
+////                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), ItemUsageType.FavouriteMedicine, null, ageInDays);
+//            }
+//
+//            System.out.println("availableFavouriteMedicines = " + availableFavouriteMedicines);
+//            if (availableFavouriteMedicines == null) {
+//                continue;
+//            }
+//
+//            System.out.println("availableFavouriteMedicines.isEmpty() = " + availableFavouriteMedicines.isEmpty());
+//            if (availableFavouriteMedicines.isEmpty()) {
+//                continue;
+//            }
+//
+//            System.out.println("availableFavouriteMedicines.size() = " + availableFavouriteMedicines.size());
+//            if (availableFavouriteMedicines.size() > 1) {
+//                //TODO: Need to select the best out of the available
+//                addingMedicine = availableFavouriteMedicines.get(0);
+//            } else {
+//                addingMedicine = availableFavouriteMedicines.get(0);
+//
+//            }
+//            Prescription p = new Prescription();
+//            System.out.println("addingMedicine = " + addingMedicine);
+//            p.setItem(addingMedicine.getItem());
+//            p.setCategory(addingMedicine.getCategory());
+//            p.setDepartment(sessionController.getDepartment());
+//            p.setInstitution(sessionController.getInstitution());
+//            p.setDose(addingMedicine.getDose());
+//            p.setDoseUnit(addingMedicine.getDoseUnit());
+//            p.setDuration(addingMedicine.getDuration());
+//            p.setDurationUnit(addingMedicine.getDurationUnit());
+//            p.setEncounter(getCurrent());
+//            p.setFrequencyUnit(addingMedicine.getFrequencyUnit());
+//            p.setIssue(addingMedicine.getIssue());
+//            p.setIssueUnit(addingMedicine.getIssueUnit());
+//            p.setOrderNo((double) getCurrent().getPrescriptions().size() + 1);
+//            p.setPatient(getCurrent().getPatient());
+//            p.setWebUser(sessionController.getLoggedUser());
+//
+//            p.setCreatedAt(new Date());
+//            p.setCreater(sessionController.getLoggedUser());
+//            try {
+//
+//            } catch (Exception e) {
+//
+//            }
+//            System.out.println("getCurrent().getPrescriptions() = " + getCurrent().getPrescriptions());
+//            getCurrent().getPrescriptions().add(p);
+//            System.out.println("p = " + p);
+//            System.out.println("getCurrent().getPrescriptions() = " + getCurrent().getPrescriptions());
+//
+//        }
+//
+//        save(getCurrent());
+//
+//        diagnosis = null;
+//        diagnosisComments = "";
+//        UtilityController.addSuccessMessage("Medicines for Diagnosis added.");
+////        setCurrent(getFacade().find(current.getId()));
     }
 
     public List<PatientEncounter> getEncounters() {
@@ -539,14 +865,19 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void addPatientMedicine() {
-        if (getPatientMedicine().getItemValue() == null) {
-            JsfUtil.addErrorMessage("Select Allergy");
+        System.out.println("addPatientMedicine");
+        System.out.println("getPatientMedicine().getPrescription().getItem() = " + getPatientMedicine().getPrescription().getItem());
+        if (getPatientMedicine().getPrescription().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
         getPatientMedicine().setPatient(patient);
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
+        prescriptionFacade.create(getPatientMedicine().getPrescription());
         clinicalFindingValueFacade.create(getPatientMedicine());
+        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         getPatientMedicines().add(getPatientMedicine());
+        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         setPatientMedicine(null);
         JsfUtil.addSuccessMessage("Added");
     }
@@ -700,6 +1031,315 @@ public class PatientEncounterController implements Serializable {
 
     private void recreateModel() {
         items = null;
+    }
+
+    public String createWtChart() {
+        setChartNameSeries(getCurrentPatientEncountersDateStrings());
+        setChartDataSeries1(getCurrentPatientEncountersWeightStrings());
+        setValues1Name("Weight");
+        setChartName("Weight Chart");
+        setChartString(getSingleLineChartString());
+        return "/chart";
+    }
+
+    public String getSingleLineChartString() {
+        String s = "\n"
+                + "		var MONTHS = [N1N1N1N1N1N1N1N1];\n"
+                + "		var config = {\n"
+                + "			type: 'line',\n"
+                + "			data: {\n"
+                + "				labels: [N1N1N1N1N1N1N1N1],\n"
+                + "				datasets: [{\n"
+                + "					label: 'My First dataset',\n"
+                + "					backgroundColor: window.chartColors.red,\n"
+                + "					borderColor: window.chartColors.red,\n"
+                + "					data: [\n"
+                + "						D1D1D1D1D1D1D1D1 \n"
+                + "					],\n"
+                + "					fill: false,\n"
+                + "				}]\n"
+                + "			},\n"
+                + "			options: {\n"
+                + "				responsive: true,\n"
+                + "				title: {\n"
+                + "					display: true,\n"
+                + "					text: 'Chart.js Line Chart'\n"
+                + "				},\n"
+                + "				tooltips: {\n"
+                + "					mode: 'index',\n"
+                + "					intersect: false,\n"
+                + "				},\n"
+                + "				hover: {\n"
+                + "					mode: 'nearest',\n"
+                + "					intersect: true\n"
+                + "				},\n"
+                + "				scales: {\n"
+                + "					xAxes: [{\n"
+                + "						display: true,\n"
+                + "						scaleLabel: {\n"
+                + "							display: true,\n"
+                + "							labelString: 'Month'\n"
+                + "						}\n"
+                + "					}],\n"
+                + "					yAxes: [{\n"
+                + "						display: true,\n"
+                + "						scaleLabel: {\n"
+                + "							display: true,\n"
+                + "							labelString: 'Value'\n"
+                + "						}\n"
+                + "					}]\n"
+                + "				}\n"
+                + "			}\n"
+                + "		};\n"
+                + "\n"
+                + "		window.onload = function() {\n"
+                + "			var ctx = document.getElementById('canvas').getContext('2d');\n"
+                + "			window.myLine = new Chart(ctx, config);\n"
+                + "		};\n"
+                + "\n"
+                + "		document.getElementById('randomizeData').addEventListener('click', function() {\n"
+                + "			config.data.datasets.forEach(function(dataset) {\n"
+                + "				dataset.data = dataset.data.map(function() {\n"
+                + "					return randomScalingFactor();\n"
+                + "				});\n"
+                + "\n"
+                + "			});\n"
+                + "\n"
+                + "			window.myLine.update();\n"
+                + "		});\n"
+                + "\n"
+                + "		var colorNames = Object.keys(window.chartColors);\n"
+                + "		document.getElementById('addDataset').addEventListener('click', function() {\n"
+                + "			var colorName = colorNames[config.data.datasets.length % colorNames.length];\n"
+                + "			var newColor = window.chartColors[colorName];\n"
+                + "			var newDataset = {\n"
+                + "				label: 'Dataset ' + config.data.datasets.length,\n"
+                + "				backgroundColor: newColor,\n"
+                + "				borderColor: newColor,\n"
+                + "				data: [],\n"
+                + "				fill: false\n"
+                + "			};\n"
+                + "\n"
+                + "			for (var index = 0; index < config.data.labels.length; ++index) {\n"
+                + "				newDataset.data.push(randomScalingFactor());\n"
+                + "			}\n"
+                + "\n"
+                + "			config.data.datasets.push(newDataset);\n"
+                + "			window.myLine.update();\n"
+                + "		});\n"
+                + "	";
+
+        s = s.replace("D1D1D1D1D1D1D1D1", getChartDataSeries1());
+        s = s.replace("N1N1N1N1N1N1N1N1", getChartNameSeries());
+        s = s.replace("My First dataset", getValues1Name());
+        s = s.replace("Chart.js Line Chart", getChartName());
+        return s;
+    }
+
+    public String getCurrentPatientEncountersDateStrings() {
+        String s = "";
+        int i = 0;
+        SimpleDateFormat format = new SimpleDateFormat("yy-MM-dd");
+
+        List<PatientEncounter> re = new ArrayList<>();
+        re.addAll(getEncounters());
+        Collections.reverse(re);
+
+        for (PatientEncounter e : re) {
+            i++;
+            s += "'" + format.format(e.getCreatedAt()) + "'";
+            if (i != getEncounters().size()) {
+                s += ", ";
+            }
+        }
+        return s;
+    }
+
+    public String getCurrentPatientEncountersSbpStrings() {
+        String val = "";
+        int i = 0;
+
+        List<PatientEncounter> re = new ArrayList<>();
+        re.addAll(getEncounters());
+        Collections.reverse(re);
+
+        for (PatientEncounter e : re) {
+            i++;
+            val += e.getSbp();
+            if (i != getEncounters().size()) {
+                val += ", ";
+            }
+        }
+        return val;
+    }
+
+    public String getCurrentPatientEncountersDbpStrings() {
+        String s = "";
+        int i = 0;
+
+        List<PatientEncounter> re = new ArrayList<>();
+        re.addAll(getEncounters());
+        Collections.reverse(re);
+
+        for (PatientEncounter e : re) {
+            i++;
+            s += e.getDbp();
+            if (i != getEncounters().size()) {
+                s += ", ";
+            }
+        }
+        return s;
+    }
+
+    public String getCurrentPatientEncountersHeightStrings() {
+        String s = "";
+        int i = 0;
+
+        List<PatientEncounter> re = new ArrayList<>();
+        re.addAll(getEncounters());
+        Collections.reverse(re);
+
+        for (PatientEncounter e : re) {
+            i++;
+            s += e.getHeight();
+            if (i != getEncounters().size()) {
+                s += ", ";
+            }
+        }
+        return s;
+    }
+
+    public String getCurrentPatientEncountersWeightStrings() {
+        String s = "";
+        int i = 0;
+
+        List<PatientEncounter> re = new ArrayList<>();
+        re.addAll(getEncounters());
+        Collections.reverse(re);
+
+        for (PatientEncounter e : re) {
+            i++;
+            s += e.getWeight();
+            if (i != getEncounters().size()) {
+                s += ", ";
+            }
+        }
+        return s;
+    }
+
+    public String createBpChart() {
+        setChartNameSeries(getCurrentPatientEncountersDateStrings());
+        setChartDataSeries1(getCurrentPatientEncountersSbpStrings());
+        setChartDataSeries2(getCurrentPatientEncountersDbpStrings());
+        setValues1Name("SBP");
+        setValues2Name("DBP");
+        setChartName("Blood Pressure Chart");
+        setChartString(getDoubleLineChartString());
+        return "/chart";
+    }
+
+    public String getDoubleLineChartString() {
+        String s = "\n"
+                + "		var MONTHS = [N1N1N1N1N1N1N1N1];\n"
+                + "		var config = {\n"
+                + "			type: 'line',\n"
+                + "			data: {\n"
+                + "				labels: [N1N1N1N1N1N1N1N1],\n"
+                + "				datasets: [{\n"
+                + "					label: 'My First dataset',\n"
+                + "					backgroundColor: window.chartColors.red,\n"
+                + "					borderColor: window.chartColors.red,\n"
+                + "					data: [\n"
+                + "						D1D1D1D1D1D1D1D1 \n"
+                + "					],\n"
+                + "					fill: false,\n"
+                + "				}, {\n"
+                + "					label: 'My Second dataset',\n"
+                + "					fill: false,\n"
+                + "					backgroundColor: window.chartColors.blue,\n"
+                + "					borderColor: window.chartColors.blue,\n"
+                + "					data: [\n"
+                + "						D2D2D2D2D2D2D2D2\n"
+                + "					],\n"
+                + "				}]\n"
+                + "			},\n"
+                + "			options: {\n"
+                + "				responsive: true,\n"
+                + "				title: {\n"
+                + "					display: true,\n"
+                + "					text: 'Chart.js Line Chart'\n"
+                + "				},\n"
+                + "				tooltips: {\n"
+                + "					mode: 'index',\n"
+                + "					intersect: false,\n"
+                + "				},\n"
+                + "				hover: {\n"
+                + "					mode: 'nearest',\n"
+                + "					intersect: true\n"
+                + "				},\n"
+                + "				scales: {\n"
+                + "					xAxes: [{\n"
+                + "						display: true,\n"
+                + "						scaleLabel: {\n"
+                + "							display: true,\n"
+                + "							labelString: 'Month'\n"
+                + "						}\n"
+                + "					}],\n"
+                + "					yAxes: [{\n"
+                + "						display: true,\n"
+                + "						scaleLabel: {\n"
+                + "							display: true,\n"
+                + "							labelString: 'Value'\n"
+                + "						}\n"
+                + "					}]\n"
+                + "				}\n"
+                + "			}\n"
+                + "		};\n"
+                + "\n"
+                + "		window.onload = function() {\n"
+                + "			var ctx = document.getElementById('canvas').getContext('2d');\n"
+                + "			window.myLine = new Chart(ctx, config);\n"
+                + "		};\n"
+                + "\n"
+                + "		document.getElementById('randomizeData').addEventListener('click', function() {\n"
+                + "			config.data.datasets.forEach(function(dataset) {\n"
+                + "				dataset.data = dataset.data.map(function() {\n"
+                + "					return randomScalingFactor();\n"
+                + "				});\n"
+                + "\n"
+                + "			});\n"
+                + "\n"
+                + "			window.myLine.update();\n"
+                + "		});\n"
+                + "\n"
+                + "		var colorNames = Object.keys(window.chartColors);\n"
+                + "		document.getElementById('addDataset').addEventListener('click', function() {\n"
+                + "			var colorName = colorNames[config.data.datasets.length % colorNames.length];\n"
+                + "			var newColor = window.chartColors[colorName];\n"
+                + "			var newDataset = {\n"
+                + "				label: 'Dataset ' + config.data.datasets.length,\n"
+                + "				backgroundColor: newColor,\n"
+                + "				borderColor: newColor,\n"
+                + "				data: [],\n"
+                + "				fill: false\n"
+                + "			};\n"
+                + "\n"
+                + "			for (var index = 0; index < config.data.labels.length; ++index) {\n"
+                + "				newDataset.data.push(randomScalingFactor());\n"
+                + "			}\n"
+                + "\n"
+                + "			config.data.datasets.push(newDataset);\n"
+                + "			window.myLine.update();\n"
+                + "		});\n"
+                + "	";
+
+        s = s.replace("D1D1D1D1D1D1D1D1", getChartDataSeries1());
+        s = s.replace("D2D2D2D2D2D2D2D2", getChartDataSeries2());
+        s = s.replace("N1N1N1N1N1N1N1N1", getChartNameSeries());
+        s = s.replace("My First dataset", getValues1Name());
+        s = s.replace("My Second dataset", getValues2Name());
+        s = s.replace("Chart.js Line Chart", getChartName());
+        return s;
     }
 
     public void saveSelected() {
@@ -1005,10 +1645,20 @@ public class PatientEncounterController implements Serializable {
         return channelBills;
     }
 
+    
+    
     public void setChannelBills(List<Bill> channelBills) {
         this.channelBills = channelBills;
     }
 
+    public InvestigationItem getGraphInvestigationItem() {
+        return graphInvestigationItem;
+    }
+
+    public void setGraphInvestigationItem(InvestigationItem graphInvestigationItem) {
+        this.graphInvestigationItem = graphInvestigationItem;
+    }
+    
     public CommonController getCommonController() {
         return commonController;
     }
@@ -1160,6 +1810,118 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+    }
+
+    public ClinicalFindingValueFacade getClinicalFindingValueFacade() {
+        return clinicalFindingValueFacade;
+    }
+
+    public void setClinicalFindingValueFacade(ClinicalFindingValueFacade clinicalFindingValueFacade) {
+        this.clinicalFindingValueFacade = clinicalFindingValueFacade;
+    }
+
+    public ItemUsageFacade getItemUsageFacade() {
+        return itemUsageFacade;
+    }
+
+    public void setItemUsageFacade(ItemUsageFacade itemUsageFacade) {
+        this.itemUsageFacade = itemUsageFacade;
+    }
+
+    public PrescriptionFacade getPrescriptionFacade() {
+        return prescriptionFacade;
+    }
+
+    public void setPrescriptionFacade(PrescriptionFacade prescriptionFacade) {
+        this.prescriptionFacade = prescriptionFacade;
+    }
+
+    public List<Bill> getOpdVisits() {
+        return opdVisits;
+    }
+
+    public void setOpdVisits(List<Bill> opdVisits) {
+        this.opdVisits = opdVisits;
+    }
+
+    public String getChartNameSeries() {
+        return chartNameSeries;
+    }
+
+    public void setChartNameSeries(String chartNameSeries) {
+        this.chartNameSeries = chartNameSeries;
+    }
+
+    public String getChartDataSeries1() {
+        return chartDataSeries1;
+    }
+
+    public void setChartDataSeries1(String chartDataSeries1) {
+        this.chartDataSeries1 = chartDataSeries1;
+    }
+
+    public String getChartDataSeries2() {
+        return chartDataSeries2;
+    }
+
+    public void setChartDataSeries2(String chartDataSeries2) {
+        this.chartDataSeries2 = chartDataSeries2;
+    }
+
+    public String getChartName() {
+        return chartName;
+    }
+
+    public void setChartName(String chartName) {
+        this.chartName = chartName;
+    }
+
+    public String getValues1Name() {
+        return values1Name;
+    }
+
+    public void setValues1Name(String values1Name) {
+        this.values1Name = values1Name;
+    }
+
+    public String getValues2Name() {
+        return values2Name;
+    }
+
+    public void setValues2Name(String values2Name) {
+        this.values2Name = values2Name;
+    }
+
+    public String getChartString() {
+        return chartString;
+    }
+
+    public void setChartString(String chartString) {
+        this.chartString = chartString;
+    }
+
+    public FavouriteController getFavouriteController() {
+        return favouriteController;
+    }
+
+    public void setFavouriteController(FavouriteController favouriteController) {
+        this.favouriteController = favouriteController;
+    }
+
+    public ClinicalFindingValue getEncounterMedicine() {
+        return encounterMedicine;
+    }
+
+    public void setEncounterMedicine(ClinicalFindingValue encounterMedicine) {
+        this.encounterMedicine = encounterMedicine;
+    }
+
+    public List<ClinicalFindingValue> getEncounterMedicines() {
+        return encounterMedicines;
+    }
+
+    public void setEncounterMedicines(List<ClinicalFindingValue> encounterMedicines) {
+        this.encounterMedicines = encounterMedicines;
     }
 
 }

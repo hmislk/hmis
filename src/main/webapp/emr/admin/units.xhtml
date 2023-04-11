@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/emr/admin/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form id="measurementUnitTableForm">
+                    <p:dataTable var="unit" value="#{measurementUnitController.allUnits}" paginator="true" rows="10" paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}">
+                        <p:column headerText="Name">
+                            <h:outputText value="#{unit.name}" />
+                        </p:column>
+                        <p:column headerText="Strength Unit">
+                            <h:outputText value="#{unit.strengthUnit}" />
+                        </p:column>
+                        <p:column headerText="Pack Unit">
+                            <h:outputText value="#{unit.packUnit}" />
+                        </p:column>
+                        <p:column headerText="Issue Unit">
+                            <h:outputText value="#{unit.issueUnit}" />
+                        </p:column>
+                        <p:column headerText="Duration Unit">
+                            <h:outputText value="#{unit.durationUnit}" />
+                        </p:column>
+                        <p:column headerText="Frequency Unit">
+                            <h:outputText value="#{unit.frequencyUnit}" />
+                        </p:column>
+                        <p:column headerText="Duration in Hours">
+                            <h:outputText value="#{unit.durationInHours}" />
+                        </p:column>
+                        <p:column headerText="Frequency in Hours">
+                            <h:outputText value="#{unit.frequencyInHours}" />
+                        </p:column>
+                        <p:column headerText="Actions" >
+                            <p:commandButton value="Edit" action="#{measurementUnitController.navigateToEditMeasurementUnit()}" ajax="false" >
+                                <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" >
+                                </f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton value="Edit" action="#{measurementUnitController.delete()}" ajax="false" >
+                                <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" >
+                                </f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </h:form>
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

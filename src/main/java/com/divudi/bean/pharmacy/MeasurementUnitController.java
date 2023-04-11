@@ -13,6 +13,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.facade.MeasurementUnitFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,7 +54,25 @@ public class MeasurementUnitController implements Serializable {
     List<MeasurementUnit> packUnits;
     List<MeasurementUnit> strengthUnits;
     List<MeasurementUnit> allUnits;
+    
+    
+    public String navigateToAddMeasurementUnit(){
+        current = new MeasurementUnit();
+        return "/emr/admin/unit";
+    }
+    
+    public String navigateToListAllMeasurementUnit(){
+        return "/emr/admin/units";
+    }
 
+    public String navigateToEditMeasurementUnit(){
+        if(current==null){
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        return "/emr/admin/unit";
+    }
+    
     public void fillAllUnits() {
         String jpql;
         Map m = new HashMap();
@@ -136,10 +155,10 @@ public class MeasurementUnitController implements Serializable {
 
     private void recreateModel() {
         items = null;
+        fillAllUnits();
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -185,7 +204,6 @@ public class MeasurementUnitController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
