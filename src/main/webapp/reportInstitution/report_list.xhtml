@@ -17,9 +17,17 @@
 
                         <h:panelGrid columns="2" styleClass="alignTop">
                             <p:accordionPanel>
+                                 <p:tab title="All Bills">
+                                    <h:panelGrid columns="1" >
+                                        <p:commandButton ajax="false" value="All Bill List" 
+                                                         action="all_bills" 
+                                                         styleClass="linkButton"></p:commandButton>
+                                    </h:panelGrid>
+                                </p:tab>
+                                
                                 <p:tab title="OPD Reports">
                                     <h:panelGrid columns="1" >
-                                        <p:commandButton ajax="false" value="Bill List" action="report_list_opd_bills" 
+                                        <p:commandButton ajax="false" value="OPD Bill List" action="report_list_opd_bills" 
                                                          styleClass="linkButton"></p:commandButton>
                                         <p:commandButton ajax="false" value="Cancelled Bill List" action="#" styleClass="linkButton"></p:commandButton>
                                         <p:commandButton ajax="false" value="Returned Bill List" action="#" styleClass="linkButton"></p:commandButton>
