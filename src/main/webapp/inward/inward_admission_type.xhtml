@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:growl autoUpdate="true" />
+                <p:growl />
                 <p:focus id="selectFocus" context="gpSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
 
@@ -60,7 +60,7 @@
                                     <h:outputLabel value="Admission Fee"/>
                                     <p:inputText autocomplete="off" value="#{admissionTypeController.current.admissionFee}"/>      
                                     <h:outputLabel value="Dafault Room"/>
-                                    <p:autoComplete  converter="fac" forceSelection="true"                                                      
+                                    <p:autoComplete  converter="fac" forceSelection="true"                                                  
                                                      value="#{admissionTypeController.current.roomFacilityCharge}" 
                                                      completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                      var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"  >                            

@@ -29,7 +29,6 @@ import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
@@ -41,7 +40,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,9 +64,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import net.sourceforge.barbecue.BarcodeFactory;
-import net.sourceforge.barbecue.BarcodeImageHandler;
-import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -215,7 +210,7 @@ public class InvestigationItemController implements Serializable {
             Map m = new HashMap();
             m.put("item", ix);
             m.put("types", types);
-            tis = getFacade().findBySQL(temSql, m);
+            tis = getFacade().findByJpql(temSql, m);
         }
         return tis;
     }
@@ -230,7 +225,7 @@ public class InvestigationItemController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", currentInvestigation);
-        return getItemFacade().findBySQL(j, m);
+        return getItemFacade().findByJpql(j, m);
     }
 
     public void setCurrentReportComponants(List<Item> crc) {
@@ -516,7 +511,7 @@ public class InvestigationItemController implements Serializable {
         String sql = "select ri from ReportItem ri where ri.item = :item ";
         Map m = new HashMap();
         m.put("item", currentInvestigation);
-        return riFacade.findBySQL(sql, m);
+        return riFacade.findByJpql(sql, m);
     }
 
     public void moveUpAllReportItems() {
@@ -643,7 +638,7 @@ public class InvestigationItemController implements Serializable {
 //            m.put("t", InvestigationItemType.Value);
             m.put("n", "'%" + qry.toUpperCase() + "%'");
             //System.out.println("m = " + m);
-            iivs = getEjbFacade().findBySQL(sql, m);
+            iivs = getEjbFacade().findByJpql(sql, m);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -679,7 +674,7 @@ public class InvestigationItemController implements Serializable {
                     + " order by i.name";
             m.put("t", InvestigationItemType.Template);
             m.put("q", "%" + qry.toUpperCase() + "%");
-            iivs = getEjbFacade().findBySQL(sql, m);
+            iivs = getEjbFacade().findByJpql(sql, m);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -954,7 +949,7 @@ public class InvestigationItemController implements Serializable {
         }
         j += "order by i.id desc";
 
-        return getEjbFacade().findFirstBySQL(j, m);
+        return getEjbFacade().findFirstByJpql(j, m);
     }
 
     public InvestigationItem getLastReportItemComplete(InvestigationItemType type) {
@@ -975,7 +970,7 @@ public class InvestigationItemController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", getInstitution());
-            d = departmentFacade.findBySQL(sql, m);
+            d = departmentFacade.findByJpql(sql, m);
         }
 
         return d;
@@ -1682,7 +1677,7 @@ public class InvestigationItemController implements Serializable {
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item=:item order by i.riTop, i.riLeft";
             Map m = new HashMap();
             m.put("item", ix);
-            iis = ejbFacade.findBySQL(temSql, m);
+            iis = ejbFacade.findByJpql(temSql, m);
         } else {
             iis = new ArrayList<>();
         }

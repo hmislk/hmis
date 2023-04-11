@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:em="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <div class="container-fluid w-100">
+                    <div class="row" >
+                        <div class="col-md-6" >
+                            <div class="card mb-3">
+                                <div class="card-header">Patient Details *</div>
+                                <div class="card-body">
+
+                                    <h1 style="font-family: Verdana;"> Font family is verdana</h1>
+                                    <h1 style="font-family: Courier;"> Font family is Courier</h1>
+
+                                    <em:patient patient="#{patientController.current}" ></em:patient>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" >
+                            <p:tabView >
+                                <p:tab title="Allergies" >
+
+                                </p:tab>
+                                <p:tab title="Hx" >
+
+                                </p:tab>
+
+                            </p:tabView>
+                        </div>
+                    </div>
+                    <div class="card w-100">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+
+                                    <div class="card mb-3">
+                                        <div class="card-header">Allergies</div>
+                                        <div class="card-body">
+
+                                            <h:form>
+                                                <div class="form-group">
+                                                    <p:autoComplete completeMethod="#{pharmaceuticalItemController.completeItem}"
+                                                                    value="#{patientEncounterController.patientAllergy.itemValue}"
+                                                                    var="item"
+                                                                    itemLabel="#{item}"
+                                                                    itemValue="#{item}"
+                                                                    dropdown="true"
+                                                                    placeholder="Select Medicine"
+                                                                    styleClass="form-control"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <p:inputTextarea value="#{patientEncounterController.patientAllergy.stringValue}"
+                                                                     placeholder="Details"
+                                                                     styleClass="form-control"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <h:commandButton value="Add Allergy"
+                                                                     action="#{patientEncounterController.addPatientAllergy()}"
+                                                                     styleClass="btn btn-primary"/>
+                                                </div>
+
+                                                <p:dataTable value="#{patientEncounterController.patientAllergies}"
+                                                             var="allergy">
+                                                    <p:column headerText="Medicine">
+                                                        <h:outputText value="#{allergy.itemValue}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Details">
+                                                        <h:outputText value="#{allergy.stringValue}"/>
+                                                    </p:column>
+                                                    <p:column headerText="Delete">
+                                                        <h:commandButton value="Delete"
+                                                                         action="#{patientEncounterController.removePatientAllergy()}"
+                                                                         styleClass="btn btn-danger">
+                                                            <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}"
+                                                                                         value="#{allergy}"/>
+                                                        </h:commandButton>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </h:form>
+
+                                        </div>
+                                        <div class="card mb-3">
+                                            <div class="card-header">Medicines</div>
+                                            <div class="card-body"></div>
+                                        </div>
+                                        <div class="card mb-3">
+                                            <div class="card-header">Bills</div>
+                                            <div class="card-body"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card mb-3">
+                                            <div class="card-header">Actions</div>
+
+                                            <div class="card-body">
+                                                <button type="button" class="btn btn-primary mb-2">Action 1</button>
+                                                <button type="button" class="btn btn-secondary mb-2">Action 2</button>
+                                                <button type="button" class="btn btn-success mb-2">Action 3</button>
+                                                <!-- Add more buttons as needed -->
+                                            </div>
+                                        </div>
+                                        <div class="card mb-3">
+                                            <div class="card-header">History</div>
+                                            <div class="card-body"></div>
+                                        </div>
+                                        <div class="card mb-3">
+                                            <div class="card-header">Photos</div>
+                                            <div class="card-body"></div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

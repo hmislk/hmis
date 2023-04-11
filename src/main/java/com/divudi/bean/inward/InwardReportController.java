@@ -697,7 +697,7 @@ public class InwardReportController implements Serializable {
 //        temMap.put("toDate", toDate);
 //        temMap.put("fromDate", fromDate);
 //
-//        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        if (billItems == null) {
 //            billItems = new ArrayList<>();
@@ -735,7 +735,7 @@ public class InwardReportController implements Serializable {
 //        temMap.put("toDate", toDate);
 //        temMap.put("fromDate", fromDate);
 //
-//        billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        if (billItems == null) {
 //            billItems = new ArrayList<>();

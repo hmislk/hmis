@@ -9,10 +9,14 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.entity.Category;
+import com.divudi.entity.pharmacy.MeasurementUnit;
 import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.Vtm;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
@@ -34,8 +38,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -57,13 +61,26 @@ public class VmpController implements Serializable {
     String bulkText = "";
     boolean billedAs;
     boolean reportedAs;
-    VtmsVmps addingVtmInVmp;
-    VtmsVmps removingVtmInVmp;
+    VirtualProductIngredient addingVtmInVmp;
+    VirtualProductIngredient removingVtmInVmp;
+    @Inject
+    VtmInVmpController vtmInVmpController;
     @EJB
     VtmsVmpsFacade vivFacade;
-    List<VtmsVmps> vivs;
+    List<VirtualProductIngredient> vivs;
 
     List<Vmp> vmpList;
+
+    public String navigateToListAllVmps() {
+        String jpql = "Select vmp "
+                + " from Vmp vmp "
+                + " where vmp.retired=:ret "
+                + " order by vmp.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findByJpql(jpql, m);
+        return "/emr/reports/vmps?faces-redirect=true";
+    }
 
     public List<Vmp> completeVmp(String query) {
 
@@ -78,28 +95,77 @@ public class VmpController implements Serializable {
         return vmpList;
     }
 
-    public List<VtmsVmps> getVivs() {
+    public Vmp findVmpByName(String name) {
+        String jpql;
+        if (name == null) {
+            return null;
+        }
+        jpql = "select c "
+                + " from Vmp c "
+                + " where c.retired=:ret "
+                + " and c.name=:name";
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        return getFacade().findFirstByJpql(jpql, m);
+    }
+
+    public Vmp createVmp(String vmpName, 
+            Vtm vtm,
+            Category dosageForm,
+            Double strengthOfAnIssueUnit, 
+            MeasurementUnit strengthUnit, 
+            Double issueUnitsPerPack,
+            MeasurementUnit packUnit,
+            Double minimumIssueQuantity,
+            MeasurementUnit minimumIssueQuantityUnit,
+            Double issueMultipliesQuantity,
+            MeasurementUnit issueMultipliesQuantityUnit) {
+        Vmp v;
+        v = findVmpByName(vmpName);
+        if (v != null) {
+            return v;
+        }
+        v = new Vmp();
+        v.setName(vmpName);
+        v.setCode("vmp_" + CommonController.nameToCode(vmpName));
+        v.setVtm(vtm);
+        v.setDosageForm(dosageForm);
+        v.setStrengthOfAnIssueUnit(strengthOfAnIssueUnit);
+        v.setStrengthUnit(strengthUnit);
+        v.setPackUnit(packUnit);
+        v.setIssueUnitsPerPackUnit(issueUnitsPerPack);
+        v.setMinimumIssueQuantity(minimumIssueQuantity);
+        v.setMinimumIssueQuantityUnit(minimumIssueQuantityUnit);
+        v.setIssueMultipliesQuantity(issueMultipliesQuantity);
+        v.setIssueMultipliesUnit(issueMultipliesQuantityUnit);
+        getFacade().create(v);
+        return v;
+}
+
+
+    public List<VirtualProductIngredient> getVivs() {
         if (getCurrent().getId() == null) {
-            return new ArrayList<VtmsVmps>();
+            return new ArrayList<VirtualProductIngredient>();
         } else {
 
             vivs = getVivFacade().findBySQL("select v from VtmsVmps v where v.vmp.id = " + getCurrent().getId());
 
             if (vivs == null) {
-                return new ArrayList<VtmsVmps>();
+                return new ArrayList<VirtualProductIngredient>();
             }
 
             return vivs;
         }
     }
-    
+
     public String getVivsAsString(Vmp vmp) {
         return getVivsAsString(getVivs(vmp));
     }
 
-    public String getVivsAsString(List<VtmsVmps> gs) {
+    public String getVivsAsString(List<VirtualProductIngredient> gs) {
         String str = "";
-        for (VtmsVmps g : gs) {
+        for (VirtualProductIngredient g : gs) {
             if (g.getVtm() == null || g.getVtm().getName() == null) {
                 continue;
             }
@@ -112,15 +178,15 @@ public class VmpController implements Serializable {
         return str;
     }
 
-    public List<VtmsVmps> getVivs(Vmp vmp) {
-        List<VtmsVmps> gs;
+    public List<VirtualProductIngredient> getVivs(Vmp vmp) {
+        List<VirtualProductIngredient> gs;
         if (vmp == null) {
             return new ArrayList<>();
         } else {
             String j = "select v from VtmsVmps v where v.vmp=:vmp";
             Map m = new HashMap();
             m.put("vmp", vmp);
-            gs = getVivFacade().findBySQL(j, m);
+            gs = getVivFacade().findByJpql(j, m);
             if (gs == null) {
                 return new ArrayList<>();
             }
@@ -132,7 +198,7 @@ public class VmpController implements Serializable {
         getVivFacade().remove(removingVtmInVmp);
     }
 
-    public void setVivs(List<VtmsVmps> vivs) {
+    public void setVivs(List<VirtualProductIngredient> vivs) {
         this.vivs = vivs;
     }
 
@@ -196,22 +262,22 @@ public class VmpController implements Serializable {
         return addingVtmInVmp.getVtm().getName() + " " + addingVtmInVmp.getStrength() + " " + addingVtmInVmp.getStrengthUnit().getName() + " " + current.getCategory().getName();
     }
 
-    public VtmsVmps getAddingVtmInVmp() {
+    public VirtualProductIngredient getAddingVtmInVmp() {
         if (addingVtmInVmp == null) {
-            addingVtmInVmp = new VtmsVmps();
+            addingVtmInVmp = new VirtualProductIngredient();
         }
         return addingVtmInVmp;
     }
 
-    public void setAddingVtmInVmp(VtmsVmps addingVtmInVmp) {
+    public void setAddingVtmInVmp(VirtualProductIngredient addingVtmInVmp) {
         this.addingVtmInVmp = addingVtmInVmp;
     }
 
-    public VtmsVmps getRemovingVtmInVmp() {
+    public VirtualProductIngredient getRemovingVtmInVmp() {
         return removingVtmInVmp;
     }
 
-    public void setRemovingVtmInVmp(VtmsVmps removingVtmInVmp) {
+    public void setRemovingVtmInVmp(VirtualProductIngredient removingVtmInVmp) {
         this.removingVtmInVmp = removingVtmInVmp;
     }
 
@@ -281,7 +347,7 @@ public class VmpController implements Serializable {
 
     public void prepareAdd() {
         current = new Vmp();
-        addingVtmInVmp = new VtmsVmps();
+        addingVtmInVmp = new VirtualProductIngredient();
     }
 
     public void bulkUpload() {

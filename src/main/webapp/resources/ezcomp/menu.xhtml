@@ -4,7 +4,9 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/menus"
+      xmlns:em="http://xmlns.jcp.org/jsf/composite/ezcomp/menus">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -661,15 +663,23 @@
                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration" rendered="#{webUserController.hasPrivilege('HrAdmin')}" />
                 </p:submenu>
 
-                <p:submenu styleClass="rightBordrOnly" label="EHR"  rendered="#{webUserController.hasPrivilege('Clinical')}">
-                    <p:menuitem ajax="false" action="/clinical/clinical_patient_for_receptionist" value="Patients"/>
-                    <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration"/>
-                    <p:menuitem ajax="false" action="/clinical/membership_registration" value="Membership"/>
-                    <p:menuitem ajax="false" action="/clinical/clinical_queue" value="Queue"/>
-                    <p:menuitem ajax="false" action="/clinical/clinical_reports_index" value="Reports"/>
-                    <p:menuitem ajax="false" action="/clinical/favourite_index" value="Favourites"/>
-                    <p:menuitem ajax="false" action="/clinical/clinical_administration" value="Administration"/>
+                <emr:emr_menu></emr:emr_menu>
+
+                <p:submenu styleClass="rightBordrOnly" label="EMR"  
+                           rendered="#{webUserController.hasPrivilege('Clinical')}">
+                    <p:menuitem ajax="false" action="#{patientController.toSearchPatient()}" icon="pi pi-search" value="Patient Search"/>
+
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalPatientForReceptionist()}" value="Patients"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToPatientRegistration()}" value="Patient Registration"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToMembershipRegistration()}" value="Membership"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" value="Queue"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="Reports"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalFavouriteIndex()}" value="Favourites"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToEmrAdmin()}" value="Administration"/>
+
+
                 </p:submenu>
+
 
                 <p:submenu styleClass="rightBordrOnly" icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_list" value="Lists" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               

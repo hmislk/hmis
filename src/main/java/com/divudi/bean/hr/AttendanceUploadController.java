@@ -37,10 +37,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import jxl.Cell;
-import jxl.Sheet;
-import jxl.Workbook;
-import jxl.read.biff.BiffException;
 import org.primefaces.model.file.UploadedFile;
 
 /**
@@ -181,7 +177,7 @@ public class AttendanceUploadController implements Serializable {
 //                String sql = "select s from Staff s "
 //                        + " where s.retired=false"
 //                        + " and s.code=:d";
-//                Staff s = getStaffFacade().findFirstBySQL(sql, m);
+//                Staff s = getStaffFacade().findFirstByJpql(sql, m);
 //
 //                String str = strings[1] + " " + strings[2];
 //
@@ -218,7 +214,7 @@ public class AttendanceUploadController implements Serializable {
 //                        m.put("s", s);
 //                        m.put("t", date);
 //                        m.put("p", FingerPrintRecordType.Logged);
-//                        FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
+//                        FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstByJpql(jpql, m, TemporalType.TIMESTAMP);
 //                        System.err.println(" 2 rffr = " + rffr);
 //                        if (rffr == null) {
 //                            getFingerPrintRecordFacade().create(ffr);
@@ -318,98 +314,7 @@ public class AttendanceUploadController implements Serializable {
 
     }
 
-    public void uploadAttendanceAsExcel() {
-        try {
-            File inputWorkbook;
-            Workbook w;
-            Cell cell;
-            InputStream in;
-            in = file.getInputStream();
-            File f;
-            f = new File(Calendar.getInstance().getTimeInMillis() + file.getFileName());
-            FileOutputStream out;
-            out = new FileOutputStream(f);
-            int read;
-            byte[] bytes = new byte[1024];
-            while ((read = in.read(bytes)) != -1) {
-                out.write(bytes, 0, read);
-            }
-            in.close();
-            out.flush();
-            out.close();
-            inputWorkbook = new File(f.getAbsolutePath());
-            w = Workbook.getWorkbook(inputWorkbook);
-            Sheet sheet = w.getSheet(0);
-            collectedRecords = new ArrayList<>();
-            for (int i = 1; i < sheet.getRows(); i++) {
-                cell = sheet.getCell(0, i);
-                String strCat = cell.getContents();
-
-                Map m = new HashMap();
-                m.put("d", strCat);
-                String sql = "select s from Staff s where s.retired=false and s.acNo=:d";
-                Staff s = getStaffFacade().findFirstBySQL(sql, m);
-                cell = sheet.getCell(2, i);
-                String str = cell.getContents();
-
-                if (s != null && !str.equals("")) {
-//                    //System.err.println("AcNo : " + strCat);
-//                    //System.err.println("Staff : " + s);
-                    FingerPrintRecord ffr = new FingerPrintRecord();
-                    ffr.setCreatedAt(Calendar.getInstance().getTime());
-                    ffr.setCreater(getSessionController().getLoggedUser());
-                    ffr.setFingerPrintRecordType(FingerPrintRecordType.Logged);
-                    ffr.setStaff(s);
-
-                    Date date;
-                    DateFormat formatter = new SimpleDateFormat("MM/d/yy HH:mm");
-                    //  //System.err.println("str :" + str);
-                    date = formatter.parse(str);
-                    ffr.setRecordTimeStamp(date);
-                    String jpql = "select r from FingerPrintRecord r where r.retired=false and "
-                            + " r.fingerPrintRecordType=:p and r.staff=:s and r.recordTimeStamp=:t";
-                    m = new HashMap();
-                    m.put("s", s);
-                    m.put("t", date);
-                    m.put("p", FingerPrintRecordType.Logged);
-                    FingerPrintRecord rffr = getFingerPrintRecordFacade().findFirstBySQL(jpql, m, TemporalType.TIMESTAMP);
-                    if (rffr == null) {
-                        getFingerPrintRecordFacade().create(ffr);
-
-                        FingerPrintRecord ffrv = new FingerPrintRecord();
-                        ffrv.setCreatedAt(Calendar.getInstance().getTime());
-                        ffrv.setCreater(getSessionController().getLoggedUser());
-                        ffrv.setFingerPrintRecordType(FingerPrintRecordType.Varified);
-                        ffrv.setStaff(s);
-                        ffrv.setRecordTimeStamp(date);
-                        ffrv.setLoggedRecord(ffr);
-                        //////////////////////////
-                        ffrv.setStaffShift(getHumanResourceBean().fetchStaffShift(ffrv));
-                        ///////////////////////////
-                        getFingerPrintRecordFacade().create(ffrv);
-
-                        ffr.setVerifiedRecord(ffrv);
-                        getFingerPrintRecordFacade().edit(ffr);
-                        collectedRecords.add(ffrv);
-
-                    } else {
-                        // rffr.setStaffShift(searchStaffShift(rffr));
-                        rffr.getVerifiedRecord().setStaffShift(getHumanResourceBean().fetchStaffShift(rffr.getVerifiedRecord()));
-                        getFingerPrintRecordFacade().edit(rffr.getVerifiedRecord());
-
-                        collectedRecords.add(rffr.getVerifiedRecord());
-
-                    }
-
-                }
-
-            }
-        } catch (IOException | BiffException | ParseException ex) {
-            Logger.getLogger(AttendanceUploadController.class
-                    .getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
+ 
 
     public Times[] getTimes() {
         return Times.values();

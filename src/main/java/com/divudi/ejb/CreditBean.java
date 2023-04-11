@@ -329,7 +329,7 @@ public class CreditBean {
         hm.put("rB", b);
         hm.put("btp", billType);
 
-        return billFacade.findBySQL(sql, hm);
+        return billFacade.findByJpql(sql, hm);
 
     }
 

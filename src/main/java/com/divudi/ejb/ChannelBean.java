@@ -289,7 +289,7 @@ public class ChannelBean {
         HashMap hm = new HashMap();
         hm.put("dt", date);
         hm.put("st", staff);
-        ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstBySQL(slq, hm, TemporalType.DATE);
+        ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstByJpql(slq, hm, TemporalType.DATE);
 
         if (tmp != null) {
             return true;
@@ -784,7 +784,7 @@ public class ChannelBean {
         m.put("os", ss);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+            tmp = getServiceSessionFacade().findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
         }

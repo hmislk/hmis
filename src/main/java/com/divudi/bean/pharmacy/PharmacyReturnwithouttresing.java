@@ -302,7 +302,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {

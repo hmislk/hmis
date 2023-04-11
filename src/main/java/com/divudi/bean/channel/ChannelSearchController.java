@@ -181,7 +181,7 @@ public class ChannelSearchController implements Serializable {
         if (getFromDate() != null && getToDate() != null) {
             searchedBillSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
         } else {
-            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m);
+            searchedBillSessions = getBillSessionFacade().findByJpql(sql, m);
         }
 
     }
@@ -441,7 +441,7 @@ public class ChannelSearchController implements Serializable {
                 + "  WHERE b.retired=false "
                 + " and b.bill=:b";
         hm.put("b", getBill());
-        billItems = getBillItemFacede().findBySQL(sql, hm);
+        billItems = getBillItemFacede().findByJpql(sql, hm);
 
     }
 

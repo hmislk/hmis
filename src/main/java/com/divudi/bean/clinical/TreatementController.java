@@ -64,7 +64,7 @@ public class TreatementController implements Serializable {
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
         sql="select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
-        selectedItems = getFacade().findBySQL(sql,m);
+        selectedItems = getFacade().findByJpql(sql,m);
         return selectedItems;
     }
 
@@ -163,7 +163,7 @@ public class TreatementController implements Serializable {
             m.put("t", SymanticType.Pharmacologic_Substance);
             String sql;
             sql = "select c from ClinicalFindingItem c where c.retired=false and c.symanticType=:t order by c.name";
-            items = getFacade().findBySQL(sql, m);
+            items = getFacade().findByJpql(sql, m);
         }
         return items;
     }
@@ -180,7 +180,7 @@ public class TreatementController implements Serializable {
                     + " and c.symanticType=:t "
                     + " and c.institution=:ins "
                     + " order by c.name";
-            insItems = getFacade().findBySQL(sql, m);
+            insItems = getFacade().findByJpql(sql, m);
         }
         return insItems;
     }

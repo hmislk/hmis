@@ -370,7 +370,7 @@ public class BookingController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
             }
 
-            consultants = getStaffFacade().findBySQL(sql, m);
+            consultants = getStaffFacade().findByJpql(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
@@ -407,7 +407,7 @@ public class BookingController implements Serializable {
                 }
 //                //// // System.out.println("m = " + m);
 //                //// // System.out.println("sql = " + sql);
-                consultants = getStaffFacade().findBySQL(sql, m);
+                consultants = getStaffFacade().findByJpql(sql, m);
             }
         } else {
             if (selectTextConsultant.length() > 4) {
@@ -424,7 +424,7 @@ public class BookingController implements Serializable {
                     m.put("typ", PersonInstitutionType.Channelling);
 //                    //// // System.out.println("m = " + m);
 //                    //// // System.out.println("sql = " + sql);
-                    consultants = getStaffFacade().findBySQL(sql, m);
+                    consultants = getStaffFacade().findByJpql(sql, m);
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
@@ -453,7 +453,7 @@ public class BookingController implements Serializable {
                                 + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
-                    consultants = getStaffFacade().findBySQL(sql, m);
+                    consultants = getStaffFacade().findByJpql(sql, m);
                 }
             }
         }
@@ -1035,7 +1035,7 @@ public class BookingController implements Serializable {
                     + " order by s.sessionWeekday,s.startingTime ";
             List<ServiceSession> tmp = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
-            tmp = getServiceSessionFacade().findBySQL(sql, m);
+            tmp = getServiceSessionFacade().findByJpql(sql, m);
 
             for (ServiceSession ss : tmp) {
                 ss.getStaff();
@@ -1182,7 +1182,7 @@ public class BookingController implements Serializable {
 
             m.put("staff", getStaff());
             m.put("wd", wd);
-            List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m);
+            List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());//check work future bokking
             serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
         }
@@ -1237,7 +1237,7 @@ public class BookingController implements Serializable {
 //        hh.put("class", BilledBill.class);
 //        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
 //        hh.put("ss", getSelectedServiceSession());
-//        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //        //// // System.out.println("hh = " + hh);
 //        //// // System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
 //        if (getSelectedServiceSession().isTransLeave()) {
@@ -1255,7 +1255,7 @@ public class BookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
+        arrivalRecord = (ArrivalRecord) fpFacade.findFirstByJpql(sql, hh);
     }
 
     public Boolean findArrivals(ServiceSession ss) {
@@ -1267,7 +1267,7 @@ public class BookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", ss.getSessionDate());
         hh.put("ss", ss.getId());
-        arrivalRecord = (ArrivalRecord) fpFacade.findFirstBySQL(sql, hh);
+        arrivalRecord = (ArrivalRecord) fpFacade.findFirstByJpql(sql, hh);
 
         if (arrivalRecord != null) {
             if (arrivalRecord.isApproved()) {

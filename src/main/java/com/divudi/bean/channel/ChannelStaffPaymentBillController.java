@@ -204,7 +204,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
 //                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
 //            }
 //            //////// // System.out.println(sql);
-//            suggestions = getStaffFacade().findBySQL(sql);
+//            suggestions = getStaffFacade().findByJpql(sql);
 //        }
 //        return suggestions;
 //    }
@@ -232,7 +232,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
         }
-        suggestions = getStaffFacade().findBySQL(sql, m);
+        suggestions = getStaffFacade().findByJpql(sql, m);
 
         return suggestions;
     }
@@ -543,7 +543,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime";
         m.put("doc", currentStaff);
         m.put("class", ServiceSession.class);
-        serviceSessionList = getServiceSessionFacade().findBySQL(sql, m);
+        serviceSessionList = getServiceSessionFacade().findByJpql(sql, m);
     }
 
     private Bill createPaymentBill() {

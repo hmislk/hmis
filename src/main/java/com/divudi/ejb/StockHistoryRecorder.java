@@ -164,7 +164,7 @@ public class StockHistoryRecorder {
 
         m.put("typ", PersonInstitutionType.Channelling);
 
-        consultants = staffFacade.findBySQL(sql, m);
+        consultants = staffFacade.findByJpql(sql, m);
 
         return consultants;
     }
@@ -184,7 +184,7 @@ public class StockHistoryRecorder {
         HashMap hh = new HashMap();
         hh.put("ssDate", ss.getSessionDate());
         hh.put("ss", ss.getId());
-        arrivalRecord = (ArrivalRecord) fingerPrintRecordFacade.findFirstBySQL(sql, hh);
+        arrivalRecord = (ArrivalRecord) fingerPrintRecordFacade.findFirstByJpql(sql, hh);
 
         if (arrivalRecord != null) {
             if (arrivalRecord.isApproved()) {
@@ -200,7 +200,7 @@ public class StockHistoryRecorder {
         String sql;
         Map m = new HashMap();
         sql = "select distinct(s.department) from Stock s order by s.department.name";
-        return departmentFacade.findBySQL(sql, m);
+        return departmentFacade.findByJpql(sql, m);
     }
 
     public List<Item> fetchStockItem(Department department) {
@@ -210,7 +210,7 @@ public class StockHistoryRecorder {
                 + " where s.department=:dep "
                 + "  order by s.itemBatch.item.name";
         m.put("dep", department);
-        return itemFacade.findBySQL(sql, m);
+        return itemFacade.findByJpql(sql, m);
     }
 
     public double getStockQty(Item item, Department department) {
@@ -284,7 +284,7 @@ public class StockHistoryRecorder {
         m.put("type", ServiceSession.class);
         m.put("ft", ft);
         m.put("a", s);
-        List<ItemFee> itemFees = getItemFeeFacade().findBySQL(sql, m);
+        List<ItemFee> itemFees = getItemFeeFacade().findByJpql(sql, m);
         return itemFees;
     }
 

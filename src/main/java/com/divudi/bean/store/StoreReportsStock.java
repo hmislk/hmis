@@ -150,7 +150,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Store);
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -184,7 +184,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Store);
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -206,7 +206,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Inventry);
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -247,7 +247,7 @@ public class StoreReportsStock implements Serializable {
 
         m.put("depty", DepartmentType.Inventry);
         m.put("i", institution);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -265,7 +265,7 @@ public class StoreReportsStock implements Serializable {
         String sql;
         sql = "select s from Stock s where s.stock<0 and s.department=:d order by s.itemBatch.item.name";
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -295,7 +295,7 @@ public class StoreReportsStock implements Serializable {
         hm.put("dep", department);
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
-        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private StockHistory getPreviousStockHistoryByBatch(ItemBatch itemBatch, Department department, Date date) {
@@ -306,7 +306,7 @@ public class StoreReportsStock implements Serializable {
         hm.put("itmB", itemBatch);
         hm.put("dt", date);
         hm.put("dep", department);
-        return getStockHistoryFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getStockHistoryFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void fillDepartmentStocksError() {
@@ -364,7 +364,7 @@ public class StoreReportsStock implements Serializable {
         String sql;
         sql = "select s from Stock s where s.department=:d order by s.itemBatch.item.name";
         m.put("d", department);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         Set<Stock> tmpStockList = new HashSet<>();
 
         for (Stock st : stocks) {
@@ -479,7 +479,7 @@ public class StoreReportsStock implements Serializable {
         m.put("d", department);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -502,7 +502,7 @@ public class StoreReportsStock implements Serializable {
         m.put("t2", BillType.StorePre);
         m.put("fd", getFromDateE());
         m.put("td", getToDateE());
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -521,7 +521,7 @@ public class StoreReportsStock implements Serializable {
         String sql;
         sql = "select s from Stock s where s.staff=:d order by s.itemBatch.item.name";
         m.put("d", staff);
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         for (Stock ts : stocks) {
@@ -544,7 +544,7 @@ public class StoreReportsStock implements Serializable {
         m.put("dep", department);
         sql = "select s from Stock s where s.department=:dep and s.itemBatch.item.id in "
                 + "(select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)";
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
 
@@ -573,7 +573,7 @@ public class StoreReportsStock implements Serializable {
                 + " and s.itemBatch.item.category=:cat "
                 + " and s.itemBatch.item.departmentType=:depty "
                 + " order by s.itemBatch.item.name";
-        stocks = getStockFacade().findBySQL(sql, m);
+        stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
 

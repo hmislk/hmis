@@ -165,9 +165,9 @@
                                             <!--<p:outputLabel value="Address" />-->
                                             <p:inputText id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                             <!--<p:outputLabel value="Mobile No" />-->
-                                            <p:inputMask id="gmno" mask="999-9999999"   value="#{admissionController.current.guardian.mobile}"  />
+                                            <p:inputText id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
                                             <!--<p:outputLabel value="Home Phone No" />-->
-                                            <p:inputMask id="ghno" mask="999-9999999"  value="#{admissionController.current.guardian.phone}"  />
+                                            <p:inputText id="ghno"   value="#{admissionController.current.guardian.phone}"  />
 
                                             <p:watermark value="Guardian Name" for="gname" />
                                             <p:watermark value="Guardian NIC" for="gnic" />

@@ -102,7 +102,7 @@ public class ItemsDistributorsController implements Serializable {
                 + " order by i.id desc";
         Map m = new HashMap();
         m.put("item", i);
-        ItemsDistributors tmp = getFacade().findFirstBySQL(sql, m);
+        ItemsDistributors tmp = getFacade().findFirstByJpql(sql, m);
         if (tmp != null) {
             return tmp.getInstitution();
         } else {
@@ -240,7 +240,7 @@ public class ItemsDistributorsController implements Serializable {
 
         hm.put("ins", getCurrentInstituion());
 
-        items = getFacade().findBySQL(temSql, hm);
+        items = getFacade().findByJpql(temSql, hm);
 
         if (items == null) {
             items = new ArrayList<>();
@@ -282,7 +282,7 @@ public class ItemsDistributorsController implements Serializable {
 
         sql += " order by b.institution.name,b.item.name ";
 
-        searchItems = getFacade().findBySQL(sql, tmp);
+        searchItems = getFacade().findByJpql(sql, tmp);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Check enterd data/Item distributor(/faces/pharmacy/pharmacy_item_by_distributor.xhtml)");
 

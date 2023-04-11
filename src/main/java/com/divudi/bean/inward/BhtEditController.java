@@ -106,7 +106,7 @@ public class BhtEditController implements Serializable {
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("pEnc", current);
-        List<Bill> bills = getBillFacade().findBySQL(sql, hm);
+        List<Bill> bills = getBillFacade().findByJpql(sql, hm);
         if (bills.isEmpty()) {
             return flag;
         } else if (bills.size() == 1) {
@@ -135,7 +135,7 @@ public class BhtEditController implements Serializable {
 //                + " and b.cancelled=false ";
 //        HashMap hm = new HashMap();
 //        hm.put("pEnc", current);
-//        Bill bill = getBillFacade().findFirstBySQL(sql, hm);
+//        Bill bill = getBillFacade().findFirstByJpql(sql, hm);
 //        if (bill != null) {
 //            return true;
 //        }
@@ -288,7 +288,7 @@ public class BhtEditController implements Serializable {
                 + " and pr.patientEncounter=:pe"
                 + "  order by pr.admittedAt";
         hm.put("pe", getCurrent());
-        PatientRoom tmp = getPatientRoomFacade().findFirstBySQL(sql, hm);
+        PatientRoom tmp = getPatientRoomFacade().findFirstByJpql(sql, hm);
 
         if (tmp == null) {
             return;
@@ -428,7 +428,7 @@ public class BhtEditController implements Serializable {
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
                 + " and pr.patientEncounter=:pe order by pr.createdAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 

@@ -202,7 +202,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
         temMap.put("itm", getService());
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
@@ -294,7 +294,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
 
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -340,7 +340,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
 
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
@@ -380,7 +380,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         ////// // System.out.println("sql = " + sql);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -424,7 +424,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
         temMap.put("dtype", bill.getClass());
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         ////// // System.out.println("sql = " + sql);
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -466,7 +466,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         ////// // System.out.println("sql = " + sql);
         return getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
@@ -736,11 +736,11 @@ public class ServiceSummery implements Serializable {
         BillType billType[] = {BillType.OpdBill, BillType.InwardBill};
         m.put("bTp", Arrays.asList(billType));
 
-        billFees = getBillFeeFacade().findBySQL(sql, m);
-//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
-//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
-//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
-//        billFees = getBillFeeFacade().findBySQL(sql, m, 100);
+        billFees = getBillFeeFacade().findByJpql(sql, m);
+//        billFees = getBillFeeFacade().findByJpql(sql, m, 100);
+//        billFees = getBillFeeFacade().findByJpql(sql, m, 100);
+//        billFees = getBillFeeFacade().findByJpql(sql, m, 100);
+//        billFees = getBillFeeFacade().findByJpql(sql, m, 100);
 
         for (BillFee bf : billFees) {
 
@@ -1214,7 +1214,7 @@ public class ServiceSummery implements Serializable {
         hm.put("ftp", feeType);
 
         try {
-            for (BillFee bf : (List<BillFee>) getBillFeeFacade().findBySQL(sql, hm)) {
+            for (BillFee bf : (List<BillFee>) getBillFeeFacade().findByJpql(sql, hm)) {
                 if ("".equalsIgnoreCase(name)) {
 
                 } else {
@@ -1766,7 +1766,7 @@ public class ServiceSummery implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ftp", feeType);
         temMap.put("cat", cat);
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 

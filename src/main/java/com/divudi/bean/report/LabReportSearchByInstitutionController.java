@@ -816,7 +816,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 //                tm.put("pm2", PaymentMethod.Card);
 //                tm.put("pm3", PaymentMethod.Cheque);
 //                tm.put("pm4", PaymentMethod.Slip);
-//                labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+//                labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
 //                calTotalsWithout();
 //            } else {
 //                sql = "select f from Bill f where f.retired=false and f.billType = :billType and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 or f.paymentMethod = :pm3 or f.paymentMethod = :pm4 ) and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
@@ -828,7 +828,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
 //                tm.put("pm2", PaymentMethod.Card);
 //                tm.put("pm3", PaymentMethod.Cheque);
 //                tm.put("pm4", PaymentMethod.Slip);
-//                labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+//                labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
 //                calTotalsWithout(getInstitution(), null);
 //            }
 //        }
@@ -1044,7 +1044,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         m.put("fromDate", fromDate);
         if (txtSearch == null || txtSearch.trim().equals("")) {
 //                sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where b.createdAt between :fromDate and :toDate order by pi.id desc";
-            //               patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 100);
+            //               patientInvestigations = getPiFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
             patientInvestigations = new ArrayList<>();
         } else {
             String sql = "select pi from PatientInvestigation pi join pi.investigation i "

@@ -2,8 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:pm="http://primefaces.org/mobile">
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <f:metadata >
         <f:viewParam name="username" value="#{sessionController.userName}" ></f:viewParam>
         <f:viewParam name="password" value="#{sessionController.passord}" ></f:viewParam>
@@ -12,15 +11,13 @@
     <h:head>
     </h:head>
     <h:body>
-        <pm:page >
-            <pm:content >
-                Logging Details
-                 #{sessionController.loginRequestResponse}
-                 THank you
-            </pm:content>
-        </pm:page>
-        
-       
+
+        Logging Details
+        #{sessionController.loginRequestResponse}
+        THank you
+
+
+
     </h:body>
 </html>
 

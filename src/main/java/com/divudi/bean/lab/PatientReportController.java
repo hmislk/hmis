@@ -241,7 +241,7 @@ public class PatientReportController implements Serializable {
                 + " where r.patientInvestigation=:pi";
         Map m = new HashMap();
         m.put("pi", pi);
-        return getFacade().findBySQL(j, m);
+        return getFacade().findByJpql(j, m);
     }
 
     public String toViewMyReports() {
@@ -260,7 +260,7 @@ public class PatientReportController implements Serializable {
         }
 
         m.put("person", getSessionController().getLoggedUser().getWebUserPerson());
-        customerReports = getFacade().findBySQL(j, m);
+        customerReports = getFacade().findByJpql(j, m);
         return "/mobile/my_test_results";
 
     }
@@ -620,7 +620,7 @@ public class PatientReportController implements Serializable {
         //////System.out.println("sql = " + sql);
         m.put("pi", pi);
         //////System.out.println("m = " + m);
-        PatientReport r = getFacade().findFirstBySQL(sql, m);
+        PatientReport r = getFacade().findFirstByJpql(sql, m);
         //////System.out.println("r = " + r);
         if (r == null) {
             ////System.out.println("r is null");
@@ -651,7 +651,7 @@ public class PatientReportController implements Serializable {
                 + " order by v.investigationItem.cssTop";
         Map m = new HashMap();
         m.put("r", getCurrentPatientReport());
-        patientReportItemValues = getPirivFacade().findBySQL(sql, m);
+        patientReportItemValues = getPirivFacade().findByJpql(sql, m);
         // getPirivFacade
         return patientReportItemValues;
     }
@@ -721,7 +721,7 @@ public class PatientReportController implements Serializable {
                         + " order by i.id";
                 Map m = new HashMap();
                 m.put("iii", priv.getInvestigationItem());
-                List<IxCal> ixCals = getIxCalFacade().findBySQL(sql, m);
+                List<IxCal> ixCals = getIxCalFacade().findByJpql(sql, m);
                 double result = 0;
                 calString = "";
                 for (IxCal c : ixCals) {
@@ -844,7 +844,7 @@ public class PatientReportController implements Serializable {
         m.put("f", v.getInvestigationItem());
 //        m.put("a", v.getPatient().getAgeInDays());
         sql = "Select f from TestFlag f where f.retired=false and f.investigationItemOfFlagType=:f and f.sex=:s order by f.orderNo";
-        List<TestFlag> fs = getTestFlagFacade().findBySQL(sql, m);
+        List<TestFlag> fs = getTestFlagFacade().findByJpql(sql, m);
         for (TestFlag f : fs) {
 
             Long a = v.getPatient().getAgeInDays();
@@ -1688,7 +1688,7 @@ public class PatientReportController implements Serializable {
         Map m = new HashMap();
         m.put("pi", pi);
         m.put("a", false);
-        PatientReport r = getFacade().findFirstBySQL(j, m);
+        PatientReport r = getFacade().findFirstByJpql(j, m);
         return r;
     }
 
@@ -1792,7 +1792,7 @@ public class PatientReportController implements Serializable {
         j = "select pr from PatientReport pr"
                 + " where pr.item=:ix "
                 + " order by pr.id desc";
-        pr = getFacade().findFirstBySQL(j, m);
+        pr = getFacade().findFirstByJpql(j, m);
         return pr;
     }
 

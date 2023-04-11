@@ -121,7 +121,7 @@ public class ItemFeeManager implements Serializable {
         jpql = "select d from Department d where d.retired=false and d.institution=:ins order by d.name";
         ////// // System.out.println("m = " + m);
         ////// // System.out.println("jpql = " + jpql);
-        departments = departmentFacade.findBySQL(jpql, m);
+        departments = departmentFacade.findByJpql(jpql, m);
     }
 
     public void fillStaff() {
@@ -132,7 +132,7 @@ public class ItemFeeManager implements Serializable {
         jpql = "select d from Staff d where d.retired=false and d.speciality=:ins order by d.person.name";
         ////// // System.out.println("m = " + m);
         ////// // System.out.println("jpql = " + jpql);
-        staffs = staffFacade.findBySQL(jpql, m);
+        staffs = staffFacade.findByJpql(jpql, m);
     }
 
     public List<Department> compelteDepartments(String qry) {
@@ -144,7 +144,7 @@ public class ItemFeeManager implements Serializable {
         m.put("ins", getItemFee().getInstitution());
         m.put("name", "%" + qry.toUpperCase() + "%");
         jpql = "select d from Department d where d.retired=false and d.institution=:ins and d.name like :name order by d.name";
-        return departmentFacade.findBySQL(jpql, m);
+        return departmentFacade.findByJpql(jpql, m);
     }
 
     public Item getItem() {
@@ -192,7 +192,7 @@ public class ItemFeeManager implements Serializable {
         Map m = new HashMap();
         jpql = "select f from ItemFee f where f.retired=false and f.item=:i";
         m.put("i", i);
-        return itemFeeFacade.findBySQL(jpql, m);
+        return itemFeeFacade.findByJpql(jpql, m);
     }
 
     public void addNewFee() {

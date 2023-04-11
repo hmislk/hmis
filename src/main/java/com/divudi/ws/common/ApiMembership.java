@@ -40,7 +40,6 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -593,7 +592,7 @@ public class ApiMembership {
         m.put("bTp", bt);
         m.put("class", BilledBill.class);
 
-        Bill b = getBillFacade().findFirstBySQL(sql, m);
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
 
 //        //// // System.out.println("b = " + b);
         return b;

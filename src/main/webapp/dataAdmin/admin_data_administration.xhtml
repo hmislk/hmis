@@ -47,7 +47,7 @@
 
                                 <p:panelGrid columns="2" >
 
-                                    <p:panelGrid columns="1"                         >
+                                    <p:panelGrid columns="1"                     >
                                         <p:commandLink ajax="false" action="#{dataAdministrationController.addBillFeesToProfessionalCancelBills()}" value="1. Add bill fees to professional fee cancel bills"  onclick="if (!confirm('Really want to do that?'))
                                                     return false"/>
                                         <p:commandLink ajax="false" action="#{dataAdministrationController.removeAllBillsAndBillItems()}" value="2. Remove All Bills with Bill Items"  onclick="if (!confirm('Really want to do that?'))
@@ -106,7 +106,7 @@
 
                                     </p:panelGrid>
 
-                                    <p:panelGrid columns="1"                         >
+                                    <p:panelGrid columns="1"                     >
 
                                         <p:commandLink ajax="false" action="#{itemController.toggleItemIctiveInactiveState()}" 
                                                        value="Toggle Active Inactive Status of Items"  rendered="false"

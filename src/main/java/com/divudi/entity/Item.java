@@ -40,6 +40,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -52,6 +53,7 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Inheritance
 public class Item implements Serializable, Comparable<Item> {
 
 //    @JsonIgnore
@@ -74,6 +76,8 @@ public class Item implements Serializable, Comparable<Item> {
     Long id;
     int orderNo;
 
+    private Long itemId;
+    
     @ManyToOne
     Category category;
     Double total = 0.0;
@@ -118,7 +122,7 @@ public class Item implements Serializable, Comparable<Item> {
     @JsonIgnore
     Date createdAt;
     //Retairing properties 
-    @JsonIgnore
+//    @JsonIgnore
     boolean retired;
     @ManyToOne
     @JsonIgnore
@@ -1149,6 +1153,16 @@ public class Item implements Serializable, Comparable<Item> {
     public void setTransCodeFromName(String transCodeFromName) {
         this.transCodeFromName = transCodeFromName;
     }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+    
+    
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

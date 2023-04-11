@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -12,10 +13,12 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.FamilyFacade;
@@ -49,6 +52,7 @@ import javax.inject.Named;
 import net.sourceforge.barbecue.Barcode;
 import net.sourceforge.barbecue.BarcodeFactory;
 import net.sourceforge.barbecue.BarcodeImageHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.primefaces.context.PrimeRequestContext;
 //import org.primefaces.context.RequestContext;
 import org.primefaces.model.DefaultStreamedContent;
@@ -96,11 +100,17 @@ public class PatientController implements Serializable {
     @Inject
     PracticeBookingController practiceBookingController;
     @Inject
-    PatientEncounterController PatientEncounterController;
+    PatientEncounterController patientEncounterController;
     @Inject
     private CommonController commonController;
     @Inject
     private SecurityController securityController;
+    @Inject
+    ApplicationController applicationController;
+    @Inject
+    BillController billController;
+    @Inject
+    PharmacySaleController pharmacySaleController;
     /**
      *
      * Class Variables
@@ -132,9 +142,267 @@ public class PatientController implements Serializable {
 
     private String searchText;
 
+    private String searchName;
+    private String searchPhone;
+    private String searchNic;
+    private String searchPhn;
+    private String searchPatientCode;
+    private String searchPatientId;
+    private String searchBillId;
+    private String searchSampleId;
+    private List<Patient> searchPatients;
+
+    public void generateNewPhn() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient");
+            return;
+        }
+        if (sessionController.getLoggedUser() == null) {
+            return;
+        }
+        if (sessionController.getLoggedUser().getInstitution() == null) {
+            return;
+        }
+        Institution ins = sessionController.getLoggedUser().getInstitution();
+        current.setPhn(applicationController.createNewPersonalHealthNumber(ins));
+        current.setCreatedInstitution(ins);
+    }
+
+    public String toOpdBilling() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        billController.prepareNewBill();
+        billController.setPatientSearchTab(1);
+        billController.setSearchedPatient(current);
+        return billController.toOpdBilling();
+    }
+
+    public String toPharmacyBilling() {
+        System.out.println("toPharmacyBilling");
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        System.out.println("1");
+        pharmacySaleController.prepareForNewPharmacyRetailBill();
+        System.out.println("2");
+        pharmacySaleController.setSearchedPatient(current);
+        System.out.println("3");
+        pharmacySaleController.setPatientSearchTab(1);
+        System.out.println("4");
+        return pharmacySaleController.toPharmacyRetailSale();
+    }
+
+    public String toEmrPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        patientEncounterController.setPatient(current);
+        patientEncounterController.fillCurrentPatientLists(current);
+        return "/emr/patient_profile";
+    }
+
+    public String toChannelling() {
+        return "";
+    }
+
+    public String toQueue() {
+        return "";
+    }
+
+    public String toAdmit() {
+        return "";
+    }
+
+    public String toRecords() {
+        return "";
+    }
+
+    public String toSearchPatient() {
+        return "/emr/patient_search";
+    }
+
+    public void generateNewCode() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient");
+            return;
+        }
+        current.setCode(getCountPatientCode());
+    }
+
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
         return "/membership/change_membership";
+    }
+
+    public String toAddToQueueFromSearchPatients() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        patientSelected();
+        return "/clinical/patient_add_to_queue";
+    }
+
+    public void patientSelected() {
+        getPatientEncounterController().fillCurrentPatientLists(current);
+    }
+
+    public String searchPatient() {
+        if (searchBillId != null && !searchBillId.trim().equals("")) {
+            searchByBill();
+        } else if (searchSampleId != null && !searchSampleId.trim().equals("")) {
+            searchBySample();
+        } else if (searchPatientId != null && !searchPatientId.trim().equals("")) {
+            searchByPatientId();
+        } else {
+            searchPatientByDetails();
+        }
+        if (searchPatients == null) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria.");
+            return "";
+        }
+        clearSearchDetails();
+        return "";
+    }
+
+    public void clearSearchDetails() {
+        searchName = null;
+        searchPhone = null;
+        searchNic = null;
+        searchPatientCode = null;
+        searchPatientId = null;
+        searchBillId = null;
+        searchSampleId = null;
+    }
+
+    public void searchByBill() {
+        String j;
+        j = "select b.patient from Bill b where b.retired=false ";
+        Map m = new HashMap();
+        Long temId;
+//        if(false){
+//            Bill temP = new Bill();
+//            temP.getPerson().getName();
+//            temP.setRetired(true);
+//            temP.getIdStr();
+//            temP.getInsId();
+//        }
+        if (StringUtils.isNumeric(searchBillId)) {
+            try {
+                temId = Long.parseLong(searchBillId);
+                j += " and b.id=:id ";
+                m.put("id", temId);
+            } catch (NumberFormatException e) {
+                temId = 0l;
+                j += " and b.id=:id ";
+                m.put("id", temId);
+            }
+        } else {
+            j += " and b.insId=:insid ";
+            m.put("insid", searchBillId);
+            temId = 0l;
+        }
+        j += " order by b.patient.person.name";
+        searchPatients = getFacade().findByJpql(j, m);
+    }
+
+    public void searchBySample() {
+        String j;
+        j = "select ps.patientInvestigation.billItem.bill.patient from PatientSample ps where ps.retired=false ";
+        Map m = new HashMap();
+        Long temId;
+        if (false) {
+            PatientSample ps = new PatientSample();
+            ps.getId();
+            ps.getIdStr();
+            ps.getPatientInvestigation().getBillItem().getBill().getPatient();
+        }
+        if (StringUtils.isNumeric(searchBillId)) {
+            try {
+                temId = Long.parseLong(searchSampleId);
+                j += " and ps.id=:id ";
+                m.put("id", temId);
+            } catch (Exception e) {
+                temId = 0l;
+                j += " and ps.id=:id ";
+                m.put("id", temId);
+                searchPatients = new ArrayList<>();
+            }
+        }
+        j += " order by ps.patientInvestigation.billItem.bill.patient.person.name";
+        searchPatients = getFacade().findByJpql(j, m);
+    }
+
+    public void searchPatientByDetails() {
+        boolean atLeastOneCriteriaIsGiven = false;
+        String j;
+        Map m = new HashMap();
+        if (false) {
+            Patient temP = new Patient();
+            temP.getPerson().getName();
+            temP.setRetired(true);
+        }
+
+        j = "select p from Patient p where p.retired=false and ";
+
+        if (searchName != null && !searchName.trim().equals("")) {
+            j += " lower(p.person.name) like :name ";
+            m.put("name", "%" + searchName.toLowerCase() + "%");
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        if (searchPatientCode != null && !searchPatientCode.trim().equals("")) {
+            j += " lower(p.code) like :name ";
+            m.put("name", "%" + searchPatientCode.toLowerCase() + "%");
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        if (searchPhone != null && !searchPhone.trim().equals("")) {
+            j += " p.person.phone =:phone";
+            m.put("phone", searchPhone);
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        if (searchNic != null && !searchNic.trim().equals("")) {
+            j += " p.person.nic =:nic";
+            m.put("nic", searchNic);
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        if (searchPhn != null && !searchPhn.trim().equals("")) {
+            j += " p.phn =:phn";
+            m.put("phn", searchPhn);
+            atLeastOneCriteriaIsGiven = true;
+        }
+
+        j += " order by p.person.name";
+
+        if (!atLeastOneCriteriaIsGiven) {
+            JsfUtil.addErrorMessage("Ät least one search criteria should be given");
+            return;
+        }
+
+        searchPatients = getFacade().findByJpql(j, m);
+
+    }
+
+    public void searchByPatientId() {
+        String j;
+        Map m = new HashMap();
+        j = "select p from Patient p where p.retired=false and p.id=:id";
+        Long ptId = 0l;
+        try {
+            ptId = Long.parseLong(searchPatientId);
+        } catch (Exception e) {
+
+        }
+        m.put("id", ptId);
+        searchPatients = getFacade().findByJpql(j, m);
+
     }
 
     public void listAllPatients() {
@@ -177,7 +445,7 @@ public class PatientController implements Serializable {
         }
         m.put("pn", searchText);
         m.put("mcn", mcn);
-        List<Family> fs = getFamilyFacade().findBySQL(j, m);
+        List<Family> fs = getFamilyFacade().findByJpql(j, m);
         if (fs == null) {
             JsfUtil.addErrorMessage("No matches");
             return "";
@@ -331,8 +599,22 @@ public class PatientController implements Serializable {
 
     }
 
-    public void patientSelected() {
-        getPatientEncounterController().fillCurrentPatientLists(current);
+    public String toPatientFromSearchPatients() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        patientSelected();
+        return "/emr/patient_basic_info";
+    }
+
+    public String toPatientFromSearchPatientsProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Patient Selected");
+            return "";
+        }
+        patientSelected();
+        return "/clinical/patient_profile";
     }
 
     public void createPatientBarcode() {
@@ -434,7 +716,6 @@ public class PatientController implements Serializable {
     public YearMonthDay getYearMonthDay() {
         if (yearMonthDay == null) {
             yearMonthDay = new YearMonthDay();
-
         }
         return yearMonthDay;
     }
@@ -482,7 +763,7 @@ public class PatientController implements Serializable {
         } else {
             InputStream targetStream = new ByteArrayInputStream(p);
             StreamedContent str = DefaultStreamedContent.builder().contentType("image/png").name("photo.png").stream(() -> targetStream).build();
-            return  str;
+            return str;
         }
     }
 
@@ -508,6 +789,24 @@ public class PatientController implements Serializable {
         getCurrent();
 
         getYearMonthDay();
+    }
+
+    public String toAddNewPatient() {
+        current = null;
+        yearMonthDay = null;
+        getCurrent();
+        getYearMonthDay();
+        return "/clinical/patient";
+    }
+
+    public String toViewPatient() {
+        current = null;
+        return "/clinical/patient_profile";
+    }
+
+    public String savePatientAndThenNavigateToPatientProfile() {
+        saveSelectedPatient();
+        return toViewPatient();
     }
 
     public void delete() {
@@ -753,7 +1052,7 @@ public class PatientController implements Serializable {
                     m.put("pm", PaymentMethod.OnlineSettlement);
                     m.put("d", cal.getTime());
                     m.put("p", p.getId());
-                    Bill b = getBillFacade().findFirstBySQL(sql, m);
+                    Bill b = getBillFacade().findFirstByJpql(sql, m);
                     if (b != null) {
                         p.setBill(b);
                     }
@@ -825,13 +1124,20 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
+    public Patient findPatientByPatientId(Long pid){
+        String j = "select p "
+                + " from Patient p "
+                + " where p.patientId=:pid";
+        Map m = new HashMap();
+        m.put("pid", pid);
+        return getFacade().findFirstByJpql(j, m);
+    }
+    
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();
             current = new Patient();
-//            current.setCode(getCountPatientCode());
             current.setPerson(p);
-
         }
         return current;
     }
@@ -870,7 +1176,7 @@ public class PatientController implements Serializable {
         Map m = new HashMap();
         m.put("dob", dob);
         sql = "select p from Patient p where p.retired = false and p.person.dob=:dob order by p.person.name";
-        return getFacade().findBySQL(sql, m);
+        return getFacade().findByJpql(sql, m);
     }
 
     public void membershipChangeListner() {
@@ -903,7 +1209,7 @@ public class PatientController implements Serializable {
                 + " order by p.code desc ";
         m.put("q", "%" + s.toUpperCase() + "%");
 
-        Patient p = getEjbFacade().findFirstBySQL(sql, m);
+        Patient p = getEjbFacade().findFirstByJpql(sql, m);
         DecimalFormat df = new DecimalFormat("000000");
         String st = "";
         if (p != null) {
@@ -997,7 +1303,7 @@ public class PatientController implements Serializable {
                 m.put("q", pt.getCode().toUpperCase());
                 m.put("p", pt);
 
-                p = getEjbFacade().findFirstBySQL(sql, m);
+                p = getEjbFacade().findFirstByJpql(sql, m);
                 if (p != null) {
                     JsfUtil.addErrorMessage("Code Already Exsist.Please Try - " + getCountPatientCode(pt.getPerson().getMembershipScheme().getCode()));
                     return true;
@@ -1159,6 +1465,78 @@ public class PatientController implements Serializable {
         return webUserFacade;
     }
 
+    public String getSearchName() {
+        return searchName;
+    }
+
+    public void setSearchName(String searchName) {
+        this.searchName = searchName;
+    }
+
+    public String getSearchPhone() {
+        return searchPhone;
+    }
+
+    public void setSearchPhone(String searchPhone) {
+        this.searchPhone = searchPhone;
+    }
+
+    public String getSearchNic() {
+        return searchNic;
+    }
+
+    public void setSearchNic(String searchNic) {
+        this.searchNic = searchNic;
+    }
+
+    public String getSearchPhn() {
+        return searchPhn;
+    }
+
+    public void setSearchPhn(String searchPhn) {
+        this.searchPhn = searchPhn;
+    }
+
+    public String getSearchPatientCode() {
+        return searchPatientCode;
+    }
+
+    public void setSearchPatientCode(String searchPatientCode) {
+        this.searchPatientCode = searchPatientCode;
+    }
+
+    public String getSearchPatientId() {
+        return searchPatientId;
+    }
+
+    public void setSearchPatientId(String searchPatientId) {
+        this.searchPatientId = searchPatientId;
+    }
+
+    public String getSearchBillId() {
+        return searchBillId;
+    }
+
+    public void setSearchBillId(String searchBillId) {
+        this.searchBillId = searchBillId;
+    }
+
+    public String getSearchSampleId() {
+        return searchSampleId;
+    }
+
+    public void setSearchSampleId(String searchSampleId) {
+        this.searchSampleId = searchSampleId;
+    }
+
+    public List<Patient> getSearchPatients() {
+        return searchPatients;
+    }
+
+    public void setSearchPatients(List<Patient> searchPatients) {
+        this.searchPatients = searchPatients;
+    }
+
     /**
      *
      * Set all Patients to null
@@ -1244,11 +1622,11 @@ public class PatientController implements Serializable {
     }
 
     public PatientEncounterController getPatientEncounterController() {
-        return PatientEncounterController;
+        return patientEncounterController;
     }
 
     public void setPatientEncounterController(PatientEncounterController PatientEncounterController) {
-        this.PatientEncounterController = PatientEncounterController;
+        this.patientEncounterController = PatientEncounterController;
     }
 
     public FamilyFacade getFamilyFacade() {

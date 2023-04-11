@@ -939,8 +939,8 @@ public class CollectingCentreBillController implements Serializable {
         m.put("rid", referralId.toUpperCase());
         m.put("bt", BillType.CollectingCentreBill);
         m.put("ins", ins);
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
-//        Bill b = getFacade().findFirstBySQL(jpql, m);
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
+//        Bill b = getFacade().findFirstByJpql(jpql, m);
 //        //// // System.out.println(" Error find Number CheckTime 3 = " + new Date());
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
@@ -1814,7 +1814,7 @@ public class CollectingCentreBillController implements Serializable {
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 

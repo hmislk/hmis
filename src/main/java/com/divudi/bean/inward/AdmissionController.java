@@ -168,7 +168,7 @@ public class AdmissionController implements Serializable {
         hash.put("val", 0.1);
         hash.put("ins", institution);
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Admission> lst = getFacade().findBySQL(sql, hash);
+        List<Admission> lst = getFacade().findByJpql(sql, hash);
 
         return lst;
     }
@@ -594,7 +594,7 @@ public class AdmissionController implements Serializable {
                 + " and s.bill=:b ";
         HashMap hm = new HashMap();
         hm.put("b", getAppointmentBill());
-        Appointment apt = getAppointmentFacade().findFirstBySQL(sql, hm);
+        Appointment apt = getAppointmentFacade().findFirstByJpql(sql, hm);
         apt.setPatientEncounter(getCurrent());
         getAppointmentFacade().edit(apt);
 

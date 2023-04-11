@@ -505,7 +505,7 @@ public class PharmacySaleController implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -537,11 +537,25 @@ public class PharmacySaleController implements Serializable {
         searchController.createPreBillsNotPaid();
         billPreview = false;
     }
+    
+    public void prepareForNewPharmacyRetailBill() {
+        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        clearBill();
+        clearBillItem();
+        searchController.createPreBillsNotPaid();
+        billPreview = false;
+    }
 
     public String pharmacyRetailSale() {
         return "/pharmacy_wholesale/pharmacy_bill_retail_sale";
     }
 
+    public String toPharmacyRetailSale() {
+        System.out.println("6");
+        return "/pharmacy/pharmacy_bill_retail_sale";
+    }
+
+    
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();
         List<Item> items;
@@ -698,7 +712,7 @@ public class PharmacySaleController implements Serializable {
                 + "amp.vmp=:vmp "
                 + "and amp<>:a "
                 + "order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public void makeStockAsBillItemStock() {

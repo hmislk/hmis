@@ -137,7 +137,7 @@ public class InvestigationMonthSummeryController implements Serializable {
                 if (b.isRefunded() == null || b.isRefunded() == false) {
 //                    if (b.getItem() instanceof Packege) {
 //                        sql = "Select i from PackageItem p join p.item i where p.packege.id = " + b.getId();
-//                        List<Item> packageItems = getItemFacade().findBySQL(sql);
+//                        List<Item> packageItems = getItemFacade().findByJpql(sql);
 //                        for (Item i : packageItems) {
 //                            if (i.getId() == w.getId()) {
 //                                tot += i.getTotal();

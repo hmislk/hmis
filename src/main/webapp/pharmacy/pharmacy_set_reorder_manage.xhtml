@@ -26,10 +26,10 @@
                         </p:selectOneMenu>
                         <p:column colspan="2" >
                             <p:dataTable value="#{ampController.items}" var="amp" rowKey="#{amp.id}" 
-                                         selection="#{reorderController.selectedItems}"      paginator="true" paginatorAlwaysVisible="true"
+                                         selection="#{reorderController.selectedItems}"  paginator="true" paginatorAlwaysVisible="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="10,30,50"
-                                         rows="10"     >
+                                         rows="10" >
                                 <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
                                 <p:column headerText="Item"  filterBy="#{amp.name}" filterMatchMode="contains"  >
                                     #{amp.name}

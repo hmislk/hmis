@@ -5,7 +5,6 @@
  */
 package com.divudi.ws.fhir;
 
-import com.divudi.ws.finance.*;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.CommonController;
@@ -1307,7 +1306,7 @@ public class Fhir {
                 + " where bs.bill.id=:id ";
 
         m.put("id", billId);
-        billObjects = billSessionFacade.findBySQL(sql, m);
+        billObjects = billSessionFacade.findByJpql(sql, m);
 
 //        //System.out.println("m = " + m);
 //        //System.out.println("sql = " + sql);
@@ -1396,7 +1395,7 @@ public class Fhir {
         Map m = new HashMap<>();
         m.put("c", strInstitutionCode);
         m.put("ret", false);
-        return institutionFacade.findFirstBySQL(j, m);
+        return institutionFacade.findFirstByJpql(j, m);
     }
 
     private List<PaymentMethod> getCashPaymentMethods() {

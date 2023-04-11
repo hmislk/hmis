@@ -83,7 +83,7 @@ public class InwardPaymentController implements Serializable {
         hm.put("btp", BillType.InwardFinalBill);
         hm.put("pe", getCurrent().getPatientEncounter());
 
-        Bill b = getBilledBillFacade().findFirstBySQL(sql, hm);
+        Bill b = getBilledBillFacade().findFirstByJpql(sql, hm);
 
         if (b == null) {
             return 0;

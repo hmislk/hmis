@@ -131,7 +131,7 @@ public class ServiceMonthSummeryController implements Serializable {
         sql = "select ins from Service ins where ins.id in (select bi.item.id from BillItem bi where bi.bill.id in(select b.id from Bill b where b.billDate between :fromDate and :toDate))";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        services = getServiceFacade().findBySQL(sql, temMap);
+        services = getServiceFacade().findByJpql(sql, temMap);
         //////// // System.out.println("Services : "+services.size());
         if (services == null) {
             services = new ArrayList<Service>();
@@ -183,7 +183,7 @@ public class ServiceMonthSummeryController implements Serializable {
                 + "b.item.id=" + w.getId() + " and  b.createdAt between :fromDate and :toDate";
         temMap.put("toDate",getToDate());
         temMap.put("fromDate", getFromDate());
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap);
         t.setBillItems(temps);
 
     }

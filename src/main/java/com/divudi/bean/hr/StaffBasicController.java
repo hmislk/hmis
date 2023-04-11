@@ -445,7 +445,7 @@ public class StaffBasicController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("tp", PaysheetComponentType.BasicSalary);
 
-        return getPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        return getPaysheetComponentFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
 
     }
 

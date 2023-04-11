@@ -16,6 +16,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -24,6 +25,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
+@Inheritance
 public class PriceMatrix implements Serializable {
 
     static final long serialVersionUID = 1L;

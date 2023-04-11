@@ -494,7 +494,7 @@ public class OpdPreSettleController implements Serializable {
                 + " and b.cancelled=false ";
         HashMap hm = new HashMap();
         hm.put("bil", args);
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b != null) {
             UtilityController.addErrorMessage("Allready Paid");
@@ -587,7 +587,7 @@ public class OpdPreSettleController implements Serializable {
 //                //// // System.out.println("bi = " + bi);
 //                String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 //
-//                List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+//                List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 //                //// // System.out.println("billFees = " + billFees.size());
 //                //for payments for billfees
 //

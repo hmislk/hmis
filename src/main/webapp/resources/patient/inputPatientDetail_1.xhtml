@@ -28,11 +28,11 @@
                          style="width:300px;text-transform:capitalize;">
             </p:inputText>
             <!--            <p:outputLabel value="NIC"/>-->
-            <p:inputMask mask="999999999V" id="nic" 
+            <p:inputText  id="nic" 
                          autocomplete="off" maxlength="11" 
                          value="#{cc.attrs.patient.person.nic}"
                          style="width: 100px;">
-            </p:inputMask>
+            </p:inputText>
             <!--<p:outputLabel value="Sex"/>-->
             <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" style="width: 200px;">
                 <f:selectItem itemLabel="Select Sex"/>
@@ -65,13 +65,13 @@
 
             <h:panelGroup>
                 <!--<p:outputLabel value="Mobile Phone"/>-->
-                <p:inputMask id="mno" mask="999-9999999" autocomplete="off" maxlength="11" 
+                <p:inputText id="mno"  autocomplete="off" maxlength="11" 
                              value="#{cc.attrs.patient.person.mobile}" >
-                </p:inputMask>
+                </p:inputText>
                 <!--<p:outputLabel value="Home Phone"/>-->
-                <p:inputMask id="hno" mask="999-9999999" autocomplete="off" maxlength="11" style="margin-top: 8px;"
+                <p:inputText id="hno"  autocomplete="off" maxlength="11" style="margin-top: 8px;"
                              value="#{cc.attrs.patient.person.phone}" >
-                </p:inputMask>
+                </p:inputText>
             </h:panelGroup>
         </p:panelGrid>    
         <p:tooltip for="txtNewPtName" value="Patient Name"  showDelay="0" hideDelay="0"></p:tooltip>

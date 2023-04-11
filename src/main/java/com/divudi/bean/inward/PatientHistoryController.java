@@ -68,7 +68,7 @@ public class PatientHistoryController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("pt", getSearchedPatient());
 
-        List<BillItem> temp = getServiceFacade().findBySQL(sql, hm);
+        List<BillItem> temp = getServiceFacade().findByJpql(sql, hm);
 
         for (BillItem b : temp) {
             if (b.getItem() instanceof Service) {
@@ -110,7 +110,7 @@ public class PatientHistoryController implements Serializable {
         String sql = "select pe from PatientEncounter pe where pe.retired=false and pe.patient=:pt";
         HashMap hm = new HashMap();
         hm.put("pt", getSearchedPatient());
-        patientEncounters = getPatientEncounterFacade().findBySQL(sql, hm);
+        patientEncounters = getPatientEncounterFacade().findByJpql(sql, hm);
 
         if (patientEncounters == null) {
             return new ArrayList<PatientEncounter>();

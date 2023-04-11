@@ -82,7 +82,7 @@ public class FormFormatController implements Serializable {
 
         j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.cssTop, i.cssLeft, i.id";
         m.put("cat", formCategory);
-        formItems = criFacade.findBySQL(j, m);
+        formItems = criFacade.findByJpql(j, m);
 
     }
 

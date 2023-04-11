@@ -101,7 +101,7 @@ public class PharmaceuticalItemCategoryController implements Serializable {
                         + " and c.description=:dis ";
 
                 m.put("dis", getCurrent().getDescription());
-                List<PharmaceuticalItemCategory> list = getFacade().findBySQL(sql, m);
+                List<PharmaceuticalItemCategory> list = getFacade().findByJpql(sql, m);
                 if (list.size() > 0) {
                     JsfUtil.addErrorMessage("Category Code " + getCurrent().getDescription() + " is alredy exsist.");
                     return true;

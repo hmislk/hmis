@@ -342,7 +342,7 @@ public class StaffAdditionalFormController implements Serializable {
 //        sql += createKeyWord(m);
 //
 //        System.err.println("SQL " + sql);
-//        hrForms = hrFormFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        hrForms = hrFormFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 //
 ////        calMinitsAditional(additionalForms);
 //    }
@@ -1036,7 +1036,7 @@ public class StaffAdditionalFormController implements Serializable {
                 + " and c.dayOffPhToDate>:d ";
         m.put("d", d);
 
-        return salaryCycleFacade.findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        return salaryCycleFacade.findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1244,7 +1244,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("rs", roster);
         hm.put("dtp", dayType);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         if (sh == null) {
             sh = new Shift();
             sh.setCreatedAt(new Date());
@@ -1274,7 +1274,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("rs", roster);
         hm.put("dtp", dayType);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
         if (sh == null) {
             sh = new Shift();
             sh.setCreatedAt(new Date());
@@ -1303,7 +1303,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dtp1", DayType.DayOff);
         hm.put("dtp2", DayType.SleepingDay);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return sh;
     }
@@ -1322,7 +1322,7 @@ public class StaffAdditionalFormController implements Serializable {
         hm.put("dtp1", DayType.DayOff);
         hm.put("dtp2", DayType.SleepingDay);
 
-        Shift sh = shiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        Shift sh = shiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
 
         return sh;
     }
@@ -1405,7 +1405,7 @@ public class StaffAdditionalFormController implements Serializable {
 //
 //        hm.put("dtp", new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.Poya, DayType.SleepingDay});
 //        hm.put("rs", getCurrentAdditionalForm().getStaff().getRoster());
-//        shifts = shiftFacade.findBySQL(sql, hm);
+//        shifts = shiftFacade.findByJpql(sql, hm);
 //    }
     public AdditionalForm getCurrentAdditionalForm() {
         if (currentAdditionalForm == null) {
