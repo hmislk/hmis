@@ -14,16 +14,20 @@
 
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputLabel value="All BILL List "/>                          
+                        <h:outputLabel value="All BILL List"/>                          
                     </f:facet>
 
 
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                        <p:calendar styleClass="dateTimePicker" 
+                                    id="fromDate" 
+                                    value="#{searchController.fromDate}" 
+                                    navigator="false" pattern="dd MMMM yyyy" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                        <p:calendar id="toDate" value="#{searchController.toDate}" 
+                                    navigator="false" pattern="dd MMMM yyyy" >                                                                              
                         </p:calendar>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillAllBills}"/>
