@@ -363,15 +363,19 @@ public class Qb {
         String bankAcc = "";
         String departnemtName = "";
         if (b.getFromInstitution() != null) {
-            supplierName = b.getFromInstitution().getName();
-        }
-        if (b.getToInstitution() != null) {
-            if (b.getToInstitution().getChequePrintingName() != null) {
-                supplierName += " " + b.getToInstitution().getChequePrintingName();
+            if (b.getFromInstitution().getChequePrintingName() != null) {
+                supplierName = " " + b.getFromInstitution().getChequePrintingName();
             } else {
-                supplierName += " " + b.getToInstitution().getName();
+                supplierName = " " + b.getFromInstitution().getName();
             }
         }
+//        if (b.getToInstitution() != null) {
+//            if (b.getToInstitution().getChequePrintingName() != null) {
+//                supplierName += " " + b.getToInstitution().getChequePrintingName();
+//            } else {
+//                supplierName += " " + b.getToInstitution().getName();
+//            }
+//        }
         if (b.getDepartment() != null) {
             if (b.getDepartment().getPrintingName() != null) {
                 departnemtName = b.getDepartment().getPrintingName();

@@ -5358,6 +5358,20 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
+    
+    public void fillAllBills() {
+        bills = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select b from "
+                + " Bill b "
+                + " where b.createdAt between :fromDate and :toDate "
+                + " order by b.id ";
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
 
     public String viewOPD(Bill b) {
         if (b.getBillType() == BillType.OpdBill) {

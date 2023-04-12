@@ -22,8 +22,8 @@ public class EmrController implements Serializable {
     public EmrController() {
     }
     
-    private int activeIndexOfReports = -1;
-    private int activeIndexOfPatientProfile = -1;
+    private int activeIndexOfReports = 0;
+    private int activeIndexOfPatientProfile = 0;
 
     public String navigateToClinicalPatientForReceptionist() {
         return "/clinical/clinical_patient_for_receptionist.xhtml?faces-redirect=true";

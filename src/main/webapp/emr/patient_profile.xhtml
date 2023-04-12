@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:em="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      >
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -17,28 +18,34 @@
                     <div class="row" >
                         <div class="col-md-4 " >
                             <p:outputPanel class="text-center">
-                                <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
-                                                class="w-50"
-                                                library="image" name="male.jpg">
+                                <h:panelGroup rendered="#{patientController.current.baImage eq null}"  >
+                                    <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
+                                                    class="w-50 img-thumbnail"
+                                                    library="image" name="male.jpg">
+                                    </p:graphicImage>
+                                    <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
+                                                    class="w-50 img-thumbnail"
+                                                    library="image" name="female.png">
+                                    </p:graphicImage>
+                                </h:panelGroup>
+
+
+                                <p:graphicImage  class="w-75 img-thumbnail" 
+                                                 id="photos" cache="false"
+                                                 rendered="#{patientController.current.baImage ne null}"    
+                                                 value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
                                 </p:graphicImage>
-                                <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
-                                                class="w-50"
-                                                library="image" name="female.png">
-                                </p:graphicImage>
+
                             </p:outputPanel>
-                            <em:patient patient="#{patientController.current}" ></em:patient>
-
-
-
+                            <emr:patient patient="#{patientController.current}" ></emr:patient>
                         </div>
                         <div class="col-md-8" >
                             <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
                                 <p:tab title="Summery" >
-
+                                    <emr:emr_summery patient="#{patientController.current}"/>
                                 </p:tab>
                                 <p:tab title="Demographics" >
-
-
+                                    <emr:edit_patient patient="#{patientController.current}"/>
                                 </p:tab>
                                 <p:tab title="Medical Conditions" >
                                     <h:form>

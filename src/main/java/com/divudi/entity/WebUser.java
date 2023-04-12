@@ -9,7 +9,9 @@ package com.divudi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,8 +24,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Entity
 @XmlRootElement
@@ -46,7 +48,7 @@ public class WebUser implements Serializable {
     @ManyToOne
     WebTheme userWebTheme;
     String webUserPassword;
-    
+
     @OneToOne
     Person webUserPerson;
     //Main Properties
@@ -54,22 +56,30 @@ public class WebUser implements Serializable {
     String name;
     String description;
     //Created Properties
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
-  @JsonIgnore   boolean retired;
-    @ManyToOne @JsonIgnore
+    @JsonIgnore
+    boolean retired;
+    @ManyToOne
+    @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
     String retireComments;
     //Activation properties
-   @JsonIgnore  boolean activated;
- @JsonIgnore    @ManyToOne
+    @JsonIgnore
+    boolean activated;
+    @JsonIgnore
+    @ManyToOne
     WebUser activator;
-  @JsonIgnore   @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date activatedAt;
     String activateComments;
     @ManyToOne
@@ -78,11 +88,14 @@ public class WebUser implements Serializable {
     String defLocale;
     String email;
     String telNo;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Institution institution;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Department department;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Staff staff;
 
     String code;
@@ -140,7 +153,12 @@ public class WebUser implements Serializable {
     }
 
     public String getPrimeTheme() {
-        return primeTheme;
+        List<String> validThemes = Arrays.asList("luna-amber", "luna-blue", "luna-green", "luna-pink", "nova-colored", "nova-dark", "nova-light");
+        if (validThemes.contains(primeTheme)) {
+            return primeTheme;
+        } else {
+            return "nova-light";
+        }
     }
 
     public void setPrimeTheme(String primeTheme) {
