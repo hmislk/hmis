@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:em="http://xmlns.jcp.org/jsf/composite/ezcomp/emr">
+      xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      >
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -36,7 +37,7 @@
                                 </p:graphicImage>
 
                             </p:outputPanel>
-                            <em:patient patient="#{patientController.current}" ></em:patient>
+                            <emr:patient patient="#{patientController.current}" ></emr:patient>
 
 
 
@@ -44,11 +45,10 @@
                         <div class="col-md-8" >
                             <p:tabView class="h-100" activeIndex="#{emrController.activeIndexOfPatientProfile}">
                                 <p:tab title="Summery" >
-
+                                    <emr:emr_summery patient="#{patientController.current}"/>
                                 </p:tab>
                                 <p:tab title="Demographics" >
-
-
+                                    <emr:edit_patient patient="#{patientController.current}"/>
                                 </p:tab>
                                 <p:tab title="Medical Conditions" >
                                     <h:form>

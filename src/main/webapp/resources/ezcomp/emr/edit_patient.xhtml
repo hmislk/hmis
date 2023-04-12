@@ -21,130 +21,138 @@
                 <div class="container-fluid">
                     <div class="row" >
                         <div class="col-md-12 m-2 p-2" >
-                            <p:panelGrid columns="2" class="w-100 table table-striped">
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Edit Patient Details" ></p:outputLabel>
-                                    <p:commandButton value="Save" action="#{patientController.saveSelected(cc.attrs.patient)}"
-                                                     ajax="false" ></p:commandButton>
-
+                            <p:panel >
+                                <f:facet name="header">
+                                    <p:outputLabel value="Edit Patient Demographic Details"/>
+                                    <p:spacer width="10"/>
+                                    <p:commandButton value="Save" 
+                                                     action="#{patientController.saveSelected(cc.attrs.patient)}"
+                                                     ajax="false"
+                                                     icon="pi pi-check" iconPos="right" 
+                                                     styleClass="ui-button-warning"  />
                                 </f:facet>
-                                <p:outputLabel  value="Title:"/>
-                                <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}">
-                                    <f:selectItem itemLabel="Select Title"/>
-                                    <f:selectItems value="#{billController.title}" var="i"
-                                                   itemLabel="#{i.label}" itemValue="#{i}"/>
-                                </p:selectOneMenu>
+                                <p:panelGrid columns="2" class="w-100 table table-striped">
 
-                                <p:outputLabel value="Name:" />
-                                <p:inputText value="#{cc.attrs.patient.person.name}" />
+                                    <p:outputLabel  value="Title:"/>
+                                    <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}">
+                                        <f:selectItem itemLabel="Select Title"/>
+                                        <f:selectItems value="#{billController.title}" var="i"
+                                                       itemLabel="#{i.label}" itemValue="#{i}"/>
+                                    </p:selectOneMenu>
 
-                                <p:outputLabel value="Sex:" />
-                                <p:selectOneMenu  id="txtNewSex" 
-                                                  value="#{cc.attrs.patient.person.sex}">
-                                    <f:selectItem itemLabel="Select Gender"/>
-                                    <f:selectItems value="#{billController.sex}"/>
-                                </p:selectOneMenu>
+                                    <p:outputLabel value="Name:" />
+                                    <p:inputText value="#{cc.attrs.patient.person.name}" />
 
-                                <p:outputLabel value="Number:" />
-                                <p:inputText value="#{cc.attrs.patient.phn}" />
+                                    <p:outputLabel value="Sex:" />
+                                    <p:selectOneMenu  id="txtNewSex" 
+                                                      value="#{cc.attrs.patient.person.sex}">
+                                        <f:selectItem itemLabel="Select Gender"/>
+                                        <f:selectItems value="#{billController.sex}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Number:" />
+                                    <p:inputText value="#{cc.attrs.patient.phn}" />
 
 
 
-                                <p:outputLabel value="Age :" />
-                                <h:panelGroup id="gpAge" >
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <p:inputText autocomplete="off" id="year"
-                                                         placeholder="Years"
-                                                         value="#{patientController.ageYearComponant}">
-                                                <f:ajax event="blur" execute="@this" render="calNewPtDob"
-                                                        listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}"/>
-                                            </p:inputText>
+                                    <p:outputLabel value="Age :" />
+                                    <h:panelGroup id="gpAge" >
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <p:inputText autocomplete="off" id="year"
+                                                             placeholder="Years"
+                                                             value="#{patientController.ageYearComponant}">
+                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob"
+                                                            listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}"/>
+                                                </p:inputText>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:inputText autocomplete="off" id="month"
+                                                             placeholder="months"
+                                                             value="#{patientController.ageMonthComponant}">
+                                                    <f:ajax event="blur" execute="@this" render="calNewPtDob" 
+                                                            listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}"/>
+                                                </p:inputText>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <p:inputText autocomplete="off" id="day"
+                                                             placeholder="days"
+                                                             value="#{patientController.ageDateComponant}">
+                                                    <f:ajax event="blur" execute="@this" 
+                                                            render="calNewPtDob" 
+                                                            listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}"/>
+                                                </p:inputText>
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <p:inputText autocomplete="off" id="month"
-                                                         placeholder="months"
-                                                         value="#{patientController.ageMonthComponant}">
-                                                <f:ajax event="blur" execute="@this" render="calNewPtDob" 
-                                                        listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}"/>
-                                            </p:inputText>
-                                        </div>
+                                    </h:panelGroup>
 
-                                        <div class="col-md-4">
-                                            <p:inputText autocomplete="off" id="day"
-                                                         placeholder="days"
-                                                         value="#{patientController.ageDateComponant}">
-                                                <f:ajax event="blur" execute="@this" 
-                                                        render="calNewPtDob" 
-                                                        listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}"/>
-                                            </p:inputText>
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
+                                    <p:outputLabel value="Date of Birth:" />
+                                    <p:datePicker value="#{cc.attrs.patient.person.dob}"
+                                                  id="calNewPtDob" pattern="dd/MM/yyyy"
+                                                  style="border: none; padding: 0px;"
+                                                  yearNavigator="true"
+                                                  maxdate="#{sessionController.currentDate}"
+                                                  inputStyle="width:100%;">
+                                        <p:ajax event="dateSelect" process="calNewPtDob" update="year month day"
+                                                listener="#{patientController.calculateAgeComponantsFromDob(cc.attrs.patient)}"/>
 
-                                <p:outputLabel value="Date of Birth:" />
-                                <p:datePicker value="#{cc.attrs.patient.person.dob}"
-                                              id="calNewPtDob" pattern="dd/MM/yyyy"
-                                              style="border: none; padding: 0px;"
-                                              yearNavigator="true"
-                                              maxdate="#{sessionController.currentDate}"
-                                              inputStyle="width:100%;">
-                                    <p:ajax event="dateSelect" process="calNewPtDob" update="year month day"
-                                            listener="#{patientController.calculateAgeComponantsFromDob(cc.attrs.patient)}"/>
+                                    </p:datePicker>
 
-                                </p:datePicker>
-
-                                <h:outputLabel class="form-label" value="PHN No"/>
-                                <h:panelGroup >
-                                    <p:inputText  autocomplete="off" id="txtPhn" value="#{cc.attrs.patient.phn}">
-                                    </p:inputText>
-                                </h:panelGroup>
+                                    <h:outputLabel class="form-label" value="PHN No"/>
+                                    <h:panelGroup >
+                                        <p:inputText  autocomplete="off" id="txtPhn" value="#{cc.attrs.patient.phn}">
+                                        </p:inputText>
+                                    </h:panelGroup>
 
 
 
-                                <h:outputLabel class="form-label" value="MRN No"/>
-                                <h:panelGroup >
-                                    <p:inputText  autocomplete="off" id="txtMrn" value="#{cc.attrs.patient.code}">
-                                    </p:inputText>
-                                    <!--                                <p:commandButton value="Generate" id="cmdGen" 
-                                                                                     action="#{patientController.generateNewCode}" 
-                                                                                     process="@this" update="txtMrn" >
-                                                                    </p:commandButton>-->
-                                </h:panelGroup >
+                                    <h:outputLabel class="form-label" value="MRN No"/>
+                                    <h:panelGroup >
+                                        <p:inputText  autocomplete="off" id="txtMrn" value="#{cc.attrs.patient.code}">
+                                        </p:inputText>
+                                        <!--                                <p:commandButton value="Generate" id="cmdGen" 
+                                                                                         action="#{patientController.generateNewCode}" 
+                                                                                         process="@this" update="txtMrn" >
+                                                                        </p:commandButton>-->
+                                    </h:panelGroup >
 
-                                <!--                            <p:outputLabel value="Race:" />
-                                                            <p:inputText value="#{cc.attrs.patient.person.race.name}" />
-                                
-                                                            <p:outputLabel value="Religion:" />
-                                                            <p:inputText value="#{cc.attrs.patient.person.religion.name}" />
-                                
-                                                            <p:outputLabel value="Occupation:" />
-                                                            <p:inputText value="#{cc.attrs.patient.person.occupation.name}" />
-                                
-                                                            <p:outputLabel value="Civil Status:" />
-                                                            <p:inputText value="#{cc.attrs.patient.person.civilStatus.name}" />-->
+                                    <!--                            <p:outputLabel value="Race:" />
+                                                                <p:inputText value="#{cc.attrs.patient.person.race.name}" />
+                                    
+                                                                <p:outputLabel value="Religion:" />
+                                                                <p:inputText value="#{cc.attrs.patient.person.religion.name}" />
+                                    
+                                                                <p:outputLabel value="Occupation:" />
+                                                                <p:inputText value="#{cc.attrs.patient.person.occupation.name}" />
+                                    
+                                                                <p:outputLabel value="Civil Status:" />
+                                                                <p:inputText value="#{cc.attrs.patient.person.civilStatus.name}" />-->
 
-                                <p:outputLabel value="Phone:" />
-                                <p:inputText value="#{cc.attrs.patient.person.phone}" />
+                                    <p:outputLabel value="Phone:" />
+                                    <p:inputText value="#{cc.attrs.patient.person.phone}" />
 
-                                <p:outputLabel value="Mobile:" />
-                                <p:inputText value="#{cc.attrs.patient.person.mobile}" />
+                                    <p:outputLabel value="Mobile:" />
+                                    <p:inputText value="#{cc.attrs.patient.person.mobile}" />
 
-                                <p:outputLabel value="Email:" />
-                                <p:inputText value="#{cc.attrs.patient.person.email}" />
+                                    <p:outputLabel value="Email:" />
+                                    <p:inputText value="#{cc.attrs.patient.person.email}" />
 
-                                <p:outputLabel value="ID:" />
-                                <p:inputText value="#{cc.attrs.patient.person.nic}" />
+                                    <p:outputLabel value="ID:" />
+                                    <p:inputText value="#{cc.attrs.patient.person.nic}" />
 
-                                <p:outputLabel value="Code:" />
-                                <p:inputText value="#{cc.attrs.patient.code}" />
+                                    <p:outputLabel value="Code:" />
+                                    <p:inputText value="#{cc.attrs.patient.code}" />
 
-                                <p:outputLabel value="Address:" />
-                                <p:inputText value="#{cc.attrs.patient.person.address}" />
+                                    <p:outputLabel value="Address:" />
+                                    <p:inputText value="#{cc.attrs.patient.person.address}" />
 
-                                <!--                                <p:outputLabel value="Blood Group:" />
-                                                                <p:inputText value="#{cc.attrs.patient.person.bloodGroup.name}" />-->
-                            </p:panelGrid>
+                                    <!--                                <p:outputLabel value="Blood Group:" />
+                                                                    <p:inputText value="#{cc.attrs.patient.person.bloodGroup.name}" />-->
+                                </p:panelGrid>
+                            </p:panel>
+
+
                         </div>
                     </div>
                 </div>
