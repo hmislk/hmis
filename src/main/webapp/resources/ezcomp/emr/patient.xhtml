@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -12,43 +13,59 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="card text-white bg-success">
-            <div class="card-header">
-                <h5>Basic Information</h5>
-            </div>
-            <div class="card-body">
+        <p:panelGrid columns="2" class="w-100 table table-striped" >
+            <p:outputLabel value="Name:" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
 
-                <div class="row w-100">
-                    <div class="col-md-6 col-sm-12">
-                        <p><strong>Title:</strong> #{cc.attrs.patient.person.title}</p>
-                        <p><strong>Name:</strong> #{cc.attrs.patient.person.name}</p>
-                        <p><strong>Number:</strong> #{cc.attrs.patient.phn}</p>
-                        <p><strong>Sex:</strong> #{cc.attrs.patient.person.sex}</p>
-                        <p><strong>Age:</strong> #{cc.attrs.patient.person.age}</p>
-                        <p><strong>Date of Birth:</strong> 
-                            <h:outputText value=" " ></h:outputText>
-                            <h:outputText value="#{cc.attrs.patient.person.dob}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
-                            </h:outputText> 
-                        </p>
-                        <p><strong>Race:</strong> #{cc.attrs.patient.person.race.name}</p>
-                        <p><strong>Race:</strong> #{cc.attrs.patient.person.religion.name}</p>
-                        <p><strong>Occupation:</strong> #{cc.attrs.patient.person.occupation.name}</p>
-                        <p><strong>Civil Status:</strong> #{cc.attrs.patient.person.civilStatus.name}</p>
-                    </div>
-                    <div class="col-md-6 col-sm-12">
-                        <p><strong>Phone:</strong> #{cc.attrs.patient.person.phone}</p>
-                        <p><strong>Mobile:</strong> #{cc.attrs.patient.person.mobile}</p>
-                        <p><strong>Email:</strong> #{cc.attrs.patient.person.email}</p>
-                        <p><strong>ID:</strong> #{cc.attrs.patient.person.nic}</p>
-                        <p><strong>Code:</strong> #{cc.attrs.patient.code}</p>
-                        <p><strong>Address:</strong> #{cc.attrs.patient.person.address}</p>
-                        <p><strong>Blood Group:</strong> #{cc.attrs.patient.person.bloodGroup.name}</p>
-                    </div>
-                </div>
+            <p:outputLabel value="Age:" rendered="#{not empty cc.attrs.patient.person.age}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.age}" rendered="#{not empty cc.attrs.patient.person.age}" />
+
+            <p:outputLabel value="Sex:" rendered="#{not empty cc.attrs.patient.person.sex}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" />
+
+            <p:outputLabel value="Number:" rendered="#{not empty cc.attrs.patient.phn}" />
+            <p:outputLabel value="#{cc.attrs.patient.phn}" rendered="#{not empty cc.attrs.patient.phn}" />
+
+            <p:outputLabel value="Date of Birth:" rendered="#{not empty cc.attrs.patient.person.dob}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.dob}">
+                <f:convertDateTime pattern="dd MMMM yyyy" />
+            </p:outputLabel>
+
+            <p:outputLabel value="Race:" rendered="#{not empty cc.attrs.patient.person.race.name}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.race.name}" rendered="#{not empty cc.attrs.patient.person.race.name}" />
+
+            <p:outputLabel value="Religion:" rendered="#{not empty cc.attrs.patient.person.religion.name}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.religion.name}" rendered="#{not empty cc.attrs.patient.person.religion.name}" />
+
+            <p:outputLabel value="Occupation:" rendered="#{not empty cc.attrs.patient.person.occupation.name}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.occupation.name}" rendered="#{not empty cc.attrs.patient.person.occupation.name}" />
+
+            <p:outputLabel value="Civil Status:" rendered="#{not empty cc.attrs.patient.person.civilStatus.name}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.civilStatus.name}" rendered="#{not empty cc.attrs.patient.person.civilStatus.name}" />
+
+            <p:outputLabel value="Phone:" rendered="#{not empty cc.attrs.patient.person.phone}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.phone}" rendered="#{not empty cc.attrs.patient.person.phone}" />
+
+            <p:outputLabel value="Mobile:" rendered="#{not empty cc.attrs.patient.person.mobile}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.mobile}" rendered="#{not empty cc.attrs.patient.person.mobile}" />
+
+            <p:outputLabel value="Email:" rendered="#{not empty cc.attrs.patient.person.email}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.email}" rendered="#{not empty cc.attrs.patient.person.email}" />
+
+            <p:outputLabel value="ID:" rendered="#{not empty cc.attrs.patient.person.nic}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.nic}" rendered="#{not empty cc.attrs.patient.person.nic}" />
+
+            <p:outputLabel value="Code:" rendered="#{not empty cc.attrs.patient.code}" />
+            <p:outputLabel value="#{cc.attrs.patient.code}" rendered="#{not empty cc.attrs.patient.code}" />
+
+            <p:outputLabel value="Address:" rendered="#{not empty cc.attrs.patient.person.address}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.address}" rendered="#{not empty cc.attrs.patient.person.address}" />
+
+            <p:outputLabel value="Blood Group:" rendered="#{not empty cc.attrs.patient.person.bloodGroup.name}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.bloodGroup.name}" rendered="#{not empty cc.attrs.patient.person.bloodGroup.name}" />
 
 
-            </div>
-        </div>
+
+        </p:panelGrid>
     </cc:implementation>
 </html>

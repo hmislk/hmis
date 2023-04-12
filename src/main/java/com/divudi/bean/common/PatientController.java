@@ -8,6 +8,7 @@ import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
@@ -15,6 +16,7 @@ import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.Relation;
 import com.divudi.entity.WebUser;
@@ -151,6 +153,96 @@ public class PatientController implements Serializable {
     private String searchBillId;
     private String searchSampleId;
     private List<Patient> searchPatients;
+
+    private Integer ageYearComponant;
+    private Integer ageMonthComponant;
+    private Integer ageDateComponant;
+
+    public void calculateAgeComponantsFromDob(Patient p) {
+        if (p == null || p.getPerson() == null || p.getPerson().getDob() == null) {
+            return;
+        }
+
+        Date dob = p.getPerson().getDob();
+        Calendar today = Calendar.getInstance();
+        Calendar birthdate = Calendar.getInstance();
+        birthdate.setTime(dob);
+
+        int years = today.get(Calendar.YEAR) - birthdate.get(Calendar.YEAR);
+        int months = today.get(Calendar.MONTH) - birthdate.get(Calendar.MONTH);
+        int days = today.get(Calendar.DATE) - birthdate.get(Calendar.DATE);
+
+        if (months < 0 || (months == 0 && days < 0)) {
+            years--;
+            months += 12;
+            if (days < 0) {
+                months--;
+                days += birthdate.getActualMaximum(Calendar.DATE);
+            }
+        }
+
+        ageYearComponant = years;
+        ageMonthComponant = months;
+        ageDateComponant = days;
+    }
+
+    public void calculateDobFromAgeComponants(Patient p) {
+        if (p == null) {
+            return;
+        }
+        if (p.getPerson() == null) {
+            return;
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        Integer currentYear = calendar.get(Calendar.YEAR);
+        Integer currentMonth = calendar.get(Calendar.MONTH);
+        Integer currentDate = calendar.get(Calendar.DATE);
+
+        if (ageYearComponant == null) {
+            ageYearComponant = 0;
+        }
+        if (ageMonthComponant == null) {
+            ageMonthComponant = 0;
+        }
+        if (ageDateComponant == null) {
+            ageDateComponant = 0;
+        }
+
+        Integer birthYear = currentYear - ageYearComponant;
+        Integer birthMonth = currentMonth - ageMonthComponant;
+        Integer birthDate = currentDate - ageDateComponant;
+
+        // If the birth date is in the future, subtract a year from the birth year
+        if (birthMonth > 0 || (birthMonth == 0 && birthDate > 0)) {
+            birthYear--;
+        }
+
+        calendar.set(Calendar.YEAR, birthYear);
+        calendar.set(Calendar.MONTH, birthMonth);
+        calendar.set(Calendar.DATE, birthDate);
+
+        Date calculatetDob = calendar.getTime();
+        p.getPerson().setDob(calculatetDob);
+    }
+
+    public String navigateToNewOpdVisitFromSearch() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        PatientEncounter opdVisit;
+        opdVisit = new PatientEncounter();
+        opdVisit.setCreatedAt(Calendar.getInstance().getTime());
+        opdVisit.setCreater(getSessionController().getLoggedUser());
+        opdVisit.setPatient(current);
+        opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
+        getPatientEncounterController().setCurrent(opdVisit);
+        getPatientEncounterController().setStartedEncounter(opdVisit);
+        getPatientEncounterController().fillCurrentPatientLists(current);
+        getPatientEncounterController().saveSelected();
+        return "/emr/opd_visit";
+    }
 
     public void generateNewPhn() {
         if (current == null) {
@@ -916,77 +1008,33 @@ public class PatientController implements Serializable {
     }
 
     public void saveSelected(Patient p) {
-        if (errorCheck(current)) {
+        if (p == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
             return;
         }
-        if (p.getPerson().getMembershipScheme() != null) {
-            if (checkCodeNull(p)) {
-                return;
-            }
+        if (p.getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return;
         }
-//        if (p == null) {
-//            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
-//            return;
-//        }
-//        if (p.getPerson() == null) {
-//            UtilityController.addErrorMessage("No Person. Not Saved");
-//            return;
-//        }
-//        if (p.getPerson().getName().trim().equals("")) {
-//            UtilityController.addErrorMessage("Please enter a name");
-//            return;
-//        }
-//        if (p.getPhn().equals("")) {
-//            UtilityController.addErrorMessage("Please Enter PHN number");
-//            return;
-//        }
-
+        if (p.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a name");
+            return;
+        }
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(p.getPerson());
         } else {
-//            p.getPerson().setEditedAt(Calendar.getInstance().getTime());
-//            p.getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(p.getPerson());
         }
         if (p.getId() == null) {
-            if (p.getPerson().getMembershipScheme() == null) {
-//                p.setCode(null);
-//                return;
-            } else {
-                if (p.getPerson().getMembershipScheme().getCode() == null || p.getPerson().getMembershipScheme().getCode().equals("")) {
-//                    p.setCode(null);
-                } else {
-                    p.setCode(getCountPatientCode(p.getPerson().getMembershipScheme().getCode()));
-                }
-            }
             p.setCreatedAt(new Date());
             p.setCreater(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            UtilityController.addSuccessMessage("Saved as a new patient successfully.");
+            p.setCreatedInstitution(getSessionController().getInstitution());
+            getFacade().create(p);
         } else {
-            if (p.getPerson().getMembershipScheme() != null) {
-                if (checkCodeNull(p)) {
-                    return;
-                }
-            }
-//            p.setEditedAt(Calendar.getInstance().getTime());
-//            p.setEditer(getSessionController().getLoggedUser());
             getFacade().edit(p);
-            UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
-
-        if (password != null) {
-            p.getPerson().getWebUser().setWebUserPassword(securityController.hash(password));
-
-            password = null;
-        }
-
-        getPersonFacade().edit(p.getPerson());
-        getWebUserFacade().edit(p.getPerson().getWebUser());
-        getPersonFacade().flush();
-        getFacade().flush();
     }
 
     public void saveSelectedPatient() {
@@ -1124,7 +1172,7 @@ public class PatientController implements Serializable {
     public PatientController() {
     }
 
-    public Patient findPatientByPatientId(Long pid){
+    public Patient findPatientByPatientId(Long pid) {
         String j = "select p "
                 + " from Patient p "
                 + " where p.patientId=:pid";
@@ -1132,7 +1180,7 @@ public class PatientController implements Serializable {
         m.put("pid", pid);
         return getFacade().findFirstByJpql(j, m);
     }
-    
+
     public Patient getCurrent() {
         if (current == null) {
             Person p = new Person();
@@ -1535,6 +1583,30 @@ public class PatientController implements Serializable {
 
     public void setSearchPatients(List<Patient> searchPatients) {
         this.searchPatients = searchPatients;
+    }
+
+    public Integer getAgeYearComponant() {
+        return ageYearComponant;
+    }
+
+    public void setAgeYearComponant(Integer ageYearComponant) {
+        this.ageYearComponant = ageYearComponant;
+    }
+
+    public Integer getAgeMonthComponant() {
+        return ageMonthComponant;
+    }
+
+    public void setAgeMonthComponant(Integer ageMonthComponant) {
+        this.ageMonthComponant = ageMonthComponant;
+    }
+
+    public Integer getAgeDateComponant() {
+        return ageDateComponant;
+    }
+
+    public void setAgeDateComponant(Integer ageDateComponant) {
+        this.ageDateComponant = ageDateComponant;
     }
 
     /**

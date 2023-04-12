@@ -9,8 +9,7 @@ package com.divudi.data.clinical;
  *
  * @author buddhika
  */
-@Deprecated
-public enum ItemUsageType {
+public enum PrescriptionTemplateType {
     EncounterDiagnosis,
     FavouriteDiagnosis,
     Allergies,

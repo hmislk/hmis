@@ -1,12 +1,10 @@
 /*
- * Open Hospital Management Information System
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package com.divudi.entity.clinical;
 
-import com.divudi.data.Sex;
-import com.divudi.data.clinical.ItemUsageType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
@@ -14,13 +12,12 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.WebUser;
+import com.divudi.entity.pharmacy.FrequencyUnit;
 import com.divudi.entity.pharmacy.MeasurementUnit;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -33,11 +30,10 @@ import javax.persistence.Temporal;
  * @author buddhika
  */
 @Entity
-@Deprecated
-public class ItemUsage implements Serializable {
+public class Prescription implements Serializable {
 
     @ManyToOne
-    private ItemUsage parent;
+    private Prescription parent;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -45,42 +41,42 @@ public class ItemUsage implements Serializable {
     private Long id;
 
     @ManyToOne
-    private Institution forInstitution;
+    private Institution institution;
     @ManyToOne
-    private Department forDepartment;
+    private Department department;
     @ManyToOne
-    private WebUser forWebUser;
+    private WebUser webUser;
     @ManyToOne
-    private Item forItem;
+    private Item item;
 
     @ManyToOne
     Patient patient;
     @ManyToOne
-    PatientEncounter patientEncounter;
+    PatientEncounter encounter;
 
-    @Enumerated(EnumType.STRING)
-    private ItemUsageType type;
-
-    @ManyToOne
-    private Item item;
     @ManyToOne
     private Category category;
-    private Double dblValue1;
-    Integer intValue1;
+
     @ManyToOne
-    private MeasurementUnit measurementUnit1;
-    private Double dblValue2;
-    Integer intValue2;
+    private MeasurementUnit doseUnit;
+    private Double dose;
+
     @ManyToOne
-    private MeasurementUnit measurementUnit2;
-    @Enumerated(EnumType.STRING)
-    private Sex sex;
-    private Long ageInMonthsFrom;
-    private Long ageInMonthsTo;
-    private int orderNo;
+    private MeasurementUnit frequencyUnit;
+
+    private Double orderNo;
+    
+    @ManyToOne
+    private MeasurementUnit durationUnit;
+    
+    private Double duration;
+
+    @ManyToOne
+    private MeasurementUnit issueUnit;
+    private Double issue;
 
     @OneToMany(mappedBy = "parent")
-    private List<ItemUsage> children;
+    private List<Prescription> children;
 
     //Created Properties
     @ManyToOne
@@ -116,28 +112,12 @@ public class ItemUsage implements Serializable {
         this.patient = patient;
     }
 
-    public PatientEncounter getPatientEncounter() {
-        return patientEncounter;
+    public PatientEncounter getEncounter() {
+        return encounter;
     }
 
-    public void setPatientEncounter(PatientEncounter patientEncounter) {
-        this.patientEncounter = patientEncounter;
-    }
-
-    public Integer getIntValue1() {
-        return intValue1;
-    }
-
-    public void setIntValue1(Integer intValue1) {
-        this.intValue1 = intValue1;
-    }
-
-    public Integer getIntValue2() {
-        return intValue2;
-    }
-
-    public void setIntValue2(Integer intValue2) {
-        this.intValue2 = intValue2;
+    public void setEncounter(PatientEncounter encounter) {
+        this.encounter = encounter;
     }
 
     
@@ -152,10 +132,10 @@ public class ItemUsage implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof ItemUsage)) {
+        if (!(object instanceof Prescription)) {
             return false;
         }
-        ItemUsage other = (ItemUsage) object;
+        Prescription other = (Prescription) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -167,38 +147,6 @@ public class ItemUsage implements Serializable {
         return "com.divudi.entity.clinical.FavouriteItem[ id=" + id + " ]";
     }
 
-    public Institution getForInstitution() {
-        return forInstitution;
-    }
-
-    public void setForInstitution(Institution forInstitution) {
-        this.forInstitution = forInstitution;
-    }
-
-    public Department getForDepartment() {
-        return forDepartment;
-    }
-
-    public void setForDepartment(Department forDepartment) {
-        this.forDepartment = forDepartment;
-    }
-
-    public WebUser getForWebUser() {
-        return forWebUser;
-    }
-
-    public void setForWebUser(WebUser forWebUser) {
-        this.forWebUser = forWebUser;
-    }
-
-    public ItemUsageType getType() {
-        return type;
-    }
-
-    public void setType(ItemUsageType type) {
-        this.type = type;
-    }
-
     public Item getItem() {
         return item;
     }
@@ -207,75 +155,43 @@ public class ItemUsage implements Serializable {
         this.item = item;
     }
 
-    public Double getDblValue1() {
-        return dblValue1;
+    public MeasurementUnit getDoseUnit() {
+        return doseUnit;
     }
 
-    public void setDblValue1(Double dblValue1) {
-        this.dblValue1 = dblValue1;
+    public void setDoseUnit(MeasurementUnit dosageUnit) {
+        this.doseUnit = dosageUnit;
     }
 
-    public MeasurementUnit getMeasurementUnit1() {
-        return measurementUnit1;
+    public Double getDose() {
+        return dose;
     }
 
-    public void setMeasurementUnit1(MeasurementUnit measurementUnit1) {
-        this.measurementUnit1 = measurementUnit1;
+    public void setDose(Double dose) {
+        this.dose = dose;
     }
 
-    public Double getDblValue2() {
-        return dblValue2;
+    public MeasurementUnit getFrequencyUnit() {
+        return frequencyUnit;
     }
 
-    public void setDblValue2(Double dblValue2) {
-        this.dblValue2 = dblValue2;
+    public void setFrequencyUnit(MeasurementUnit frequencyUnit) {
+        this.frequencyUnit = frequencyUnit;
     }
 
-    public MeasurementUnit getMeasurementUnit2() {
-        return measurementUnit2;
-    }
-
-    public void setMeasurementUnit2(MeasurementUnit measurementUnit2) {
-        this.measurementUnit2 = measurementUnit2;
-    }
-
-    public Sex getSex() {
-        return sex;
-    }
-
-    public void setSex(Sex sex) {
-        this.sex = sex;
-    }
-
-    public Long getAgeInMonthsFrom() {
-        return ageInMonthsFrom;
-    }
-
-    public void setAgeInMonthsFrom(Long ageInMonthsFrom) {
-        this.ageInMonthsFrom = ageInMonthsFrom;
-    }
-
-    public Long getAgeInMonthsTo() {
-        return ageInMonthsTo;
-    }
-
-    public void setAgeInMonthsTo(Long ageInMonthsTo) {
-        this.ageInMonthsTo = ageInMonthsTo;
-    }
-
-    public int getOrderNo() {
+    public Double getOrderNo() {
         return orderNo;
     }
 
-    public void setOrderNo(int orderNo) {
+    public void setOrderNo(Double orderNo) {
         this.orderNo = orderNo;
     }
 
-    public List<ItemUsage> getChildren() {
+    public List<Prescription> getChildren() {
         return children;
     }
 
-    public void setChildren(List<ItemUsage> children) {
+    public void setChildren(List<Prescription> children) {
         this.children = children;
     }
 
@@ -343,20 +259,12 @@ public class ItemUsage implements Serializable {
         this.editedAt = editedAt;
     }
 
-    public ItemUsage getParent() {
+    public Prescription getParent() {
         return parent;
     }
 
-    public void setParent(ItemUsage parent) {
+    public void setParent(Prescription parent) {
         this.parent = parent;
-    }
-
-    public Item getForItem() {
-        return forItem;
-    }
-
-    public void setForItem(Item forItem) {
-        this.forItem = forItem;
     }
 
     public Category getCategory() {
@@ -365,6 +273,62 @@ public class ItemUsage implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public MeasurementUnit getDurationUnit() {
+        return durationUnit;
+    }
+
+    public void setDurationUnit(MeasurementUnit durationUnit) {
+        this.durationUnit = durationUnit;
+    }
+
+    public Double getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Double duration) {
+        this.duration = duration;
+    }
+
+    public MeasurementUnit getIssueUnit() {
+        return issueUnit;
+    }
+
+    public void setIssueUnit(MeasurementUnit issueUnit) {
+        this.issueUnit = issueUnit;
+    }
+
+    public Double getIssue() {
+        return issue;
+    }
+
+    public void setIssue(Double issue) {
+        this.issue = issue;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
     }
 
 }

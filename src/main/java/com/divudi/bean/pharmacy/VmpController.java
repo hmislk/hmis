@@ -13,10 +13,14 @@ import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.Category;
+import com.divudi.entity.Item;
+import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.MeasurementUnit;
+import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.facade.AmpFacade;
 import com.divudi.facade.SpecialityFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
@@ -51,6 +55,8 @@ public class VmpController implements Serializable {
     @EJB
     private VmpFacade ejbFacade;
     @EJB
+    AmpFacade ampFacade;
+    @EJB
     private SpecialityFacade specialityFacade;
     @Inject
     private BillBeanController billBean;
@@ -68,6 +74,10 @@ public class VmpController implements Serializable {
     @EJB
     VtmsVmpsFacade vivFacade;
     List<VirtualProductIngredient> vivs;
+    
+    @EJB
+    VmpFacade vmpFacade;
+
 
     List<Vmp> vmpList;
 
@@ -94,6 +104,24 @@ public class VmpController implements Serializable {
         }
         return vmpList;
     }
+    
+    public List<Amp> ampsOfVmp(Item vmp) {
+        List<Amp> suggestions = new ArrayList<>();
+        if (!(vmp instanceof Vmp)) {
+            return suggestions;
+        }
+
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select a from Amp a "
+                + " where a.retired=:ret"
+                + " and a.vmp=:vmp "
+                + " order by a.name";
+        m.put("ret", false);
+        m.put("vmp", (Vmp) vmp);
+        suggestions = ampFacade.findByJpql(jpql, m);
+        return suggestions;
+    }
 
     public Vmp findVmpByName(String name) {
         String jpql;
@@ -108,6 +136,46 @@ public class VmpController implements Serializable {
         m.put("name", name);
         m.put("ret", false);
         return getFacade().findFirstByJpql(jpql, m);
+    }
+    
+    public List<PharmaceuticalItem> ampsAndVmpsContainingVtm(Item item) {
+        System.out.println("ampsAndVmpsContainingVtm");
+        List<PharmaceuticalItem> vmpsAndAmps = new ArrayList<>();
+        if(!(item instanceof Vtm)){
+            System.out.println("item not a vtm");
+            return vmpsAndAmps;
+        }
+        
+        Vtm vtm = (Vtm) item;
+        System.out.println("vtm = " + vtm);
+        List<Vmp> vmps = vmpsContainingVtm(vtm);
+        System.out.println("vmps = " + vmps);
+        if (vmps == null || vmps.isEmpty()) {
+            return vmpsAndAmps;
+        }
+        vmpsAndAmps.addAll(vmps);
+        for (Vmp v : vmps) {
+            vmpsAndAmps.addAll(ampsOfVmp(v));
+        }
+        return vmpsAndAmps;
+    }
+    
+    public List<Vmp> vmpsContainingVtm(Item item) {
+        List<Vmp> vmps = new ArrayList<>();
+        if(!(item instanceof Vtm)){
+            return vmps;
+        }
+        Vtm vtm = (Vtm) item;
+        String j;
+        Map m = new HashMap();
+        j = "Select vmp "
+                + " from VtmsVmps viv join viv.vmp vmp"
+                + " where viv.retired=:ret "
+                + " and viv.vtm=:vtm "
+                + " order by vmp.name";
+        m.put("ret", false);
+        m.put("vtm", vtm);
+        return vmpFacade.findByJpql(j, m);
     }
 
     public Vmp createVmp(String vmpName, 

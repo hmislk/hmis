@@ -16,6 +16,7 @@
 
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="styles.css" ></h:outputStylesheet>
+                <h:outputStylesheet library="css" name="ohmis.css" ></h:outputStylesheet>
                 <h:form>
                     <div class="card" >
                         <div class="card-header" >
@@ -75,30 +76,43 @@
                                                  class="w-100 table table-sm table-striped"
                                                  paginator="true"
                                                  rows="10"
+                                                 styleClass="auto-width-datatable"
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="5,10,20"
                                                  >
-                                        <p:column headerText="Name" styleClass="col-name">
+                                        <p:column headerText="Name" >
                                             <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Age" styleClass="col-age">
+                                        <p:column headerText="Age &amp; Sex" >
+                                            <p:outputLabel rendered="#{p.person.sex == 'Male'}">
+                                                <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
+                                            </p:outputLabel>
+                                            <p:outputLabel rendered="#{p.person.sex == 'Female'}">
+                                                <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
+                                            </p:outputLabel>
+                                            <p:outputLabel value=" "></p:outputLabel>
                                             <p:outputLabel value="#{p.person.age}"></p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Sex" styleClass="col-sex">
-                                            <p:outputLabel value="#{p.person.sex}"></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Address" styleClass="col-address">
-                                            <p:outputLabel value="#{p.person.address}"></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Phone" styleClass="col-phone">
+                                        <p:column headerText="Phone &amp; Address" >
                                             <p:outputLabel value="#{p.person.phone}">
                                             </p:outputLabel>
+                                            <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
+                                            <p:outputLabel value="#{p.person.address}"></p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Actions" styleClass="col-actions">
-                                            <h:commandButton value="View" styleClass="btn btn-primary" action="#{patientController.toPatientFromSearchPatients()}">
-                                                <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
-                                            </h:commandButton>
+                                        <p:column headerText="Actions"  width="600">
+                                            <div class="d-flex justify-content-between">
+                                                <p:commandButton value="EMR" action="#{patientController.toEmrPatientProfile()}" ajax="false">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                 <p:commandButton value="OPD Visit" action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                                <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                                </p:commandButton>
+                                            </div>
                                         </p:column>
+
                                     </p:dataTable>
 
 
