@@ -17,14 +17,24 @@
                     <div class="row" >
                         <div class="col-md-4 " >
                             <p:outputPanel class="text-center">
-                                <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
-                                                class="w-50"
-                                                library="image" name="male.jpg">
+                                <h:panelGroup rendered="#{patientController.current.baImage eq null}"  >
+                                    <p:graphicImage rendered="#{patientController.current.person.sex eq 'Male'}" 
+                                                    class="w-50 img-thumbnail"
+                                                    library="image" name="male.jpg">
+                                    </p:graphicImage>
+                                    <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
+                                                    class="w-50 img-thumbnail"
+                                                    library="image" name="female.png">
+                                    </p:graphicImage>
+                                </h:panelGroup>
+
+
+                                <p:graphicImage  class="w-75 img-thumbnail" 
+                                                 id="photos" cache="false"
+                                                 rendered="#{patientController.current.baImage ne null}"    
+                                                 value="#{patientController.getPhotoByByte(patientController.current.baImage)}"  >
                                 </p:graphicImage>
-                                <p:graphicImage rendered="#{patientController.current.person.sex eq 'Female'}" 
-                                                class="w-50"
-                                                library="image" name="female.png">
-                                </p:graphicImage>
+
                             </p:outputPanel>
                             <em:patient patient="#{patientController.current}" ></em:patient>
 

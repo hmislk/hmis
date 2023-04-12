@@ -322,7 +322,7 @@ public class Person implements Serializable {
     }
 
     public void setName(String name) {
-        this.name = name.toUpperCase();
+        this.name = name;
     }
 
     public String getInitials() {
