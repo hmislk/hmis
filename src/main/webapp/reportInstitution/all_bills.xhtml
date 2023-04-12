@@ -23,11 +23,11 @@
                         <p:calendar styleClass="dateTimePicker" 
                                     id="fromDate" 
                                     value="#{searchController.fromDate}" 
-                                    navigator="false" pattern="dd MMMM yyyy" >      
+                                    navigator="false" pattern="dd MMMM yyyy hh:mm" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{searchController.toDate}" 
-                                    navigator="false" pattern="dd MMMM yyyy" >                                                                              
+                                    navigator="false" pattern="dd MMMM yyyy hh:mm" >                                                                              
                         </p:calendar>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillAllBills}"/>
