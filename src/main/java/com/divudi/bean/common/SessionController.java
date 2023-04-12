@@ -849,7 +849,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                         System.out.println("logged = " + logged);
                     } else {
                         UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
-                        UtilityController.addSuccessMessage(setGreetingMsg() + " " + loggedUser.getWebUserPerson().getName());
+                        UtilityController.addSuccessMessage(setGreetingMsg());
                     }
                     if (getApplicationController().isLogged(u) != null) {
                         UtilityController.addErrorMessage("This user is already logged.");
@@ -976,13 +976,21 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String setGreetingMsg() {
         getCurrentHour();
         String msg = "";
-        if (getCurrentHour() < 12 || getCurrentHour() == 12) {
-            msg = "Good Morning !";
-        } else if (getCurrentHour() > 12 && getCurrentHour() < 15) {
 
-            msg = "Good Afternoon !";
+        if (getCurrentHour() < 12 || getCurrentHour() == 12) {
+            msg = "Good Morning !, ";
+        } else if (getCurrentHour() > 12 && getCurrentHour() < 15) {
+            msg = "Good Afternoon !, ";
         } else if (getCurrentHour() > 14 && getCurrentHour() < 19) {
-            msg = "Good Evening !";
+            msg = "Good Evening !, ";
+        } else {
+            msg = "Good Day !, ";
+        }
+
+        if (getLoggedUser() != null) {
+            if (getLoggedUser().getWebUserPerson() != null) {
+                msg += getLoggedUser().getWebUserPerson().getName();
+            }
         }
         return msg;
     }
@@ -1213,11 +1221,11 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         return primeTheme;
     }
-    
-    
+
     public void setPrimeTheme(String primeTheme) {
         this.primeTheme = primeTheme;
     }
+
     /**
      *
      * @return
@@ -1543,10 +1551,6 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void setWebsiteUserGoingToLog(boolean websiteUserGoingToLog) {
         this.websiteUserGoingToLog = websiteUserGoingToLog;
     }
-
- 
-
-  
 
     public UserPreference getDepartmentPreference() {
         return departmentPreference;
