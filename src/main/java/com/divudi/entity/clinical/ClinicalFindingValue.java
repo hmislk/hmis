@@ -35,12 +35,12 @@ public class ClinicalFindingValue implements Serializable {
 
     @ManyToOne
     Person person;
-    
+
     @ManyToOne
     private Patient patient;
-    
+
     private double orderNo;
-    
+
     @ManyToOne(cascade = CascadeType.REFRESH)
     PatientEncounter encounter;
     @ManyToOne
@@ -59,16 +59,10 @@ public class ClinicalFindingValue implements Serializable {
     private boolean retired;
     @ManyToOne
     private Prescription prescription;
-    
-    
-    
 
     @Enumerated(EnumType.STRING)
     private ClinicalFindingValueType clinicalFindingValueType;
-    
-    
-    
-    
+
     public Person getPerson() {
         return person;
     }
@@ -215,8 +209,13 @@ public class ClinicalFindingValue implements Serializable {
     }
 
     public Prescription getPrescription() {
-        if(this.clinicalFindingValueType!=null && this.clinicalFindingValueType==ClinicalFindingValueType.PatientMedicine){
-            if(this.prescription==null){
+        if (this.clinicalFindingValueType != null && this.clinicalFindingValueType == ClinicalFindingValueType.PatientMedicine) {
+            if (this.prescription == null) {
+                prescription = new Prescription();
+            }
+        }
+        if (this.clinicalFindingValueType != null && this.clinicalFindingValueType == ClinicalFindingValueType.VisitMedicine) {
+            if (this.prescription == null) {
                 prescription = new Prescription();
             }
         }
