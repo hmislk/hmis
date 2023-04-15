@@ -26,4 +26,5 @@ public enum ClinicalFindingValueType {
     VisitMedicalLeaveCertificate,
     VisitMedicalFitnessCertificate,
     VisitProcedure,
+    VisitPrescription,
 }

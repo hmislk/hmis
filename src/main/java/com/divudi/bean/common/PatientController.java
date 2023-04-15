@@ -240,6 +240,7 @@ public class PatientController implements Serializable {
         getPatientEncounterController().setCurrent(opdVisit);
         getPatientEncounterController().setStartedEncounter(opdVisit);
         getPatientEncounterController().fillCurrentPatientLists(current);
+        getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
         getPatientEncounterController().saveSelected();
         return "/emr/opd_visit";
     }
