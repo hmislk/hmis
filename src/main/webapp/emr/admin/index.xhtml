@@ -26,7 +26,7 @@
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Vocabularies" action="/clinical/clinical_vocabulary" onclick="onSubmitButton();" ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Symptoms" action="/clinical/clinical_symptoms" onclick="onSubmitButton();" ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Signs" action="/clinical/clinical_signs" onclick="onSubmitButton();" ></p:commandButton>
-                                                    <p:commandButton styleClass="btn btn-block" ajax="false" value="Diagnosis" action="/clinical/clinical_diagnosis" onclick="onSubmitButton();" ></p:commandButton>
+                                                    <p:commandButton styleClass="btn btn-block" ajax="false" value="Diagnosis" action="#{emrController.navigateToManageDiagnoses()}" onclick="onSubmitButton();" ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Investigations" action="/clinical/clinical_investigations" onclick="onSubmitButton();" ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Procedures" action="/clinical/clinical_procedures" onclick="onSubmitButton();" ></p:commandButton>
                                                     <p:commandButton styleClass="btn btn-block" ajax="false" value="Plan of actions" action="/clinical/clinical_plans" onclick="onSubmitButton();" ></p:commandButton>
