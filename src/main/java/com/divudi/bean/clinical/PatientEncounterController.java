@@ -117,7 +117,7 @@ public class PatientEncounterController implements Serializable {
     private PatientEncounter current;
     private List<PatientEncounter> items = null;
     List<PatientEncounter> encounters;
-    
+
     @Inject
     private FavouriteController favouriteController;
 
@@ -135,9 +135,26 @@ public class PatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> patientImages;
     private List<ClinicalFindingValue> patientDiagnoses;
     private List<ClinicalFindingValue> patientDiagnosticImages;
-    
+
     private ClinicalFindingValue encounterMedicine;
+    private ClinicalFindingValue encounterDiagnosticImage;
+    private ClinicalFindingValue encounterDiagnosis;
+    private ClinicalFindingValue encounterImage;
+    private ClinicalFindingValue encounterInvestigation;
+    private ClinicalFindingValue encounterMedicalFitnessCertificate;
+    private ClinicalFindingValue encounterMedicalCertificate;
+    private ClinicalFindingValue encounterReferral;
+    private ClinicalFindingValue encounterPrescreption;
+
     private List<ClinicalFindingValue> encounterMedicines;
+    private List<ClinicalFindingValue> encounterDiagnosticImages;
+    private List<ClinicalFindingValue> encounterDiagnoses;
+    private List<ClinicalFindingValue> encounterImages;
+    private List<ClinicalFindingValue> encounterInvestigations;
+    private List<ClinicalFindingValue> encounterMedicalFitnessCertificates;
+    private List<ClinicalFindingValue> encounterMedicalCertificates;
+    private List<ClinicalFindingValue> encounterReferrals;
+    private List<ClinicalFindingValue> encounterPrescreptions;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -171,7 +188,7 @@ public class PatientEncounterController implements Serializable {
     private String values2Name;
 
     private String chartString;
-    
+
     private InvestigationItem graphInvestigationItem;
 
     public void listInstitutionEncounters() {
@@ -266,7 +283,7 @@ public class PatientEncounterController implements Serializable {
         tmpMap.put("q", qry.toUpperCase() + "%");
         return getFacade().findString(sql, tmpMap);
     }
-    
+
     public String createInvestigationChart() {
 
         String s = "";
@@ -321,7 +338,7 @@ public class PatientEncounterController implements Serializable {
         setChartString(getSingleLineChartString());
         return "/emr/chart";
     }
-    
+
     public List<PatientReportItemValue> fillPatientReportItemValue(Patient patient, InvestigationItem ii) {
         Map m = new HashMap();
         m.put("p", patient);
@@ -469,7 +486,7 @@ public class PatientEncounterController implements Serializable {
 
     }
 
-     public void addDx() {
+    public void addDx() {
         if (diagnosis == null) {
             UtilityController.addErrorMessage("Please select a diagnosis");
             return;
@@ -592,11 +609,11 @@ public class PatientEncounterController implements Serializable {
             } catch (Exception e) {
 
             }
-            
+
             encounterMedicine.setPrescription(p);
             encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
             clinicalFindingValueFacade.create(encounterMedicine);
-            
+
             //TO Do
             System.out.println("p = " + p);
 
@@ -617,7 +634,7 @@ public class PatientEncounterController implements Serializable {
             getFacade().create(encounter);
         }
     }
-    
+
     public void addRxWithoutDx() {
 //        if (diagnosis == null) {
 //            UtilityController.addErrorMessage("Please select a diagnosis");
@@ -753,6 +770,12 @@ public class PatientEncounterController implements Serializable {
         return fillCurrentPatientClinicalFindingValues(patient, clinicalFindingValueTypes);
     }
 
+    public List<ClinicalFindingValue> fillEncounterMedicines(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicine);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
     public List<ClinicalFindingValue> fillPatientImages(Patient patient) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.PatientImage);
@@ -782,6 +805,23 @@ public class PatientEncounterController implements Serializable {
         return clinicalFindingValueFacade.findByJpql(sql, m);
     }
 
+    public List<ClinicalFindingValue> fillCurrentEncounterFindingValues(PatientEncounter encounter, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
+        Map m = new HashMap();
+        m.put("e", encounter);
+        m.put("ts", clinicalFindingValueTypes);
+        m.put("ret", false);
+        String sql;
+        ClinicalFindingValue e = new ClinicalFindingValue();
+        e.getPatient();
+        sql = "Select e "
+                + " from ClinicalFindingValue e "
+                + " where e.encounter=:e "
+                + " and e.retired=:ret "
+                + " and e.clinicalFindingValueType in :ts "
+                + " order by e.orderNo";
+        return clinicalFindingValueFacade.findByJpql(sql, m);
+    }
+
     public void fillCurrentPatientLists(Patient patient) {
         encounters = fillPatientEncounters(patient);
 
@@ -796,9 +836,19 @@ public class PatientEncounterController implements Serializable {
         patientImages = fillPatientImages(patient);
         patientDiagnosticImages = fillPatientDiadnosticImages(patient);
         patientMedicines = fillPatientMedicines(patient);
+    }
 
-//        currentEncounterMedicines = fillCurrentEncounterMedicines();
-//        currentEncounterDiagnosis = fillCurrentEncounterDiagnosis();
+    public void fillCurrentEncounterLists(PatientEncounter encounter) {
+        encounterMedicines = fillEncounterMedicines(encounter);
+        encounterInvestigations = fillEncounterInvestigations(encounter);
+        encounterDiagnoses = fillEncounterDiagnoses(encounter);
+        encounterImages = fillEncounterImages(encounter);
+        encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
+        encounterMedicalFitnessCertificates = fillEncounterMedicalFitnessCertificates(encounter);
+        encounterMedicalCertificates = fillEncounterMedicalCertificates(encounter);
+        encounterReferrals = fillEncounterReferrals(encounter);
+        encounterPrescreptions = fillEncounterPrescreptions(encounter);
+
     }
 
     public void removePatientAllergy() {
@@ -835,6 +885,17 @@ public class PatientEncounterController implements Serializable {
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getPatientDiagnoses().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
+    }
+    
+    public void removeEncounterMedicine() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        getEncounterMedicines().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
 
@@ -879,6 +940,20 @@ public class PatientEncounterController implements Serializable {
         getPatientMedicines().add(getPatientMedicine());
         System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         setPatientMedicine(null);
+        JsfUtil.addSuccessMessage("Added");
+    }
+    
+    public void addEncounterMedicine() {
+        if (getEncounterMedicine().getPrescription().getItem() == null) {
+            JsfUtil.addErrorMessage("Select Medicine");
+            return;
+        }
+        getEncounterMedicine().setEncounter(current);
+        getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+        prescriptionFacade.create(getEncounterMedicine().getPrescription());
+        clinicalFindingValueFacade.create(getEncounterMedicine());
+        getEncounterMedicines().add(getEncounterMedicine());
+        setEncounterMedicine(null);
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -1645,8 +1720,6 @@ public class PatientEncounterController implements Serializable {
         return channelBills;
     }
 
-    
-    
     public void setChannelBills(List<Bill> channelBills) {
         this.channelBills = channelBills;
     }
@@ -1658,7 +1731,7 @@ public class PatientEncounterController implements Serializable {
     public void setGraphInvestigationItem(InvestigationItem graphInvestigationItem) {
         this.graphInvestigationItem = graphInvestigationItem;
     }
-    
+
     public CommonController getCommonController() {
         return commonController;
     }
@@ -1703,6 +1776,8 @@ public class PatientEncounterController implements Serializable {
         return patientAllergies;
     }
 
+    
+    
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
         this.patientAllergies = patientAllergies;
     }
@@ -1742,6 +1817,7 @@ public class PatientEncounterController implements Serializable {
     public ClinicalFindingValue getPatientAllergy() {
         if (patientAllergy == null) {
             patientAllergy = new ClinicalFindingValue();
+            patientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         }
         return patientAllergy;
     }
@@ -1753,6 +1829,7 @@ public class PatientEncounterController implements Serializable {
     public ClinicalFindingValue getPatientMedicine() {
         if (patientMedicine == null) {
             patientMedicine = new ClinicalFindingValue();
+            patientMedicine.setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
             Prescription p = new Prescription();
             patientMedicine.setPrescription(p);
         }
@@ -1766,6 +1843,7 @@ public class PatientEncounterController implements Serializable {
     public ClinicalFindingValue getPatientImage() {
         if (patientImage == null) {
             patientImage = new ClinicalFindingValue();
+            patientImage.setClinicalFindingValueType(ClinicalFindingValueType.PatientImage);
         }
         return patientImage;
     }
@@ -1777,6 +1855,7 @@ public class PatientEncounterController implements Serializable {
     public ClinicalFindingValue getPatientDiagnosis() {
         if (patientDiagnosis == null) {
             patientDiagnosis = new ClinicalFindingValue();
+            patientDiagnosis.setClinicalFindingValueType(ClinicalFindingValueType.PatientDiagnosis);
         }
         return patientDiagnosis;
     }
@@ -1788,6 +1867,7 @@ public class PatientEncounterController implements Serializable {
     public ClinicalFindingValue getPatientDiagnosticImage() {
         if (patientDiagnosticImage == null) {
             patientDiagnosticImage = new ClinicalFindingValue();
+            patientDiagnosticImage.setClinicalFindingValueType(ClinicalFindingValueType.PatientDiagnosticImage);
         }
         return patientDiagnosticImage;
     }
@@ -1909,6 +1989,12 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getEncounterMedicine() {
+        if(encounterMedicine==null){
+            encounterMedicine = new ClinicalFindingValue();
+            encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+            Prescription p = new Prescription();
+            encounterMedicine.setPrescription(p);
+        }
         return encounterMedicine;
     }
 
@@ -1922,6 +2008,182 @@ public class PatientEncounterController implements Serializable {
 
     public void setEncounterMedicines(List<ClinicalFindingValue> encounterMedicines) {
         this.encounterMedicines = encounterMedicines;
+    }
+
+    public List<ClinicalFindingValue> getEncounterDiagnosticImages() {
+        return encounterDiagnosticImages;
+    }
+
+    public void setEncounterDiagnosticImages(List<ClinicalFindingValue> encounterDiagnosticImages) {
+        this.encounterDiagnosticImages = encounterDiagnosticImages;
+    }
+
+    public List<ClinicalFindingValue> getEncounterDiagnoses() {
+        return encounterDiagnoses;
+    }
+
+    public void setEncounterDiagnoses(List<ClinicalFindingValue> encounterDiagnoses) {
+        this.encounterDiagnoses = encounterDiagnoses;
+    }
+
+    public List<ClinicalFindingValue> getEncounterInvestigations() {
+        return encounterInvestigations;
+    }
+
+    public void setEncounterInvestigations(List<ClinicalFindingValue> encounterInvestigations) {
+        this.encounterInvestigations = encounterInvestigations;
+    }
+
+    public List<ClinicalFindingValue> getEncounterImages() {
+        return encounterImages;
+    }
+
+    public void setEncounterImages(List<ClinicalFindingValue> encounterImages) {
+        this.encounterImages = encounterImages;
+    }
+
+    private List<ClinicalFindingValue> fillEncounterInvestigations(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicine);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterDiagnoses(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDiagnosis);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterImages(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitImage);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterDiadnosticImages(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDiagnosticImage);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterMedicalFitnessCertificates(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicalFitnessCertificate);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterMedicalCertificates(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicalLeaveCertificate);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterReferrals(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitReferral);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterPrescreptions(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitReferral);
+        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    public ClinicalFindingValue getEncounterDiagnosticImage() {
+        return encounterDiagnosticImage;
+    }
+
+    public void setEncounterDiagnosticImage(ClinicalFindingValue encounterDiagnosticImage) {
+        this.encounterDiagnosticImage = encounterDiagnosticImage;
+    }
+
+    public ClinicalFindingValue getEncounterDiagnosis() {
+        return encounterDiagnosis;
+    }
+
+    public void setEncounterDiagnosis(ClinicalFindingValue encounterDiagnosis) {
+        this.encounterDiagnosis = encounterDiagnosis;
+    }
+
+    public ClinicalFindingValue getEncounterImage() {
+        return encounterImage;
+    }
+
+    public void setEncounterImage(ClinicalFindingValue encounterImage) {
+        this.encounterImage = encounterImage;
+    }
+
+    public ClinicalFindingValue getEncounterInvestigation() {
+        return encounterInvestigation;
+    }
+
+    public void setEncounterInvestigation(ClinicalFindingValue encounterInvestigation) {
+        this.encounterInvestigation = encounterInvestigation;
+    }
+
+    public ClinicalFindingValue getEncounterMedicalFitnessCertificate() {
+        return encounterMedicalFitnessCertificate;
+    }
+
+    public void setEncounterMedicalFitnessCertificate(ClinicalFindingValue encounterMedicalFitnessCertificate) {
+        this.encounterMedicalFitnessCertificate = encounterMedicalFitnessCertificate;
+    }
+
+    public ClinicalFindingValue getEncounterMedicalCertificate() {
+        return encounterMedicalCertificate;
+    }
+
+    public void setEncounterMedicalCertificate(ClinicalFindingValue encounterMedicalCertificate) {
+        this.encounterMedicalCertificate = encounterMedicalCertificate;
+    }
+
+    public ClinicalFindingValue getEncounterReferral() {
+        return encounterReferral;
+    }
+
+    public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
+        this.encounterReferral = encounterReferral;
+    }
+
+    public ClinicalFindingValue getEncounterPrescreption() {
+        return encounterPrescreption;
+    }
+
+    public void setEncounterPrescreption(ClinicalFindingValue encounterPrescreption) {
+        this.encounterPrescreption = encounterPrescreption;
+    }
+
+    public List<ClinicalFindingValue> getEncounterMedicalFitnessCertificates() {
+        return encounterMedicalFitnessCertificates;
+    }
+
+    public void setEncounterMedicalFitnessCertificates(List<ClinicalFindingValue> encounterMedicalFitnessCertificates) {
+        this.encounterMedicalFitnessCertificates = encounterMedicalFitnessCertificates;
+    }
+
+    public List<ClinicalFindingValue> getEncounterMedicalCertificates() {
+        return encounterMedicalCertificates;
+    }
+
+    public void setEncounterMedicalCertificates(List<ClinicalFindingValue> encounterMedicalCertificates) {
+        this.encounterMedicalCertificates = encounterMedicalCertificates;
+    }
+
+    public List<ClinicalFindingValue> getEncounterReferrals() {
+        return encounterReferrals;
+    }
+
+    public void setEncounterReferrals(List<ClinicalFindingValue> encounterReferrals) {
+        this.encounterReferrals = encounterReferrals;
+    }
+
+    public List<ClinicalFindingValue> getEncounterPrescreptions() {
+        return encounterPrescreptions;
+    }
+
+    public void setEncounterPrescreptions(List<ClinicalFindingValue> encounterPrescreptions) {
+        this.encounterPrescreptions = encounterPrescreptions;
     }
 
 }

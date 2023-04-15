@@ -77,6 +77,8 @@ public class Prescription implements Serializable {
 
     @OneToMany(mappedBy = "parent")
     private List<Prescription> children;
+    
+    private boolean indoor;
 
     //Created Properties
     @ManyToOne
@@ -120,6 +122,8 @@ public class Prescription implements Serializable {
         this.encounter = encounter;
     }
 
+    
+    
     
     
     @Override
@@ -329,6 +333,14 @@ public class Prescription implements Serializable {
 
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
+    }
+
+    public boolean isIndoor() {
+        return indoor;
+    }
+
+    public void setIndoor(boolean indoor) {
+        this.indoor = indoor;
     }
 
 }

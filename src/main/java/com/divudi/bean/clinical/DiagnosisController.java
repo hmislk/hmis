@@ -42,7 +42,7 @@ public class DiagnosisController implements Serializable {
     List<ClinicalEntity> selectedItems;
     private ClinicalEntity current;
     private List<ClinicalEntity> items = null;
-    
+
     String selectText = "";
 
     public List<ClinicalEntity> completeDiagnosis(String qry) {
@@ -122,7 +122,7 @@ public class DiagnosisController implements Serializable {
             UtilityController.addSuccessMessage("Updates");
         }
         recreateModel();
-        getItems();
+        fillItems();
     }
 
     public void setSelectText(String selectText) {
@@ -170,7 +170,7 @@ public class DiagnosisController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
+        fillItems();
         current = null;
         getCurrent();
     }
@@ -201,5 +201,18 @@ public class DiagnosisController implements Serializable {
         return "/emr/reports/diagnoses";
     }
 
-    
+    public void fillItems() {
+        List<ClinicalEntity> c;
+        Map m = new HashMap();
+        m.put("t", SymanticType.Disease_or_Syndrome);
+        String sql;
+        sql = "select c "
+                + " from ClinicalEntity c "
+                + " where c.retired=false "
+                + " and c.symanticType=:t "
+                + " order by c.name";
+        c = getFacade().findByJpql(sql, m);
+        items = c;
+    }
+
 }

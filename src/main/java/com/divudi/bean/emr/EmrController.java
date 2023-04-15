@@ -1,9 +1,11 @@
 package com.divudi.bean.emr;
 
+import com.divudi.bean.clinical.DiagnosisController;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import org.primefaces.PrimeFaces;
 import org.primefaces.component.accordionpanel.AccordionPanel;
 import org.primefaces.event.TabChangeEvent;
@@ -16,6 +18,9 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 public class EmrController implements Serializable {
 
+    @Inject
+    DiagnosisController diagnosisController;
+    
     /**
      * Creates a new instance of EmrController
      */
@@ -51,6 +56,11 @@ public class EmrController implements Serializable {
 
     public String navigateToClinicalAdministration() {
         return "/clinical/clinical_administration.xhtml?faces-redirect=true";
+    }
+    
+    public String navigateToManageDiagnoses(){
+        diagnosisController.fillItems();
+        return "/clinical/clinical_diagnosis";
     }
 
     public String navigateToEmrAdmin() {
