@@ -99,19 +99,20 @@
                                             <p:outputLabel rendered="#{not empty p.person.phone and p.person.phone ne ''}" value=",&nbsp; "></p:outputLabel>
                                             <p:outputLabel value="#{p.person.address}"></p:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Actions"  width="600">
+                                        <p:column headerText="Actions">
                                             <div class="d-flex justify-content-between">
-                                                <p:commandButton value="EMR" action="#{patientController.toEmrPatientProfile()}" ajax="false">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                                <p:commandButton value="EMR" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                 <p:commandButton value="OPD Visit" action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                                <p:commandButton value="OPD Visit" action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false">
-                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}"></f:setPropertyActionListener>
+                                                <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                             </div>
                                         </p:column>
+
 
                                     </p:dataTable>
 
