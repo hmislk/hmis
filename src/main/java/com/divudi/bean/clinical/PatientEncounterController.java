@@ -29,6 +29,7 @@ import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
 import com.divudi.entity.clinical.ClinicalFindingItem;
 import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.entity.clinical.DocumentTemplate;
 import com.divudi.entity.clinical.ItemUsage;
 import com.divudi.entity.clinical.Prescription;
 import com.divudi.entity.clinical.PrescriptionTemplate;
@@ -62,6 +63,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.hl7.fhir.r5.model.Encounter;
 
 /**
  *
@@ -106,6 +108,8 @@ public class PatientEncounterController implements Serializable {
     BillController billController;
     @Inject
     CommonController commonController;
+    @Inject
+    DocumentTeamplateController documentTeamplateController;
 
     /**
      * Properties
@@ -122,6 +126,8 @@ public class PatientEncounterController implements Serializable {
     private FavouriteController favouriteController;
 
     private Patient patient;
+
+    List<DocumentTemplate> userDocumentTemplates;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -851,6 +857,121 @@ public class PatientEncounterController implements Serializable {
 
     }
 
+    public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
+
+        String input = t.getContents();
+        String output = "";
+
+        String name = e.getPatient().getPerson().getNameWithTitle();
+        String age = e.getPatient().getPerson().getAge() != null ? e.getPatient().getPerson().getAge() : "";
+        String sex = e.getPatient().getPerson().getSex().name() != null ? e.getPatient().getPerson().getSex().name() : "";
+        String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
+        String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
+
+        for (ClinicalFindingValue cf : getPatientDiagnoses()) {
+            cf.getItemValue().getName();
+            cf.getItemValue().getComments();
+        }
+
+        String medicinesAsString = "Rx" + "<br/>";
+
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+
+                medicinesAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String medicinesOutdoorAsString = "Rx" + "<br/>";
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null && !Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+
+                medicinesOutdoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String medicinesIndoorAsString = "Rx" + "<br/>";
+        for (ClinicalFindingValue cf : getEncounterMedicines()) {
+            if (cf != null && cf.getPrescription() != null && Boolean.TRUE.equals(cf.getPrescription().isIndoor())) {
+                String rxName = cf.getPrescription().getItem() != null ? cf.getPrescription().getItem().getName() : "";
+                String dose = cf.getPrescription().getDose() != null ? String.format("%.0f", cf.getPrescription().getDose()) : "";
+                String doseUnit = cf.getPrescription().getDoseUnit() != null ? cf.getPrescription().getDoseUnit().getName() : "";
+                String frequencyUnit = cf.getPrescription().getFrequencyUnit() != null ? cf.getPrescription().getFrequencyUnit().getName() : "";
+                String duration = cf.getPrescription().getDuration() != null ? String.format("%.0f", cf.getPrescription().getDuration()) : "";
+                String durationUnit = cf.getPrescription().getDurationUnit() != null ? cf.getPrescription().getDurationUnit().getName() : "";
+
+                medicinesIndoorAsString += rxName + " " + dose + " " + doseUnit + " " + frequencyUnit + " " + duration + " " + durationUnit + "<br/>";
+            }
+        }
+
+        String ixAsString = "Ix" + "<br/>";
+        for (ClinicalFindingValue ix : getEncounterInvestigations()) {
+            ixAsString += ix.getItemValue().getName();
+        }
+
+        output = input.replace("{name}", name)
+                .replace("{age}", age)
+                .replace("{sex}", sex)
+                .replace("{address}", address)
+                .replace("{phone}", phone)
+                .replace("{medicines}", medicinesAsString)
+                .replace("{outdoor}", medicinesOutdoorAsString)
+                .replace("{indoor}", medicinesIndoorAsString)
+                .replace("{ix}", ixAsString);
+
+        return output;
+
+    }
+
+    public void generateDocumentsFromDocumentTemplates(PatientEncounter encounter) {
+        List<DocumentTemplate> dts;
+        if (userDocumentTemplates == null) {
+            userDocumentTemplates = documentTeamplateController.fillAllItems(sessionController.getLoggedUser());
+        }
+        if (userDocumentTemplates == null) {
+            return;
+        }
+        dts = userDocumentTemplates;
+
+        for (DocumentTemplate t : dts) {
+            if (t.isDefaultTemplate()) {
+                switch (t.getType()) {
+                    case FitnessCertificate:
+
+                        break;
+                    case MedicalCertificate:
+
+                        break;
+                    case Prescription:
+                        ClinicalFindingValue cfv = new ClinicalFindingValue();
+                        cfv.setEncounter(encounter);
+                        cfv.setDocumentTemplate(t);
+                        cfv.setStringValue(generateDocumentFromTemplate(t, encounter));
+                        getEncounterPrescreptions().add(cfv);
+                        setEncounterPrescreption(cfv);
+                        break;
+                    case Referral:
+                        break;
+                    default:
+                        continue;
+                }
+            }
+        }
+
+    }
+
     public void removePatientAllergy() {
         System.out.println("removePatientAllergy");
         System.out.println("getRemovingClinicalFindingValue() = " + getRemovingClinicalFindingValue());
@@ -887,7 +1008,7 @@ public class PatientEncounterController implements Serializable {
         getPatientDiagnoses().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
-    
+
     public void removeEncounterMedicine() {
         if (getRemovingClinicalFindingValue() == null) {
             JsfUtil.addErrorMessage("Select");
@@ -942,7 +1063,7 @@ public class PatientEncounterController implements Serializable {
         setPatientMedicine(null);
         JsfUtil.addSuccessMessage("Added");
     }
-    
+
     public void addEncounterMedicine() {
         if (getEncounterMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
@@ -950,11 +1071,38 @@ public class PatientEncounterController implements Serializable {
         }
         getEncounterMedicine().setEncounter(current);
         getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-        prescriptionFacade.create(getEncounterMedicine().getPrescription());
-        clinicalFindingValueFacade.create(getEncounterMedicine());
+        if (getEncounterMedicine().getPrescription().getId() == null) {
+            prescriptionFacade.create(getEncounterMedicine().getPrescription());
+        } else {
+            prescriptionFacade.edit(getEncounterMedicine().getPrescription());
+        }
+        if (getEncounterMedicine().getId() == null) {
+            clinicalFindingValueFacade.create(getEncounterMedicine());
+        } else {
+            clinicalFindingValueFacade.edit(getEncounterMedicine());
+        }
         getEncounterMedicines().add(getEncounterMedicine());
+        updateDocuments();
         setEncounterMedicine(null);
         JsfUtil.addSuccessMessage("Added");
+    }
+
+    private void updateDocuments() {
+        if (userDocumentTemplates == null) {
+            return;
+        }
+        if (getEncounterPrescreptions() == null) {
+            return;
+        }
+        for (DocumentTemplate dt : userDocumentTemplates) {
+            if (dt.isAutoGenerate()) {
+                for (ClinicalFindingValue cfv : getEncounterPrescreptions()) {
+                    if (cfv.getDocumentTemplate().equals(dt)) {
+                        cfv.setStringValue(generateDocumentFromTemplate(dt, current));
+                    }
+                }
+            }
+        }
     }
 
     public List<ItemUsage> fillCurrentEncounterMedicines() {
@@ -1118,7 +1266,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public String getSingleLineChartString() {
-        String s = "\n"
+        String s = "<br/>"
                 + "		var MONTHS = [N1N1N1N1N1N1N1N1];\n"
                 + "		var config = {\n"
                 + "			type: 'line',\n"
@@ -1166,23 +1314,23 @@ public class PatientEncounterController implements Serializable {
                 + "				}\n"
                 + "			}\n"
                 + "		};\n"
-                + "\n"
+                + "<br/>"
                 + "		window.onload = function() {\n"
                 + "			var ctx = document.getElementById('canvas').getContext('2d');\n"
                 + "			window.myLine = new Chart(ctx, config);\n"
                 + "		};\n"
-                + "\n"
+                + "<br/>"
                 + "		document.getElementById('randomizeData').addEventListener('click', function() {\n"
                 + "			config.data.datasets.forEach(function(dataset) {\n"
                 + "				dataset.data = dataset.data.map(function() {\n"
                 + "					return randomScalingFactor();\n"
                 + "				});\n"
-                + "\n"
+                + "<br/>"
                 + "			});\n"
-                + "\n"
+                + "<br/>"
                 + "			window.myLine.update();\n"
                 + "		});\n"
-                + "\n"
+                + "<br/>"
                 + "		var colorNames = Object.keys(window.chartColors);\n"
                 + "		document.getElementById('addDataset').addEventListener('click', function() {\n"
                 + "			var colorName = colorNames[config.data.datasets.length % colorNames.length];\n"
@@ -1194,11 +1342,11 @@ public class PatientEncounterController implements Serializable {
                 + "				data: [],\n"
                 + "				fill: false\n"
                 + "			};\n"
-                + "\n"
+                + "<br/>"
                 + "			for (var index = 0; index < config.data.labels.length; ++index) {\n"
                 + "				newDataset.data.push(randomScalingFactor());\n"
                 + "			}\n"
-                + "\n"
+                + "<br/>"
                 + "			config.data.datasets.push(newDataset);\n"
                 + "			window.myLine.update();\n"
                 + "		});\n"
@@ -1314,7 +1462,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public String getDoubleLineChartString() {
-        String s = "\n"
+        String s = "<br/>"
                 + "		var MONTHS = [N1N1N1N1N1N1N1N1];\n"
                 + "		var config = {\n"
                 + "			type: 'line',\n"
@@ -1370,23 +1518,23 @@ public class PatientEncounterController implements Serializable {
                 + "				}\n"
                 + "			}\n"
                 + "		};\n"
-                + "\n"
+                + "<br/>"
                 + "		window.onload = function() {\n"
                 + "			var ctx = document.getElementById('canvas').getContext('2d');\n"
                 + "			window.myLine = new Chart(ctx, config);\n"
                 + "		};\n"
-                + "\n"
+                + "<br/>"
                 + "		document.getElementById('randomizeData').addEventListener('click', function() {\n"
                 + "			config.data.datasets.forEach(function(dataset) {\n"
                 + "				dataset.data = dataset.data.map(function() {\n"
                 + "					return randomScalingFactor();\n"
                 + "				});\n"
-                + "\n"
+                + "<br/>"
                 + "			});\n"
-                + "\n"
+                + "<br/>"
                 + "			window.myLine.update();\n"
                 + "		});\n"
-                + "\n"
+                + "<br/>"
                 + "		var colorNames = Object.keys(window.chartColors);\n"
                 + "		document.getElementById('addDataset').addEventListener('click', function() {\n"
                 + "			var colorName = colorNames[config.data.datasets.length % colorNames.length];\n"
@@ -1398,11 +1546,11 @@ public class PatientEncounterController implements Serializable {
                 + "				data: [],\n"
                 + "				fill: false\n"
                 + "			};\n"
-                + "\n"
+                + "<br/>"
                 + "			for (var index = 0; index < config.data.labels.length; ++index) {\n"
                 + "				newDataset.data.push(randomScalingFactor());\n"
                 + "			}\n"
-                + "\n"
+                + "<br/>"
                 + "			config.data.datasets.push(newDataset);\n"
                 + "			window.myLine.update();\n"
                 + "		});\n"
@@ -1776,8 +1924,6 @@ public class PatientEncounterController implements Serializable {
         return patientAllergies;
     }
 
-    
-    
     public void setPatientAllergies(List<ClinicalFindingValue> patientAllergies) {
         this.patientAllergies = patientAllergies;
     }
@@ -1989,7 +2135,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getEncounterMedicine() {
-        if(encounterMedicine==null){
+        if (encounterMedicine == null) {
             encounterMedicine = new ClinicalFindingValue();
             encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
             Prescription p = new Prescription();
@@ -2086,7 +2232,7 @@ public class PatientEncounterController implements Serializable {
 
     private List<ClinicalFindingValue> fillEncounterPrescreptions(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitReferral);
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
         return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
