@@ -663,7 +663,7 @@
                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration" rendered="#{webUserController.hasPrivilege('HrAdmin')}" />
                 </p:submenu>
 
-                <emr:emr_menu></emr:emr_menu>
+               
 
                 <p:submenu styleClass="rightBordrOnly" label="EMR"  
                            rendered="#{webUserController.hasPrivilege('Clinical')}">
@@ -674,7 +674,7 @@
                     <p:menuitem ajax="false" action="#{emrController.navigateToMembershipRegistration()}" value="Membership"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" value="Queue"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="Reports"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalFavouriteIndex()}" value="Favourites"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToSettings()}" value="Settings"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToEmrAdmin()}" value="Administration"/>
 
 

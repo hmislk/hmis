@@ -241,6 +241,7 @@ public class PatientController implements Serializable {
         getPatientEncounterController().setStartedEncounter(opdVisit);
         getPatientEncounterController().fillCurrentPatientLists(current);
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
+        getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
         return "/emr/opd_visit";
     }

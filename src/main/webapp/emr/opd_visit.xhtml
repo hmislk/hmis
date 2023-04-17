@@ -97,17 +97,33 @@
                                                     <p:ajax event="itemSelect" process="@this" ></p:ajax>
                                                 </p:autoComplete>
                                             </h:panelGroup>
-
-
-
                                             <p:commandButton ajax="false" value="Print" >
                                                 <p:printer target="txtComments" ></p:printer>
                                             </p:commandButton>
                                         </p:panelGrid>
                                     </div>
-
-
                                 </div>
+
+                                <h:panelGroup id="docPrescreption">
+                                    <h:panelGroup rendered="#{patientEncounterController.encounterPrescreption ne null}">
+                                        <div class="card m-2">
+                                            <div class="card card-header">
+                                                <h4>Prescription</h4>
+                                            </div>
+                                            <div class="card card-body">
+                                                <p:commandButton ajax="false" value="Print"  icon="pi pi-print" >
+                                                    <p:printer target="txtDocs" ></p:printer>
+                                                </p:commandButton>
+                                                <p:textEditor id="txtDocs" 
+                                                              toolbarVisible="false"
+                                                              secure='false' widgetVar="textEditorWidget" 
+                                                              value="#{patientEncounterController.encounterPrescreption.stringValue}">
+                                                </p:textEditor>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
 
                                 <div class="card m-2" >
                                     <div class="card card-header" >
@@ -153,7 +169,7 @@
                                             <p:commandButton value="Add"
                                                              id="btnAddRx"
                                                              process="btnAddRx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
-                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration"
+                                                             update="tblRxx chkIndoor acMedicine txtDose cmbDose cmbFrequency txtDuration cmbDuration docPrescreption"
                                                              action="#{patientEncounterController.addEncounterMedicine}"
                                                              />
 
