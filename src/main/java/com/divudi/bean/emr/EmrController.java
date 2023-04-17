@@ -29,7 +29,12 @@ public class EmrController implements Serializable {
     
     private int activeIndexOfReports = 0;
     private int activeIndexOfPatientProfile = 0;
+    private int activeIndexOfSettings = 0;
 
+    public String navigateToSettings(){
+        return "/emr/settings/index";
+    }
+    
     public String navigateToClinicalPatientForReceptionist() {
         return "/clinical/clinical_patient_for_receptionist.xhtml?faces-redirect=true";
     }
@@ -78,6 +83,7 @@ public class EmrController implements Serializable {
     }
     
     
+    
 
 //    public void onTabChange(TabChangeEvent event) {
 //        String activeIndexStr = ((AccordionPanel) event.getComponent()).getActiveIndex();
@@ -93,6 +99,14 @@ public class EmrController implements Serializable {
 
     public void setActiveIndexOfPatientProfile(int activeIndexOfPatientProfile) {
         this.activeIndexOfPatientProfile = activeIndexOfPatientProfile;
+    }
+
+    public int getActiveIndexOfSettings() {
+        return activeIndexOfSettings;
+    }
+
+    public void setActiveIndexOfSettings(int activeIndexOfSettings) {
+        this.activeIndexOfSettings = activeIndexOfSettings;
     }
 
 }
