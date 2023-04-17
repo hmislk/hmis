@@ -59,10 +59,15 @@ public class ClinicalFindingValue implements Serializable {
     private boolean retired;
     @ManyToOne
     private Prescription prescription;
+    @ManyToOne
+    private DocumentTemplate documentTemplate;
 
     @Enumerated(EnumType.STRING)
     private ClinicalFindingValueType clinicalFindingValueType;
 
+    
+    
+    
     public Person getPerson() {
         return person;
     }
@@ -224,6 +229,14 @@ public class ClinicalFindingValue implements Serializable {
 
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
+    }
+
+    public DocumentTemplate getDocumentTemplate() {
+        return documentTemplate;
+    }
+
+    public void setDocumentTemplate(DocumentTemplate documentTemplate) {
+        this.documentTemplate = documentTemplate;
     }
 
 }
