@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/emr/settings/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-4">
+                                <h3>Name:</h3>
+                                <h:inputText id="name" value="#{documentTeamplateController.current.name}" styleClass="form-control" />
+                            </div>
+
+                            <div class="col-2">
+                                <h3>Type:</h3>
+                                <h:selectOneMenu id="type" value="#{documentTeamplateController.current.type}" styleClass="form-control" >
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{documentTeamplateController.documentTemplateTypes}" ></f:selectItems>
+                                </h:selectOneMenu>
+                            </div>
+
+                            <div class="col-2">
+                                <h3>Default:</h3>
+                                <p:outputLabel for="default" value="Default Template" />
+                                <p:selectBooleanCheckbox id="default" value="#{documentTeamplateController.current.defaultTemplate}" styleClass="form-control" />
+
+                            </div>
+
+                            <div class="col-2">
+                                <h3>Auto Regen:</h3>
+                                <h:outputLabel for="auto" value="Auto Generate" />
+                                <p:selectBooleanCheckbox id="auto" value="#{documentTeamplateController.current.autoGenerate}" styleClass="form-control" />
+
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <p:commandButton value="Save" ajax="false" action="#{documentTeamplateController.saveUserDocumentTemplate}" ></p:commandButton>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h3>Text Editor:</h3>
+                                <p:textEditor id="textEditor" 
+                                              secure='false' 
+                                              value="#{documentTeamplateController.current.contents}" style="width: 100%; height: 300px;" />
+                            </div>
+                        </div>
+                    </div>
+                </h:form>
+
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
