@@ -20,15 +20,17 @@
 
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" 
+                        <p:datePicker styleClass="dateTimePicker" 
                                     id="fromDate" 
                                     value="#{searchController.fromDate}" 
-                                    navigator="false" pattern="dd MMMM yyyy hh:mm" >      
-                        </p:calendar>
+                                    showTime="true"
+                                    pattern="dd MMMM yyyy hh:mm" >      
+                        </p:datePicker>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" 
-                                    navigator="false" pattern="dd MMMM yyyy hh:mm" >                                                                              
-                        </p:calendar>
+                        <p:datePicker id="toDate" value="#{searchController.toDate}" 
+                                      showTime="true"
+                                     pattern="dd MMMM yyyy hh:mm" >                                                                              
+                        </p:datePicker>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillAllBills}"/>
                         <p:commandButton id="btnExcel" ajax="false" value="Excel" >
