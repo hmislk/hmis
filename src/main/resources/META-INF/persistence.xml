@@ -8,14 +8,4 @@
       <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
     </properties>
   </persistence-unit>
-  <persistence-unit name="pu">
-    <description>For Object DB</description>
-    <provider>com.objectdb.jpa.Provider</provider>
-    <properties>
-      <property name="javax.persistence.jdbc.url" value="objectdb://localhost/sahana.odb"/>
-      <property name="javax.persistence.jdbc.user" value="admin"/>
-      <property name="javax.persistence.jdbc.password" value="admin"/>
-      <property name="javax.persistence.schema-generation.database.action" value="create"/>
-    </properties>
-  </persistence-unit>
 </persistence>
