@@ -855,14 +855,10 @@ public class PatientEncounterController implements Serializable {
             return "";
         }
         PatientEncounter opdVisit = current;
-
         opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
-        
         setStartedEncounter(opdVisit);
         fillCurrentPatientLists(current.getPatient());
         fillCurrentEncounterLists(opdVisit);
-        generateDocumentsFromDocumentTemplates(opdVisit);
-        
         return "/emr/opd_visit";
     }
 
@@ -945,7 +941,6 @@ public class PatientEncounterController implements Serializable {
         encounterMedicalCertificates = fillEncounterMedicalCertificates(encounter);
         encounterReferrals = fillEncounterReferrals(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
-
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1815,13 +1810,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void setCurrent(PatientEncounter current) {
-        if (this.current == current) {
-            return;
-        }
         this.current = current;
-        if (this != null) {
-            fillCurrentPatientLists(current.getPatient());
-        }
     }
 
     public void delete() {
