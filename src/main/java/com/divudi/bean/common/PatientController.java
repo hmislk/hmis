@@ -246,6 +246,9 @@ public class PatientController implements Serializable {
         return "/emr/opd_visit";
     }
 
+    
+    
+    
     public void generateNewPhn() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient");
