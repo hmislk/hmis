@@ -236,6 +236,8 @@ public class PatientController implements Serializable {
         opdVisit.setCreatedAt(Calendar.getInstance().getTime());
         opdVisit.setCreater(getSessionController().getLoggedUser());
         opdVisit.setPatient(current);
+        opdVisit.setInstitution(sessionController.getInstitution());
+        opdVisit.setDepartment(sessionController.getDepartment());
         opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
         getPatientEncounterController().setCurrent(opdVisit);
         getPatientEncounterController().setStartedEncounter(opdVisit);
@@ -246,6 +248,9 @@ public class PatientController implements Serializable {
         return "/emr/opd_visit";
     }
 
+    
+    
+    
     public void generateNewPhn() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient");

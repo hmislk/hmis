@@ -19,6 +19,7 @@ import com.divudi.data.SymanticType;
 import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.data.clinical.ItemUsageType;
 import com.divudi.data.clinical.PrescriptionTemplateType;
+import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.data.lab.InvestigationResultForGraph;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
@@ -53,6 +54,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -136,6 +138,7 @@ public class PatientEncounterController implements Serializable {
     private ClinicalFindingValue patientDiagnosticImage;
     private ClinicalFindingValue removingClinicalFindingValue;
 
+    private List<ClinicalFindingValue> patientClinicalFindingValues;
     private List<ClinicalFindingValue> patientAllergies;
     private List<ClinicalFindingValue> patientMedicines;
     private List<ClinicalFindingValue> patientImages;
@@ -164,27 +167,28 @@ public class PatientEncounterController implements Serializable {
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
-    List<Bill> opdBills;
+    private List<Bill> patientBills;
+    private List<Bill> opdBills;
     private List<Bill> opdVisits;
     private List<Bill> pharmacyBills;
-    List<Bill> channelBills;
-    List<PatientInvestigation> investigations;
-    String selectText = "";
+    private List<Bill> channelBills;
+    private List<PatientInvestigation> investigations;
+    private String selectText = "";
 
-    ClinicalFindingItem diagnosis;
-    String diagnosisComments;
-    Investigation investigation;
+    private ClinicalFindingItem diagnosis;
+    private String diagnosisComments;
+    private Investigation investigation;
 
-    ClinicalFindingValue removingCfv;
+    private ClinicalFindingValue removingCfv;
 
-    PatientEncounter encounterToDisplay;
-    PatientEncounter startedEncounter;
+    private PatientEncounter encounterToDisplay;
+    private PatientEncounter startedEncounter;
 
-    Date fromDate;
-    Date toDate;
-    Institution institution;
-    Department department;
-    Doctor doctor;
+    private Date fromDate;
+    private Date toDate;
+    private Institution institution;
+    private Department department;
+    private Doctor doctor;
 
     private String chartNameSeries;
     private String chartDataSeries1;
@@ -794,21 +798,30 @@ public class PatientEncounterController implements Serializable {
         return fillCurrentPatientClinicalFindingValues(patient, clinicalFindingValueTypes);
     }
 
+    public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient) {
+        return fillCurrentPatientClinicalFindingValues(patient, null);
+    }
+
     public List<ClinicalFindingValue> fillCurrentPatientClinicalFindingValues(Patient patient, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
         Map m = new HashMap();
         m.put("p", patient);
-        m.put("ts", clinicalFindingValueTypes);
+
         m.put("ret", false);
-        String sql;
+        String jpql;
         ClinicalFindingValue e = new ClinicalFindingValue();
         e.getPatient();
-        sql = "Select e "
+        jpql = "Select e "
                 + " from ClinicalFindingValue e "
                 + " where e.patient=:p "
-                + " and e.retired=:ret "
-                + " and e.clinicalFindingValueType in :ts "
-                + " order by e.orderNo";
-        return clinicalFindingValueFacade.findByJpql(sql, m);
+                + " and e.retired=:ret ";
+
+        if (clinicalFindingValueTypes != null) {
+            m.put("ts", clinicalFindingValueTypes);
+            jpql += " and e.clinicalFindingValueType in :ts ";
+        }
+
+        jpql += " order by e.orderNo";
+        return clinicalFindingValueFacade.findByJpql(jpql, m);
     }
 
     public List<ClinicalFindingValue> fillCurrentEncounterFindingValues(PatientEncounter encounter, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
@@ -828,20 +841,94 @@ public class PatientEncounterController implements Serializable {
         return clinicalFindingValueFacade.findByJpql(sql, m);
     }
 
+    public String navigateToOldOpdVisitFromSearch() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        if (current.getPatientEncounterType() == null) {
+            JsfUtil.addErrorMessage("No Encounter Type");
+            return "";
+        }
+        if(current.getPatient()==null){
+            JsfUtil.addErrorMessage("No Patient");
+            return "";
+        }
+        PatientEncounter opdVisit = current;
+        opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
+        setStartedEncounter(opdVisit);
+        fillCurrentPatientLists(current.getPatient());
+        fillCurrentEncounterLists(opdVisit);
+        return "/emr/opd_visit";
+    }
+
     public void fillCurrentPatientLists(Patient patient) {
         encounters = fillPatientEncounters(patient);
 
-        opdBills = fillPatientOpdBills(patient);
-        pharmacyBills = fillPatientPharmacyBills(patient);
-        channelBills = fillPatientChannelBills(patient);
+        patientBills = fillPatientBills(patient);
+        opdBills = new ArrayList<>();
+        pharmacyBills = new ArrayList<>();
+        channelBills = new ArrayList<>();
+
+        for (Bill b : patientBills) {
+            if (b.getBillType() == null) {
+                continue;
+            }
+            switch (b.getBillType()) {
+                case OpdBill:
+                    opdBills.add(b);
+                    break;
+                case PharmacySale:
+                    pharmacyBills.add(b);
+                    break;
+                case ChannelPaid:
+                case Channel:
+                case ChannelAgent:
+                case ChannelCash:
+                case ChannelOnCall:
+                case ChannelStaff:
+                    channelBills.add(b);
+                    break;
+
+            }
+        }
 
         investigations = fillPatientInvestigations(patient);
 
-        patientAllergies = fillPatientAllergies(patient);
-        patientDiagnoses = fillPatientDiagnoses(patient);
-        patientImages = fillPatientImages(patient);
-        patientDiagnosticImages = fillPatientDiadnosticImages(patient);
-        patientMedicines = fillPatientMedicines(patient);
+        patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
+
+        patientAllergies = new ArrayList<>();
+        patientDiagnoses = new ArrayList<>();
+        patientImages = new ArrayList<>();
+        patientDiagnosticImages = new ArrayList<>();
+        patientMedicines = new ArrayList<>();
+
+        if (patientClinicalFindingValues == null) {
+            return;
+        }
+
+        for (ClinicalFindingValue tcfv : patientClinicalFindingValues) {
+            if (tcfv.getClinicalFindingValueType() == null) {
+                continue;
+            }
+            switch (tcfv.getClinicalFindingValueType()) {
+                case PatientAllergy:
+                    patientAllergies.add(tcfv);
+                    break;
+                case PatientDiagnosis:
+                    patientDiagnoses.add(tcfv);
+                    break;
+                case PatientDiagnosticImage:
+                    patientDiagnosticImages.add(tcfv);
+                    break;
+                case PatientImage:
+                    patientImages.add(tcfv);
+                    break;
+                case PatientMedicine:
+                    patientMedicines.add(tcfv);
+                    break;
+            }
+        }
     }
 
     public void fillCurrentEncounterLists(PatientEncounter encounter) {
@@ -854,7 +941,6 @@ public class PatientEncounterController implements Serializable {
         encounterMedicalCertificates = fillEncounterMedicalCertificates(encounter);
         encounterReferrals = fillEncounterReferrals(encounter);
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
-
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -1131,24 +1217,30 @@ public class PatientEncounterController implements Serializable {
         return itemUsageFacade.findByJpql(sql, m);
     }
 
+    public List<Bill> fillPatientBills(Patient patient) {
+        return fillPatientBills(patient, null, null);
+    }
+
     public List<Bill> fillPatientBills(Patient patient, List<BillType> bts, Integer count) {
         Map m = new HashMap();
         m.put("p", patient);
-        m.put("bts", bts);
         m.put("ret", false);
-        String sql;
+        String jpql;
         Bill b = new Bill();
         b.getBillType();
-        sql = "Select e "
+        jpql = "Select e "
                 + " from Bill e "
                 + " where e.patient=:p "
-                + " and e.billType in :bts"
-                + " and e.retired=:ret "
-                + " order by e.id desc";
+                + " and e.retired=:ret ";
+        if (bts == null) {
+            jpql += " and e.billType in :bts";
+            m.put("bts", bts);
+        }
+        jpql += " order by e.id desc";
         if (count != null) {
-            return getBillFacade().findBySQL(sql, m, count);
+            return getBillFacade().findBySQL(jpql, m, count);
         } else {
-            return getBillFacade().findByJpql(sql, m);
+            return getBillFacade().findByJpql(jpql, m);
         }
     }
 
@@ -1718,13 +1810,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void setCurrent(PatientEncounter current) {
-        if (this.current == current) {
-            return;
-        }
         this.current = current;
-        if (this != null) {
-            fillCurrentPatientLists(current.getPatient());
-        }
     }
 
     public void delete() {
@@ -2330,6 +2416,14 @@ public class PatientEncounterController implements Serializable {
 
     public void setEncounterPrescreptions(List<ClinicalFindingValue> encounterPrescreptions) {
         this.encounterPrescreptions = encounterPrescreptions;
+    }
+
+    public List<Bill> getPatientBills() {
+        return patientBills;
+    }
+
+    public void setPatientBills(List<Bill> patientBills) {
+        this.patientBills = patientBills;
     }
 
 }

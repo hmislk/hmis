@@ -18,7 +18,7 @@
                             <h5 class="card-title">Visits</h5>
                             <div>
                                 <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel">
-                                    <p:dataExporter type="xls" target="vmpTable" fileName="vmpData" />
+                                    <p:dataExporter type="xls" target="visitTable" fileName="visitData" />
                                 </p:commandButton>
                             </div>
                         </div>
@@ -32,17 +32,26 @@
                                             <label for="fromDate">From date</label>
                                         </div>
                                         <div class="col-md-8">
-                                            <p:calendar id="fromDate" value="#{patientEncounterController.fromDate}" />
+                                            <p:datePicker
+                                                id="fromDate"
+                                                value="#{patientEncounterController.fromDate}"
+                                                showTime="true"
+                                                pattern="dd MMMM yyyy hh:mm"
+                                                />
                                         </div>
                                         <div class="col-md-4">
                                             <label for="toDate">To date</label>
                                         </div>
                                         <div class="col-md-8">
-                                            <p:calendar id="toDate" value="#{patientEncounterController.toDate}" />
+                                            <p:datePicker id="toDate"
+                                                          showTime="true"
+                                                          pattern="dd MMMM yyyy hh:mm"
+                                                          value="#{patientEncounterController.toDate}" />
                                         </div>
                                         <div class="col-md-4"></div>
                                         <div class="col-md-8">
-                                            <p:commandButton ajax="false" value="Process" action="#{patientEncounterController.listInstitutionEncounters}" />
+                                            <p:commandButton ajax="false" value="Process"
+                                                             action="#{patientEncounterController.listInstitutionEncounters}" />
                                             <p:commandButton value="Download Excel" ajax="false">
                                                 <p:dataExporter type="xls" target="tblVisits" fileName="visits" />
                                             </p:commandButton>
@@ -74,7 +83,7 @@
                                             <f:facet name="header">
                                                 <h:outputText value="VisitWeight" />
                                             </f:facet>
-                                            <h:outputText value="#{visit.visitWeight}" />
+                                            <h:outputText value="#{visit.weight}" />
                                         </p:column>
                                         <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
                                             <f:facet name="header">
@@ -91,11 +100,15 @@
                                             </f:facet>
                                             <h:outputText value="#{visit.bmi}" />
                                         </p:column>
-                                        <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
+                                        <p:column >
                                             <f:facet name="header">
-                                                <h:outputText value="PR" />
+                                                <h:outputText value="Actions" />
                                             </f:facet>
-                                            <h:outputText value="#{visit.pr}" />
+                                            <p:commandButton ajax="false" 
+                                                             value="View"
+                                                             action="#{patientEncounterController.navigateToOldOpdVisitFromSearch()}">
+                                                <f:setPropertyActionListener value="#{visit}" target="#{patientEncounterController.current}" ></f:setPropertyActionListener>
+                                            </p:commandButton>
                                         </p:column>
                                     </p:dataTable>
                                 </div>

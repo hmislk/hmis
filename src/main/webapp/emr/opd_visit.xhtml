@@ -26,9 +26,6 @@
                                         </h:commandButton>
                                         <h:commandButton  class="btn btn-secondary p-1 m-2"    value="Search" action="clinical_patient_for_receptionist"   ></h:commandButton>
                                         <h:commandButton  class="btn btn-secondary p-1 m-2"    value="Queue" action="clinical_queue"   ></h:commandButton>
-                                        <h:commandButton  class="btn btn-warning p-x5 m-2"    value="Previous Visit" 
-                                                          disabled="#{patientEncounterController.startedEncounter eq patientEncounterController.current}"
-                                                          action="#{patientEncounterController.backToStartingEncounter()}"  ></h:commandButton>
                                         <h:outputLabel value="Visit of #{patientEncounterController.current.patient.person.nameWithTitle} on " >
                                         </h:outputLabel>
                                         <h:outputLabel value="#{patientEncounterController.current.createdAt}" >
