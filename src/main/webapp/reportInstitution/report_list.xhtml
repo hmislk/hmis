@@ -10,19 +10,20 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Lists*">
+                    <p:panel header="Reports">
                         <div class="row" >
                             <div class="col-md-3" >
                                 <p:accordionPanel >
-                                    <p:tab title="All Bills">
-                                        <h:panelGrid columns="1" >
-                                            <p:commandButton ajax="false" value="All Bill List" 
-                                                             action="all_bills" 
-                                                             styleClass="linkButton"></p:commandButton>
-                                        </h:panelGrid>
+                                    <p:tab title="All Reports">
+                                        <div class="container-fluid my-3">
+                                            <p:commandButton ajax="false" value="All Bills" action="/reportInstitution/all_bills"
+                                                             styleClass="btn btn-primary w-100 my-2"></p:commandButton>
+                                            <p:commandButton ajax="false" value="All Transactions" action="/reportInstitution/all_transaction_summery"
+                                                             styleClass="btn btn-secondary w-100 my-2"></p:commandButton>
+                                        </div>
                                     </p:tab>
 
-                                    <p:tab title="OPD Reports">
+                                    <p:tab title="OPD Reports" disabled="true">
                                         <h:panelGrid columns="1" >
                                             <p:commandButton ajax="false" value="OPD Bill List" action="report_list_opd_bills" 
                                                              styleClass="linkButton"></p:commandButton>
@@ -31,7 +32,7 @@
 
                                         </h:panelGrid>
                                     </p:tab>
-                                    <p:tab title="Lab Reports">
+                                    <p:tab title="Lab Reports" disabled="true">
                                         <h:panelGrid columns="1" >
                                             <p:commandButton ajax="false" value="Bill List" action="#"  styleClass="linkButton"></p:commandButton>
                                             <p:commandButton ajax="false" value="Test List" action="report_list_lab_tests"  styleClass="linkButton"></p:commandButton>
