@@ -27,7 +27,7 @@
                                     <h:outputLabel value="Department"/>                                
                                     <p:selectOneMenu value="#{billSearch.department}" >
                                         <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                        <f:selectItems value="#{departmentController.items}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                        <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                                     </p:selectOneMenu>
                                     <h:outputLabel value="Type"/>                                
                                     <p:selectOneMenu value="#{billSearch.billType}" >
