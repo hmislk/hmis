@@ -98,22 +98,17 @@ public class Lims {
         System.out.println("login");
         String username = request.getUsername();
         String password = request.getPassword();
-        System.out.println("password = " + password);
-        System.out.println("username = " + username);
 
         // Validate the username and password, such as checking them against a database or LDAP directory
         WebUser requestSendingUser = findRequestSendingUser(username, password);
-        System.out.println("requestSendingUser = " + requestSendingUser);
 
         if (requestSendingUser != null) {
-            // Return a 200 OK response indicating success
-            System.out.println("Return a 200 OK response indicating success");
-            return Response.ok().entity(createOperationOutcomeForSuccess("Logged Successfully")).build();
+// Return a 200 OK response indicating success
+                        return Response.ok().entity(createOperationOutcomeForSuccess("Logged Successfully")).build();
         } else {
+// Return an OperationOutcome resource indicating failure
             // Return an OperationOutcome resource indicating failure
-            System.out.println("Return an OperationOutcome resource indicating failure");
-            OperationOutcome outcome = createOperationOutcomeForFailure("Invalid username or password");
-            System.out.println("outcome = " + outcome);
+                        OperationOutcome outcome = createOperationOutcomeForFailure("Invalid username or password");
             return Response.status(Response.Status.UNAUTHORIZED).entity(outcome).build();
         }
     }

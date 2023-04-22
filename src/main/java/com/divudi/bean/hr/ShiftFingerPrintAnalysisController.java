@@ -635,7 +635,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     private void setShiftTableData(StaffShift ss) {
-        System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
         fetchAndSetStaffLeave(ss);
         fetchAndSetDayType(ss);
 
@@ -686,7 +685,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             list.add(fingerPrintRecordOut);
         }
 
-        System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
 
         FingerPrintRecord fpr = null;
         if (ss.getStartRecord() == null) {

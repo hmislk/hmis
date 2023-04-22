@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
@@ -91,7 +86,6 @@ public class FavouriteController implements Serializable {
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight) {
-        System.out.println("listFavouriteItems");
         return listFavouriteItems(forItem, type, weight, null);
     }
     
@@ -100,7 +94,6 @@ public class FavouriteController implements Serializable {
     }
     
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight, Long ageInDays) {
-        System.out.println("listFavouriteItems");
         String j;
         Map m = new HashMap();
         j = "select i "
@@ -128,14 +121,10 @@ public class FavouriteController implements Serializable {
         j += " order by i.orderNo";
 
         m.put("wu", sessionController.getLoggedUser());
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         List<PrescriptionTemplate> its = favouriteItemFacade.findByJpql(j, m);
         if(its==null){
-            System.out.println("its is empty");
             its = new ArrayList<>();
         }
-        System.out.println("its = " + its.size());
         return its;
     }
 
@@ -144,7 +133,6 @@ public class FavouriteController implements Serializable {
             JsfUtil.addErrorMessage("No Item Selected");
             return;
         }
-        System.out.println("item = " + item);
         current = new PrescriptionTemplate();
         current.setForItem(item);
         current.setItem(item);
@@ -180,7 +168,6 @@ public class FavouriteController implements Serializable {
             case Vmpp:
                 break;
             case Medicine:
-                System.out.println("subtype");
                 JsfUtil.addErrorMessage("Selected needs a subtype");
                 break;
             case AnalyzerTest:

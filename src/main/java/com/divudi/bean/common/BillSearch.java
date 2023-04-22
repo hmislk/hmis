@@ -467,8 +467,6 @@ public class BillSearch implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         
-        System.out.println("m = " + m);
-        System.out.println("j = " + j);
         bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
 
         if (tmpBillClassType == BillClassType.CancelledBill || tmpBillClassType == BillClassType.RefundBill) {
@@ -476,7 +474,6 @@ public class BillSearch implements Serializable {
         } else {
             directTo = "/reportInstitution/bill_list";
         }
-        System.out.println("directTo = " + directTo);
         return directTo;
     }
 

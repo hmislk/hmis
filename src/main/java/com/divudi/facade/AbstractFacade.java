@@ -213,9 +213,6 @@ public abstract class AbstractFacade<T> {
     }
 
     public List<T> findByJpql(String temSQL, Map<String, Object> parameters) {
-        System.out.println("findByJpql");
-        System.out.println("JPQL: " + temSQL);
-        System.out.println("Parameters: " + parameters);
 
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
@@ -235,9 +232,7 @@ public abstract class AbstractFacade<T> {
         List<T> ts;
         try {
             ts = qry.getResultList();
-            System.out.println("Results found: " + ts.size());
         } catch (Exception e) {
-            System.out.println("Error executing query: " + e.getMessage());
             ts = new ArrayList<>();
         }
 
