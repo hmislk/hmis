@@ -171,6 +171,11 @@ public class SearchController implements Serializable {
         return "/index";
     }
 
+    public String navigateToListOtherInstitutionBills(){
+        bills = null;
+        return "/reportInstitution/other_institution_bills";
+    }
+    
     public String toSearchBills() {
         bills = null;
         return "/search_bill";
