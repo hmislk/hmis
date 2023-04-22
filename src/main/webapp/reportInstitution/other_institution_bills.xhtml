@@ -62,13 +62,44 @@
                             <h:outputLabel value="#{bill.billType}"/>
                         </p:column>
                         <p:column headerText="Date/Time">
-                            <p:outputLabel value="#{bill.createdAt}" >
+                            <h:outputLabel value="Invoice Date " rendered="#{bill.invoiceDate != null}"/>
+                            <h:outputLabel value="#{bill.invoiceDate}" rendered="#{bill.invoiceDate != null}">
+                                <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                            </h:outputLabel>
+
+                            <h:outputLabel value="Created At " rendered="#{bill.createdAt != null}"/>
+                            <p:outputLabel value="#{bill.createdAt}" rendered="#{bill.createdAt != null}">
                                 <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
                             </p:outputLabel>
+
+                            <h:outputLabel value="Bill Date " rendered="#{bill.billDate != null}"/>
+                            <p:outputLabel value="#{bill.billDate}" rendered="#{bill.billDate != null}">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy"></f:convertDateTime>
+                            </p:outputLabel>
+
+                            <h:outputLabel value="Bill Time " rendered="#{bill.billTime != null}"/>
+                            <p:outputLabel value="#{bill.billTime}" rendered="#{bill.billTime != null}">
+                                <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
+                            </p:outputLabel>
                         </p:column>
+
                         <p:column headerText="User" >                                
                             <h:outputLabel   value="#{bill.creater.webUserPerson.name}"/>
                         </p:column> 
+                        <p:column headerText="Numbers">
+                            <h:outputLabel value="Invoice No" rendered="#{not empty bill.invoiceNumber}"/>
+                            <h:outputLabel value="#{bill.invoiceNumber}" rendered="#{not empty bill.invoiceNumber}"/>
+
+                            <h:outputLabel value="Ins ID" rendered="#{not empty bill.insId}"/>
+                            <h:outputLabel value="#{bill.insId}" rendered="#{not empty bill.insId}"/>
+
+                            <h:outputLabel value="Dept ID" rendered="#{not empty bill.deptId}"/>
+                            <h:outputLabel value="#{bill.deptId}" rendered="#{not empty bill.deptId}"/>
+
+                            <h:outputLabel value="ID" rendered="#{bill.id != null}"/>
+                            <h:outputLabel value="#{bill.id}" rendered="#{bill.id != null}"/>
+                        </p:column>
+
                         <p:column headerText="Status" style="min-width: 100px;">
                             <h:outputText value="#{bill.cancelled ? 'Cancelled' : (bill.refunded ? 'Returned' : '')}" />
                         </p:column>
