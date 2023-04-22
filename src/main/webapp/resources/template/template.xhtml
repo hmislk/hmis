@@ -44,7 +44,7 @@
 
     <h:body style="height: 100vh;">
         <div  id="panelFullSpread" class="fullSpread ui-widget-content " >
-            <p:growl id="publicGrowl"/>
+            <p:growl id="publicGrowl" showDetail="true" sticky="false" />
             <h:panelGroup rendered="#{!sessionController.firstLogin}" >
                 <h:panelGroup rendered ="#{not sessionController.logged}"  >
                     <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
@@ -78,6 +78,8 @@
             <h:panelGroup rendered="#{sessionController.firstLogin}" >
                 <ez:first_login/>
             </h:panelGroup>
+            
+            <p:messages showDetail="true" ></p:messages>
 
         </div>
 

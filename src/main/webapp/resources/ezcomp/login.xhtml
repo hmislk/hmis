@@ -12,42 +12,62 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form id="formLogin">
-            <p:growl id="growl" showDetail="true" sticky="false" />
+
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-md-6 col-lg-4 col-sm-8 col-xs-12 mt-5">
+                    <div class="col-md-8 col-lg-6 col-sm-10 col-xs-12 mt-5">
                         <div class="card">
                             <div class="card-header d-flex align-items-center">
-                                <h:graphicImage library="image" name="lock.png" alt="Logo" style="max-width: 100%; height: auto;"/>
                                 <div class="flex-grow-1">
                                     <h4>Please Login</h4>
                                 </div>
                             </div>
                             <div class="card-body">
-                                <div class="form-group">
-                                    <label for="txtUserName">Username:</label>
-                                    <h:inputText autocomplete="off" id="txtUserName"
-                                                 value="#{sessionController.userName}"
-                                                 required="true"
-                                                 requiredMessage="Username is required"
-                                                 class="form-control"></h:inputText>
-                                    <h:message for="txtUserName" style="color:red;" />
+                                <div class="row">
+                                    <div class="col-md-3 d-flex align-items-center">
+                                        <h:graphicImage library="image" name="lock.png" alt="Logo" styleClass="img-fluid mx-auto my-2"/>
+                                    </div>
+
+                                    <div class="col-md-9">
+
+                                        <div class="row w-100">
+                                            <div class="col">
+                                                <div class="form-group">
+                                                    <label for="txtUserName">Username:</label>
+                                                    <h:inputText autocomplete="off" id="txtUserName"
+                                                                 value="#{sessionController.userName}"
+                                                                 required="true"
+                                                                 requiredMessage="Username is required"
+                                                                 class="form-control"></h:inputText>
+                                                    <h:message for="txtUserName" style="color:red;" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row w-100" >
+                                            <div class="col" >
+                                                <div class="form-group">
+                                                    <label for="txtPassword">Password:</label>
+                                                    <h:inputSecret id="txtPassword" value="#{sessionController.passord }"
+                                                                   required="true"
+                                                                   requiredMessage="Password is required"
+                                                                   class="form-control"></h:inputSecret>
+                                                    <h:message for="txtPassword" style="color:red;" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row w-100 mt-3">
+                                            <div class="col d-flex justify-content-end">
+                                                <p:commandButton value="Login" id="btnLogin"
+                                                                 action="#{sessionController.loginActionWithoutDepartment()}"
+                                                                 class="btn btn-primary mb-3"
+                                                                 ajax="false"></p:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                 </div>
-                                <div class="form-group">
-                                    <label for="txtPassword">Password:</label>
-                                    <h:inputSecret id="txtPassword" value="#{sessionController.passord }"
-                                                   required="true"
-                                                   requiredMessage="Password is required"
-                                                   class="form-control"></h:inputSecret>
-                                    <h:message for="txtPassword" style="color:red;" />
-                                </div>
-                                <div class="text-center mb-3">
-                                    <p:commandButton value="Login" id="btnLogin"
-                                                     action="#{sessionController.loginActionWithoutDepartment()}"
-                                                     class="btn btn-primary"
-                                                     ajax="false"
-                                                     update="growl"></p:commandButton>
-                                </div>
+
+
                             </div>
                         </div>
                     </div>
