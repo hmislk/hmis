@@ -59,25 +59,19 @@ public class VtmController implements Serializable {
     List<Vtm> vtmList;
 
 public String navigateToListAllVtms() {
-    System.out.println("navigateToListAllVtms");
     String jpql = "Select vtm "
             + " from Vtm vtm "
             + " where vtm.retired=:ret "
             + " order by vtm.name";
-    System.out.println("JPQL: " + jpql);
 
     Map<String, Object> m = new HashMap<>();
     m.put("ret", false);
-    System.out.println("Parameters: " + m);
 
     items = getFacade().findByJpql(jpql, m);
     
     if (items == null) {
-        System.out.println("Items list is null");
     } else {
-        System.out.println("Items list size: " + items.size());
         for (Vtm item : items) {
-            System.out.println("Vtm: " + item);
         }
     }
 

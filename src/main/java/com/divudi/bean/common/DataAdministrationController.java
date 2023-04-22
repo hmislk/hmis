@@ -328,7 +328,6 @@ public class DataAdministrationController {
         bills = billFacade.findBySQL(s, m, 10);
         for (Bill cb : bills) {
             for (BillItem bi : cb.getBillItems()) {
-                System.err.println("**************");
                 //System.out.println("bi = " + bi);
                 //System.out.println("bi.getRetiredAt() = " + bi.getRetiredAt());
                 //System.out.println("bi.isRetired() = " + bi.isRetired());
@@ -382,7 +381,6 @@ public class DataAdministrationController {
             i.setVatable(true);
             i.setVatPercentage(15.0);
             itemFacade.edit(i);
-            System.err.println("**** " + j + " ****");
             j++;
         }
 
@@ -836,7 +834,6 @@ public class DataAdministrationController {
         List<Object> objects = fetchAllBilledBillTypes();
         for (Object ob : objects) {
             BillType bt = (BillType) ob;
-            System.err.println("Time l1 = " + new Date());
             Bill b = fetchBill(bt, true);
             if (b != null) {
                 bills.add(b);
@@ -850,7 +847,6 @@ public class DataAdministrationController {
 
     public void createDuplicateBillTableByBillType() {
         bills = new ArrayList<>();
-        System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
         for (Bill b : totals.getBills()) {
 //            System.err.println("Time For In = " + new Date());
@@ -869,7 +865,6 @@ public class DataAdministrationController {
 
     public void createBillTable() {
         bills = new ArrayList<>();
-        System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
         for (Bill b : totals.getBills()) {
             bills.add(b);

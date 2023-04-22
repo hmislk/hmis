@@ -65,12 +65,9 @@ public class LimsMiddlewareController {
         System.out.println("login");
         String username = request.getUsername();
         String password = request.getPassword();
-        System.out.println("password = " + password);
-        System.out.println("username = " + username);
 
         // Validate the username and password, such as checking them against a database or LDAP directory
         WebUser requestSendingUser = findRequestSendingUser(username, password);
-        System.out.println("requestSendingUser = " + requestSendingUser);
 
         if (requestSendingUser != null) {
             return Response.ok().build();
@@ -98,9 +95,6 @@ public class LimsMiddlewareController {
         m.put("ret", false);
         WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
 
-        System.out.println("temSQL = " + temSQL);
-        System.out.println("m = " + m);
-        System.out.println("u = " + u);
         if (u == null) {
             return null;
         }

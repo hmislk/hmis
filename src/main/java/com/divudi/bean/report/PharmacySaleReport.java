@@ -1118,7 +1118,6 @@ public class PharmacySaleReport implements Serializable {
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
 
-        System.err.println("From " + fd);
 
         m.put("fd", fd);
         m.put("td", td);
@@ -2612,7 +2611,6 @@ public class PharmacySaleReport implements Serializable {
 
         List<String1Value3> listRowSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
 
-        System.err.println(listRowSale);
 
         billedSummery.setBills(listRowSale);
 
@@ -5636,7 +5634,6 @@ public class PharmacySaleReport implements Serializable {
 
         items = new ArrayList<>();
         for (Item i : ampsWithDealor) {
-            System.err.println("in");
             ////System.out.println("item = " + i.getName());
             List<Amp> allAmps = getAmpItems(i);
             ////System.out.println("amps = " + allAmps.size());

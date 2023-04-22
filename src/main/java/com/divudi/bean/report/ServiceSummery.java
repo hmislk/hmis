@@ -744,7 +744,6 @@ public class ServiceSummery implements Serializable {
 
         for (BillFee bf : billFees) {
 
-            System.err.println("**");
             //// // System.out.println("bf.getBillItem().getBill().getInsId() = " + bf.getBillItem().getBill().getInsId());
             sql = "Select f from ItemFee f where f.id = " + bf.getFee().getId();
             ItemFee itemFee = itemFeeFacade.findFirstByJpql(sql);

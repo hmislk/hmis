@@ -995,7 +995,6 @@ public class HumanResourceBean {
     }
 
     public StaffShift fetchPrevStaffShift(StaffShift tmp) {
-        System.err.println("Fetch Prev StaffShift");
         if (tmp.getShift() == null) {
             return null;
         }
@@ -1011,7 +1010,6 @@ public class HumanResourceBean {
         hm.put("preSh", tmp.getShift().getPreviousShift());
 
         StaffShift stf = getStaffShiftFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
-        System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
         //System.out.println("tmp.getShiftDate() = " + tmp.getShiftDate());
         if (tmp.getShift().getPreviousShift() != null) {
         } else {
@@ -1205,7 +1203,6 @@ public class HumanResourceBean {
     }
 
     public StaffShift fetchFrwStaffShift(StaffShift tmp) {
-        System.err.println("Fetch Forward Staff Shift");
         if (tmp == null) {
             return null;
         }
@@ -1225,7 +1222,6 @@ public class HumanResourceBean {
         hm.put("frwSh", tmp.getShift().getNextShift());
         StaffShift stf = getStaffShiftFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
 
-        System.err.println("tmp.getStaff() = " + tmp.getStaff().getPerson().getName());
         //System.out.println("tmp.getShiftDate() = " + tmp.getShiftDate());
         if (tmp.getShift().getNextShift() != null) {
         } else {
@@ -2276,7 +2272,6 @@ public class HumanResourceBean {
         tmp = getStaffPaysheetComponentFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
 
         if (tmp != null) {
-            System.err.println("******Basic*******");
         }
 
 //        if (tmp == null) {
@@ -2705,9 +2700,6 @@ public class HumanResourceBean {
                 continue;
             }
             System.err.println("Name = " + ss.getShift().getName());
-            System.err.println("Weekday = " + ss.getDayOfWeek());
-            System.err.println("Date = " + ss.getShiftDate());
-            System.err.println("Start = " + ss.getShiftStartTime());
             //System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified() / (60 * 60));
             //System.out.println("ss.getShift()" + ss.getShift().getName());
             //System.out.println("shift date" + ss.getShiftDate());
@@ -3027,8 +3019,7 @@ public class HumanResourceBean {
             //System.out.println("ss = " + ss);
             //System.out.println("ss.getShiftDate() = " + ss.getShiftDate());
             //System.out.println("ss.getAdditionalForm() = " + ss.getAdditionalForm());
-            System.err.println("ss.getExtraTimeCompleteRecordVarified() = " + ss.getExtraTimeCompleteRecordVarified() / 60);
-            System.err.println("ss.getExtraTimeFromStartRecordVarified() = " + ss.getExtraTimeFromStartRecordVarified() / 60);
+
         }
         if (timeSecond != null) {
             return (timeSecond.longValue() / 60);

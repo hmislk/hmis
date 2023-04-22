@@ -447,7 +447,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         department = null;
         institution = null;
         boolean l = checkUsersWithoutDepartment();
-        System.out.println("l = " + l);
         if (l) {
             return "/index.xhtml";
         } else {
@@ -844,7 +843,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                         department = departments.get(0);
                         selectDepartment();
                         UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
-                        System.out.println("logged = " + logged);
                     } else {
                         UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
                         UtilityController.addSuccessMessage(setGreetingMsg());
@@ -852,7 +850,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (getApplicationController().isLogged(u) != null) {
                         UtilityController.addErrorMessage("This user is already logged.");
                     }
-                    System.out.println("logged = " + logged);
                     return true;
                 }
             }

@@ -194,10 +194,7 @@ public class DiagnosisController implements Serializable {
                 + " where c.retired=:ret "
                 + " and c.symanticType=:t "
                 + " order by c.name";
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         items = getFacade().findByJpql(jpql, m);
-        System.out.println("items = " + items.size());
         return "/emr/reports/diagnoses";
     }
 

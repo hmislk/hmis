@@ -440,7 +440,6 @@ public class StoreReportsStock implements Serializable {
                 }
 
                 if (calcualtedQty != curHistory) {
-                    System.err.println("Itm " + ph.getBillItem().getItem().getName());
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
                 } else {

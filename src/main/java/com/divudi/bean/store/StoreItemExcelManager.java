@@ -876,9 +876,7 @@ public class StoreItemExcelManager implements Serializable {
         int index = 1;
         for (Bill b : bills) {
             if (b.getReferenceBill().getBillType() == BillType.StoreOrder) {
-                System.err.println("No " + index++);
                 Bill refApproved = b.getReferenceBill().getReferenceBill();
-                System.err.println("Grn No" + b.getDeptId());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
