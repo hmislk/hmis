@@ -18,7 +18,8 @@
                                         <div class="container-fluid my-3">
                                             <p:commandButton ajax="false" value="All Bills" action="/reportInstitution/all_bills"
                                                              styleClass="btn btn-primary w-100 my-2"></p:commandButton>
-                                            <p:commandButton ajax="false" value="All Transactions" action="/reportInstitution/all_transaction_summery"
+                                            <p:commandButton ajax="false" value="List of Bills of Other Institutions"
+                                                             action="#{searchController.navigateToListOtherInstitutionBills()}"
                                                              styleClass="btn btn-secondary w-100 my-2"></p:commandButton>
                                         </div>
                                     </p:tab>

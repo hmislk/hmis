@@ -166,16 +166,23 @@ public class SearchController implements Serializable {
     UploadedFile file;
     private Institution creditCompany;
 
+    private Institution otherInstitution;
+
     public String menuBarSearch() {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
         return "/index";
     }
 
-    public String navigateToListOtherInstitutionBills(){
+    public String navigateToListOtherInstitutionBills() {
         bills = null;
         return "/reportInstitution/other_institution_bills";
     }
     
+    public String navigateToAnalytics() {
+        bills = null;
+        return "/reportInstitution/report_list";
+    }
+
     public String toSearchBills() {
         bills = null;
         return "/search_bill";
@@ -589,6 +596,14 @@ public class SearchController implements Serializable {
 
     public void setPatientReports(List<PatientReport> patientReports) {
         this.patientReports = patientReports;
+    }
+
+    public Institution getOtherInstitution() {
+        return otherInstitution;
+    }
+
+    public void setOtherInstitution(Institution otherInstitution) {
+        this.otherInstitution = otherInstitution;
     }
 
     public class billsWithbill {
@@ -5363,7 +5378,7 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public void fillAllBills() {
         bills = null;
         String sql;
@@ -5376,6 +5391,54 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+    }
+
+    public void fillOtherInstitutionBills() {
+        bills = null;
+        if (otherInstitution == null) {
+            JsfUtil.addErrorMessage("Select other Institution");
+            return;
+        }
+        String jpql;
+        Map m = new HashMap();
+
+        jpql = "select b from "
+                + " Bill b "
+                + " where b.createdAt between :fromDate and :toDate ";
+        jpql += " and b.institution in :ins ";
+        m.put("ins", sessionController.getLoggableInstitutions());
+
+        jpql += " and (b.fromInstitution=:oi or b.toInstitution=:oi or b.bank=:oi or b.referenceInstitution=:oi or b.creditCompany=:oi and b.collectingCentre=:oi or b.paymentSchemeInstitution=:oi or b.referredByInstitution=:oi ) ";
+        m.put("oi", otherInstitution);
+
+        jpql += " order by b.id ";
+        m.put("toDate", getToDate());
+        m.put("fromDate", getFromDate());
+        bills = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    public String getInstitutionType(Bill bill) {
+        if (bill == null || otherInstitution == null) {
+            return "";
+        }
+        if (bill.getFromInstitution() != null && bill.getFromInstitution().equals(otherInstitution)) {
+            return "From Institution";
+        } else if (bill.getToInstitution() != null && bill.getToInstitution().equals(otherInstitution)) {
+            return "To Institution";
+        } else if (bill.getBank() != null && bill.getBank().equals(otherInstitution)) {
+            return "Bank";
+        } else if (bill.getReferenceInstitution() != null && bill.getReferenceInstitution().equals(otherInstitution)) {
+            return "Reference Institution";
+        } else if (bill.getCreditCompany() != null && bill.getCreditCompany().equals(otherInstitution)) {
+            return "Credit Company";
+        } else if (bill.getCollectingCentre() != null && bill.getCollectingCentre().equals(otherInstitution)) {
+            return "Collecting Centre";
+        } else if (bill.getPaymentSchemeInstitution() != null && bill.getPaymentSchemeInstitution().equals(otherInstitution)) {
+            return "Payment Scheme Institution";
+        } else if (bill.getReferredByInstitution() != null && bill.getReferredByInstitution().equals(otherInstitution)) {
+            return "Referred By Institution";
+        }
+        return "";
     }
 
     public String viewOPD(Bill b) {
