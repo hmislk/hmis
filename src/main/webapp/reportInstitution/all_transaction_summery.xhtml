@@ -6,13 +6,14 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       >
-
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportInstitution/report_list.xhtml">
+            <ui:define name="report">
                 <h:form>
+                    <p:growl></p:growl>
+                    <p:messages ></p:messages>
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
-                    <p:panel header="Bill Type Summery" >
+                    <p:panel header="Bill Type Summery *" >
                         <p:panelGrid columns="1" styleClass="alignTop" >
                             <p:panel header="Fillters" >
                                 <p:panelGrid columns="2" >
@@ -27,15 +28,13 @@
                                     <h:outputLabel value="Institution"/>                                
                                     <p:selectOneMenu value="#{billSearch.institution}" >
                                         <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                        <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                        <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                                     </p:selectOneMenu>
-
                                     <h:outputLabel value="Department"/>                                
                                     <p:selectOneMenu value="#{billSearch.department}" >
                                         <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                        <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                        <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
                                     </p:selectOneMenu>
-
                                     <h:outputLabel value="Type"/>                                
                                     <p:selectOneMenu value="#{billSearch.billType}" >
                                         <f:selectItem itemLabel="All Types" ></f:selectItem>
@@ -57,7 +56,7 @@
                                 </p:panelGrid>
                                 <p:panelGrid columns="3" >
 
-                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillTransactionTypeSummery()}" styleClass="noPrintButton">
+                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillTransactionTypeSummery}" styleClass="noPrintButton">
                                     </p:commandButton>
 
 
@@ -66,9 +65,9 @@
 
                                     <p:commandButton  value="Export as Excel" ajax="false" styleClass="noPrintButton" >
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Data"
-
-
-                                                        />
+                                                       
+                                                            
+                                                       />
                                     </p:commandButton>
 
 
@@ -103,10 +102,11 @@
                                     </p:column>
 
                                     <p:column headerText="Count" sortBy="#{bs.count}" style="text-align: right; padding-right: 20px;">
-                                        <p:commandLink target="_blank" value="#{bs.count}" action="#{billSearch.listBillsFromBillTypeSummery()}">
+                                        <h:commandLink value="#{bs.count}" action="#{billSearch.listBillsFromBillTransactionTypeSummery()}">
                                             <f:setPropertyActionListener value="#{bs}" target="#{billSearch.billSummery}" ></f:setPropertyActionListener>
-                                        </p:commandLink>
+                                        </h:commandLink>
                                     </p:column>
+                                   
 
                                     <p:column headerText="Total" sortBy="#{bs.total}" style="text-align: right; padding-right: 20px;">
                                         <p:outputLabel value="#{bs.total}" >

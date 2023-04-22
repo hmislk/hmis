@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
@@ -10,40 +11,48 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-6 col-lg-4 col-sm-8 col-xs-12 mt-5">
-                    <div class="card">
-                        <div class="card-header d-flex align-items-center">
-                            <h:graphicImage library="image" name="lock.png" alt="Logo" style="max-width: 100%; height: auto;"/>
-                            <div class="flex-grow-1">
-                                <h4>Please Login</h4>
+        <h:form id="formLogin">
+            <p:growl id="growl" showDetail="true" sticky="false" />
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-4 col-sm-8 col-xs-12 mt-5">
+                        <div class="card">
+                            <div class="card-header d-flex align-items-center">
+                                <h:graphicImage library="image" name="lock.png" alt="Logo" style="max-width: 100%; height: auto;"/>
+                                <div class="flex-grow-1">
+                                    <h4>Please Login</h4>
+                                </div>
                             </div>
-                        </div>
-                        <div class="card-body">
-                            <h:form id="formLogin">
+                            <div class="card-body">
                                 <div class="form-group">
                                     <label for="txtUserName">Username:</label>
                                     <h:inputText autocomplete="off" id="txtUserName"
                                                  value="#{sessionController.userName}"
+                                                 required="true"
+                                                 requiredMessage="Username is required"
                                                  class="form-control"></h:inputText>
+                                    <h:message for="txtUserName" style="color:red;" />
                                 </div>
                                 <div class="form-group">
                                     <label for="txtPassword">Password:</label>
                                     <h:inputSecret id="txtPassword" value="#{sessionController.passord }"
+                                                   required="true"
+                                                   requiredMessage="Password is required"
                                                    class="form-control"></h:inputSecret>
+                                    <h:message for="txtPassword" style="color:red;" />
                                 </div>
-                                <div class="text-center">
-                                    <h:commandButton value="Login" id="btnLogin"
+                                <div class="text-center mb-3">
+                                    <p:commandButton value="Login" id="btnLogin"
                                                      action="#{sessionController.loginActionWithoutDepartment()}"
-                                                     class="btn btn-primary"></h:commandButton>
+                                                     class="btn btn-primary"
+                                                     ajax="false"
+                                                     update="growl"></p:commandButton>
                                 </div>
-                            </h:form>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
+        </h:form>
     </cc:implementation>
 </html>
