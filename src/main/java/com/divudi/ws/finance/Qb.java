@@ -2930,7 +2930,7 @@ public class Qb {
          * PharmacyWholeSale
          *
          */
-        int maxNo = 500;
+        int maxNo = 2500;
         System.out.println("cInvList 5" + new Date());
 //        List<Bill> billsInpatient = billList(maxNo, billTypesInpatient, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, true);
 //        List<Bill> billsInpatient = null;
