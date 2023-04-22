@@ -12,40 +12,41 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel styleClass="verticalAndHorizontalCentering">
-            <h:form id="formDept" >
-                <p:panel header="Select Department" >
-                    <h:panelGrid columns="3" >
-                        <h:outputText value="Department" ></h:outputText>
-                        <p:spacer height="1" width="30" ></p:spacer>
-                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d" >
+        <div class="d-flex justify-content-center align-items-center vh-100">
+
+            <h:form id="formDept">
+                <p:panel header="Select Department">
+                    <h:panelGrid columns="3">
+                        <h:outputText value="Department"></h:outputText>
+                        <p:spacer height="1" width="30"></p:spacer>
+                        <p:selectOneMenu value="#{sessionController.department}" required="true" var="d">
                             <f:selectItems value="#{sessionController.departments}"
                                            var="dept"
                                            itemLabel="#{dept.name}"
-                                           itemValue="#{dept}" >
+                                           itemValue="#{dept}">
                             </f:selectItems>
-                            <p:column  >
-                                <f:facet name="header" >
-                                    <h:outputText value="Department" ></h:outputText>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Department"></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{d.name}" ></h:outputText>
+                                <h:outputText value="#{d.name}"></h:outputText>
                             </p:column>
-                            <p:column  >
-                                <f:facet name="header" >
-                                    <h:outputText value="Institution" ></h:outputText>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Institution"></h:outputText>
                                 </f:facet>
-                                <h:outputText value="#{d.institution.name}" ></h:outputText>
+                                <h:outputText value="#{d.institution.name}"></h:outputText>
                             </p:column>
                         </p:selectOneMenu>
-
-                        <p:spacer height="1" width="30" ></p:spacer>
-                        <p:spacer height="1" width="30" ></p:spacer>
+                        <p:spacer height="1" width="30"></p:spacer>
+                        <p:spacer height="1" width="30"></p:spacer>
                         <p:commandButton ajax="false"
                                          value="Select"
-                                         action="#{sessionController.selectDepartment()}" />
+                                         action="#{sessionController.selectDepartment()}"/>
                     </h:panelGrid>
                 </p:panel>
             </h:form>
-        </p:panel>
+
+        </div>
     </cc:implementation>
 </html>
