@@ -214,10 +214,7 @@ public class PatientEncounterController implements Serializable {
         m.put("ins", sessionController.getInstitution());
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         items = getFacade().findByJpql(jpql, m);
-        System.out.println("items = " + items.size());
     }
 
     public List<String> completeClinicalComments(String qry) {
@@ -545,9 +542,7 @@ public class PatientEncounterController implements Serializable {
         if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
             dxitems = favouriteController.listFavouriteItems(diagnosis, PrescriptionTemplateType.FavouriteDiagnosis, current.getWeight());
         } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
-            System.out.println("by age");
             Long ageInDays = getCurrent().getPatient().getAgeInDays();
-            System.out.println("ageInDays = " + ageInDays);
             dxitems = favouriteController.listFavouriteItems(diagnosis, PrescriptionTemplateType.FavouriteDiagnosis, null, ageInDays);
         } else {
             return;
@@ -569,9 +564,7 @@ public class PatientEncounterController implements Serializable {
             if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
                 availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplateType.FavouriteMedicine, current.getWeight());
             } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
-                System.out.println("by age");
                 Long ageInDays = getCurrent().getPatient().getAgeInDays();
-                System.out.println("ageInDays = " + ageInDays);
 //                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplate.FavouriteMedicine, null, ageInDays);
             }
 
@@ -585,7 +578,6 @@ public class PatientEncounterController implements Serializable {
                 continue;
             }
 
-            System.out.println("availableFavouriteMedicines.size() = " + availableFavouriteMedicines.size());
             if (availableFavouriteMedicines.size() > 1) {
                 //TODO: Need to select the best out of the available
                 addingMedicine = availableFavouriteMedicines.get(0);
@@ -594,7 +586,6 @@ public class PatientEncounterController implements Serializable {
 
             }
             Prescription p = new Prescription();
-            System.out.println("addingMedicine = " + addingMedicine);
             p.setItem(addingMedicine.getItem());
             p.setCategory(addingMedicine.getCategory());
             p.setDepartment(sessionController.getDepartment());
@@ -623,9 +614,8 @@ public class PatientEncounterController implements Serializable {
             encounterMedicine.setPrescription(p);
             encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
             clinicalFindingValueFacade.create(encounterMedicine);
-
             //TO Do
-            System.out.println("p = " + p);
+
 
         }
 
@@ -1060,17 +1050,14 @@ public class PatientEncounterController implements Serializable {
 
     public void removePatientAllergy() {
         System.out.println("removePatientAllergy");
-        System.out.println("getRemovingClinicalFindingValue() = " + getRemovingClinicalFindingValue());
         if (getRemovingClinicalFindingValue() == null) {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
         }
-        System.out.println("getPatientAllergies() = " + getPatientAllergies().size());
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getPatientAllergies().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
-        System.out.println("getPatientAllergies() = " + getPatientAllergies().size());
     }
 
     public void removePatientMedicine() {
@@ -1134,7 +1121,6 @@ public class PatientEncounterController implements Serializable {
 
     public void addPatientMedicine() {
         System.out.println("addPatientMedicine");
-        System.out.println("getPatientMedicine().getPrescription().getItem() = " + getPatientMedicine().getPrescription().getItem());
         if (getPatientMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
@@ -1143,9 +1129,7 @@ public class PatientEncounterController implements Serializable {
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
         prescriptionFacade.create(getPatientMedicine().getPrescription());
         clinicalFindingValueFacade.create(getPatientMedicine());
-        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         getPatientMedicines().add(getPatientMedicine());
-        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         setPatientMedicine(null);
         JsfUtil.addSuccessMessage("Added");
     }

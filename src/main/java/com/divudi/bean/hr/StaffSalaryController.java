@@ -701,8 +701,6 @@ public class StaffSalaryController implements Serializable {
 //        
         for (int i = 0; i < numOfWeeks; i++) {
 
-            System.err.println("FROM = " + i + " - " + frmCal.getTime());
-            System.err.println("TO =  " + i + " - " + toCal.getTime());
 //            ////// // System.out.println("i = " + i);
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTimeByDate(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             //// // System.out.println("*** worked Within TimeFrameVarified(S) = " + workedWithinTimeFrameVarified);
@@ -711,7 +709,6 @@ public class StaffSalaryController implements Serializable {
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
-            System.err.println("OT Min : " + otSec / 60);
 
             overTimeSec += otSec;
             frmCal.add(Calendar.DATE, 7);
@@ -1192,19 +1189,19 @@ public class StaffSalaryController implements Serializable {
             //Set Holiday Allowance
             //Set Holiday Allowance
             //Set Holiday Allowance
+            //Set Holiday Allowance
+            //Set Holiday Allowance
+            //Set Holiday Allowance
 
             //Set Holiday Allowance
             System.err.println("Salary OT");
             Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
-            System.err.println("count(DayType.MurchantileHoliday) = " + count);
             getCurrent().setMerchantileCount(count);
 
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
-            System.err.println("count(DayType.Poya) = " + count);
             getCurrent().setPoyaCount(count);
 
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
-            System.err.println("count(DayType.DayOff) = " + count);
             getCurrent().setDayOffCount(count);
 
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
@@ -1332,7 +1329,6 @@ public class StaffSalaryController implements Serializable {
         if (staffShiftEarlyIn == null) {
             return;
         }
-        System.err.println("staffShiftEarlyIn.size()" + staffShiftEarlyIn.size());
         if (staffShiftEarlyIn.size() != 2) {
             return;
         }
@@ -1343,8 +1339,6 @@ public class StaffSalaryController implements Serializable {
             staffShiftLateInTenMinuteLinked.add(stf);
         }
 
-        System.err.println("staffShiftEarlyIn.size()" + staffShiftEarlyIn.size());
-        System.err.println("Late in Shift Reference Count " + staffShiftLateInTenMinuteLinked.size());
         if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
             stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
             stfCurrent.setConsiderForLateIn(true);

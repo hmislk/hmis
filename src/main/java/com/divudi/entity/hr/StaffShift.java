@@ -609,7 +609,6 @@ public class StaffShift implements Serializable {
         Calendar fromCalendar = Calendar.getInstance();
         Calendar toCalendar = Calendar.getInstance();
         Long inSecond = 0l;
-        System.err.println("In");
 
         //Over Time From Start Record Logged 
         extraTimeFromStartRecordLogged = 0;

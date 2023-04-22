@@ -264,7 +264,6 @@ public class InvestigationController implements Serializable {
                     .collect(Collectors.joining("\n"));
 
         } catch (IOException ex) {
-            System.out.println("ex = " + ex);
         }
         return "/lab/investigation_format";
     }

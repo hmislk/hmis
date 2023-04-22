@@ -1320,12 +1320,10 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 lastMachine = m;
                 row.setMachine(m);
                 row.setCountAndTotal(count, bt, classType, tot);
-                System.err.println("**1**");
                 //// // System.out.println("m.getName() = " + m.getName());
                 //// // System.out.println("bt = " + bt);
                 continue;
             }
-            System.err.println("*****");
             //// // System.out.println("m.getName() = " + m.getName());
             //// // System.out.println("bt = " + bt);
             //// // System.out.println("lastMachine.getName() = " + lastMachine.getName());

@@ -605,9 +605,7 @@ public class PharmacyItemExcelManager implements Serializable {
         int index = 1;
         for (Bill b : bills) {
             if (b.getReferenceBill().getBillType() == BillType.PharmacyOrder) {
-                System.err.println("No " + index++);
                 Bill refApproved = b.getReferenceBill().getReferenceBill();
-                System.err.println("Grn No" + b.getDeptId());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -981,8 +979,8 @@ public class PharmacyItemExcelManager implements Serializable {
             double value = obj.getNetRate() * obj.getPharmaceuticalBillItem().getQty();
             //System.out.println("*************************************");
             //System.out.println("*************************************");
-            System.err.println("BillClass " + obj.getBill().getClass());
-            System.err.println("QTY " + obj.getPharmaceuticalBillItem().getQty());
+            //System.out.println("*************************************");
+            //System.out.println("*************************************");
 
             if (obj.getGrossValue() > 0) {
                 obj.setGrossValue(Math.abs(value));

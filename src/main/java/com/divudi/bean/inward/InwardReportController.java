@@ -192,7 +192,6 @@ public class InwardReportController implements Serializable {
     }
 
     public void fillAdmissions(Boolean discharged, Boolean finalized) {
-        System.err.println("Time = " + new Date());
         Map m = new HashMap();
         String sql = "select b from PatientEncounter b "
                 + " where b.dateOfAdmission between :fd and :td ";

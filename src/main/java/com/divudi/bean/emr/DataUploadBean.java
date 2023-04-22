@@ -264,7 +264,6 @@ public class DataUploadBean {
             if (completedTimeCell != null) {
                 if (completedTimeCell.getCellType() == CellType.STRING) {
                     String dateOfBirthStr = dataFormatter.formatCellValue(completedTimeCell);
-                    System.out.println("dateOfBirthStr = " + dateOfBirthStr);
                     LocalDate localDateOfBirth = parseDate(dateOfBirthStr, datePatterns);
                     Instant instant = localDateOfBirth.atStartOfDay(ZoneId.systemDefault()).toInstant();
                     completedTime = Date.from(instant);

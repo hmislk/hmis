@@ -4029,7 +4029,6 @@ public class ChannelReportController implements Serializable {
                 Area a = (Area) ob[0];
                 BillClassType classType = (BillClassType) ob[1];
                 long count = (long) ob[2];
-                System.err.println("****************");
                 //// // System.out.println("a.getName() = " + a.getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;
@@ -4077,7 +4076,6 @@ public class ChannelReportController implements Serializable {
                 Area a = (Area) ob[1];
                 BillClassType classType = (BillClassType) ob[2];
                 long count = (long) ob[3];
-                System.err.println("****************");
                 //// // System.out.println("s.getPerson().getName() = " + s.getPerson().getName());
                 if (classType == BillClassType.BilledBill) {
                     total += count;

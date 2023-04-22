@@ -113,7 +113,6 @@ public class DealorPaymentBillSearch implements Serializable {
 
 
         for (BillItem bi : getBillItems()) {
-            System.err.println("in");
             BillItem newBi = new BillItem();
             newBi.copy(bi);
             newBi.setBill(newBill);

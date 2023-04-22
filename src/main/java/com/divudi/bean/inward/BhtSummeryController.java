@@ -691,8 +691,6 @@ public class BhtSummeryController implements Serializable {
         for (BillItem bf : listBillItems) {
             double value = bf.getGrossValue() + bf.getMarginValue();
             double dis = (value * discountPercent) / 100;
-            System.err.println("//////////////////");
-            System.err.println("1 Fee Gross Value " + bf.getGrossValue());
             disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -733,8 +731,6 @@ public class BhtSummeryController implements Serializable {
         for (BillItem bf : listBillItems) {
             double value = bf.getGrossValue() + bf.getMarginValue();
             double dis = (value * pm.getDiscountPercent()) / 100;
-            System.err.println("//////////////////");
-            System.err.println("Bill No" + bf.getBill().getDeptId());
 //            disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
