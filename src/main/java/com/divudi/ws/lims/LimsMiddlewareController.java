@@ -26,6 +26,25 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import javax.ejb.EJB;
+import javax.enterprise.context.RequestScoped;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import javax.ws.rs.FormParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+
 /**
  * REST Web Service
  *
@@ -56,6 +75,29 @@ public class LimsMiddlewareController {
     public LimsMiddlewareController() {
     }
 
+    @Path("limsProcessAnalyzerMessage")
+    @POST
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public String limsProcessAnalyzerMessage(@FormParam("username") String username,
+            @FormParam("password") String password,
+            @FormParam("message") String receivedMessage) {
+        System.out.println(" PrefsController.getPreference().getUrl()");
+        System.out.println("receivedMessage = " + receivedMessage);
+        System.out.println("username = " + username);
+        System.out.println("password = " + password);
+        if (!isValidCredentials(username, password)) {
+            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+        }
+
+        // TODO: add your logic to process the receivedMessage and generate a response message
+        return "this is the result message";
+    }
+
+    private boolean isValidCredentials(String username, String password) {
+        // TODO: add your logic to validate the username and password
+        return true;
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
