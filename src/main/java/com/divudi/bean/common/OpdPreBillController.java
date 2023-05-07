@@ -326,7 +326,7 @@ public class OpdPreBillController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         
-        billFeePayments=getBillFeePaymentFacade().findBySQL(sql, m);
+        billFeePayments=getBillFeePaymentFacade().findByJpql(sql, m);
         
        commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill fees to test(/opd_search_bill_fee_payment.xhtml)");
         
@@ -885,7 +885,7 @@ public class OpdPreBillController implements Serializable {
                 + "b.retired = false and "
                 + "upper(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
         }
@@ -1694,7 +1694,7 @@ public class OpdPreBillController implements Serializable {
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 

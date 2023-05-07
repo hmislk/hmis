@@ -126,6 +126,7 @@ public enum Privileges {
     LabItems,
     LabItemFeeUpadate,
     LabItemFeeDelete,
+    LabPatientDetailsEdit,
     LabLists,
     LabSetUp,
     LabInwardBilling,
@@ -392,10 +393,8 @@ public enum Privileges {
     ClinicalPatientNameChange,
     ClinicalMembershipAdd,
     ClinicalMembershipEdit,
-
-    
-    
-    
+     
+    ClinicalPatientPhoneNumberEdit,
     
     
     

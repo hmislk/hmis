@@ -256,7 +256,7 @@ public class ServiceFeeController implements Serializable {
 
 //    public List<ItemFee> getCharges() {
 //        if (currentIx != null && currentIx.getId() != null) {
-//            setCharges(getItemFeeFacade().findBySQL("select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId()));
+//            setCharges(getItemFeeFacade().findByJpql("select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId()));
 //        } else {
 //            setCharges(new ArrayList<ItemFee>());
 //        }

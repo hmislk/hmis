@@ -130,7 +130,7 @@ public class StoreStoreController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
         hm.put("ins", ins);
-        d = getDepartmentFacade().findBySQL(sql, hm);
+        d = getDepartmentFacade().findByJpql(sql, hm);
 
         return d;
     }
@@ -229,7 +229,7 @@ public class StoreStoreController implements Serializable {
         hm.put("type", InstitutionType.Company);
         sql = "select c from Institution c where c.retired=false and c.institutionType=:type order by c.name";
 
-        return getInstitutionFacade().findBySQL(sql, hm);
+        return getInstitutionFacade().findByJpql(sql, hm);
     }
 
     private List<InstitutionStock> institutionStocks;
@@ -722,7 +722,7 @@ public class StoreStoreController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("bt", b);
 //
-//        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm);
+//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
 //    }
     private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"

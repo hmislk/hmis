@@ -480,7 +480,7 @@ public class CommonReport1 implements Serializable {
         m.put("bt", BillType.OpdBill);
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("temMap = " + temMap);
-//        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        referralBillItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
@@ -931,7 +931,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("web", webUser);
         temMap.put("ins", getSessionController().getInstitution());
 
-        Bill b = getBillFacade().findFirstBySQL(sql, temMap, TemporalType.DATE);
+        Bill b = getBillFacade().findFirstByJpql(sql, temMap, TemporalType.DATE);
 
         if (b != null && institution == null) {
             //System.err.println("SYS "+b.getInstitution().getName());
@@ -1153,7 +1153,7 @@ public class CommonReport1 implements Serializable {
 //            temMap.put("fromDate", getFromDate());
 //            temMap.put("toDate", getToDate());
 //            temMap.put("bTp", BillType.PettyCash);
-//            pettyPayments = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//            pettyPayments = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //            if (pettyPayments == null) {
 //                pettyPayments = new ArrayList<Bill>();
@@ -1183,7 +1183,7 @@ public class CommonReport1 implements Serializable {
 //            temMap.put("fromDate", getFromDate());
 //            temMap.put("toDate", getToDate());
 //            temMap.put("bTp", BillType.PettyCash);
-//            pettyPaymentsCancel = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//            pettyPaymentsCancel = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //            if (pettyPaymentsCancel == null) {
 //                pettyPaymentsCancel = new ArrayList<Bill>();
@@ -1211,7 +1211,7 @@ public class CommonReport1 implements Serializable {
 //            temMap.put("fromDate", getFromDate());
 //            temMap.put("toDate", getToDate());
 //            temMap.put("bTp", BillType.CashRecieveBill);
-//            cashRecieves = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//            cashRecieves = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //            if (cashRecieves == null) {
 //                cashRecieves = new ArrayList<Bill>();
@@ -1239,7 +1239,7 @@ public class CommonReport1 implements Serializable {
 //            temMap.put("fromDate", getFromDate());
 //            temMap.put("toDate", getToDate());
 //            temMap.put("bTp", BillType.AgentPaymentReceiveBill);
-//            agentRecieves = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//            agentRecieves = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //            if (agentRecieves == null) {
 //                agentRecieves = new ArrayList<Bill>();
@@ -1267,7 +1267,7 @@ public class CommonReport1 implements Serializable {
 //            temMap.put("fromDate", getFromDate());
 //            temMap.put("toDate", getToDate());
 //            temMap.put("bTp", BillType.CashRecieveBill);
-//            cashRecieveCancel = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//            cashRecieveCancel = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //            if (cashRecieveCancel == null) {
 //                cashRecieveCancel = new ArrayList<Bill>();
@@ -1295,7 +1295,7 @@ public class CommonReport1 implements Serializable {
 //            temMap.put("fromDate", getFromDate());
 //            temMap.put("toDate", getToDate());
 //            temMap.put("bTp", BillType.AgentPaymentReceiveBill);
-//            agentCancelBill = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//            agentCancelBill = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //            if (agentCancelBill == null) {
 //                agentCancelBill = new ArrayList<Bill>();
@@ -2121,7 +2121,7 @@ public class CommonReport1 implements Serializable {
 
         m.put("staff", doctor);
 
-        PersonInstitution pi = personInstitutionFacade.findFirstBySQL(sql, m);
+        PersonInstitution pi = personInstitutionFacade.findFirstByJpql(sql, m);
         if (pi != null) {
             return false;
         } else {

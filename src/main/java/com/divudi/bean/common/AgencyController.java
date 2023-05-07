@@ -58,7 +58,7 @@ public class AgencyController implements Serializable {
                 + "  p.retired=false and "
                 + " p.institutionType=:it "
                 + " order by p.name";
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
 
         Collections.shuffle(suggestions);
         List<Institution> b1s = suggestions.subList(0, suggestions.size() / 2);

@@ -234,7 +234,7 @@ public class BookingPastController implements Serializable {
         m.put("sp", getSpeciality());
         if (getSpeciality() != null) {
             sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
-            consultants = getStaffFacade().findBySQL(sql, m);
+            consultants = getStaffFacade().findByJpql(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findBySQL(sql);
@@ -374,7 +374,7 @@ public class BookingPastController implements Serializable {
 //        hh.put("class", BilledBill.class);
 //        hh.put("ssDate", getDate());
 //        hh.put("ss", getSelectedServiceSession());
-//        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //    }
     
     public void fillBillSessions() {
@@ -421,7 +421,7 @@ public class BookingPastController implements Serializable {
 //            c.setTime(getDate());
 //            int wd = c.get(Calendar.DAY_OF_WEEK);
 //            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-//            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+//            serviceSessions = getServiceSessionFacade().findByJpql(sql);
             serviceSessions=fetchCreatedServiceSession(staff, date);
             int a=0;
             for (ServiceSession s : serviceSessions) {
@@ -561,7 +561,7 @@ public class BookingPastController implements Serializable {
                 } else {
                     sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
                 }
-                consultants = getStaffFacade().findBySQL(sql, m);
+                consultants = getStaffFacade().findByJpql(sql, m);
             }
         } else {
             if (selectTextConsultant.length() > 4) {
@@ -576,7 +576,7 @@ public class BookingPastController implements Serializable {
 
                     m.put("ins", getSessionController().getInstitution());
                     m.put("typ", PersonInstitutionType.Channelling);
-                    consultants = getStaffFacade().findBySQL(sql, m);
+                    consultants = getStaffFacade().findByJpql(sql, m);
 
                 } else {
                     sql = "select p from Staff p where p.retired=false "
@@ -605,7 +605,7 @@ public class BookingPastController implements Serializable {
                                 + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                                 + " order by p.person.name";
                     }
-                    consultants = getStaffFacade().findBySQL(sql, m);
+                    consultants = getStaffFacade().findByJpql(sql, m);
                 }
             }
         }
@@ -650,7 +650,7 @@ public class BookingPastController implements Serializable {
 //            c.setTime(getDate());
 //            int wd = c.get(Calendar.DAY_OF_WEEK);
 //            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-//            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+//            serviceSessions = getServiceSessionFacade().findByJpql(sql);
 //        }
 
         return serviceSessions;
@@ -684,7 +684,7 @@ public class BookingPastController implements Serializable {
 //                        + getSelectedServiceSession().getId() + " and bs.sessionDate= :ssDate and bs.serviceSession.staff.id=" + getStaff().getId();
 //                HashMap hh = new HashMap();
 //                hh.put("ssDate", getDate());
-//                billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+//                billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //
 //                setFees();
 //            }

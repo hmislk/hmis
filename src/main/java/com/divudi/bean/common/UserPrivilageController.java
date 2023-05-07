@@ -669,7 +669,7 @@ public class UserPrivilageController implements Serializable {
 //        Map m = new HashMap();
 //        m.put("wup", p);
 //        String sql = "SELECT i FROM WebUserPrivilege i where i.webUser.id= " + getCurrentWebUser().getId() + " and i.privilege=:wup ";
-//        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql, m, TemporalType.DATE);
+//        List<WebUserPrivilege> tmp = getEjbFacade().findByJpql(sql, m, TemporalType.DATE);
 //        if (tmp == null || tmp.isEmpty()) {
 //            for (WebUserPrivilege wu : tmp) {
 //                if (!wu.isRetired()) {

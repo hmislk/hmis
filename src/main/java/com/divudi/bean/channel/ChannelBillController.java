@@ -611,7 +611,7 @@ public class ChannelBillController implements Serializable {
                 + " and bf.billItem=:bt ";
         hm.put("bt", bs.getBillItem());
 
-        listBillFees = billFeeFacade.findBySQL(sql, hm);
+        listBillFees = billFeeFacade.findByJpql(sql, hm);
         billSession = bs;
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
@@ -1651,7 +1651,7 @@ public class ChannelBillController implements Serializable {
                 } else {
                     sql = " select bi from BillItem bi where "
                             + " bi.bill=:b ";
-                    bi = getBillItemFacade().findFirstBySQL(sql, m);
+                    bi = getBillItemFacade().findFirstByJpql(sql, m);
                 }
                 if (bi != null) {
                     bi.setRetired(true);
@@ -1670,7 +1670,7 @@ public class ChannelBillController implements Serializable {
                 sql = " select bf from BillFee bf where "
                         + " bf.bill=:b ";
 
-                BillFees = getBillFeeFacade().findBySQL(sql, m);
+                BillFees = getBillFeeFacade().findByJpql(sql, m);
                 if (!BillFees.isEmpty()) {
                     for (BillFee bf : BillFees) {
                         bf.setRetired(true);

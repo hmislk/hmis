@@ -84,7 +84,7 @@
 
                     <div class="itemsPrinting">
 
-                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;"     >
+                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.insId}"  />                                    
@@ -119,7 +119,7 @@
                     
                     <div class="itemsPrintingMid">
 
-                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;"     >
+                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  11px!important;"  />                                    

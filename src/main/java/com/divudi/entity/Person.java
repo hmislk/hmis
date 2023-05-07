@@ -37,17 +37,18 @@ import org.joda.time.PeriodType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Entity
 @XmlRootElement
 public class Person implements Serializable {
 
-    @OneToOne(mappedBy = "webUserPerson",cascade = CascadeType.ALL) @JsonIgnore
+    @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
+    @JsonIgnore
     private WebUser webUser;
 
-    @OneToMany(mappedBy = "person",fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
     private List<ClinicalFindingValue> clinicalFindingValues;
 
     static final long serialVersionUID = 1L;
@@ -76,8 +77,10 @@ public class Person implements Serializable {
     Date dob;
 
     //Created Properties
-    @ManyToOne @JsonIgnore
-    WebUser creater; @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
+    WebUser creater;
+    @JsonIgnore
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
 //    @ManyToOne
@@ -85,17 +88,24 @@ public class Person implements Serializable {
 //    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
 //    Date editedAt;
     //Retairing properties
-     @JsonIgnore boolean retired;
-    @ManyToOne  @JsonIgnore
+    @JsonIgnore
+    boolean retired;
+    @ManyToOne
+    @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP)  @JsonIgnore
-    Date retiredAt; @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
+    Date retiredAt;
+    @JsonIgnore
     String retireComments;
-    @ManyToOne   @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Area area;
-    @ManyToOne  @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Institution institution;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Department department;
     @Enumerated(EnumType.STRING)
     Title title;
@@ -105,7 +115,19 @@ public class Person implements Serializable {
     String nameWithTitle;
     boolean foreigner = false;
 
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    Item civilStatus;
+    @ManyToOne
+    Item race;
+    @ManyToOne
+    Item bloodGroup;
+    @ManyToOne
+    Item occupation;
+    @ManyToOne
+    private Item religion;
+
+    @ManyToOne
+    @JsonIgnore
     private MembershipScheme membershipScheme;
 
     @Transient
@@ -120,10 +142,41 @@ public class Person implements Serializable {
     long ageInDays;
     @Transient
     int serealNumber;
+
+    public Item getCivilStatus() {
+        return civilStatus;
+    }
+
+    public void setCivilStatus(Item civilStatus) {
+        this.civilStatus = civilStatus;
+    }
+
+    public Item getRace() {
+        return race;
+    }
+
+    public void setRace(Item race) {
+        this.race = race;
+    }
+
+    public Item getBloodGroup() {
+        return bloodGroup;
+    }
+
+    public void setBloodGroup(Item bloodGroup) {
+        this.bloodGroup = bloodGroup;
+    }
+
+    public Item getOccupation() {
+        return occupation;
+    }
+
+    public void setOccupation(Item occupation) {
+        this.occupation = occupation;
+    }
     
     
-    
-    
+
     public boolean isForeigner() {
         return foreigner;
     }
@@ -248,7 +301,6 @@ public class Person implements Serializable {
 //    public void setEditedAt(Date editedAt) {
 //        this.editedAt = editedAt;
 //    }
-
     public WebUser getCreater() {
         return creater;
     }
@@ -270,7 +322,7 @@ public class Person implements Serializable {
     }
 
     public void setName(String name) {
-        this.name = name.toUpperCase();
+        this.name = name;
     }
 
     public String getInitials() {
@@ -491,7 +543,7 @@ public class Person implements Serializable {
     }
 
     public WebUser getWebUser() {
-        if(webUser==null){
+        if (webUser == null) {
             webUser = new WebUser();
             webUser.setWebUserPerson(this);
         }
@@ -501,4 +553,14 @@ public class Person implements Serializable {
     public void setWebUser(WebUser webUser) {
         this.webUser = webUser;
     }
+
+    public Item getReligion() {
+        return religion;
+    }
+
+    public void setReligion(Item religion) {
+        this.religion = religion;
+    }
+    
+    
 }

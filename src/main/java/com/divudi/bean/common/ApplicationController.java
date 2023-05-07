@@ -13,7 +13,6 @@ import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.UserPreferenceFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;

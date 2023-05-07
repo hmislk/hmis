@@ -29,7 +29,8 @@
                         </p:calendar>
                         <p:spacer height="1" width="5" ></p:spacer>
 
-                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createOpdBillSearch}"/>
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                         action="#{searchController.createOpdBillSearch}"/>
                         <p:commandButton id="btnExcel" ajax="false" value="Excel" >
                             <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                         </p:commandButton>

@@ -939,8 +939,8 @@ public class CollectingCentreBillController implements Serializable {
         m.put("rid", referralId.toUpperCase());
         m.put("bt", BillType.CollectingCentreBill);
         m.put("ins", ins);
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
-//        Bill b = getFacade().findFirstBySQL(jpql, m);
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
+//        Bill b = getFacade().findFirstByJpql(jpql, m);
 //        //// // System.out.println(" Error find Number CheckTime 3 = " + new Date());
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
@@ -1379,7 +1379,6 @@ public class CollectingCentreBillController implements Serializable {
             if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
-                        System.err.println("in");
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
                         //// // System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
                         double d = (bf.getFeeValue() - bf.getSettleValue());
@@ -1388,7 +1387,6 @@ public class CollectingCentreBillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                     } else {
-                        System.err.println("IN");
                         bf.setSettleValue(bf.getSettleValue() + reminingCashPaid);
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
@@ -1814,7 +1812,7 @@ public class CollectingCentreBillController implements Serializable {
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 

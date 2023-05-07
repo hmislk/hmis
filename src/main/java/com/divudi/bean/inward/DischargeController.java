@@ -179,7 +179,7 @@ public class DischargeController implements Serializable {
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
                 + " and pr.patientEncounter=:pe order by pr.createdAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 

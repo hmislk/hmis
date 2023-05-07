@@ -1,0 +1,5 @@
+
+.auto-width-datatable {
+    table-layout: auto !important;
+    width: 100% !important;
+}

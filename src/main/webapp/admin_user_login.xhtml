@@ -29,7 +29,7 @@
                                             <h:outputText value="Address" ></h:outputText>
                                             <p:inputText autocomplete="off" required="true" value="#{webUserController.current.webUserPerson.address}" ></p:inputText>
                                             <h:outputText value="Mobile" ></h:outputText>
-                                            <p:inputMask mask="999-9999999" required="true" value="#{webUserController.current.webUserPerson.mobile}" ></p:inputMask>
+                                            <p:inputText  required="true" value="#{webUserController.current.webUserPerson.mobile}" ></p:inputText>
                                             <h:outputText value="Speciality" ></h:outputText>                                            
                                             <autocomplete:completeSpeciality value="#{webUserController.speciality}"/>
                                         </h:panelGrid>

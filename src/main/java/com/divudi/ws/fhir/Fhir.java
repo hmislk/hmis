@@ -5,7 +5,6 @@
  */
 package com.divudi.ws.fhir;
 
-import com.divudi.ws.finance.*;
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.AuthenticateController;
 import com.divudi.bean.common.CommonController;
@@ -638,30 +637,23 @@ public class Fhir {
     }
 
     private boolean isValidKey(String key) {
-        System.out.println("key = " + key);
         if (key == null || key.trim().equals("")) {
-            System.out.println("No key given");
             return false;
         }
         ApiKey k = apiKeyController.findApiKey(key);
         if (k == null) {
-            System.out.println("No key found");
             return false;
         }
         if (k.getWebUser() == null) {
-            System.out.println("No user for the key");
             return false;
         }
         if (k.getWebUser().isRetired()) {
-            System.out.println("User Retired");
             return false;
         }
         if (!k.getWebUser().isActivated()) {
-            System.out.println("User Inactive");
             return false;
         }
         if (k.getDateOfExpiary().before(new Date())) {
-            System.out.println("Key Expired");
             return false;
         }
         return true;
@@ -688,7 +680,6 @@ public class Fhir {
         } catch (Exception e) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
-            System.out.println("e = " + e);
             return json;
         }
         if (lastIdInRequest < 1) {
@@ -762,7 +753,6 @@ public class Fhir {
         } catch (Exception e) {
             jSONObjectOut = errorMessageNotValidPathParameter();
             String json = jSONObjectOut.toString();
-            System.out.println("e = " + e);
             return json;
         }
         if (lastIdInRequest < 1) {
@@ -1307,7 +1297,7 @@ public class Fhir {
                 + " where bs.bill.id=:id ";
 
         m.put("id", billId);
-        billObjects = billSessionFacade.findBySQL(sql, m);
+        billObjects = billSessionFacade.findByJpql(sql, m);
 
 //        //System.out.println("m = " + m);
 //        //System.out.println("sql = " + sql);
@@ -1396,7 +1386,7 @@ public class Fhir {
         Map m = new HashMap<>();
         m.put("c", strInstitutionCode);
         m.put("ret", false);
-        return institutionFacade.findFirstBySQL(j, m);
+        return institutionFacade.findFirstByJpql(j, m);
     }
 
     private List<PaymentMethod> getCashPaymentMethods() {

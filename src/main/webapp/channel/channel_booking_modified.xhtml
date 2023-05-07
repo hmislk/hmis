@@ -225,8 +225,8 @@
                                 </p:inputText>
 
                                 <h:outputLabel value="Phone"/>
-                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
-                                </p:inputMask>
+                                <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
+                                </p:inputText>
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu id="txtNewSex"  value="#{channelBillController.newPatient.person.sex}" style="width: 200px;">
                                     <f:selectItem itemLabel="Select Sex"/>

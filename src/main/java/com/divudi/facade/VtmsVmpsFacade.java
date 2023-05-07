@@ -4,7 +4,7 @@
  */
 package com.divudi.facade;
 
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -14,7 +14,7 @@ import javax.persistence.PersistenceContext;
  * @author safrin
  */
 @Stateless
-public class VtmsVmpsFacade extends AbstractFacade<VtmsVmps> {
+public class VtmsVmpsFacade extends AbstractFacade<VirtualProductIngredient> {
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
 
@@ -24,7 +24,7 @@ public class VtmsVmpsFacade extends AbstractFacade<VtmsVmps> {
     }
 
     public VtmsVmpsFacade() {
-        super(VtmsVmps.class);
+        super(VirtualProductIngredient.class);
     }
     
 }

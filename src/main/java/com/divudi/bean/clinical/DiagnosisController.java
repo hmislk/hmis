@@ -8,11 +8,12 @@
  */
 package com.divudi.bean.clinical;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.SymanticType;
-import com.divudi.entity.clinical.ClinicalFindingItem;
-import com.divudi.facade.ClinicalFindingItemFacade;
+import com.divudi.entity.clinical.ClinicalEntity;
+import com.divudi.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,17 +22,13 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -41,43 +38,67 @@ public class DiagnosisController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private ClinicalFindingItemFacade ejbFacade;
-    List<ClinicalFindingItem > selectedItems;
-    private ClinicalFindingItem current;
-    private List<ClinicalFindingItem> items = null;
+    private ClinicalEntityFacade ejbFacade;
+    List<ClinicalEntity> selectedItems;
+    private ClinicalEntity current;
+    private List<ClinicalEntity> items = null;
+
     String selectText = "";
 
-    public List<ClinicalFindingItem> completeDiagnosis(String qry) {
-        List<ClinicalFindingItem> c;
+    public List<ClinicalEntity> completeDiagnosis(String qry) {
+        List<ClinicalEntity> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Disease_or_Syndrome);
         m.put("n", "%" + qry.toUpperCase() + "%");
         String sql;
-        sql="select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
-        c = getFacade().findBySQL(sql,m,10);
+        sql = "select c from ClinicalEntity c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        c = getFacade().findBySQL(sql, m, 10);
         if (c == null) {
             c = new ArrayList<>();
         }
         return c;
     }
 
-    public List<ClinicalFindingItem> getSelectedItems() {
+    public ClinicalEntity findAndSaveDiagnosis(String dxName) {
+        ClinicalEntity c;
+        Map m = new HashMap();
+        m.put("t", SymanticType.Disease_or_Syndrome);
+        m.put("n", dxName);
+        m.put("ret", false);
+        String sql;
+        sql = "select c "
+                + " from ClinicalEntity c "
+                + " where c.retired=:ret "
+                + " and c.name=:n "
+                + " and c.symanticType=:t ";
+        c = getFacade().findFirstByJpql(sql, m);
+        if (c == null) {
+            c = new ClinicalEntity();
+            c.setSymanticType(SymanticType.Disease_or_Syndrome);
+            c.setName(dxName);
+            c.setCode(CommonController.nameToCode("Disease_or_Syndrome_" + dxName));
+            getFacade().create(c);
+        }
+        return c;
+    }
+
+    public List<ClinicalEntity> getSelectedItems() {
         Map m = new HashMap();
         m.put("t", SymanticType.Disease_or_Syndrome);
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
-        sql="select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
-        selectedItems = getFacade().findBySQL(sql,m);
+        sql = "select c from ClinicalEntity c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        selectedItems = getFacade().findByJpql(sql, m);
         return selectedItems;
     }
 
     public void prepareAdd() {
-        current = new ClinicalFindingItem();
+        current = new ClinicalEntity();
         current.setSymanticType(SymanticType.Disease_or_Syndrome);
         //TODO:
     }
 
-    public void setSelectedItems(List<ClinicalFindingItem> selectedItems) {
+    public void setSelectedItems(List<ClinicalEntity> selectedItems) {
         this.selectedItems = selectedItems;
     }
 
@@ -101,18 +122,18 @@ public class DiagnosisController implements Serializable {
             UtilityController.addSuccessMessage("Updates");
         }
         recreateModel();
-        getItems();
+        fillItems();
     }
 
     public void setSelectText(String selectText) {
         this.selectText = selectText;
     }
 
-    public ClinicalFindingItemFacade getEjbFacade() {
+    public ClinicalEntityFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(ClinicalFindingItemFacade ejbFacade) {
+    public void setEjbFacade(ClinicalEntityFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -127,19 +148,18 @@ public class DiagnosisController implements Serializable {
     public DiagnosisController() {
     }
 
-    public ClinicalFindingItem getCurrent() {
+    public ClinicalEntity getCurrent() {
         if (current == null) {
-            current = new ClinicalFindingItem();
+            current = new ClinicalEntity();
         }
         return current;
     }
 
-    public void setCurrent(ClinicalFindingItem current) {
+    public void setCurrent(ClinicalEntity current) {
         this.current = current;
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -150,66 +170,46 @@ public class DiagnosisController implements Serializable {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
+        fillItems();
         current = null;
         getCurrent();
     }
 
-    private ClinicalFindingItemFacade getFacade() {
+    private ClinicalEntityFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<ClinicalFindingItem> getItems() {
-        if (items == null) {
-            Map m = new HashMap();
-            m.put("t", SymanticType.Disease_or_Syndrome);
-            String sql;
-            sql = "select c from ClinicalFindingItem c where c.retired=false and c.symanticType=:t order by c.name";
-            items = getFacade().findBySQL(sql, m);
-        }
+    public List<ClinicalEntity> getItems() {
         return items;
     }
 
-    /**
-     *
-     */
-    @FacesConverter("diagnosisConverter")
-    public static class DiagnosisConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DiagnosisController controller = (DiagnosisController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "diagnosisController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof ClinicalFindingItem) {
-                ClinicalFindingItem o = (ClinicalFindingItem) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DiagnosisController.class.getName());
-            }
-        }
+    public String navigateToListDiagnoses() {
+        System.out.println("navigateToListDiagnoses");
+        Map m = new HashMap();
+        m.put("t", SymanticType.Disease_or_Syndrome);
+        m.put("ret", false);
+        String jpql;
+        jpql = "select c "
+                + " from ClinicalEntity c "
+                + " where c.retired=:ret "
+                + " and c.symanticType=:t "
+                + " order by c.name";
+        items = getFacade().findByJpql(jpql, m);
+        return "/emr/reports/diagnoses";
     }
+
+    public void fillItems() {
+        List<ClinicalEntity> c;
+        Map m = new HashMap();
+        m.put("t", SymanticType.Disease_or_Syndrome);
+        String sql;
+        sql = "select c "
+                + " from ClinicalEntity c "
+                + " where c.retired=false "
+                + " and c.symanticType=:t "
+                + " order by c.name";
+        c = getFacade().findByJpql(sql, m);
+        items = c;
+    }
+
 }

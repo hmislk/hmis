@@ -238,7 +238,7 @@ public class BillNumberGenerator {
         hm.put("btp", billType);
         hm.put("type", bill.getClass());
         hm.put("str", number.toUpperCase());
-        Bill result = getBillFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        Bill result = getBillFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
 
         if (result != null) {
             return true;
@@ -352,7 +352,7 @@ public class BillNumberGenerator {
         HashMap h = new HashMap();
         h.put("btp1", BillType.ClinicalOpdBooking);
         Long l = getBillFacade().countBySql(sql, h);
-        List<Bill> b = getBillFacade().findBySQL(sql, h);
+        List<Bill> b = getBillFacade().findByJpql(sql, h);
         if (l != null) {
             l = l + 1;
             return "GPV" + l;
@@ -626,7 +626,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("dep", department);
         hm.put("tDep", toDepartment);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -687,7 +687,7 @@ public class BillNumberGenerator {
         hm.put("bTp", billType);
         hm.put("bcl", billClassType);
         hm.put("dep", department);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 //        //// // System.out.println("billNumber = " + billNumber);
 //        //// // System.out.println("billType = " + billType);
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
@@ -702,7 +702,7 @@ public class BillNumberGenerator {
             hm.put("bTp", BillType.StoreOrderApprove);
             hm.put("bcl", billClassType);
             hm.put("dep", department);
-            Bill bill = billFacade.findFirstBySQL(sql, hm);
+            Bill bill = billFacade.findFirstByJpql(sql, hm);
 
             if (bill != null) {
                 //// // System.out.println("bill.getInsId() = " + bill.getInsId());
@@ -774,7 +774,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         hm.put("tDep", toDepartment);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -836,7 +836,7 @@ public class BillNumberGenerator {
         hm.put("bTp", billType);
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 //        //// // System.out.println("billNumber = " + billNumber);
 
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
@@ -851,7 +851,7 @@ public class BillNumberGenerator {
             hm.put("bTp", BillType.StoreOrderApprove);
             hm.put("bcl", billClassType);
             hm.put("ins", institution);
-            Bill bill = billFacade.findFirstBySQL(sql, hm);
+            Bill bill = billFacade.findFirstByJpql(sql, hm);
 
             if (bill != null) {
                 String[] parts = bill.getInsId().split("/");
@@ -924,7 +924,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         hm.put("dep", department);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -984,7 +984,7 @@ public class BillNumberGenerator {
         HashMap hm = new HashMap();
         hm.put("class", billClassType);
         hm.put("ins", institution);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -1044,7 +1044,7 @@ public class BillNumberGenerator {
         hm.put("class", billClassType);
         hm.put("ins", institution);
         hm.put("dep", department);
-        BillNumber billNumber = billNumberFacade.findFirstBySQL(sql, hm);
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();

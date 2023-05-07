@@ -224,7 +224,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         hm.put("ins", getCurrentInstituion());
 
-        items = getFacade().findBySQL(temSql, hm);
+        items = getFacade().findByJpql(temSql, hm);
 
         if (items == null) {
             items = new ArrayList<>();
@@ -266,7 +266,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         sql += " order by b.institution.name,b.item.name ";
 
-        searchItems = getFacade().findBySQL(sql, tmp);
+        searchItems = getFacade().findByJpql(sql, tmp);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Administration/Check entered data/Item Distributor(/faces/store/store_item_by_distributor.xhtml)");
 

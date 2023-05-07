@@ -289,7 +289,7 @@ public class ChannelBean {
         HashMap hm = new HashMap();
         hm.put("dt", date);
         hm.put("st", staff);
-        ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstBySQL(slq, hm, TemporalType.DATE);
+        ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstByJpql(slq, hm, TemporalType.DATE);
 
         if (tmp != null) {
             return true;
@@ -550,13 +550,10 @@ public class ChannelBean {
         Date toDate = c.getTime();
         Integer tmp = 0;
         int rowIndex = 0;
-        System.err.println("Time 1 = " + new Date());
 
         createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate);
 
-        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
-        System.err.println("Time 3 = " + new Date());
 
         Date end = new Date();
         double time = (start.getTime() - end.getTime()) / 1000;
@@ -784,7 +781,7 @@ public class ChannelBean {
         m.put("os", ss);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+            tmp = getServiceSessionFacade().findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
         }

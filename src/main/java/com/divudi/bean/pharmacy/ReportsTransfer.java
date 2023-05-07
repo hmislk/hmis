@@ -1514,7 +1514,7 @@ public class ReportsTransfer implements Serializable {
                 + " where s.department=:d "
                 + " order by s.itemBatch.item.name";
         m.put("d", toDepartment);
-        List<Item> items = getItemFacade().findBySQL(sql, m);
+        List<Item> items = getItemFacade().findByJpql(sql, m);
         return items;
     }
 

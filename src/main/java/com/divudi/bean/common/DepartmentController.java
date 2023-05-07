@@ -128,7 +128,7 @@ public class DepartmentController implements Serializable {
             String sql = "Select d from Department d where d.retired=false and upper(d.name) like :dn order by d.name";
             Map m = new HashMap();
             m.put("dn", "%" + selectText.toUpperCase() + "%");
-            searchItems = getFacade().findBySQL(sql, m);
+            searchItems = getFacade().findByJpql(sql, m);
             if (searchItems != null && !searchItems.isEmpty()) {
                 current = searchItems.get(0);
             } else {
@@ -149,7 +149,7 @@ public class DepartmentController implements Serializable {
                     + " and d.institution=:ins";
             HashMap hm = new HashMap();
             hm.put("ins", getInstitution());
-            items = getFacade().findBySQL(sql, hm);
+            items = getFacade().findByJpql(sql, hm);
         }
         return items;
     }
@@ -173,7 +173,7 @@ public class DepartmentController implements Serializable {
                     + " where d.retired=false "
                     + " and d.institution=:ins "
                     + " order by d.name";
-            deps = getFacade().findBySQL(sql, m);
+            deps = getFacade().findByJpql(sql, m);
         }
         return deps;
     }
@@ -188,7 +188,7 @@ public class DepartmentController implements Serializable {
             String sql = "Select d From Department d "
                     + " where d.retired=false "
                     + " and d.institution=:ins ";
-            dep = getFacade().findFirstBySQL(sql, m);
+            dep = getFacade().findFirstByJpql(sql, m);
             if (dep == null) {
                 dep = new Department();
                 dep.setCreatedAt(new Date());
@@ -242,7 +242,7 @@ public class DepartmentController implements Serializable {
             m.put("ins", i);
         }
         sql += " order by d.name";
-        selectedItems = getFacade().findBySQL(sql, m);
+        selectedItems = getFacade().findByJpql(sql, m);
         return selectedItems;
     }
 
@@ -256,7 +256,7 @@ public class DepartmentController implements Serializable {
                 + " and upper(c.name) like :q"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        departmentList = getFacade().findBySQL(sql, hm);
+        departmentList = getFacade().findByJpql(sql, hm);
 
         return departmentList;
     }
@@ -275,7 +275,7 @@ public class DepartmentController implements Serializable {
         hm.put("ins", getSessionController().getInstitution());
         hm.put("q", "%" + qry.toUpperCase() + "%");
 
-        return getFacade().findBySQL(sql, hm);
+        return getFacade().findByJpql(sql, hm);
     }
 
     public List<Department> completeDeptWithDeptOrIns(String qry) {
@@ -286,7 +286,7 @@ public class DepartmentController implements Serializable {
                 + " and (upper(c.name) like :q or upper(c.institution.name) like :q )"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        return getFacade().findBySQL(sql, hm);
+        return getFacade().findByJpql(sql, hm);
     }
 
     public void prepareAdd() {
@@ -383,7 +383,7 @@ public class DepartmentController implements Serializable {
             m.put("dt", departmentType);
         }
         sql += " order by d.name";
-        deps = getFacade().findBySQL(sql, m);
+        deps = getFacade().findByJpql(sql, m);
         return deps;
     }
 

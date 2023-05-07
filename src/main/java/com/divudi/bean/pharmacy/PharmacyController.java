@@ -163,7 +163,7 @@ public class PharmacyController implements Serializable {
             m.put("cat", getCategory());
         }
         sql += " order by i.itemBatch.item.name ";
-        items = getItemFacade().findBySQL(sql, m);
+        items = getItemFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -189,7 +189,7 @@ public class PharmacyController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
         hm.put("ins", ins);
-        d = getDepartmentFacade().findBySQL(sql, hm);
+        d = getDepartmentFacade().findByJpql(sql, hm);
 
         return d;
     }
@@ -222,7 +222,7 @@ public class PharmacyController implements Serializable {
         p.put("dep", department);
         p.put("bts", Arrays.asList(abts));
 
-        List<Amp> allAmps = ampFacade.findBySQL(s, p);
+        List<Amp> allAmps = ampFacade.findByJpql(s, p);
 
         Map<Long, ItemTransactionSummeryRow> m = new HashMap();
 
@@ -648,7 +648,7 @@ public class PharmacyController implements Serializable {
         hm.put("type", InstitutionType.Company);
         sql = "select c from Institution c where c.retired=false and c.institutionType=:type order by c.name";
 
-        return getInstitutionFacade().findBySQL(sql, hm);
+        return getInstitutionFacade().findByJpql(sql, hm);
     }
 
     private List<InstitutionStock> institutionStocks;
@@ -859,7 +859,7 @@ public class PharmacyController implements Serializable {
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
 //        
-//        List<BillItem> billItems=getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //        if (billItems!=null) {
 //            grns.addAll(billItems);
 //        }
@@ -1477,7 +1477,7 @@ public class PharmacyController implements Serializable {
 //        hm.put("class", BilledBill.class);
 //        hm.put("btp", BillType.PharmacyIssue);
 //
-//        institutionIssue = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+//        institutionIssue = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 //
 //    }
     public void createDirectPurchaseTable() {
@@ -1527,7 +1527,7 @@ public class PharmacyController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("bt", b);
 //
-//        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm);
+//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
 //    }
     private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"
@@ -1573,7 +1573,7 @@ public class PharmacyController implements Serializable {
         Map m = new HashMap();
         sql = "select p from Ampp p where p.retired=false and p.amp=:a order by p.dblValue";
         m.put("a", pharmacyItem);
-        List<Ampp> list = getAmppFacade().findBySQL(sql, m);
+        List<Ampp> list = getAmppFacade().findByJpql(sql, m);
 
         if (list == null) {
             return new ArrayList<>();
@@ -1648,7 +1648,7 @@ public class PharmacyController implements Serializable {
                 + " and i.bill.billType in :bts "
                 + " and i.bill.createdAt between :frm and :to  "
                 + " order by i.id";
-        BillItem d = getBillItemFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+        BillItem d = getBillItemFacade().findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
         if (d == null) {
             return fd;
         } else if (d.getBill() != null && d.getBill().getCreatedAt() != null) {

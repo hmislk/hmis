@@ -35,7 +35,7 @@ import com.divudi.entity.pharmacy.StoreItemCategory;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.AtmFacade;
@@ -217,7 +217,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() > 0) {
@@ -233,7 +233,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", CancelledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        bills = getBillFacade().findBySQL(sql, temMap);
+        bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             if (b.getNetTotal() < 0) {
@@ -257,7 +257,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("fd", cal.getTime());
         temMap.put("td", new Date());
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             String str = "";
@@ -289,7 +289,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Service.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setSessionNumberType(null);
@@ -303,7 +303,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Item b where type(b)=:tp ";
         temMap.put("tp", Investigation.class);
-        List<Item> list = getItemFacade().findBySQL(sql, temMap);
+        List<Item> list = getItemFacade().findByJpql(sql, temMap);
 
         for (Item i : list) {
             i.setInwardChargeType(InwardChargeType.Laboratory);
@@ -317,7 +317,7 @@ public class StoreItemExcelManager implements Serializable {
 
         sql = "select b from Bill b where b.paymentMethod is null";
 
-        List<Bill> list = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> list = getBillFacade().findByJpql(sql, temMap);
         //  int ind = 1;
         for (Bill i : list) {
             //   System.err.println("index " + ind++);
@@ -339,7 +339,7 @@ public class StoreItemExcelManager implements Serializable {
 //        temMap.put("class", BilledBill.class);
 //        temMap.put("billType", BillType.PharmacyPurchaseBill);
 //        //temMap.put("dep", getSessionController().getDepartment());
-//        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+//        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 //
 //        for (Bill b : bills) {
 //            System.err.println("Billed "+b.getPaymentScheme());
@@ -429,7 +429,7 @@ public class StoreItemExcelManager implements Serializable {
         Amp amp;
 //        Ampp ampp;
         Vmpp vmpp;
-        VtmsVmps vtmsvmps;
+        VirtualProductIngredient vtmsvmps;
         MeasurementUnit issueUnit;
         MeasurementUnit strengthUnit;
         MeasurementUnit packUnit;
@@ -580,7 +580,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("n", strAmp.toUpperCase());
                 m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -807,7 +807,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("n", strAmp.toUpperCase());
                 m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -872,13 +872,11 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("class", BilledBill.class);
         temMap.put("billType", BillType.StoreGrnBill);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
         int index = 1;
         for (Bill b : bills) {
             if (b.getReferenceBill().getBillType() == BillType.StoreOrder) {
-                System.err.println("No " + index++);
                 Bill refApproved = b.getReferenceBill().getReferenceBill();
-                System.err.println("Grn No" + b.getDeptId());
 
                 b.setReferenceBill(refApproved);
                 getBillFacade().edit(b);
@@ -1026,7 +1024,7 @@ public class StoreItemExcelManager implements Serializable {
         temMap.put("billType", BillType.StoreTransferIssue);
         temMap.put("billType2", BillType.StoreTransferReceive);
         //temMap.put("dep", getSessionController().getDepartment());
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
 
         for (Bill b : bills) {
             temMap.clear();
@@ -1055,7 +1053,7 @@ public class StoreItemExcelManager implements Serializable {
         hm.put("itmB", itemBatch);
         hm.put("dt", date);
         hm.put("dep", department);
-        return getStockHistoryFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getStockHistoryFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private PharmaceuticalBillItem getPreviousPharmacuticalBillByBatch(ItemBatch itemBatch, Department department, Date date) {
@@ -1070,7 +1068,7 @@ public class StoreItemExcelManager implements Serializable {
         hm.put("dep", department);
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
-        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void resetTransferHistoryValue() {
@@ -1082,7 +1080,7 @@ public class StoreItemExcelManager implements Serializable {
 
         temMap.put("billType", BillType.StoreTransferIssue);
         temMap.put("billType2", BillType.StoreTransferReceive);
-        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap);
+        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findByJpql(sql, temMap);
 
         for (PharmaceuticalBillItem b : list) {
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
@@ -1127,7 +1125,7 @@ public class StoreItemExcelManager implements Serializable {
         Amp amp;
         Ampp ampp;
         Vmpp vmpp;
-        VtmsVmps vtmsvmps;
+        VirtualProductIngredient vtmsvmps;
         MeasurementUnit issueUnit;
         MeasurementUnit strengthUnit;
         MeasurementUnit packUnit;
@@ -1257,7 +1255,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -1391,7 +1389,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("dep", DepartmentType.Store);
                 m.put("n", itenName.toUpperCase());
 
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:dep ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:dep ", m);
 
                 if (amp == null) {
                     amp = new Amp();
@@ -1475,7 +1473,7 @@ public class StoreItemExcelManager implements Serializable {
                 //   ////System.out.println("m = " + m);
                 sql = "Select amp from Amp amp where amp.retired=false and upper(amp.name)=:strAmp";
                 //   ////System.out.println("sql = " + sql);
-                Amp amp = getAmpFacade().findFirstBySQL(sql, m);
+                Amp amp = getAmpFacade().findFirstByJpql(sql, m);
                 //   ////System.out.println("amp = " + amp);
                 if (amp != null) {
                     if (amp.getCode() != null) {
@@ -1580,7 +1578,7 @@ public class StoreItemExcelManager implements Serializable {
                 m = new HashMap();
                 m.put("n", strAmp);
 
-                amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n", m);
                 if (amp == null) {
 
                 } else {
@@ -1665,7 +1663,7 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 ////System.out.println("cat = " + cat.getName());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstBySQL("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);

@@ -210,7 +210,7 @@ public class ChannelSessionWizard implements Serializable {
                         + " order by p.person.name";
                 m.put("spe", speciality);
             }
-            doctors = getStaffFacade().findBySQL(sql, m);
+            doctors = getStaffFacade().findByJpql(sql, m);
         }
         return doctors;
     }
@@ -223,7 +223,7 @@ public class ChannelSessionWizard implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", institution);
-            departments = getDepartmentFacade().findBySQL(sql, m);
+            departments = getDepartmentFacade().findByJpql(sql, m);
         }
         return departments;
     }
@@ -236,7 +236,7 @@ public class ChannelSessionWizard implements Serializable {
                 + " where s.retired=false "
                 + " and s.staff=:stf ";
         hm.put("stf", currentStaff);
-        items = getServiceSessionFacade().findBySQL(sql, hm);
+        items = getServiceSessionFacade().findByJpql(sql, hm);
         return items;
     }
 
@@ -285,7 +285,7 @@ public class ChannelSessionWizard implements Serializable {
                 + " f.serviceSession=:ses "
                 + " order by f.id";
         m.put("ses", current);
-        fees = getItemFeeFacade().findBySQL(sql, m);
+        fees = getItemFeeFacade().findByJpql(sql, m);
     }
 
     public void sessionListner() {
@@ -308,7 +308,7 @@ public class ChannelSessionWizard implements Serializable {
                     + " and f.serviceSession.scanFee=true "
                     + " order by f.id";
             m.put("ses", current);
-            fees = getItemFeeFacade().findBySQL(sql, m);
+            fees = getItemFeeFacade().findByJpql(sql, m);
 
             if (fees.isEmpty()) {
                 createScanFee();

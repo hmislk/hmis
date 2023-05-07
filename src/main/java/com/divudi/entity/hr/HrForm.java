@@ -15,8 +15,6 @@ import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -24,7 +22,6 @@ import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class HrForm extends Form implements Serializable {
 
     @ManyToOne

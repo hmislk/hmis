@@ -834,7 +834,7 @@ public class WebUserController implements Serializable {
                 + " order by d.id";
         Map m = new HashMap();
         m.put("u", wu);
-        wuds = getWebUserDashboardFacade().findBySQL(j, m);
+        wuds = getWebUserDashboardFacade().findByJpql(j, m);
         return wuds;
     }
 
@@ -937,7 +937,7 @@ public class WebUserController implements Serializable {
                 + " order by d.name";
         Map m = new HashMap();
         m.put("ins", getCurrent().getInstitution());
-        departmentsOfSelectedUsersInstitution = getDepartmentFacade().findBySQL(jpql, m);
+        departmentsOfSelectedUsersInstitution = getDepartmentFacade().findByJpql(jpql, m);
         return departmentsOfSelectedUsersInstitution;
     }
 

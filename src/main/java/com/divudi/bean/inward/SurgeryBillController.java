@@ -210,7 +210,7 @@ public class SurgeryBillController implements Serializable {
                 + " bf.billItem=:bItm ";
         HashMap hm = new HashMap();
         hm.put("bItm", billItem);
-        List<BillFee> lst = getBillFeeFacade().findBySQL(sql, hm);
+        List<BillFee> lst = getBillFeeFacade().findByJpql(sql, hm);
 
         if (lst.isEmpty()) {
             return new ArrayList<>();
@@ -369,7 +369,7 @@ public class SurgeryBillController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", b);
 
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
     }
 
     private boolean saveProfessionalBill() {
@@ -468,7 +468,7 @@ public class SurgeryBillController implements Serializable {
                 + " bf.retired=false and bf.forwardReferenceBill=:bill";
         HashMap hm = new HashMap();
         hm.put("bill", getBatchBill());
-        List<Bill> list = getBillFacade().findBySQL(sql, hm);
+        List<Bill> list = getBillFacade().findByJpql(sql, hm);
 
         if (list == null) {
             return new ArrayList<>();
@@ -536,7 +536,7 @@ public class SurgeryBillController implements Serializable {
         hm.put("btp", billType);
         hm.put("class", PreBill.class);
 
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql, hm);
 
         hm.clear();
         sql = "SELECT  b FROM BillItem b "
@@ -553,7 +553,7 @@ public class SurgeryBillController implements Serializable {
         hm.put("bil", getBatchBill());
 //        hm.put("pe", getBatchBill().getPatientEncounter());
 
-        List<BillItem> billItems1 = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> billItems1 = getBillItemFacade().findByJpql(sql, hm);
 
         billItems.addAll(billItems1);
 

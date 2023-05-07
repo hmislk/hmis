@@ -60,10 +60,10 @@
                                 <p:dataExporter target="tb1" type="xls" fileName="Contacts" />
                             </p:commandButton>
                             <p:outputLabel value="Message" />
-                            <p:inputMask mask="" maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputMask>
+                            <p:inputText maxlength="160" style="height: 50px;" value="#{searchController.smsText}"></p:inputText>
 
                             <p:outputLabel value="Test Send" />
-                            <p:inputMask mask="999-9999999" maxlength="11" style="height: 20px;" value="#{searchController.uniqueSmsText}"></p:inputMask>
+                            <p:inputText  maxlength="11" style="height: 20px;" value="#{searchController.uniqueSmsText}"></p:inputText>
 
                             <p:commandButton id="btnSend" ajax="false" value="Send Single" action="#{searchController.sendSms()}"  />
                             <p:commandButton id="btnSend2" ajax="false" value="Send All" action="#{searchController.sendSmsAll()}"  />

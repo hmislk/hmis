@@ -63,7 +63,7 @@ public class TimedItemFeeController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrentFee().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, hm);
+            d = getDepartmentFacade().findByJpql(sql, hm);
         }
 
         return d;
@@ -203,7 +203,7 @@ public class TimedItemFeeController implements Serializable {
         if (currentIx != null && currentIx.getId() != null) {
             HashMap hm = new HashMap();
             hm.put("it", getCurrentIx());
-            fees = getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm);
+            fees = getTimedItemFeeFacade().findByJpql("select c from TimedItemFee c where c.retired = false and c.item=:it", hm);
 
         }
     }
@@ -212,7 +212,7 @@ public class TimedItemFeeController implements Serializable {
 //        if (currentIx != null && currentIx.getId() != null) {
 //            HashMap hm = new HashMap();
 //            hm.put("it", getCurrentIx());
-//            setCharges(getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm));
+//            setCharges(getTimedItemFeeFacade().findByJpql("select c from TimedItemFee c where c.retired = false and c.item=:it", hm));
 //        } else {
 //            setCharges(new ArrayList<TimedItemFee>());
 //        }

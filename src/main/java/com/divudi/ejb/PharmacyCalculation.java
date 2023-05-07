@@ -102,7 +102,7 @@ public class PharmacyCalculation implements Serializable {
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findBySQL(temSql, hm);
+        tmp = getItemFacade().findByJpql(temSql, hm);
 
         if (tmp == null) {
             tmp = new ArrayList<>();
@@ -383,7 +383,7 @@ public class PharmacyCalculation implements Serializable {
 //
 //        double adjustedGrnQty;
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + ph.getBillItem().getReferanceBillItem().getId();
-//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 //
 //        Item poItem = po.getBillItem().getItem();
 //        Item grnItem = ph.getBillItem().getItem();
@@ -485,7 +485,7 @@ public class PharmacyCalculation implements Serializable {
 //        double oldPrice, newPrice = 0.0;
 //
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + i.getBillItem().getReferanceBillItem().getId();
-//        PharmaceuticalBillItem tmp = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+//        PharmaceuticalBillItem tmp = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 //
 //        oldPrice = tmp.getRetailRate();
 //        newPrice = i.getRetailRate();
@@ -598,7 +598,7 @@ public class PharmacyCalculation implements Serializable {
 
         hm.put("am", amp);
 
-        return getItemFacade().findBySQL(sql, hm);
+        return getItemFacade().findByJpql(sql, hm);
 
     }
 

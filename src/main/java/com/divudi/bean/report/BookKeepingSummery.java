@@ -823,8 +823,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -1079,7 +1077,6 @@ public class BookKeepingSummery implements Serializable {
 
             System.err.println("********************************");
             System.err.println("Category = " + category);
-            System.err.println("Item Name = " + item);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -1100,9 +1097,6 @@ public class BookKeepingSummery implements Serializable {
             } else if (countCancelled == 0) {
                 countCancelled = count;
             } ////// // System.out.println("cancelled = " + countCancelled);
-
-            System.err.println("Count " + count);
-            System.err.println("Fee Value " + r[3].toString());
             if (r[4] != null) {
             }
 
@@ -1814,8 +1808,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -2059,8 +2051,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -2314,9 +2304,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
-            System.err.println("Item Name = " + item);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -2538,9 +2525,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
-            System.err.println("Item Name = " + item);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -2792,9 +2776,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
-            System.err.println("Item Name = " + item);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
@@ -3119,9 +3100,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
-            System.err.println("Category = " + category);
-            System.err.println("Item Name = " + item);
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {

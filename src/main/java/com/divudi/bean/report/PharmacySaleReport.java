@@ -305,7 +305,7 @@ public class PharmacySaleReport implements Serializable {
                 + " group by s.itemBatch.item "
                 + " order by s.itemBatch.item.name";
 
-        nonMovingItems = itemFacade.findBySQL(j, m);
+        nonMovingItems = itemFacade.findByJpql(j, m);
         ////System.out.println("nonMovingItems = " + nonMovingItems);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk category(/faces/pharmacy/pharmacy_report_non_moving_items.xhtml)");
@@ -1118,7 +1118,6 @@ public class PharmacySaleReport implements Serializable {
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
 
-        System.err.println("From " + fd);
 
         m.put("fd", fd);
         m.put("td", td);
@@ -2612,7 +2611,6 @@ public class PharmacySaleReport implements Serializable {
 
         List<String1Value3> listRowSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
 
-        System.err.println(listRowSale);
 
         billedSummery.setBills(listRowSale);
 
@@ -4175,7 +4173,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and d.departmentType=:dtp ";
         HashMap hm = new HashMap();
         hm.put("dtp", departmentType);
-        return departmentFacade.findBySQL(sql, hm);
+        return departmentFacade.findByJpql(sql, hm);
 
     }
 
@@ -5636,7 +5634,6 @@ public class PharmacySaleReport implements Serializable {
 
         items = new ArrayList<>();
         for (Item i : ampsWithDealor) {
-            System.err.println("in");
             ////System.out.println("item = " + i.getName());
             List<Amp> allAmps = getAmpItems(i);
             ////System.out.println("amps = " + allAmps.size());
@@ -5689,7 +5686,7 @@ public class PharmacySaleReport implements Serializable {
                 + " or c.departmentType!=:dep2 )"
                 + " order by c.name ";
 
-        return ampFacade.findBySQL(sql, m);
+        return ampFacade.findByJpql(sql, m);
     }
 
     public List<Amp> getAllDealorItems() {
@@ -5725,7 +5722,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and i.item=:a ";
 
         m.put("a", a);
-        return ampFacade.findBySQL(sql, m);
+        return ampFacade.findByJpql(sql, m);
     }
 
     public List<Institution> getAllDealors() {
@@ -5749,7 +5746,7 @@ public class PharmacySaleReport implements Serializable {
 
         m.put("ins", ins);
 
-        return itemsDistributorsFacade.findBySQL(sql, m);
+        return itemsDistributorsFacade.findByJpql(sql, m);
     }
 
     public List<Institution> getItemDealors(Item i) {
@@ -5763,7 +5760,7 @@ public class PharmacySaleReport implements Serializable {
 
         m.put("item", i);
 
-        return institutionFacade.findBySQL(sql, m);
+        return institutionFacade.findByJpql(sql, m);
     }
 
     /**

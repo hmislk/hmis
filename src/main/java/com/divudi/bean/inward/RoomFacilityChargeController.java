@@ -88,7 +88,7 @@ public class RoomFacilityChargeController implements Serializable {
                     + " AND upper(rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
     }
@@ -107,7 +107,7 @@ public class RoomFacilityChargeController implements Serializable {
                     + " AND upper(rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, hm);
+            suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
     }
@@ -137,7 +137,7 @@ public class RoomFacilityChargeController implements Serializable {
 //            
 //            hm.put("rm", getCurrent().getRoom());
 //            hm.put("q", "%" + query.toUpperCase() + "%");
-//            suggestions = getFacade().findBySQL(sql, hm);
+//            suggestions = getFacade().findByJpql(sql, hm);
 //        } else {
 //            suggestions = completeRoom(query);
 //        }

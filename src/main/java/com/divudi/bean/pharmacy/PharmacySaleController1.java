@@ -465,7 +465,7 @@ public class PharmacySaleController1 implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -653,7 +653,7 @@ public class PharmacySaleController1 implements Serializable {
                 + "amp.vmp=:vmp "
                 + "and amp<>:a "
                 + "order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public void makeStockAsBillItemStock() {
