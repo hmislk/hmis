@@ -16,15 +16,7 @@ import com.divudi.facade.PatientSampleFacade;
 import com.divudi.facade.WebUserFacade;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ejb.EJB;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.enterprise.context.RequestScoped;
 import com.divudi.data.LoginRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
@@ -34,16 +26,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.json.JSONObject;
 
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
+import org.json.JSONException;
 
+import ca.uhn.hl7v2.model.*;
+import com.divudi.bean.common.util.EncryptionUtils;
+import java.util.Base64;
+import javax.ws.rs.HeaderParam;
 
 /**
  * REST Web Service
@@ -75,23 +65,96 @@ public class LimsMiddlewareController {
     public LimsMiddlewareController() {
     }
 
-    @Path("limsProcessAnalyzerMessage")
+    @Path("/limsProcessAnalyzerMessage")
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_PLAIN)
-    public String limsProcessAnalyzerMessage(@FormParam("username") String username,
-            @FormParam("password") String password,
-            @FormParam("message") String receivedMessage) {
-        System.out.println(" PrefsController.getPreference().getUrl()");
-        System.out.println("receivedMessage = " + receivedMessage);
-        System.out.println("username = " + username);
-        System.out.println("password = " + password);
-        if (!isValidCredentials(username, password)) {
-            throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response limsProcessAnalyzerMessage(String requestBody, @HeaderParam("Authorization") String authorizationHeader) {
+
+        System.out.println("limsProcessAnalyzerMessage");
+
+//        System.out.println("requestBody = " + requestBody);
+
+        try {
+            JSONObject requestJson = new JSONObject(requestBody);
+
+            String encodedCredentials = authorizationHeader.split(" ")[1];
+            String decodedCredentials = new String(Base64.getDecoder().decode(encodedCredentials.getBytes()));
+            String[] credentialsArray = decodedCredentials.split(":");
+            String username = credentialsArray[0];
+            String password = credentialsArray[1];
+
+            String encryptedMessage = requestJson.getString("message");
+            System.out.println("encryptedMessage = " + encryptedMessage.length());
+            String receivedMessage = EncryptionUtils.decrypt(encryptedMessage);
+            System.out.println("receivedMessage = " + receivedMessage.length());
+            if (!isValidCredentials(username, password)) {
+                return Response.status(Response.Status.UNAUTHORIZED).build();
+            }
+
+            String resultMessage = "";
+
+            if (thisIsOulR22Message(receivedMessage)) {
+                System.out.println("this is a OulR22 message");
+                try {
+                    resultMessage = generateACKMessage(receivedMessage);
+                } catch (Exception ex) {
+                    resultMessage = ex.getMessage();
+                }
+            } else {
+                System.out.println("other message than OulR22");
+            }
+
+            // Process the received message here and return the response message as a JSON
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("result", resultMessage);
+
+            return Response.ok(responseJson.toString()).build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+    }
+
+    public String generateACKMessage(String oulR22Message) {
+        // Parse the OUL^R22 message
+        System.out.println("generateACKMessage");
+        String[] segments = oulR22Message.split("\\r");
+        String messageControlID = "";
+        for (String segment : segments) {
+            String[] fields = segment.split("\\|");
+            if (fields[0].equals("MSH")) {
+                messageControlID = fields[9];
+            }
         }
 
-        // TODO: add your logic to process the receivedMessage and generate a response message
-        return "this is the result message";
+        // Build the ACK^R22 message
+        String ackMessage = "MSH|^~\\&|Sender|Receiver|Application|Facility|20220505120000||ACK^R22|" + messageControlID + "|P|2.5\r"
+                + "MSA|AA|" + messageControlID + "\r";
+
+        return ackMessage;
+    }
+
+    
+
+    public boolean thisIsOulR22Message(String message) {
+        try {
+            String[] segments = message.split("\r");
+            String messageType = "";
+            String messageStructure = "";
+            for (String segment : segments) {
+                String[] fields = segment.split("\\|");
+                if (fields[0].equals("MSH")) {
+                    messageType = fields[8];
+                } else if (fields[0].equals("MSA")) {
+                    messageStructure = fields[2];
+                }
+            }
+            return messageType.equals("OUL") && messageStructure.equals("R22");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private boolean isValidCredentials(String username, String password) {
