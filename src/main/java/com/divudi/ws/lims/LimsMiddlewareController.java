@@ -32,6 +32,8 @@ import org.json.JSONException;
 
 import ca.uhn.hl7v2.model.*;
 import com.divudi.bean.common.util.EncryptionUtils;
+import com.divudi.bean.common.util.HL7Utils;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
 
@@ -73,8 +75,6 @@ public class LimsMiddlewareController {
 
         System.out.println("limsProcessAnalyzerMessage");
 
-//        System.out.println("requestBody = " + requestBody);
-
         try {
             JSONObject requestJson = new JSONObject(requestBody);
 
@@ -84,76 +84,40 @@ public class LimsMiddlewareController {
             String username = credentialsArray[0];
             String password = credentialsArray[1];
 
-            String encryptedMessage = requestJson.getString("message");
-            System.out.println("encryptedMessage = " + encryptedMessage.length());
-            String receivedMessage = EncryptionUtils.decrypt(encryptedMessage);
-            System.out.println("receivedMessage = " + receivedMessage.length());
+            String base64EncodedMessage = requestJson.getString("message");
+            byte[] decodedMessageBytes = Base64.getDecoder().decode(base64EncodedMessage);
+            String receivedMessage = new String(decodedMessageBytes, StandardCharsets.UTF_8);
+            System.out.println("receivedMessage = " + receivedMessage);
+
             if (!isValidCredentials(username, password)) {
                 return Response.status(Response.Status.UNAUTHORIZED).build();
             }
 
             String resultMessage = "";
 
-            if (thisIsOulR22Message(receivedMessage)) {
-                System.out.println("this is a OulR22 message");
-                try {
-                    resultMessage = generateACKMessage(receivedMessage);
-                } catch (Exception ex) {
-                    resultMessage = ex.getMessage();
-                }
-            } else {
-                System.out.println("other message than OulR22");
+            String messageType = HL7Utils.findMessageType(receivedMessage);
+            System.out.println("messageType = " + messageType);
+
+            switch (messageType) {
+                case "OUL^R22^OUL_R22":
+                case "OUL^R22":
+                    resultMessage = HL7Utils.sendACK_R22ForoulR22(receivedMessage);
+                    break;
+                default:
+                    resultMessage = "Can not handle this message type > " + messageType;
             }
 
-            // Process the received message here and return the response message as a JSON
-            JSONObject responseJson = new JSONObject();
-            responseJson.put("result", resultMessage);
+            // Encode the resultMessage using Base64
+            String base64EncodedResultMessage = Base64.getEncoder().encodeToString(resultMessage.getBytes(StandardCharsets.UTF_8));
 
+            // Return the response message as a JSON
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("result", base64EncodedResultMessage);
+            System.out.println("resultMessage = " + resultMessage);
+            System.out.println("responseJson = " + responseJson);
             return Response.ok(responseJson.toString()).build();
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(Response.Status.BAD_REQUEST).build();
-        }
-    }
-
-    public String generateACKMessage(String oulR22Message) {
-        // Parse the OUL^R22 message
-        System.out.println("generateACKMessage");
-        String[] segments = oulR22Message.split("\\r");
-        String messageControlID = "";
-        for (String segment : segments) {
-            String[] fields = segment.split("\\|");
-            if (fields[0].equals("MSH")) {
-                messageControlID = fields[9];
-            }
-        }
-
-        // Build the ACK^R22 message
-        String ackMessage = "MSH|^~\\&|Sender|Receiver|Application|Facility|20220505120000||ACK^R22|" + messageControlID + "|P|2.5\r"
-                + "MSA|AA|" + messageControlID + "\r";
-
-        return ackMessage;
-    }
-
-    
-
-    public boolean thisIsOulR22Message(String message) {
-        try {
-            String[] segments = message.split("\r");
-            String messageType = "";
-            String messageStructure = "";
-            for (String segment : segments) {
-                String[] fields = segment.split("\\|");
-                if (fields[0].equals("MSH")) {
-                    messageType = fields[8];
-                } else if (fields[0].equals("MSA")) {
-                    messageStructure = fields[2];
-                }
-            }
-            return messageType.equals("OUL") && messageStructure.equals("R22");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
