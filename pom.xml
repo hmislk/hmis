@@ -140,6 +140,24 @@
         </dependency>
        
 
+        <!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-base -->
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-base</artifactId>
+            <version>2.3</version>
+            <type>jar</type>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v25 -->
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v25</artifactId>
+            <version>2.3</version>
+        </dependency>
+
+
+
+
         
        
             
@@ -322,5 +340,7 @@
             <name>ObjectDB Repository</name>
             <url>https://m2.objectdb.com</url>
         </repository>
+        
+
     </repositories>
 </project>
