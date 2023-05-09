@@ -166,8 +166,9 @@ public class LimsMiddlewareController {
 
     public List<String> getSampleIdentifiersFromqBPcQ11cQBP_Q11(String hl7Message) {
         List<String> sampleIdentifiers = new ArrayList<>();
-        String[] segments = hl7Message.split("\\r");
-
+        String[] segments = hl7Message.split("\r|\n");  // split by either \r or \n
+//earlier it was like below
+// String[] segments = hl7Message.split("\\r");
         for (String segment : segments) {
             if (segment.startsWith("QPD")) {
                 String[] fields = segment.split("\\|");
@@ -183,6 +184,8 @@ public class LimsMiddlewareController {
 
     private String generateRSP_K11ForQBP_Q11(String qbpMessage, List<MyPatient> patients) {
         System.out.println("generateRSP_K11ForQBP_Q11");
+        System.out.println("patients = " + patients);
+        System.out.println("qbpMessage = " + qbpMessage);
         String[] segments = qbpMessage.split("\\|");
 
         String msh1 = segments[0];
