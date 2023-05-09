@@ -173,8 +173,8 @@ public class LimsMiddlewareController {
                 String[] fields = segment.split("\\|");
                 if (fields.length >= 4) {
                     String sampleIdField = fields[3];
-                    String[] sampleIds = sampleIdField.split("\\^");
-                    sampleIdentifiers.addAll(Arrays.asList(sampleIds));
+                    // Add the sample ID directly to the list, no need to split
+                    sampleIdentifiers.add(sampleIdField);
                 }
             }
         }
@@ -263,7 +263,7 @@ public class LimsMiddlewareController {
 
             MyPatient p = new MyPatient();
             MySpeciman s = new MySpeciman();
-            MySampleTests t ;
+            MySampleTests t;
 
             p.setPatientId(ps.getPatient().getId() + "");
             p.setPatientName(ps.getPatient().getPerson().getNameWithTitle());
@@ -330,7 +330,6 @@ public class LimsMiddlewareController {
         m.put("ps", ps);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
-
 
     private boolean isValidCredentials(String username, String password) {
         // TODO: add your logic to validate the username and password
