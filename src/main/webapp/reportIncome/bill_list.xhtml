@@ -18,12 +18,9 @@
 
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <p:panel header="Data" >
-                                
                                 <p:commandButton value="Download" ajax="false" >
-                                    <p:dataExporter type="xlsx" target="tblBills" fileName="bill list" ></p:dataExporter>
+                                    <p:dataExporter target="tblBills" fileName="bill list" type="xlsx" ></p:dataExporter>
                                 </p:commandButton>
-                                
-                                
                                 <p:dataTable id="tblBills" 
                                              value="#{billSearch.bills}" 
                                              var="bill" rowKey="#{bill.id}"
@@ -45,7 +42,6 @@
                                     <p:column headerText="No" >
                                         <h:outputLabel value="#{n+1}"/>
                                     </p:column>
-                                    
                                     <p:column headerText="Bill No" sortBy="#{bill.insId}" filterBy="#{bill.insId}" >                                
                                         <p:commandLink id="billNo" ajax="false" value="#{bill.insId}" action="#{searchController.viewOPD(bill)}">
                                             <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
@@ -189,9 +185,6 @@
 
 
                                 </p:dataTable>
-                                
-                                
-                                
                             </p:panel>
 
                         </p:panelGrid>
