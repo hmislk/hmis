@@ -60,6 +60,9 @@ import ca.uhn.hl7v2.model.v25.message.RSP_K11;
 import ca.uhn.hl7v2.parser.DefaultModelClassFactory;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.parser.PipeParser;
+import com.divudi.entity.Department;
+import com.divudi.entity.lab.AnalyzerMessage;
+import com.divudi.entity.lab.Investigation;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -90,6 +93,9 @@ public class LimsMiddlewareController {
     WebUserFacade webUserFacade;
     @EJB
     ItemFacade itemFacade;
+
+    WebUser wu;
+    Department dept;
 
     /**
      * Creates a new instance of LIMS
@@ -136,6 +142,9 @@ public class LimsMiddlewareController {
                 case "QBP^Q11^QBP_Q11":
                     resultMessage = generateRSP_K11ForQBP_Q11(receivedMessage);
                     break;
+                case "OML^O33^OML_O33":
+                case "ORL^O34ORL_O34":
+                    break;
                 default:
                     System.err.println("messageType = " + messageType);
                     resultMessage = "Can not handle this message type > " + messageType;
@@ -154,8 +163,8 @@ public class LimsMiddlewareController {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
-    
-    public List<String> getSampleIdentifiers(String hl7Message) {
+
+    public List<String> getSampleIdentifiersFromqBPcQ11cQBP_Q11(String hl7Message) {
         List<String> sampleIdentifiers = new ArrayList<>();
         String[] segments = hl7Message.split("\\r");
 
@@ -171,94 +180,138 @@ public class LimsMiddlewareController {
         }
         return sampleIdentifiers;
     }
-    
-    public static String generateRSP_K11ForQBP_Q11(String qbpMessage) {
-    String[] segments = qbpMessage.split("\\|");
 
-    String msh1 = segments[0];
-    String msh4 = segments[3];
-    String msh5 = segments[4];
-    String msh7 = segments[6];
-    String msh9 = "RSP^K11^RSP_K11";
-    String msh10 = segments[9];
-    String msh11 = segments[10];
-    String msh12 = segments[11];
-    String msh15 = segments[14];
-    String msh16 = segments[15];
+    private String generateRSP_K11ForQBP_Q11(String qbpMessage, List<MyPatient> patients) {
+        System.out.println("generateRSP_K11ForQBP_Q11");
+        String[] segments = qbpMessage.split("\\|");
 
-    String qpd3 = segments[25];
-    String qpd4 = segments[26];
+        String msh1 = segments[0];
+        String msh4 = segments[3];
+        String msh5 = segments[4];
+        String msh7 = segments[6];
+        String msh9 = "RSP^K11^RSP_K11";
+        String msh10 = segments[9];
+        String msh11 = segments[10];
+        String msh12 = segments[11];
+        String msh15 = segments[14];
+        String msh16 = segments[15];
 
-    String rspMessage = "MSH|" + msh1 + "|"+ msh4 + "|" + msh5 + "|" + msh7 + "|"
-            + msh9 + "|" + msh10 + "|" + msh11 + "|" + msh12 + "|" + msh15 + "|" + msh16 + "|\r"
-            + "MSA|AA|" + qpd4 + "|\r"
-            + "QAK|0|OK|" + qpd3 + "|\r";
+        String qpd3 = segments[25];
+        String qpd4 = segments[26];
 
-    // extract sample IDs from QBP message
-    String[] qpdFields = qpd3.split("\\^");
-    String[] sampleIds = qpdFields[2].split("\\,");
+        String rspMessage = "MSH|" + msh1 + "|" + msh4 + "|" + msh5 + "|" + msh7 + "|"
+                + msh9 + "|" + msh10 + "|" + msh11 + "|" + msh12 + "|" + msh15 + "|" + msh16 + "|\r"
+                + "MSA|AA|" + qpd4 + "|\r"
+                + "QAK|0|OK|" + qpd3 + "|\r";
 
-    for (String sampleId : sampleIds) {
-        rspMessage += "SPM||" + sampleId + "|||||||||||||||||||||||\r";
+        // Add patient, specimen, and test details
+        for (MyPatient patient : patients) {
+            String patientName = patient.getPatientName();
+            String patientId = patient.getPatientId();
+
+            rspMessage += "PID|||" + patientId + "||" + patientName + "|\r";
+
+            for (MySpeciman specimen : patient.getMySpecimans()) {
+                String specimenName = specimen.getSpecimanName();
+
+                for (MySampleTests test : specimen.getMySampleTests()) {
+                    String sampleId = test.getSampleId();
+                    String testCode = test.getTestCode();
+                    String testName = test.getTestName();
+
+                    rspMessage += "SPM||" + sampleId + "|" + specimenName + "|||||||||||||||||||||||\r";
+                    rspMessage += "ORC|NW|||" + sampleId + "|\r";
+                    rspMessage += "OBR|||" + testCode + "^" + testName + "|||\r";
+                }
+            }
+        }
+
+        rspMessage += "ERR|||0|^^^^^^|200^No error^HL70357|\r";
+        System.out.println("rspMessage = " + rspMessage);
+        return rspMessage;
     }
 
-    rspMessage += "ERR|||0|^^^^^^|200^No error^HL70357|\r";
+    private String generateRSP_K11ForQBP_Q11(String qbpMessage) {
+        System.out.println("generateRSP_K11ForQBP_Q11");
+        List<MyPatient> mps = generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11(qbpMessage);
+        return generateRSP_K11ForQBP_Q11(qbpMessage, mps);
+    }
 
-    return rspMessage;
-}
+    private List<MyPatient> generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11(String qBPcQ11cQBP_Q11) {
+        System.out.println("generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11");
+        List<String> samplesIdentifiers = getSampleIdentifiersFromqBPcQ11cQBP_Q11(qBPcQ11cQBP_Q11);
+        System.out.println("samplesIdentifiers = " + samplesIdentifiers);
+        List<MyPatient> mps = new ArrayList<>();
+        for (String sid : samplesIdentifiers) {
 
-
-    public String processQBPCarotQ11CatorQBP_Q11(String messageString) {
-        
-        List<String> samplesIdentifiers = getSampleIdentifiers(messageString);
-        
-        for(String sid:samplesIdentifiers){
-            
-        }
-        
-        
-        try {
-            // Parse the incoming QBP^WOS^QBP_Q11 message
-            HapiContext context = new DefaultHapiContext();
-            Parser parser = context.getGenericParser();
-            QBP_Q11 qbpMessage = (QBP_Q11) parser.parse(messageString);
-
-            // Create a new RSP^WOS^RSP_K11 message
-            RSP_K11 rspMessage = new RSP_K11();
-
-            // Set MSH segment fields
-            MSH msh = rspMessage.getMSH();
-            msh.getFieldSeparator().setValue("|");
-            msh.getEncodingCharacters().setValue("^~\\&");
-            msh.getDateTimeOfMessage().getTime().setValue(new Date());
-            msh.getMessageType().getTriggerEvent().setValue("K11");
-            msh.getMessageType().getMessageStructure().setValue("RSP_K11");
-            msh.getMessageControlID().setValue(qbpMessage.getMSH().getMessageControlID().getValue());
-//            msh.getProcessingID().setValue("P");
-            msh.getVersionID().getVersionID().setValue("2.5.1");
-
-            // Set QAK segment fields
-            QAK qak = rspMessage.getQAK();
-            qak.getQueryResponseStatus().setValue("OK");
-            qak.getQueryTag().setValue(qbpMessage.getQPD().getQueryTag().getValue());
-
-            // Get sample ID from QBP^WOS^QBP_Q11 message
-            String sampleId = qbpMessage.getQPD().getMessageQueryName().getIdentifier().getValue();
-
-            // Get the list of MySampleOrder objects for the sample ID
-            List<MySampleOrder> sampleOrders = generateTestDetailsForSampleIDs(sampleId);
-
-            // Add MySampleOrder data to the RSP_K11 message
-            for (MySampleOrder order : sampleOrders) {
-
-                
+            PatientSample ps = patientSampleFromId(sid);
+            if (ps == null) {
+                System.out.println("No PS");
+                continue;
             }
 
-            return parser.encode(rspMessage);
-        } catch (HL7Exception ex) {
-            Logger.getLogger(LimsMiddlewareController.class.getName()).log(Level.SEVERE, null, ex);
-            return "Error " + ex.getMessage();
+            if (ps.getPatient() == null || ps.getPatient().getPerson() == null) {
+                System.out.println("No patient");
+                continue;
+            }
+
+            List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+            if (pscs == null || pscs.isEmpty()) {
+                System.out.println("PSCS NULL OR EMPTY");
+                continue;
+            }
+
+            MyPatient p = new MyPatient();
+            MySpeciman s = new MySpeciman();
+            MySampleTests t ;
+
+            p.setPatientId(ps.getPatient().getId() + "");
+            p.setPatientName(ps.getPatient().getPerson().getNameWithTitle());
+
+            for (PatientSampleComponant c : pscs) {
+                for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
+                    if (tii.getIxItemType() == InvestigationItemType.Value) {
+                        String sampleTypeName;
+                        String samplePriority;
+                        if (tii.getSample() != null) {
+                            sampleTypeName = tii.getSample().getName();
+                        } else {
+                            sampleTypeName = "serum";
+                        }
+                        if (tii.getItem().getPriority() != null) {
+                            samplePriority = tii.getItem().getPriority().toString();
+                        } else {
+                            samplePriority = (Priority.Routeine).toString();
+                        }
+                        MySpeciman ms = new MySpeciman();
+                        ms.setSpecimanName(sampleTypeName);
+                        if (tii.getItem().isHasMoreThanOneComponant()) {
+                            if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                                if (tii.getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                    t = new MySampleTests();
+                                    t.setTestCode(tii.getTest().getCode());
+                                    t.setTestName(tii.getTest().getName());
+                                    t.setSampleId(sid);
+                                    ms.getMySampleTests().add(t);
+                                }
+                            }
+                        } else {
+                            if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
+                                t = new MySampleTests();
+                                t.setTestCode(tii.getTest().getCode());
+                                t.setTestName(tii.getTest().getName());
+                                t.setSampleId(sid);
+                                ms.getMySampleTests().add(t);
+                            }
+                        }
+                        p.getMySpecimans().add(s);
+                    }
+                }
+            }
+            mps.add(p);
         }
+        System.out.println("mps = " + mps.size());
+        return mps;
     }
 
     public PatientSample patientSampleFromId(String id) {
@@ -278,59 +331,6 @@ public class LimsMiddlewareController {
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
-    public List<MySampleOrder> generateTestDetailsForSampleIDs(String strSampleId) {
-        PatientSample ps = patientSampleFromId(strSampleId);
-        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        return generateTestDetailsForSampleIDs(pscs, ps);
-    }
-
-    public List<MySampleOrder> generateTestDetailsForSampleIDs(List<PatientSampleComponant> limsPatientSampleComponants, PatientSample limsPatientSample) {
-        Set<String> temsss = new HashSet<>();
-        List<String> temss = new ArrayList<>();
-        if (limsPatientSample == null) {
-            return null;
-        }
-        List<MySampleOrder> os = new ArrayList<>();
-        for (PatientSampleComponant c : limsPatientSampleComponants) {
-            for (InvestigationItem tii : c.getPatientInvestigation().getInvestigation().getReportItems()) {
-                if (tii.getIxItemType() == InvestigationItemType.Value) {
-                    String sampleTypeName;
-                    String samplePriority;
-                    if (tii.getSample() != null) {
-                        sampleTypeName = tii.getSample().getName();
-                    }
-                    if (tii.getItem().getPriority() != null) {
-                        samplePriority = tii.getItem().getPriority().toString();
-                    } else {
-                        samplePriority = (Priority.Routeine).toString();
-                    }
-                    if (tii.getItem().isHasMoreThanOneComponant()) {
-                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            if (tii.getSampleComponent().equals(limsPatientSample.getInvestigationComponant())) {
-                                MySampleOrder o = new MySampleOrder();
-                                o.patientName = c.getPatient().getPerson().getNameWithTitle();
-                                o.patientId = c.getPatient().getId() + "";
-                                o.sampleId = c.getIdStr();
-                                o.testName = tii.getTest().getCode();
-                                os.add(o);
-                            }
-                        }
-                    } else {
-                        if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            MySampleOrder o = new MySampleOrder();
-                            o.patientName = c.getPatient().getPerson().getNameWithTitle();
-                            o.patientId = c.getPatient().getId() + "";
-                            o.sampleId = c.getIdStr();
-                            o.testName = tii.getTest().getCode();
-                            os.add(o);
-                        }
-                    }
-                }
-            }
-
-        }
-        return os;
-    }
 
     private boolean isValidCredentials(String username, String password) {
         // TODO: add your logic to validate the username and password
@@ -385,16 +385,100 @@ public class LimsMiddlewareController {
         return null;
     }
 
-    private static class MySampleOrder {
+    private static class MySampleTests {
 
-        String patientName;
-        String patientId;
-        String sampleId;
-        String testCode;
-        String testName;
+        private String sampleId;
+        private String testCode;
+        private String testName;
 
-        public MySampleOrder() {
+        public MySampleTests() {
         }
+
+        public String getSampleId() {
+            return sampleId;
+        }
+
+        public void setSampleId(String sampleId) {
+            this.sampleId = sampleId;
+        }
+
+        public String getTestCode() {
+            return testCode;
+        }
+
+        public void setTestCode(String testCode) {
+            this.testCode = testCode;
+        }
+
+        public String getTestName() {
+            return testName;
+        }
+
+        public void setTestName(String testName) {
+            this.testName = testName;
+        }
+
+    }
+
+    private static class MyPatient {
+
+        private String patientName;
+        private String patientId;
+        private List<MySpeciman> mySpecimans;
+
+        public String getPatientName() {
+            return patientName;
+        }
+
+        public void setPatientName(String patientName) {
+            this.patientName = patientName;
+        }
+
+        public String getPatientId() {
+            return patientId;
+        }
+
+        public void setPatientId(String patientId) {
+            this.patientId = patientId;
+        }
+
+        public List<MySpeciman> getMySpecimans() {
+            if (mySpecimans == null) {
+                mySpecimans = new ArrayList<>();
+            }
+            return mySpecimans;
+        }
+
+        public void setMySpecimans(List<MySpeciman> mySpecimans) {
+            this.mySpecimans = mySpecimans;
+        }
+
+    }
+
+    private static class MySpeciman {
+
+        private String specimanName;
+        private List<MySampleTests> mySampleTests;
+
+        public String getSpecimanName() {
+            return specimanName;
+        }
+
+        public void setSpecimanName(String specimanName) {
+            this.specimanName = specimanName;
+        }
+
+        public List<MySampleTests> getMySampleTests() {
+            if (mySampleTests == null) {
+                mySampleTests = new ArrayList<>();
+            }
+            return mySampleTests;
+        }
+
+        public void setMySampleTests(List<MySampleTests> mySampleTests) {
+            this.mySampleTests = mySampleTests;
+        }
+
     }
 
 }
