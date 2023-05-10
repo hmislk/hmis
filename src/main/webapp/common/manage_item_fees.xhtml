@@ -60,7 +60,7 @@
                                 <p:commandButton value="Add New Fee" process="acIx" 
                                                  onclick="PF('dlg').show();">   
                                 </p:commandButton>
-                                
+
                                 <p:commandButton value="Back" ajax="false"
                                                  action="#{viewController.backToPreviousPage()}">   
                                 </p:commandButton>
@@ -212,11 +212,18 @@
                                             <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:component('lblTotal')}" ></p:ajax>
                                         </p:inputText>
                                     </p:column>
-                                    <p:column headerText="Value for Foreigners" >
+                                    <p:column headerText="Value for Foreigner" >
                                         <p:inputText id="txtFfeeVal" value="#{f.ffee}" >
                                             <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFee(f)}"  update=":#{p:component('lblTotalF')}"></p:ajax>
                                         </p:inputText>
                                     </p:column>
+
+                                    <p:column headerText="Actrions" >
+                                        <p:commandButton value="Remove" action="#{itemFeeManager.removeFee()}" ajax="false" >
+                                            <f:setPropertyActionListener value="#{f}" target="#{itemFeeManager.removingFee}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </p:column>
+
 
 
 
