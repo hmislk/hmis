@@ -373,18 +373,19 @@ public class LimsMiddlewareController {
         return temFlag;
     }
 
-    
     public List<MyTestResult> getResultsFromOUL_R22Message(String message) {
-        System.out.println("getResultsFromOUL_R22Message");
+        System.err.println("getResultsFromOUL_R22Message");
         System.out.println("message = " + message);
+        System.out.println("message Length = " + message.length());
+        System.out.println("message Type = " + HL7Utils.findMessageType(message));
 
         List<MyTestResult> results = new ArrayList<>();
-        String[] segments = message.split("\\n");
+        String[] segments = message.split("\\r");
+        System.out.println("segments Length = " + segments.length);
 
         String sampleId = null;
 
         for (int i = 0; i < segments.length; i++) {
-            System.out.println("segments[i] = " + segments[i]);
             if (segments[i].startsWith("SPM")) {
                 String[] fields = segments[i].split("\\|");
                 sampleId = fields[2];
