@@ -395,7 +395,7 @@ public class PatientReportBean {
         dl = ii.getName();
         long ageInDays = commonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
-        List<InvestigationItemValueFlag> fs = getIivfFacade().findBySQL(sql);
+        List<InvestigationItemValueFlag> fs = iivfFacade.findBySQL(sql);
         for (InvestigationItemValueFlag f : fs) {
             if (f.getSex() == p.getPerson().getSex()) {
                 dl = f.getFlagMessage();
