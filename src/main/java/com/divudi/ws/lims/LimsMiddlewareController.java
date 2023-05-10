@@ -190,7 +190,7 @@ public class LimsMiddlewareController {
     public String sendACK_R22ForoulR22(String oulR22Message) {
         System.out.println("sendACK_R22ForoulR22");
         boolean success;
-        List<MyTestResult> myResults = getResultsFromOULcR22cOUL_R22Message(oulR22Message);
+        List<MyTestResult> myResults = getResultsFromOUL_R22Message(oulR22Message);
         System.out.println("myResults = " + myResults.size());
         success = addResultsFromMyResults(myResults);
         System.out.println("success = " + success);
@@ -282,19 +282,19 @@ public class LimsMiddlewareController {
         return generateRSP_K11ForQBP_Q11(qbpMessage, mps);
     }
 
-    private boolean addResultsFromMyResults(List<MyTestResult> mrs){
-        boolean ok=true;
-        for(MyTestResult mr:mrs){
+    private boolean addResultsFromMyResults(List<MyTestResult> mrs) {
+        boolean ok = true;
+        for (MyTestResult mr : mrs) {
             boolean thisOk = addResultToReport(mr.getSampleId(), mr.getTestStr(), mr.getResult(), mr.getUnit(), mr.getError());
             System.out.println("mr.getSampleId() = " + mr.getSampleId());
             System.out.println("thisOk = " + thisOk);
-            if(!thisOk){
-                ok=false;
+            if (!thisOk) {
+                ok = false;
             }
         }
         return ok;
     }
-    
+
     private boolean addResultToReport(String sampleId, String testStr, String result, String unit, String error) {
         System.out.println("addResultToReport");
         boolean temFlag = false;
@@ -373,23 +373,42 @@ public class LimsMiddlewareController {
         return temFlag;
     }
 
-    public List<MyTestResult> getResultsFromOULcR22cOUL_R22Message(String message) {
-        System.out.println("getResultsFromOULcR22cOUL_R22Message" );
+    
+    public List<MyTestResult> getResultsFromOUL_R22Message(String message) {
+        System.out.println("getResultsFromOUL_R22Message");
+        System.out.println("message = " + message);
+
         List<MyTestResult> results = new ArrayList<>();
-        String[] segments = message.split("\\|");
+        String[] segments = message.split("\\n");
+
+        String sampleId = null;
+
         for (int i = 0; i < segments.length; i++) {
-            if (segments[i].startsWith("OUL^R22")) {
-                String[] fields = segments[i].split("\\^");
-                String sampleId = fields[3];
-                String testStr = fields[4];
-                String result = fields[13];
-                String unit = fields[14];
-                String error = null;
-                if (fields.length > 15) {
-                    error = fields[15];
+            System.out.println("segments[i] = " + segments[i]);
+            if (segments[i].startsWith("SPM")) {
+                String[] fields = segments[i].split("\\|");
+                sampleId = fields[2];
+                System.out.println("Sample ID: " + sampleId);
+            } else if (segments[i].startsWith("OBX")) {
+                String[] fields = segments[i].split("\\|");
+
+                if (fields.length > 14) { //Ensure there are enough fields before trying to access them
+                    String[] testDetails = fields[3].split("\\^");
+                    String testCode = testDetails[0];
+                    System.out.println("testCode = " + testCode);
+                    String result = fields[5];
+                    System.out.println("result = " + result);
+                    String unit = fields[6];
+                    System.out.println("unit = " + unit);
+                    String error = null;
+                    if (fields.length > 15) {
+                        error = fields[15];
+                        System.out.println("error = " + error);
+                    }
+
+                    MyTestResult testResult = new MyTestResult(sampleId, testCode, result, unit, error);
+                    results.add(testResult);
                 }
-                MyTestResult testResult = new MyTestResult(sampleId, testStr, result, unit, error);
-                results.add(testResult);
             }
         }
         return results;
