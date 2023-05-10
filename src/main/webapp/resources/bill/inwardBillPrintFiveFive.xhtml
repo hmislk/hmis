@@ -153,8 +153,8 @@
                     </div>
                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" styleClass="ptnamePrinting" />
 
-                    
-                    
+
+
                     <div class="ptnamePrintingLabel">
                         <h:outputLabel value="Referred By"/>
                     </div>
@@ -163,7 +163,7 @@
                     </div>
                     <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" styleClass="ptnamePrinting" />
 
-                    
+
                     <div class="disLabel">
                         <h:outputLabel value="Discription"/>
                     </div>
@@ -267,7 +267,14 @@
                     </div>
 
 
-
+                    <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
+                        <div class="billline">
+                            <div style="width: 100%;text-align: center;font-size: 10px;">
+                                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                           />
+                            </div>
+                        </div>
+                    </h:panelGroup>
 
 
                 </h:panelGroup>
