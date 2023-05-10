@@ -63,6 +63,7 @@ import ca.uhn.hl7v2.parser.PipeParser;
 import com.divudi.entity.Department;
 import com.divudi.entity.lab.AnalyzerMessage;
 import com.divudi.entity.lab.Investigation;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -233,7 +234,7 @@ public class LimsMiddlewareController {
         System.out.println("rspMessage = " + rspMessage);
         return rspMessage;
     }
-
+ 
     private String generateRSP_K11ForQBP_Q11(String qbpMessage) {
         System.out.println("generateRSP_K11ForQBP_Q11");
         List<MyPatient> mps = generateListOfPatientSpecimanTestDataFromQBPcQ11cQBP_Q11(qbpMessage);
