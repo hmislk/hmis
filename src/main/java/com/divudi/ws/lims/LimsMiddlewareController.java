@@ -28,19 +28,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
 
-import org.json.JSONException;
 
 import ca.uhn.hl7v2.model.*;
-import com.divudi.bean.common.util.EncryptionUtils;
 import com.divudi.bean.common.util.HL7Utils;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import javax.ws.rs.HeaderParam;
 import ca.uhn.hl7v2.*;
-import ca.uhn.hl7v2.model.*;
-import ca.uhn.hl7v2.model.v25.datatype.*;
-import ca.uhn.hl7v2.model.v25.message.*;
-import ca.uhn.hl7v2.model.v25.segment.*;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.lab.Priority;
 import com.divudi.entity.lab.InvestigationItem;
@@ -48,25 +42,13 @@ import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.lab.PatientSampleComponant;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import ca.uhn.hl7v2.*;
-import ca.uhn.hl7v2.model.*;
-import ca.uhn.hl7v2.model.v25.datatype.*;
-import ca.uhn.hl7v2.model.v25.message.*;
-import ca.uhn.hl7v2.model.v25.segment.*;
-import ca.uhn.hl7v2.model.v25.segment.OBR;
-import ca.uhn.hl7v2.model.v25.message.RSP_K11;
-import ca.uhn.hl7v2.parser.DefaultModelClassFactory;
 import ca.uhn.hl7v2.parser.Parser;
-import ca.uhn.hl7v2.parser.PipeParser;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemValueType;
-import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
-import com.divudi.entity.lab.AnalyzerMessage;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -77,14 +59,14 @@ import com.divudi.facade.InvestigationItemValueFlagFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * REST Web Service
@@ -387,7 +369,8 @@ public class LimsMiddlewareController {
             System.out.println("segments[i] = " + segments[i]);
             if (segments[i].startsWith("SPM")) {
                 String[] fields = segments[i].split("\\|");
-                sampleId = fields[2];
+                String temSampleId = fields[2];
+                sampleId = extractNumber(temSampleId);
                 System.out.println("Sample ID: " + sampleId);
             } else if (segments[i].startsWith("OBX")) {
                 String[] fields = segments[i].split("\\|");
@@ -412,6 +395,16 @@ public class LimsMiddlewareController {
             }
         }
         return results;
+    }
+    
+    public static String extractNumber(String str) {
+        Pattern pattern = Pattern.compile("(\\d+)");
+        Matcher matcher = pattern.matcher(str);
+        StringBuilder number = new StringBuilder();
+        while (matcher.find()) {
+            number.append(matcher.group());
+        }
+        return number.toString();
     }
 
     public class MyTestResult {
