@@ -28,7 +28,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.json.JSONObject;
 
-
 import ca.uhn.hl7v2.model.*;
 import com.divudi.bean.common.util.HL7Utils;
 import java.nio.charset.StandardCharsets;
@@ -59,6 +58,8 @@ import com.divudi.facade.InvestigationItemValueFlagFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -145,7 +146,15 @@ public class LimsMiddlewareController {
                     resultMessage = sendACK_R22ForoulR22(receivedMessage);
                     break;
                 case "QBP^Q11^QBP_Q11":
-                    resultMessage = generateRSP_K11ForQBP_Q11(receivedMessage);
+//                    resultMessage = generateRSP_K11ForQBP_Q11(receivedMessage);
+                    String tempUnitId = generateUniqueIDForK11FromQ11(receivedMessage);
+                    System.out.println("tempUnitId = " + tempUnitId);
+                    resultMessage = createK11FromQ11(resultMessage,
+                            tempUnitId,
+                            "oHIMS",
+                            loggedDepartment.getName(),
+                            loggedInstitution.getName(),
+                            "sample id");
                     break;
                 case "OML^O33^OML_O33":
                 case "ORL^O34ORL_O34":
@@ -167,6 +176,64 @@ public class LimsMiddlewareController {
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+    }
+
+    public static String extractSampleIDFromK11(String uniqueID) {
+        // The sample ID is the part of the unique ID before the colon
+        String[] parts = uniqueID.split(":");
+
+        // Return the first part (sample ID)
+        return parts[0];
+    }
+
+    public static String generateUniqueIDForK11FromQ11(String inputMessage) {
+        String[] segments = inputMessage.split("\\|");
+        String sampleID = "";
+
+        // Find the sampleID in the QPD segment
+        for (int i = 0; i < segments.length; i++) {
+            if (segments[i].equals("WOS^Work Order Step^IHE_LABTF")) {
+                sampleID = segments[i + 1];
+                break;
+            }
+        }
+
+        // Create a timestamp
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String timestamp = now.format(formatter);
+
+        // Return the unique ID
+        return sampleID + ":" + timestamp;
+    }
+
+    public static String createK11FromQ11(String inputMessage, String messageControlID, String sendingApplication,
+            String sendingFacility, String receivingApplication, String receivingFacility) {
+        System.out.println("Create K11 from Q11");
+
+        // Extract Message Control ID from input message
+        int startIndex = inputMessage.indexOf("QBP^Q11^QBP_Q11");
+        System.out.println("startIndex = " + startIndex);
+        if (startIndex == -1) {
+            System.out.println("Couldn't find the string 'QBP^Q11^QBP_Q11' in the input message");
+            return null;
+        }
+        int inputMessageControlIDIndex = inputMessage.indexOf("|", startIndex) + 1;
+        System.out.println("inputMessageControlIDIndex = " + inputMessageControlIDIndex);
+        int endIndex = inputMessage.indexOf("|", inputMessageControlIDIndex);
+        System.out.println("endIndex = " + endIndex);
+        String inputMessageControlID = inputMessage.substring(inputMessageControlIDIndex, endIndex);
+        System.out.println("inputMessageControlID = " + inputMessageControlID);
+
+        String responseMessageTemplate = "MSH|^~\\&|%s|%s|%s|%s||RSP^K11^RSP_K11|%s|P|2.5.1|||ER|NE||UNICODE UTF-8|||LAB27^IHE"
+                + "\nMSA|AA|%s"
+                + "\nQAK|%s|OK|WOS^Work Order Step^IHE_LABTF"
+                + "\nQPD|WOS^Work Order Step^IHE_LABTF|%s|SPM01";
+
+        System.out.println("responseMessageTemplate = " + responseMessageTemplate);
+
+        return String.format(responseMessageTemplate, sendingApplication, sendingFacility, receivingApplication,
+                receivingFacility, messageControlID, inputMessageControlID, messageControlID, messageControlID);
     }
 
     public String sendACK_R22ForoulR22(String oulR22Message) {
@@ -286,37 +353,41 @@ public class LimsMiddlewareController {
         } catch (NumberFormatException e) {
             sid = 0l;
         }
+        System.out.println("sid = " + sid);
         PatientSample ps = patientSampleFromId(sid);
-
+        System.out.println("ps = " + ps);
         if (ps == null) {
             return temFlag;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-
+        System.out.println("pscs = " + pscs);
         if (pscs == null) {
             return temFlag;
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        System.out.println("ptixs = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
             return temFlag;
         }
         for (PatientInvestigation pi : ptixs) {
+            System.out.println("pi = " + pi);
             List<PatientReport> prs = new ArrayList<>();
-            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("dim")) {
-                PatientReport tpr;
-                tpr = getUnapprovedPatientReport(pi);
-                if (tpr == null) {
-                    tpr = createNewPatientReport(pi, pi.getInvestigation());
-                }
-                prs.add(tpr);
+            PatientReport tpr;
+            tpr = getUnapprovedPatientReport(pi);
+            if (tpr == null) {
+                tpr = createNewPatientReport(pi, pi.getInvestigation());
             }
+            prs.add(tpr);
+
             for (PatientReport rtpr : prs) {
+                System.out.println("rtpr = " + rtpr);
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
-                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
+                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
                         String test;
                         test = priv.getInvestigationItem().getResultCode();
-
+                        System.out.println("test = " + test);
                         if (test == null || test.trim().equals("")) {
                             test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
                         }
@@ -397,7 +468,7 @@ public class LimsMiddlewareController {
         }
         return results;
     }
-    
+
     public static String extractNumber(String str) {
         Pattern pattern = Pattern.compile("(\\d+)");
         Matcher matcher = pattern.matcher(str);
