@@ -78,6 +78,9 @@ import java.util.regex.Pattern;
 @RequestScoped
 public class LimsMiddlewareController {
 
+    //FOR UNIT TESTING
+    
+    
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -103,6 +106,9 @@ public class LimsMiddlewareController {
     private Department loggedDepartment;
     private Institution loggedInstitution;
 
+    
+    
+    
     /**
      * Creates a new instance of LIMS
      */
