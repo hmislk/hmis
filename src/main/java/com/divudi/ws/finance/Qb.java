@@ -377,12 +377,14 @@ public class Qb {
 //            }
 //        }
         if (b.getDepartment() != null) {
-            if (b.getDepartment().getPrintingName() != null) {
-                departnemtName = b.getDepartment().getPrintingName();
-            } else {
-                departnemtName = b.getDepartment().getName();
-            }
+//            if (b.getDepartment().getPrintingName() != null) {
+//                departnemtName = b.getDepartment().getPrintingName();
+//            } else {
+//                departnemtName = b.getDepartment().getName();
+//            }
+            departnemtName = b.getDepartment().getName();
         }
+        
         headerJo.put("SupplierName", supplierName);
 
         headerJo.put("billDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
@@ -833,7 +835,7 @@ public class Qb {
 //            if (b.getBillType() != null) {
 //                headerJo.put("billType", b.getBillType().toString());
 //            }
-            bijo.put("account", "Doctor Channelling Fee");
+            bijo.put("account", "Doctor Fee");
             bijo.put("amount", amount);
             bija.put(bijo);
         }

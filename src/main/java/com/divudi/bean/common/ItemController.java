@@ -5,24 +5,32 @@ import com.divudi.data.FeeType;
 import com.divudi.data.ItemType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.entity.BillExpense;
+import com.divudi.entity.CashierItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
+import com.divudi.entity.MedicalPackage;
 import com.divudi.entity.Packege;
 import com.divudi.entity.Service;
 import com.divudi.entity.ServiceCategory;
 import com.divudi.entity.ServiceSubCategory;
+import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.inward.InwardService;
 import com.divudi.entity.inward.TheatreService;
+import com.divudi.entity.inward.TimedItem;
+import com.divudi.entity.lab.Antibiotic;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.ItemForItem;
 import com.divudi.entity.lab.Machine;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Atm;
+import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
+import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.ItemFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.util.JsfUtil;
@@ -102,11 +110,34 @@ public class ItemController implements Serializable {
 
     ReportKeyWord reportKeyWord;
 
-    public void fillInvestigations() {
-        String j;
-        j = "select i from Investigation i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(j);
+    public String navigateToListAllItems() {
+        allItems = null;
+        return "/item/reports/item_list";
     }
+
+    public void fillInvestigations() {
+        fillItemsByType(Investigation.class);
+    }
+
+    public void fillServices() {
+        fillItemsByType(Service.class);
+    }
+
+    public void fillMedicines() {
+        fillItemsByType(PharmaceuticalItem.class);
+    }
+
+    public void fillItemsByType(Class it) {
+        String jpql = "select i "
+                + " from Item i"
+                + " where type(i)=:scs "
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("scs", it);
+        allItems = getFacade().findByJpql(jpql, m);
+    }
+
+   
 
     public String toManageItemdIndex() {
         return "/admin/admin_items_index";

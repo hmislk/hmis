@@ -170,6 +170,13 @@ public class CommonController implements Serializable {
         s = d.format(date);
         return s;
     }
+    
+    public static String formatDate(Date date, String formatString) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
 
     public String getDateFormat2(Date date) {
         String s = "";

@@ -155,7 +155,7 @@ public class LimsMiddlewareController {
 //                    resultMessage = generateRSP_K11ForQBP_Q11(receivedMessage);
                     String tempUnitId = generateUniqueIDForK11FromQ11(receivedMessage);
                     System.out.println("tempUnitId = " + tempUnitId);
-                    resultMessage = createK11FromQ11(resultMessage,
+                    resultMessage = createK11FromQ11(receivedMessage,
                             tempUnitId,
                             "oHIMS",
                             loggedDepartment.getName(),
