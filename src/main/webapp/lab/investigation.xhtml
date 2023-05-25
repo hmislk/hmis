@@ -13,7 +13,7 @@
                     <h:form id="form"  >
                         <p:growl />
 
-                        <p:panel  >
+                        <p:panel>
 
                             <f:facet name="header" >
                                 <h:outputLabel value="Manage Investigations" styleClass="alignTop" ></h:outputLabel>
@@ -27,27 +27,29 @@
                                 <p:commandButton ajax="false" value="Back" action="/lab/administration" style="float: right;"></p:commandButton>
                             </f:facet>
 
-                            <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop" >
+                            <div class="row" >
+                                <div class="col-md-4" >
+                                    <p:panelGrid columns="1" class="w-100 alignTop" >
 
-                                <h:panelGrid columns="1" >
+                                        <h:panelGrid id="gpSelect" columns="1" class="w-100"  >
+                                            <p:panel  class="w-100 d-flex flex-column" >
+                                                <f:facet name="header" >
+                                                    <h:outputText value="Search" ></h:outputText>
+                                                    <p:commandButton id="btnAdd"  value="Add New" 
+                                                                     action="#{investigationController.prepareAdd()}" 
+                                                                     styleClass="buttons" onclick="onSubmitButton();" style="float: right;"
+                                                                     process="@this" update="gpDetail">
+                                                    </p:commandButton>
+                                                </f:facet>
 
-                                    <h:panelGrid id="gpSelect" columns="1"  >
-                                        <p:panel>
-                                            <f:facet name="header" >
-                                                <h:outputText value="Search" ></h:outputText>
-                                                <p:commandButton id="btnAdd"  value="Add New" 
-                                                                 action="#{investigationController.prepareAdd()}" 
-                                                                 styleClass="buttons" onclick="onSubmitButton();" style="float: right;"
-                                                                 process="@this" update="gpDetail">
-                                                </p:commandButton>
-                                            </f:facet>
 
-                                            <h:panelGrid id="gpSelectText" >
                                                 <p:autoComplete id="acIx" value="#{investigationController.current}" 
                                                                 completeMethod="#{investigationController.completeInvest}"
                                                                 var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
                                                                 placeholder="Search here ..." 
-                                                                size="10" maxResults="10">
+                                                                class="w-100 align-self-start"
+                                                                inputStyleClass="w-100"
+                                                                maxResults="10">
                                                     <f:ajax event="itemSelect" execute="@this" render="detailPan" ></f:ajax>
                                                     <p:column headerText="Name" >
                                                         <h:outputLabel value="#{ix.name}" ></h:outputLabel>
@@ -67,126 +69,123 @@
                                                 </p:autoComplete>
 
 
-                                            </h:panelGrid>
-
-                                            <h:panelGrid id="gpSelectButtons" columns="3"  >
 
                                                 <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                             return false;" action="#{investigationController.delete()}"  value="Delete"  >
                                                 </p:commandButton>
-                                            </h:panelGrid>
 
 
-                                        </p:panel>
-                                    </h:panelGrid>
 
-                                    <p:panel header="Links" style="white-space: nowrap;" >
-                                        <h:panelGrid columns="2" >
-                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportFormat()}" value="Report Format - Single Item" target="_blank"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportFormatMoveAll()}" value="Report Format - All Items" target="_blank"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="#{investigationController.toEditReportCalculations()}" value="Calculations" target="_blank"></p:commandLink><br/>
-                                            <p:commandLink ajax="false" action="#{investigationController.toReplaceableIxs()}" value="Replaceable Ix" target="_blank"></p:commandLink><br/>
-
-
-                                            <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
-
-
-                                            <p:commandLink ajax="false" action="#{investigationController.toLoadParentInvestigation()}" 
-                                                           value="Load Parent Investigation" ></p:commandLink><br/>
-
-                                            
-                                            <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
-                                                           ajax="false" action="#{investigationController.toEditFees()}"
-                                                           actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
-                                                           value="Prices" ></p:commandLink><br/>
-
-                                            <p:commandLink ajax="false" action="/lab/investigation_list" value="List of Investigations" target="_blank"></p:commandLink><br/>
-
+                                            </p:panel>
                                         </h:panelGrid>
-                                    </p:panel>
-                                </h:panelGrid>
+
+                                        <p:panel header="Links" style="white-space: nowrap;" >
+                                            <h:panelGrid columns="2" >
+                                                <p:commandLink ajax="false" action="#{investigationController.toEditReportFormat()}" value="Report Format - Single Item" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.toEditReportFormatMoveAll()}" value="Report Format - All Items" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.toEditReportCalculations()}" value="Calculations" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.toReplaceableIxs()}" value="Replaceable Ix" target="_blank"></p:commandLink><br/>
 
 
-                                <p:panel id="detailPan" >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Details - " ></h:outputLabel>
-                                        <h:outputLabel value="Active" rendered="#{!investigationController.current.inactive}" style="color: green;"></h:outputLabel>
-                                        <h:outputLabel value="Inactive" rendered="#{investigationController.current.inactive}" style="color: red;"></h:outputLabel>
-                                        <p:commandButton style="float:right;" id="btnSave" value="Save" 
-                                                         action="#{investigationController.saveSelected()}" styleClass="buttons" 
-                                                         ajax="false"  >
-                                        </p:commandButton>
-                                        <p:defaultCommand target="btnSave"/>
-                                    </f:facet>
-                                    <h:panelGrid id="gpDetail" columns="1">
+                                                <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
 
-                                        <p:tabView style="min-width: 500px;" >
+
+                                                <p:commandLink ajax="false" action="#{investigationController.toLoadParentInvestigation()}" 
+                                                               value="Load Parent Investigation" ></p:commandLink><br/>
+
+
+                                                <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
+                                                               ajax="false" action="#{investigationController.toEditFees()}"
+                                                               actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
+                                                               value="Prices" ></p:commandLink><br/>
+
+                                                <p:commandLink ajax="false" action="/lab/investigation_list" value="List of Investigations" target="_blank"></p:commandLink><br/>
+
+                                            </h:panelGrid>
+                                        </p:panel>
+                                    </p:panelGrid>
+                                </div>
+                                <div class="col-md-8" >
+
+                                    <p:panel id="detailPan" >
+                                        <f:facet name="header" >
+                                            <h:outputLabel value="Details - " ></h:outputLabel>
+                                            <h:outputLabel value="Active" rendered="#{!investigationController.current.inactive}" style="color: green;"></h:outputLabel>
+                                            <h:outputLabel value="Inactive" rendered="#{investigationController.current.inactive}" style="color: red;"></h:outputLabel>
+                                            <p:commandButton style="float:right;" id="btnSave" value="Save" 
+                                                             action="#{investigationController.saveSelected()}" styleClass="buttons" 
+                                                             ajax="false"  >
+                                            </p:commandButton>
+                                            <p:defaultCommand target="btnSave"/>
+                                        </f:facet>
+
+                                        <p:tabView class="w-100" id="gpDetail" >
                                             <p:tab title="Basic Details">
-                                                <p:panelGrid id="gpDetailText" columns="2" style="white-space: nowrap;">
+                                                <p:panelGrid id="gpDetailText" columns="2" style="white-space: nowrap;" class="w-100">
                                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                                    <p:inputText styleClass="longText" autocomplete="off" id="txtName" 
+                                                    <p:inputText class="w-100"  autocomplete="off" id="txtName" 
                                                                  value="#{investigationController.current.name}"  ></p:inputText>
                                                     <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                                    <p:inputText styleClass="longText pdInputText" autocomplete="off" id="txtAddress"  
+                                                    <p:inputText class="w-100"  autocomplete="off" id="txtAddress"  
                                                                  value="#{investigationController.current.printName}"  ></p:inputText>
                                                     <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                                    <p:inputText styleClass="longText pdInputText" autocomplete="off" id="txtFullName"  
+                                                    <p:inputText class="w-100"  autocomplete="off" id="txtFullName"  
                                                                  value="#{investigationController.current.fullName}"  ></p:inputText>
                                                     <p:outputLabel value="Item Code"/>
-                                                    <p:inputText autocomplete="off" value="#{investigationController.current.code}"/>
+                                                    <p:inputText class="w-100" autocomplete="off" value="#{investigationController.current.code}"/>
 
                                                     <h:outputText value="Category" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbCat"   value="#{investigationController.current.investigationCategory}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbCat"   value="#{investigationController.current.investigationCategory}" >
                                                         <f:selectItem itemLabel="Please select a category"/>
                                                         <f:selectItems value="#{investigationCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     </p:selectOneMenu>
                                                     <h:outputText value="Sample" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbSample"  value="#{investigationController.current.sample}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbSample"  value="#{investigationController.current.sample}" >
                                                         <f:selectItem itemLabel="Please select a Sample"/>
                                                         <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                                                     </p:selectOneMenu>
                                                     <h:outputText value="Container" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbTube"  value="#{investigationController.current.investigationTube}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbTube"  value="#{investigationController.current.investigationTube}" >
                                                         <f:selectItem itemLabel="Please select a Tube"/>
                                                         <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     </p:selectOneMenu>
                                                     <h:outputText value="Analyzer" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbmac"   value="#{investigationController.current.machine}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbmac"   value="#{investigationController.current.machine}" >
                                                         <f:selectItem itemLabel="Please select a Machine"/>
                                                         <f:selectItems value="#{machineController.items}" var="m" itemLabel="#{m.name}" itemValue="#{m}" />
                                                     </p:selectOneMenu>
                                                     <h:outputText value="Priority" ></h:outputText>
-                                                    <p:selectOneMenu value="#{investigationController.current.priority}"    >
+                                                    <p:selectOneMenu class="w-100" value="#{investigationController.current.priority}"    >
                                                         <f:selectItem itemLabel="Not Set" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
                                                     </p:selectOneMenu>
                                                     <p:outputLabel value="Report Category"/>
-                                                    <p:selectOneMenu value="#{investigationController.current.reportType}" >                               
+                                                    <p:selectOneMenu class="w-100" value="#{investigationController.current.reportType}" >                               
                                                         <f:selectItem itemLabel="General" itemValue="General"/>
                                                         <f:selectItem itemLabel="Microbiology" itemValue="Microbiology"/>
                                                         <f:selectItem itemLabel="Pathology / Haematology" itemValue="PathologyOrHaematology"/>
                                                     </p:selectOneMenu>
                                                     <h:outputText value="Report Format" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbRf"  value="#{investigationController.current.reportFormat}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
                                                         <f:selectItems value="#{reportFormatController.items}" var="rf1" itemLabel="#{rf1.name}" itemValue="#{rf1}" />
                                                     </p:selectOneMenu>
 
 
                                                     <h:outputText value="Serial Numbers" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbSerial"  
+                                                    <p:selectOneMenu class="w-100" id="cmbSerial"  
                                                                      value="#{investigationController.current.sessionNumberType}" >
                                                         <f:selectItem itemLabel="Please select a Session Number Generation Strategy"/>
                                                         <f:selectItems value="#{enumController.sessionNumberTypes}" />
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Worksheet" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbWs"  value="#{investigationController.current.worksheet }" >
+                                                    <p:selectOneMenu class="w-100" id="cmbWs"  value="#{investigationController.current.worksheet }" >
                                                         <f:selectItem itemLabel="By Values"/>
                                                         <f:selectItems value="#{reportFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
                                                     </p:selectOneMenu>
 
                                                     <h:outputText value="Inward Category" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbInward" value="#{investigationController.current.inwardChargeType}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbInward" value="#{investigationController.current.inwardChargeType}" >
                                                         <f:selectItem itemLabel="Please select Charge"/>
                                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                     </p:selectOneMenu>
@@ -201,7 +200,7 @@
                                                         <p:ajax event="change" process="@this" update="reportedAsIx" />
                                                     </p:selectBooleanCheckbox>
                                                     <h:panelGroup >
-                                                        <p:autoComplete converter="ixcon"
+                                                        <p:autoComplete class="w-100" converter="ixcon"
                                                                         disabled="#{!investigationController.reportedAs}"
                                                                         widgetVar="aIx2" id="reportedAsIx"
                                                                         forceSelection="true"
@@ -222,13 +221,13 @@
                                                     </h:panelGroup>
 
                                                     <h:outputText value="Institution" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbIns"    value="#{investigationController.current.institution}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbIns"    value="#{investigationController.current.institution}" >
                                                         <f:selectItem itemLabel="Please select a Institution"/>
                                                         <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                         <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                                                     </p:selectOneMenu>
                                                     <h:outputText value="Department" ></h:outputText>
-                                                    <p:selectOneMenu id="cmbDep"  value="#{investigationController.current.department}" >
+                                                    <p:selectOneMenu class="w-100" id="cmbDep"  value="#{investigationController.current.department}" >
                                                         <f:selectItem itemLabel="Please select a Department"/>
                                                         <f:selectItems value="#{investigationController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                     </p:selectOneMenu>
@@ -301,16 +300,11 @@
 
 
 
+                                    </p:panel>
+                                </div>
+                            </div>
 
 
-                                    </h:panelGrid>
-                                </p:panel>
-
-
-
-
-
-                            </h:panelGrid>
 
                         </p:panel>
                     </h:form>

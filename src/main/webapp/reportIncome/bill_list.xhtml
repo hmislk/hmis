@@ -18,6 +18,9 @@
 
                         <p:panelGrid columns="2" styleClass="alignTop" >
                             <p:panel header="Data" >
+                                <p:commandButton value="Download" ajax="false" >
+                                    <p:dataExporter target="tblBills" fileName="bill list" type="xlsx" ></p:dataExporter>
+                                </p:commandButton>
                                 <p:dataTable id="tblBills" 
                                              value="#{billSearch.bills}" 
                                              var="bill" rowKey="#{bill.id}"
