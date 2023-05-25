@@ -78,6 +78,9 @@ import java.util.regex.Pattern;
 @RequestScoped
 public class LimsMiddlewareController {
 
+    //FOR UNIT TESTING
+    
+    
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -103,6 +106,9 @@ public class LimsMiddlewareController {
     private Department loggedDepartment;
     private Institution loggedInstitution;
 
+    
+    
+    
     /**
      * Creates a new instance of LIMS
      */
@@ -149,7 +155,7 @@ public class LimsMiddlewareController {
 //                    resultMessage = generateRSP_K11ForQBP_Q11(receivedMessage);
                     String tempUnitId = generateUniqueIDForK11FromQ11(receivedMessage);
                     System.out.println("tempUnitId = " + tempUnitId);
-                    resultMessage = createK11FromQ11(resultMessage,
+                    resultMessage = createK11FromQ11(receivedMessage,
                             tempUnitId,
                             "oHIMS",
                             loggedDepartment.getName(),

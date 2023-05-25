@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Bill;
@@ -245,6 +246,7 @@ public class Lims {
         jSONObject.put("barcode", ps.getIdStr());
         jSONObject.put("insid", ps.getBill().getInsId());
         jSONObject.put("deptid", ps.getBill().getDeptId());
+        jSONObject.put("billDate", CommonController.formatDate(ps.getBill().getCreatedAt(),"dd MMM yy"));
         jSONObject.put("id", ps.getIdStr());
         List<Item> tpiics = testComponantsForPatientSample(ps);
         String tbis = "";
