@@ -787,7 +787,13 @@ public abstract class AbstractFacade<T> {
             }
             //    //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
-        return qry.getSingleResult();
+        T t;
+        try {
+            t = qry.getSingleResult();
+        } catch (Exception e) {
+            t = null;
+        }
+        return t;
     }
 
     public <U> List<T> testMethod(U[] a, Collection<U> all) {

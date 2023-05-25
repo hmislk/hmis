@@ -40,7 +40,7 @@
                             <p:column headerText="Code" style="width: 5px!important;" >
                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                             </p:column>
-                            <f:ajax execute="@this" event="blur" render="#{p:component('tab')}" listener="#{storeTransferRequestController.onEdit()}"/>
+                            <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storeTransferRequestController.onEdit()}"/>
                         </p:autoComplete>
                         <p:inputText autocomplete="off" value="#{storeTransferRequestController.currentBillItem.tmpQty}"/>
                         <p:commandButton value="Add Item" action="#{storeTransferRequestController.addItem}" ajax="false"/>
