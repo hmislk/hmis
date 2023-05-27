@@ -594,8 +594,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         String sql;
         Map m = new HashMap();
         m.put("d", getSessionController().getLoggedUser().getDepartment());
-        double d = 0.0;
-        m.put("s", d);
         qry = qry.replaceAll("\n", "");
         qry = qry.replaceAll("\r", "");
         m.put("n", "%" + qry.toUpperCase().trim() + "%");
