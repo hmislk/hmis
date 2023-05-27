@@ -86,12 +86,12 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class PharmacySaleController implements Serializable {
+public class PharmacySaleWithoutStockController implements Serializable {
 
     /**
      * Creates a new instance of PharmacySaleController
      */
-    public PharmacySaleController() {
+    public PharmacySaleWithoutStockController() {
     }
 
     @Inject
@@ -332,8 +332,7 @@ public class PharmacySaleController implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
-    @Inject
-    UserStockController userStockController;
+    
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
@@ -347,8 +346,6 @@ public class PharmacySaleController implements Serializable {
     private void setZeroToQty(BillItem tmp) {
         tmp.setQty(0.0);
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
-
-        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
     }
 
     //Check when edititng Qty
@@ -372,17 +369,6 @@ public class PharmacySaleController implements Serializable {
         }
 
         //Check Is There Any Other User using same Stock
-        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
-
-            setZeroToQty(tmp);
-            onEditCalculation(tmp);
-
-            UtilityController.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
-            return true;
-        }
-
-        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
-
         onEditCalculation(tmp);
 
         return false;
@@ -543,7 +529,6 @@ public class PharmacySaleController implements Serializable {
     }
 
     public void resetAll() {
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
         searchController.createPreBillsNotPaid();
@@ -551,7 +536,6 @@ public class PharmacySaleController implements Serializable {
     }
     
     public void prepareForNewPharmacyRetailBill() {
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
         clearBill();
         clearBillItem();
         searchController.createPreBillsNotPaid();
@@ -616,11 +600,10 @@ public class PharmacySaleController implements Serializable {
         qry = qry.replaceAll("\r", "");
         m.put("n", "%" + qry.toUpperCase().trim() + "%");
 
-        //////System.out.println("qry = " + qry);
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n or upper(i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire desc";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire desc";
         }
 
         items = getStockFacade().findBySQL(sql, m, 20);
@@ -812,27 +795,8 @@ public class PharmacySaleController implements Serializable {
             UtilityController.addErrorMessage("Quentity Zero?");
             return;
         }
-        if (getQty() > getStock().getStock()) {
-            errorMessage = "No sufficient stocks.";
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
-            return;
-        }
+        
 
-        if (checkItemBatch()) {
-            errorMessage = "This batch is already there in the bill.";
-            UtilityController.addErrorMessage("Already added this item batch");
-            return;
-        }
-//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-//            errorMessage = "This batch is Expire With in 31 Days.";
-//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return;
-//        }
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            UtilityController.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
-            return;
-        }
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         billItem.getPharmaceuticalBillItem().setStock(stock);
@@ -847,13 +811,7 @@ public class PharmacySaleController implements Serializable {
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        if (getUserStockContainer().getId() == null) {
-            saveUserStockContainer();
-        }
-
-        UserStock us = saveUserStock(billItem);
-        billItem.setTransUserStock(us);
-
+       
         calculateAllRatesNew();
 
         calTotalNew();
@@ -862,29 +820,7 @@ public class PharmacySaleController implements Serializable {
         setActiveIndex(1);
     }
 
-    private void saveUserStockContainer() {
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
-
-        getUserStockContainer().setCreater(getSessionController().getLoggedUser());
-        getUserStockContainer().setCreatedAt(new Date());
-
-        getUserStockContainerFacade().create(getUserStockContainer());
-
-    }
-
-    private UserStock saveUserStock(BillItem tbi) {
-        UserStock us = new UserStock();
-        us.setStock(tbi.getPharmaceuticalBillItem().getStock());
-        us.setUpdationQty(tbi.getQty());
-        us.setCreater(getSessionController().getLoggedUser());
-        us.setCreatedAt(new Date());
-        us.setUserStockContainer(getUserStockContainer());
-        getUserStockFacade().create(us);
-
-        getUserStockContainer().getUserStocks().add(us);
-
-        return us;
-    }
+    
 
     public void calculateAllRatesNew() {
         ////////System.out.println("calculating all rates");
@@ -1015,17 +951,6 @@ public class PharmacySaleController implements Serializable {
         if (getPaymentSchemeController().errorCheckPaymentMethod(getPaymentMethod(), paymentMethodData)) {
             return true;
         }
-
-//        if (getPaymentScheme().getPaymentMethod() == PaymentMethod.Cash) {
-//            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//        }
         return false;
     }
 
@@ -1141,8 +1066,7 @@ public class PharmacySaleController implements Serializable {
             double qtyL = tbi.getPharmaceuticalBillItem().getQtyInUnit() + tbi.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
             //Deduct Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
-                    Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+            boolean returnFlag = true;
 
             if (!returnFlag) {
                 tbi.setTmpQty(0);
@@ -1153,7 +1077,6 @@ public class PharmacySaleController implements Serializable {
             getPreBill().getBillItems().add(tbi);
         }
 
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
 
         calculateAllRates();
 
@@ -1335,17 +1258,7 @@ public class PharmacySaleController implements Serializable {
             return;
         }
 
-        if (!getPreBill().getBillItems().isEmpty()) {
-            for (BillItem bi : getPreBill().getBillItems()) {
-                ////System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
-                ////System.out.println("bi.getQty() = " + bi.getQty());
-                if (bi.getQty() <= 0.0) {
-                    ////System.out.println("bi.getQty() = " + bi.getQty());
-                    UtilityController.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
-                    return;
-                }
-            }
-        }
+        
 
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
@@ -1364,9 +1277,7 @@ public class PharmacySaleController implements Serializable {
             }
         }
 
-//        if (checkAllBillItem()) {
-//            return;
-//        }
+
         if (errorCheckForSaleBill()) {
             return;
         }
@@ -1386,7 +1297,7 @@ public class PharmacySaleController implements Serializable {
         Payment p = createPayment(getSaleBill(), paymentMethod);
         saveSaleBillItems(tmpBillItems, p);
 
-//        getPreBill().getCashBillsPre().add(getSaleBill());
+
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
@@ -1458,20 +1369,11 @@ public class PharmacySaleController implements Serializable {
             return;
         }
 
-        //Checking User Stock Entity
-        if (!userStockController.isStockAvailable(getStock(), getQty(), getSessionController().getLoggedUser())) {
-            errorMessage = "Sorry Already Other User Try to Billing This Stock You Cant Add";
-            return;
-        }
 
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-        //User Stock Container Save if New Bill
-        userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
-        UserStock us = userStockController.saveUserStock(billItem, getSessionController().getLoggedUser(), getUserStockContainer());
-        billItem.setTransUserStock(us);
 
         calculateAllRates();
 
@@ -1513,9 +1415,7 @@ public class PharmacySaleController implements Serializable {
     private StockHistoryFacade stockHistoryFacade;
 
     public void removeBillItem(BillItem b) {
-        userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
         getPreBill().getBillItems().remove(b.getSearialNo());
-
         calTotal();
     }
 

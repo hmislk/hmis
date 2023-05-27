@@ -154,6 +154,7 @@ public enum Privileges {
     PharmacyOrderApproval,
     PharmacyOrderCancellation,
     PharmacySale,
+    PharmacySaleWithoutStock,
     PharmacySaleReprint,
     PharmacySaleCancel,
     PharmacySaleReturn,
