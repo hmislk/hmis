@@ -1208,31 +1208,23 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
     public void settleBillWithPay() {
         Date startTime = new Date();
-
         Date fromDate = null;
         Date toDate = null;
-
         editingQty = null;
-
         if (sessionController.getLoggedPreference().isCheckPaymentSchemeValidation()) {
             if (getPaymentScheme() == null) {
                 UtilityController.addErrorMessage("Please select Payment Scheme");
                 return;
             }
         }
-
         if (getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Please select Payment Method");
             return;
         }
-
         if (getPreBill().getBillItems().isEmpty()) {
             UtilityController.addErrorMessage("Please add items to the bill.");
             return;
         }
-
-        
-
         if (getPaymentMethod() == PaymentMethod.Credit) {
             if (toStaff == null && toInstitution == null) {
                 UtilityController.addErrorMessage("Please select Staff Member under welfare or credit company.");
@@ -1249,44 +1241,29 @@ public class PharmacySaleWithoutStockController implements Serializable {
                 }
             }
         }
-
-
         if (errorCheckForSaleBill()) {
             return;
         }
-
         calculateAllRates();
-
         Patient pt = savePatient();
         getPreBill().setPaidAmount(getPreBill().getTotal());
-
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
-
         savePreBillFinally(pt);
         savePreBillItemsFinally(tmpBillItems);
-
         saveSaleBill();
         Payment p = createPayment(getSaleBill(), paymentMethod);
         saveSaleBillItems(tmpBillItems, p);
-
-
         getBillFacade().edit(getPreBill());
-
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
-
         getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
-
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             UtilityController.addSuccessMessage("User Credit Updated");
         }
-
         resetAll();
         billPreview = true;
-        
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Sale Bills/sale(/faces/pharmacy/pharmacy_bill_retail_sale.xhtml)");
-
     }
 
     public String newPharmacyRetailSale() {
