@@ -348,29 +348,8 @@ public class PharmacySaleWithoutStockController implements Serializable {
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
     }
 
-    //Check when edititng Qty
-    //
     public boolean onEdit(BillItem tmp) {
-        //Cheking Minus Value && Null
-        if (tmp.getQty() <= 0 || tmp.getQty() == null) {
-            setZeroToQty(tmp);
-            onEditCalculation(tmp);
-
-            UtilityController.addErrorMessage("Can not enter a minus value");
-            return true;
-        }
-
-        if (tmp.getQty() > tmp.getPharmaceuticalBillItem().getStock().getStock()) {
-            setZeroToQty(tmp);
-            onEditCalculation(tmp);
-
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
-            return true;
-        }
-
-        //Check Is There Any Other User using same Stock
         onEditCalculation(tmp);
-
         return false;
     }
 
@@ -378,14 +357,10 @@ public class PharmacySaleWithoutStockController implements Serializable {
         if (tmp == null) {
             return;
         }
-
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
         tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
-
         calculateBillItemForEditing(tmp);
-
         calTotal();
-
     }
 
     public void editQty(BillItem bi) {
@@ -1451,19 +1426,12 @@ public class PharmacySaleWithoutStockController implements Serializable {
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////System.out.println("calculateBillItemForEditing");
-        //////System.out.println("bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("calculateItemForEditingFailedBecause of null");
             return;
         }
-        //////System.out.println("bi.getQty() = " + bi.getQty());
-        //////System.out.println("bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        //////System.out.println("bi.getNetValue() = " + bi.getNetValue());
-
     }
 
 //    Checked
