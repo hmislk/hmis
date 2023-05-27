@@ -719,10 +719,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         if (getQty() == null) {
             qty = 0.0;
         }
-        if (getQty() > getStock().getStock()) {
-            UtilityController.addErrorMessage("No Sufficient Stocks?");
-            return;
-        }
+        
 
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);

@@ -19,6 +19,7 @@
                         <div class="row" >
                             <div class="col-md-12" >
                                 <h:panelGroup id="panelError" >
+                                    <p:growl ></p:growl>
                                     <h:panelGroup  
                                         rendered="#{pharmacySaleWithoutStockController.errorMessage ne null}">
                                         <p:outputLabel value="#{pharmacySaleWithoutStockController.errorMessage}" ></p:outputLabel>
