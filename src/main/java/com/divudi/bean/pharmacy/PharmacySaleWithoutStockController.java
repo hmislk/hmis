@@ -101,7 +101,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
     SessionController sessionController;
     @Inject
     SearchController searchController;
-    
+
     @Inject
     CommonController commonController;
 ////////////////////////
@@ -182,21 +182,30 @@ public class PharmacySaleWithoutStockController implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
-    
-    public String navigateToPharmacySaleWithoutStocks(){
+
+    public String navigateToPharmacySaleWithoutStocks() {
         prepareForPharmacySaleWithoutStock();
         return "/pharmacy/pharmacy_sale_without_stock";
     }
-    
-    private void prepareForPharmacySaleWithoutStock(){
+
+    private void prepareForPharmacySaleWithoutStock() {
         clearBill();
         clearBillItem();
-        searchController.createPreBillsNotPaid();
+        creteNewPreBill();
+    }
+
+    private void creteNewPreBill() {
+        preBill = new PreBill();
+        preBill.setBillType(BillType.PharmacySaleWithoutStock);
+        preBill.setDepartment(sessionController.getDepartment());
+        preBill.setInstitution(sessionController.getInstitution());
+        preBill.setFromInstitution(sessionController.getInstitution());
+        preBill.setFromDepartment(sessionController.getDepartment());
+        preBill.setCreatedAt(new Date());
         billPreview = false;
     }
 
     public void searchPatientListener() {
-        //  createPaymentSchemeItems();
         calculateAllRates();
     }
 
@@ -211,10 +220,10 @@ public class PharmacySaleWithoutStockController implements Serializable {
         this.paymentMethodData = paymentMethodData;
     }
 
-    public void prepareNewPharmacyBillForMembers(){
+    public void prepareNewPharmacyBillForMembers() {
         clearNewBillForMembers();
     }
-    
+
     public void clearForNewBill() {
         selectedAlternative = null;
         preBill = null;
@@ -243,7 +252,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         editingQty = null;
         cashPaidStr = null;
     }
-    
+
     public void clearNewBillForMembers() {
         selectedAlternative = null;
         preBill = null;
@@ -261,7 +270,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         searchedPatient = null;
         yearMonthDay = null;
         patientTabId = "tabSearchPt";
-        patientSearchTab =1;
+        patientSearchTab = 1;
         strTenderedValue = "";
         billPreview = false;
         replaceableStocks = null;
@@ -331,8 +340,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         hm.put("itm", bItem);
         return getBillItemFacade().findDoubleByJpql(sql, hm);
     }
-
-    
 
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
@@ -509,7 +516,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         searchController.createPreBillsNotPaid();
         billPreview = false;
     }
-    
+
     public void prepareForNewPharmacyRetailBill() {
         clearBill();
         clearBillItem();
@@ -525,7 +532,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         return "/pharmacy/pharmacy_bill_retail_sale";
     }
 
-    
     public List<Item> completeRetailSaleItems(String qry) {
         Map m = new HashMap<>();
         List<Item> items;
@@ -719,7 +725,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         if (getQty() == null) {
             qty = 0.0;
         }
-        
 
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -765,8 +770,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
             UtilityController.addErrorMessage("Quentity Zero?");
             return;
         }
-        
-
 
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
         billItem.getPharmaceuticalBillItem().setStock(stock);
@@ -781,7 +784,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
 
-       
         calculateAllRatesNew();
 
         calTotalNew();
@@ -789,8 +791,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         clearBillItem();
         setActiveIndex(1);
     }
-
-    
 
     public void calculateAllRatesNew() {
         ////////System.out.println("calculating all rates");
@@ -938,7 +938,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         getPreBill().setToInstitution(toInstitution);
 
         getPreBill().setComments(comment);
-        
+
         getPreBill().setCashPaid(cashPaid);
         getPreBill().setBalance(balance);
 
@@ -951,8 +951,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
         getBillBean().setPaymentMethodData(getPreBill(), getPaymentMethod(), getPaymentMethodData());
 
-        
-        
         String insId = getBillNumberBean().institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
         getPreBill().setInsId(insId);
         String deptId = getBillNumberBean().departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
@@ -987,7 +985,7 @@ public class PharmacySaleWithoutStockController implements Serializable {
         getSaleBill().setDeptId(getPreBill().getDeptId());
         getSaleBill().setInvoiceNumber(getPreBill().getInvoiceNumber());
         getSaleBill().setComments(comment);
-        
+
         getSaleBill().setCashPaid(cashPaid);
         getSaleBill().setBalance(balance);
 
@@ -1046,7 +1044,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
             getPreBill().getBillItems().add(tbi);
         }
-
 
         calculateAllRates();
 
@@ -1316,11 +1313,9 @@ public class PharmacySaleWithoutStockController implements Serializable {
             return;
         }
 
-
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
-
 
         calculateAllRates();
 
@@ -1504,11 +1499,10 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
         MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
 
-        
         //MEMBERSHIPSCHEME DISCOUNT
         if (membershipScheme != null && discountAllowed) {
             PaymentMethod tpm = getPaymentMethod();
-            if(tpm==null){
+            if (tpm == null) {
                 tpm = PaymentMethod.Cash;
             }
             PriceMatrix priceMatrix = getPriceMatrixController().getPharmacyMemberDisCount(tpm, membershipScheme, getSessionController().getDepartment(), bi.getItem().getCategory());
@@ -1629,7 +1623,6 @@ public class PharmacySaleWithoutStockController implements Serializable {
         searchedPatient = null;
         toInstitution = null;
         toStaff = null;
-//        billItems = null;
         patientTabId = "tabNewPt";
         cashPaid = 0;
         netTotal = 0;
@@ -1646,14 +1639,13 @@ public class PharmacySaleWithoutStockController implements Serializable {
 
     private void clearBillItem() {
         billItem = null;
-//        removingBillItem = null;
         editingBillItem = null;
         qty = null;
         stock = null;
         editingQty = null;
         errorMessage = "";
     }
-    
+
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
         calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
@@ -2043,6 +2035,5 @@ public class PharmacySaleWithoutStockController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
 
 }
