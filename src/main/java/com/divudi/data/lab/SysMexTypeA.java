@@ -2,36 +2,51 @@ package com.divudi.data.lab;
 
 public class SysMexTypeA {
 
+    int startNum = 0;
     private String inputString;
-    private int lengthOfMessage = 298;
-    private int sampleIdStart = 121;
-    private int sampleIdEnd = 130;
-    private int wbcStart = 66;
-    private int wbcEnd = 72;
-    private int rbcStart = 74;
-    private int rbcEnd = 79;
-    private int hgbStart = 81;
-    private int hgbEnd = 85;
-    private int hctStart = 87;
-    private int hctEnd = 91;
-    private int mcvStart = 93;
-    private int mcvEnd = 97;
-    private int mchStart = 99;
-    private int mchEnd = 103;
-    private int mchcStart = 105;
-    private int mchcEnd = 109;
-    private int pltStart = 125;
-    private int pltEnd = 130;
-    private int lymphPercentStart = 150;
-    private int lymphPercentEnd = 155;
-    private int monoPercentStart = 157;
-    private int monoPercentEnd = 162;
-    private int neutPercentStart = 164;
-    private int neutPercentEnd = 169;
-    private int eoPercentStart = 171;
-    private int eoPercentEnd = 176;
-    private int basoPercentStart = 178;
-    private int basoPercentEnd = 183;
+    private int lengthOfMessage = startNum + 251;
+    private int sampleIdStart = startNum + 30;
+    private int sampleIdEnd = sampleIdStart + 15;
+    private int wbcStart = sampleIdEnd + 0;
+    private int wbcEnd = wbcStart + 6;
+    private int rbcStart = wbcEnd + 0;
+    private int rbcEnd = rbcStart + 5;
+    private int hgbStart = rbcEnd + 0;
+    private int hgbEnd = hgbStart + 5;
+    private int hctStart = hgbEnd + 0;
+    private int hctEnd = hctStart + 5;
+    private int mcvStart = hctEnd + 0;
+    private int mcvEnd = mcvStart + 5;
+    private int mchStart = mcvEnd + 0;
+    private int mchEnd = mchStart + 5;
+    private int mchcStart = mchEnd + 0;
+    private int mchcEnd = mchcStart + 5;
+    private int pltStart = mchcEnd + 0;
+    private int pltEnd = pltStart + 5;
+    private int lymphPercentStart = pltEnd + 0;
+    private int lymphPercentEnd = lymphPercentStart + 5;
+    private int monoPercentStart = lymphPercentEnd + 0;
+    private int monoPercentEnd = monoPercentStart + 5;
+    private int neutPercentStart = monoPercentEnd + 0;
+    private int neutPercentEnd = neutPercentStart + 5;
+    private int eoPercentStart = neutPercentEnd + 0;
+    private int eoPercentEnd = eoPercentStart + 5;
+    private int basoPercentStart = eoPercentEnd + 0;
+    private int basoPercentEnd = basoPercentStart + 5;
+
+    double wbcDiv = 1000;
+    double rbcDiv = 1000;
+    double hgbDiv = 100;
+    double hctDiv = 100;
+    double mcvDiv = 100;
+    double mchDiv = 100;
+    double mchcDiv = 100;
+    double pltDiv = 10;
+    double lymphPercentageDiv = 100;
+    double monoPercentageDiv = 100;
+    double neutPercentageDiv = 100;
+    double eoPercentageDiv = 100;
+    double basoPercentageDiv = 100;
 
     private long sampleId;
     private double wbc;
@@ -52,20 +67,61 @@ public class SysMexTypeA {
         if (inputString.length() == lengthOfMessage) {
             try {
                 String sampleIdString = inputString.substring(sampleIdStart, sampleIdEnd).trim();
+                System.out.println("sampleIdString = " + sampleIdString);
                 sampleId = Long.parseLong(sampleIdString.replaceAll("\\s+", ""));
-                wbc = Double.parseDouble(inputString.substring(wbcStart, wbcEnd));
-                rbc = Double.parseDouble(inputString.substring(rbcStart, rbcEnd));
-                hgb = Double.parseDouble(inputString.substring(hgbStart, hgbEnd));
-                hct = Double.parseDouble(inputString.substring(hctStart, hctEnd));
-                mcv = Double.parseDouble(inputString.substring(mcvStart, mcvEnd));
-                mch = Double.parseDouble(inputString.substring(mchStart, mchEnd));
-                mchc = Double.parseDouble(inputString.substring(mchcStart, mchcEnd));
-                plt = Double.parseDouble(inputString.substring(pltStart, pltEnd));
-                lymphPercentage = Double.parseDouble(inputString.substring(lymphPercentStart, lymphPercentEnd));
-                monoPercentage = Double.parseDouble(inputString.substring(monoPercentStart, monoPercentEnd));
-                neutPercentage = Double.parseDouble(inputString.substring(neutPercentStart, neutPercentEnd));
-                eoPercentage = Double.parseDouble(inputString.substring(eoPercentStart, eoPercentEnd));
-                basoPercentage = Double.parseDouble(inputString.substring(basoPercentStart, basoPercentEnd));
+
+                String webStr = inputString.substring(wbcStart, wbcEnd);
+                System.out.println("webStr = " + webStr);
+                wbc = Double.parseDouble(webStr) / wbcDiv;
+
+                String rbcStr = inputString.substring(rbcStart, rbcEnd);
+                System.out.println("rbcStr = " + rbcStr);
+                rbc = Double.parseDouble(rbcStr) / rbcDiv;
+
+                String hgbStr = inputString.substring(hgbStart, hgbEnd);
+                System.out.println("hgbStr = " + hgbStr);
+                hgb = Double.parseDouble(hgbStr) / hgbDiv;
+
+                String hctStr = inputString.substring(hctStart, hctEnd);
+                System.out.println("hctStr = " + hctStr);
+                hct = Double.parseDouble(hctStr) / hctDiv;
+
+                String mcvStr = inputString.substring(mcvStart, mcvEnd);
+                System.out.println("mcvStr = " + mcvStr);
+                mcv = Double.parseDouble(mcvStr) / mcvDiv;
+
+                String mchStr = inputString.substring(mchStart, mchEnd);
+                System.out.println("mchStr = " + mchStr);
+                mch = Double.parseDouble(mchStr) / mchDiv;
+
+                String mchcStr = inputString.substring(mchcStart, mchcEnd);
+                System.out.println("mchcStr = " + mchcStr);
+                mchc = Double.parseDouble(mchcStr) / mchcDiv;
+
+                String pltStr = inputString.substring(pltStart, pltEnd);
+                System.out.println("pltStr = " + pltStr);
+                plt = Double.parseDouble(pltStr) / pltDiv;
+
+                String lymphPercentageStr = inputString.substring(lymphPercentStart, lymphPercentEnd);
+                System.out.println("lymphPercentageStr = " + lymphPercentageStr);
+                lymphPercentage = Double.parseDouble(lymphPercentageStr) / lymphPercentageDiv;
+
+                String monoPercentageStr = inputString.substring(monoPercentStart, monoPercentEnd);
+                System.out.println("monoPercentageStr = " + monoPercentageStr);
+                monoPercentage = Double.parseDouble(monoPercentageStr) / monoPercentageDiv;
+
+                String neutPercentageStr = inputString.substring(neutPercentStart, neutPercentEnd);
+                System.out.println("neutPercentageStr = " + neutPercentageStr);
+                neutPercentage = Double.parseDouble(neutPercentageStr) / neutPercentageDiv;
+
+                String eoPercentageStr = inputString.substring(eoPercentStart, eoPercentEnd);
+                System.out.println("eoPercentageStr = " + eoPercentageStr);
+                eoPercentage = Double.parseDouble(eoPercentageStr) / eoPercentageDiv;
+
+                String basoPercentageStr = inputString.substring(basoPercentStart, basoPercentEnd);
+                System.out.println("basoPercentageStr = " + basoPercentageStr);
+                basoPercentage = Double.parseDouble(basoPercentageStr) / basoPercentageDiv;
+
             } catch (NumberFormatException e) {
                 // Error in parsing double values
                 wbc = 0.0;
@@ -86,9 +142,9 @@ public class SysMexTypeA {
     }
 
     public boolean isCorrectReport() {
-        return (wbc != 0.0 && rbc != 0.0 && hgb != 0.0 && hct != 0.0 && mcv != 0.0 && mch != 0.0 && mchc != 0.0 &&
-                plt != 0.0 && lymphPercentage != 0.0 && monoPercentage != 0.0 && neutPercentage != 0.0 &&
-                eoPercentage != 0.0 && basoPercentage != 0.0);
+        return (wbc != 0.0 && rbc != 0.0 && hgb != 0.0 && hct != 0.0 && mcv != 0.0 && mch != 0.0 && mchc != 0.0
+                && plt != 0.0 && lymphPercentage != 0.0 && monoPercentage != 0.0 && neutPercentage != 0.0
+                && eoPercentage != 0.0 && basoPercentage != 0.0);
     }
 
     public String getInputString() {
@@ -97,6 +153,7 @@ public class SysMexTypeA {
 
     public void setInputString(String inputString) {
         this.inputString = inputString;
+        populateValuesFromInputString();
     }
 
     public int getLengthOfMessage() {
@@ -443,5 +500,4 @@ public class SysMexTypeA {
         this.basoPercentage = basoPercentage;
     }
 
-    
 }
