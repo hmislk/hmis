@@ -2,9 +2,9 @@ package com.divudi.data.lab;
 
 public class SysMexTypeA {
 
-    int startNum = 0;
+    int startNum = 1;
     private String inputString;
-    private int lengthOfMessage = startNum + 251;
+    private int lengthOfMessage = 253;
     private int sampleIdStart = startNum + 30;
     private int sampleIdEnd = sampleIdStart + 15;
     private int wbcStart = sampleIdEnd + 0;
@@ -41,7 +41,7 @@ public class SysMexTypeA {
     double mcvDiv = 100;
     double mchDiv = 100;
     double mchcDiv = 100;
-    double pltDiv = 10;
+    double pltDiv = 0.01;
     double lymphPercentageDiv = 100;
     double monoPercentageDiv = 100;
     double neutPercentageDiv = 100;
@@ -64,81 +64,81 @@ public class SysMexTypeA {
     private double basoPercentage;
 
     public void populateValuesFromInputString() {
-        if (inputString.length() == lengthOfMessage) {
-            try {
-                String sampleIdString = inputString.substring(sampleIdStart, sampleIdEnd).trim();
-                System.out.println("sampleIdString = " + sampleIdString);
-                sampleId = Long.parseLong(sampleIdString.replaceAll("\\s+", ""));
 
-                String webStr = inputString.substring(wbcStart, wbcEnd);
-                System.out.println("webStr = " + webStr);
-                wbc = Double.parseDouble(webStr) / wbcDiv;
+        try {
+            String sampleIdString = inputString.substring(sampleIdStart, sampleIdEnd).trim();
+            System.out.println("sampleIdString = " + sampleIdString);
+            sampleId = Long.parseLong(sampleIdString.replaceAll("\\s+", ""));
 
-                String rbcStr = inputString.substring(rbcStart, rbcEnd);
-                System.out.println("rbcStr = " + rbcStr);
-                rbc = Double.parseDouble(rbcStr) / rbcDiv;
+            String webStr = inputString.substring(wbcStart, wbcEnd);
+            System.out.println("webStr = " + webStr);
+            wbc = Double.parseDouble(webStr) / wbcDiv;
 
-                String hgbStr = inputString.substring(hgbStart, hgbEnd);
-                System.out.println("hgbStr = " + hgbStr);
-                hgb = Double.parseDouble(hgbStr) / hgbDiv;
+            String rbcStr = inputString.substring(rbcStart, rbcEnd);
+            System.out.println("rbcStr = " + rbcStr);
+            rbc = Double.parseDouble(rbcStr) / rbcDiv;
 
-                String hctStr = inputString.substring(hctStart, hctEnd);
-                System.out.println("hctStr = " + hctStr);
-                hct = Double.parseDouble(hctStr) / hctDiv;
+            String hgbStr = inputString.substring(hgbStart, hgbEnd);
+            System.out.println("hgbStr = " + hgbStr);
+            hgb = Double.parseDouble(hgbStr) / hgbDiv;
 
-                String mcvStr = inputString.substring(mcvStart, mcvEnd);
-                System.out.println("mcvStr = " + mcvStr);
-                mcv = Double.parseDouble(mcvStr) / mcvDiv;
+            String hctStr = inputString.substring(hctStart, hctEnd);
+            System.out.println("hctStr = " + hctStr);
+            hct = Double.parseDouble(hctStr) / hctDiv;
 
-                String mchStr = inputString.substring(mchStart, mchEnd);
-                System.out.println("mchStr = " + mchStr);
-                mch = Double.parseDouble(mchStr) / mchDiv;
+            String mcvStr = inputString.substring(mcvStart, mcvEnd);
+            System.out.println("mcvStr = " + mcvStr);
+            mcv = Double.parseDouble(mcvStr) / mcvDiv;
 
-                String mchcStr = inputString.substring(mchcStart, mchcEnd);
-                System.out.println("mchcStr = " + mchcStr);
-                mchc = Double.parseDouble(mchcStr) / mchcDiv;
+            String mchStr = inputString.substring(mchStart, mchEnd);
+            System.out.println("mchStr = " + mchStr);
+            mch = Double.parseDouble(mchStr) / mchDiv;
 
-                String pltStr = inputString.substring(pltStart, pltEnd);
-                System.out.println("pltStr = " + pltStr);
-                plt = Double.parseDouble(pltStr) / pltDiv;
+            String mchcStr = inputString.substring(mchcStart, mchcEnd);
+            System.out.println("mchcStr = " + mchcStr);
+            mchc = Double.parseDouble(mchcStr) / mchcDiv;
 
-                String lymphPercentageStr = inputString.substring(lymphPercentStart, lymphPercentEnd);
-                System.out.println("lymphPercentageStr = " + lymphPercentageStr);
-                lymphPercentage = Double.parseDouble(lymphPercentageStr) / lymphPercentageDiv;
+            String pltStr = inputString.substring(pltStart, pltEnd);
+            System.out.println("pltStr = " + pltStr);
+            plt = Double.parseDouble(pltStr) / pltDiv;
 
-                String monoPercentageStr = inputString.substring(monoPercentStart, monoPercentEnd);
-                System.out.println("monoPercentageStr = " + monoPercentageStr);
-                monoPercentage = Double.parseDouble(monoPercentageStr) / monoPercentageDiv;
+            String lymphPercentageStr = inputString.substring(lymphPercentStart, lymphPercentEnd);
+            System.out.println("lymphPercentageStr = " + lymphPercentageStr);
+            lymphPercentage = Double.parseDouble(lymphPercentageStr) / lymphPercentageDiv;
 
-                String neutPercentageStr = inputString.substring(neutPercentStart, neutPercentEnd);
-                System.out.println("neutPercentageStr = " + neutPercentageStr);
-                neutPercentage = Double.parseDouble(neutPercentageStr) / neutPercentageDiv;
+            String monoPercentageStr = inputString.substring(monoPercentStart, monoPercentEnd);
+            System.out.println("monoPercentageStr = " + monoPercentageStr);
+            monoPercentage = Double.parseDouble(monoPercentageStr) / monoPercentageDiv;
 
-                String eoPercentageStr = inputString.substring(eoPercentStart, eoPercentEnd);
-                System.out.println("eoPercentageStr = " + eoPercentageStr);
-                eoPercentage = Double.parseDouble(eoPercentageStr) / eoPercentageDiv;
+            String neutPercentageStr = inputString.substring(neutPercentStart, neutPercentEnd);
+            System.out.println("neutPercentageStr = " + neutPercentageStr);
+            neutPercentage = Double.parseDouble(neutPercentageStr) / neutPercentageDiv;
 
-                String basoPercentageStr = inputString.substring(basoPercentStart, basoPercentEnd);
-                System.out.println("basoPercentageStr = " + basoPercentageStr);
-                basoPercentage = Double.parseDouble(basoPercentageStr) / basoPercentageDiv;
+            String eoPercentageStr = inputString.substring(eoPercentStart, eoPercentEnd);
+            System.out.println("eoPercentageStr = " + eoPercentageStr);
+            eoPercentage = Double.parseDouble(eoPercentageStr) / eoPercentageDiv;
 
-            } catch (NumberFormatException e) {
-                // Error in parsing double values
-                wbc = 0.0;
-                rbc = 0.0;
-                hgb = 0.0;
-                hct = 0.0;
-                mcv = 0.0;
-                mch = 0.0;
-                mchc = 0.0;
-                plt = 0.0;
-                lymphPercentage = 0.0;
-                monoPercentage = 0.0;
-                neutPercentage = 0.0;
-                eoPercentage = 0.0;
-                basoPercentage = 0.0;
-            }
+            String basoPercentageStr = inputString.substring(basoPercentStart, basoPercentEnd);
+            System.out.println("basoPercentageStr = " + basoPercentageStr);
+            basoPercentage = Double.parseDouble(basoPercentageStr) / basoPercentageDiv;
+
+        } catch (NumberFormatException e) {
+            // Error in parsing double values
+            wbc = 0.0;
+            rbc = 0.0;
+            hgb = 0.0;
+            hct = 0.0;
+            mcv = 0.0;
+            mch = 0.0;
+            mchc = 0.0;
+            plt = 0.0;
+            lymphPercentage = 0.0;
+            monoPercentage = 0.0;
+            neutPercentage = 0.0;
+            eoPercentage = 0.0;
+            basoPercentage = 0.0;
         }
+
     }
 
     public boolean isCorrectReport() {
