@@ -56,6 +56,9 @@ public class HL7Utils {
                 break;
             }
         }
+        if(messageType==null){
+            messageType = "ASTM";
+        }
         return messageType;
     }
 

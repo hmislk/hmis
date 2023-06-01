@@ -221,6 +221,7 @@ public class UserPrivilageController implements Serializable {
         //////////////////
         TreeNode node304 = new PrivilageNode("Sale", node3);
         TreeNode node3041 = new PrivilageNode("Pharmacy Sale", node304, Privileges.PharmacySale);
+        TreeNode node3041aa = new PrivilageNode("Pharmacy Sale without Stock", node304, Privileges.PharmacySaleWithoutStock);
         TreeNode node3041a = new PrivilageNode("Pharmacy Wholesale", node304, Privileges.PharmacySaleWh);
         TreeNode node3042 = new PrivilageNode("Pharmacy Sale Cancel", node304, Privileges.PharmacySaleCancel);
         TreeNode node3042a = new PrivilageNode("Pharmacy Wholesale Cancel", node304, Privileges.PharmacySaleCancelWh);
@@ -339,7 +340,6 @@ public class UserPrivilageController implements Serializable {
         TreeNode node982 = new PrivilageNode("HR Edit Retied Date", node98, Privileges.HrEditRetiedDate);
         TreeNode node983 = new PrivilageNode("HR Remove Resign Date", node98, Privileges.HrRemoveResignDate);
 
-        
         TreeNode node20 = new PrivilageNode("Store", tmproot);
         TreeNode node2000 = new PrivilageNode("Store Menu", node20, Privileges.Store);
         TreeNode node2001 = new PrivilageNode("Issue", node20);
@@ -603,19 +603,18 @@ public class UserPrivilageController implements Serializable {
     private TreeNode tmpNode;
 
     private void unselectNode() {
-        for (Object o : root.getChildren()) {
-            TreeNode n = (TreeNode) o;
+        for (Object objectN : root.getChildren()) {
+            TreeNode n = (TreeNode) objectN;
             n.setSelected(false);
-            for (Object o1 : n.getChildren()) {
-                TreeNode n1 = (TreeNode) o1;
+            for (Object objectN1 : n.getChildren()) {
+                TreeNode n1 = (TreeNode) objectN1;
                 n1.setSelected(false);
-                for (Object o2 : n1.getChildren()) {
-                    TreeNode n2 = (TreeNode) o2;
+                for (Object objectN2 : n1.getChildren()) {
+                    TreeNode n2 = (TreeNode) objectN2;
                     n2.setSelected(false);
                 }
             }
         }
-
         tmpNode = root;
     }
 
@@ -638,18 +637,18 @@ public class UserPrivilageController implements Serializable {
 
         root = createTreeNode();
         for (WebUserPrivilege wup : items) {
-            for (Object o : root.getChildren()) {
-                TreeNode n =(TreeNode) o;
+            for (Object objectN : root.getChildren()) {
+                TreeNode n = (TreeNode) objectN;
                 if (wup.getPrivilege() == ((PrivilageNode) n).getP()) {
                     n.setSelected(true);
                 }
-                for (Object o1 : n.getChildren()) {
-                    TreeNode n1 =(TreeNode) o1;
+                for (Object objectN1 : n.getChildren()) {
+                    TreeNode n1 = (TreeNode) objectN1;
                     if (wup.getPrivilege() == ((PrivilageNode) n1).getP()) {
                         n1.setSelected(true);
                     }
-                    for (Object o2 : n1.getChildren()) {
-                        TreeNode n2 =(TreeNode) o2;
+                    for (Object objectN2 : n1.getChildren()) {
+                        TreeNode n2 = (TreeNode) objectN2;
                         if (wup.getPrivilege() == ((PrivilageNode) n2).getP()) {
                             n2.setSelected(true);
                         }
@@ -657,6 +656,7 @@ public class UserPrivilageController implements Serializable {
                 }
             }
         }
+
         tmpNode = root;
         return items;
     }
@@ -669,7 +669,7 @@ public class UserPrivilageController implements Serializable {
 //        Map m = new HashMap();
 //        m.put("wup", p);
 //        String sql = "SELECT i FROM WebUserPrivilege i where i.webUser.id= " + getCurrentWebUser().getId() + " and i.privilege=:wup ";
-//        List<WebUserPrivilege> tmp = getEjbFacade().findByJpql(sql, m, TemporalType.DATE);
+//        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql, m, TemporalType.DATE);
 //        if (tmp == null || tmp.isEmpty()) {
 //            for (WebUserPrivilege wu : tmp) {
 //                if (!wu.isRetired()) {
@@ -722,7 +722,7 @@ public class UserPrivilageController implements Serializable {
     }
 
     void createSelectedPrivilegesForUser() {
-        
+
     }
 
     /**

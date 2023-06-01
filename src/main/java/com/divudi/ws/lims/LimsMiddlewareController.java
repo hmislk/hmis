@@ -45,8 +45,13 @@ import java.util.Set;
 import ca.uhn.hl7v2.parser.Parser;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.InvestigationItemValueType;
+import com.divudi.data.lab.SysMex;
+import com.divudi.data.lab.SysMexAdf1;
+import com.divudi.data.lab.SysMexAdf2;
+import com.divudi.data.lab.SysMexTypeA;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItemValueFlag;
@@ -79,8 +84,6 @@ import java.util.regex.Pattern;
 public class LimsMiddlewareController {
 
     //FOR UNIT TESTING
-    
-    
     @EJB
     InvestigationItemFacade investigationItemFacade;
     @EJB
@@ -106,9 +109,6 @@ public class LimsMiddlewareController {
     private Department loggedDepartment;
     private Institution loggedInstitution;
 
-    
-    
-    
     /**
      * Creates a new instance of LIMS
      */
@@ -165,6 +165,9 @@ public class LimsMiddlewareController {
                 case "OML^O33^OML_O33":
                 case "ORL^O34ORL_O34":
                     break;
+                case "ASTM":
+                    msgFromSysmex(receivedMessage);
+                    break;
                 default:
                     System.err.println("messageType = " + messageType);
                     resultMessage = "Can not handle this message type > " + messageType;
@@ -182,6 +185,125 @@ public class LimsMiddlewareController {
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
+    }
+
+    public static String removeFirstFiveCharacters(String message) {
+        if (message.length() <= 5) {
+            return "";
+        }
+        return message.substring(5);
+    }
+
+    private String msgFromSysmex(String msg) {
+        System.out.println("msgFromSysmex");
+        System.out.println("msg = " + msg);
+        System.out.println("msg = " + msg.length());
+        SysMex sysMex = new SysMex();
+        return extractDataFromSysMexTypeA(msg);
+    }
+
+    public String extractDataFromSysMexTypeA(String msg) {
+        SysMexTypeA a = new SysMexTypeA();
+        a.setInputString(msg);
+        Long sampleId = a.getSampleId();
+        System.out.println("sampleId = " + sampleId);
+        PatientSample ps = patientSampleFromId(sampleId);
+        String temMsgs = "";
+        if (ps == null) {
+            return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
+        }
+        List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
+        if (pscs == null) {
+            return "#{success=false|msg=Wrong Sample Components. Please inform developers. Please resent results " + sampleId + "}";
+        }
+        List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
+        if (ptixs == null || ptixs.isEmpty()) {
+            return "#{success=false|msg=Wrong Patient Investigations. Please inform developers. Please resent results " + sampleId + "}";
+        }
+        for (PatientInvestigation pi : ptixs) {
+            List<PatientReport> prs = new ArrayList<>();
+            if (pi.getInvestigation().getMachine() != null && pi.getInvestigation().getMachine().getName().toLowerCase().contains("sysmex")) {
+                PatientReport tpr = createNewPatientReport(pi, pi.getInvestigation());
+                prs.add(tpr);
+            }
+            List<Item> temItems = getItemsForParentItem(pi.getInvestigation());
+            for (Item ti : temItems) {
+                if (ti instanceof Investigation) {
+                    Investigation tix = (Investigation) ti;
+                    if (tix.getMachine() != null && tix.getMachine().getName().toLowerCase().contains("sysmex")) {
+                        PatientReport tpr = createNewPatientReport(pi, tix);
+                        prs.add(tpr);
+                    }
+                }
+            }
+            for (PatientReport tpr : prs) {
+
+                for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
+                    if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
+                        String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                        switch (test) {
+                            case "WBC":
+                                priv.setStrValue(a.getWbc() + "");
+                                priv.setDoubleValue(a.getWbc());
+                                break;
+                            case "NEUT%":
+                                priv.setStrValue(a.getNeutPercentage() + "");
+                                break;
+                            case "LYMPH%":
+                                priv.setStrValue(a.getLymphPercentage() + "");
+                                break;
+                            case "BASO%":
+                                priv.setStrValue(a.getBasoPercentage() + "");
+                                break;
+                            case "MONO%":
+                                priv.setStrValue(a.getMonoPercentage() + "");
+                                break;
+                            case "EO%":
+                                priv.setStrValue(a.getEoPercentage() + "");
+                                break;
+                            case "RBC":
+                                priv.setStrValue(a.getRbc() + "");
+                                break;
+                            case "HGB":
+                                priv.setStrValue(a.getHgb() + "");
+                                break;
+                            case "HCT":
+                                priv.setStrValue(a.getHct() + "");
+                                break;
+                            case "MCV":
+                                priv.setStrValue(a.getMcv() + "");
+                                break;
+                            case "MCH":
+                                priv.setStrValue(a.getMch() + "");
+                                break;
+                            case "MCHC":
+                                priv.setStrValue(a.getMchc() + "");
+                                break;
+                            case "PLT":
+                                priv.setStrValue(a.getPlt() + "");
+                                break;
+
+                        }
+                    }
+                }
+                tpr.setDataEntered(true);
+                tpr.setDataEntryAt(new Date());
+                tpr.setDataEntryComments("Initial Results were taken from Analyzer through Middleware");
+                temMsgs += "Patient = " + tpr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "\n";
+                temMsgs += "Bill No = " + tpr.getPatientInvestigation().getBillItem().getBill().getInsId() + "\n";
+                temMsgs += "Investigation = " + tpr.getPatientInvestigation().getInvestigation().getName() + "\n";
+                prFacade.edit(tpr);
+            }
+        }
+        return "#{success=true|msg=Data Added to LIMS \n" + temMsgs + "}";
+    }
+
+    public List<Item> getItemsForParentItem(Item i) {
+        String sql;
+        Map m = new HashMap();
+        m.put("it", i);
+        sql = "select c.childItem from ItemForItem c where c.retired=false and c.parentItem=:it order by c.childItem.name ";
+        return itemFacade.findByJpql(sql, m);
     }
 
     public static String extractSampleIDFromK11(String uniqueID) {

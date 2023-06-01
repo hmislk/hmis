@@ -17,6 +17,8 @@ public enum InvestigationItemType {
     Template,
     AntibioticList,
     Antibiotic,
+    Image,
+    Html,
     @Deprecated
     List,
     @Deprecated

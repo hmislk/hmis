@@ -157,16 +157,20 @@
                     <p:menuitem ajax="false" action="/lab/administration" value="Administration" rendered="#{webUserController.hasPrivilege('LabAdiministrator')}"  ></p:menuitem>
                 </p:submenu>
 
+
                 <p:submenu styleClass="rightBordrOnly" label="Pharmacy"  rendered="#{webUserController.hasPrivilege('Pharmacy')}">
                     <p:submenu label="Sale Bills" rendered="#{webUserController.hasPrivilege('PharmacySale')}"> 
+
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
                                      value="Sale" 
-                                     rendered="#{webUserController.hasPrivilege('PharmacySale') and sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" 
+                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                                      actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem> 
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale"  
-                                     value="Sale" rendered="#{webUserController.hasPrivilege('PharmacySale')and sessionController.loggedPreference.applicationInstitution eq 'Ruhuna'}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_bill_retail_sale_for_cashier"  
                                      value="Sale for cashier" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>                                       
+                        <p:menuitem  ajax="false" 
+                                     action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"  
+                                     value="Sale without Stocks" 
+                                     rendered="#{webUserController.hasPrivilege('PharmacySaleWithoutStock')}" ></p:menuitem> 
                         <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_sale_bill"  
                                      value="Search Sale Bill"
                                      actionListener="#{searchController.makeListNull}"
@@ -663,7 +667,7 @@
                     <p:menuitem  ajax="false"  action="/hr/hr_admin" value="Administration" rendered="#{webUserController.hasPrivilege('HrAdmin')}" />
                 </p:submenu>
 
-               
+
 
                 <p:submenu styleClass="rightBordrOnly" label="EMR"  
                            rendered="#{webUserController.hasPrivilege('Clinical')}">
