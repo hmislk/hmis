@@ -198,7 +198,7 @@ public class LimsMiddlewareController {
         System.out.println("msg = " + msg);
         System.out.println("msg = " + msg.length());
 
-        if (msg.length() == 253) {
+        if (msg.length() > 200) {
             msg = removeFirstFiveCharacters(msg);
         }
 
@@ -207,6 +207,8 @@ public class LimsMiddlewareController {
 
         String temMsgs = "";
         SysMex sysMex = new SysMex();
+        
+        
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
         System.out.println("sysMex.getBytes().size() = " + sysMex.getBytes().size());
@@ -217,7 +219,7 @@ public class LimsMiddlewareController {
             if (m1.isCorrectReport()) {
                 return "#{success=true|msg=Received Result Format 1 for sample ID " + m1.getSampleId() + "}";
             }
-        } else if (sysMex.getBytes().size() > 253 && sysMex.getBytes().size() < 258) {
+        } else if (sysMex.getBytes().size() > 200 && sysMex.getBytes().size() < 208) {
             SysMexAdf2 m2 = new SysMexAdf2();
             m2.setInputStringBytesSpaceSeperated(msg);
             if (m2.isCorrectReport()) {

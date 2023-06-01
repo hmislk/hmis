@@ -198,6 +198,24 @@ public class SysMex {
         }
     }
 
+    private String stringToAsciiBytesSpaceSeparated(String input) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : input.toCharArray()) {
+            sb.append((int) c).append(" ");
+        }
+        return sb.toString().trim(); // Remove trailing space
+    }
+
+    private String byteArrayToTextSeperatedBySpace(List<Byte> bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (Byte b : bytes) {
+            if (b != null) {
+                sb.append(b.toString()).append(" ");
+            }
+        }
+        return sb.toString().trim(); // Remove trailing space
+    }
+
     private void textToByteArraySeperatedBySpace() {
         System.out.println("textToByteArraySeperatedBySpace");
         bytes = new ArrayList<>();
@@ -659,7 +677,10 @@ public class SysMex {
     }
 
     public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
-        this.inputStringBytesSpaceSeperated = inputStringBytesSpaceSeperated;
+        System.out.println("inputStringBytesSpaceSeperated = " + inputStringBytesSpaceSeperated);
+        String tmpString = stringToAsciiBytesSpaceSeparated(inputStringBytesSpaceSeperated);
+        System.out.println("tmpString = " + tmpString);
+        this.inputStringBytesSpaceSeperated = tmpString;
         textToByteArraySeperatedBySpace();
     }
 
