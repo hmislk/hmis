@@ -48,6 +48,7 @@ import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.lab.SysMex;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
+import com.divudi.data.lab.SysMexTypeA;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
@@ -197,45 +198,17 @@ public class LimsMiddlewareController {
         System.out.println("msgFromSysmex");
         System.out.println("msg = " + msg);
         System.out.println("msg = " + msg.length());
-
-        if (msg.length() > 200) {
-            msg = removeFirstFiveCharacters(msg);
-        }
-
-        System.out.println("msg = " + msg);
-        System.out.println("msg = " + msg.length());
-
-        String temMsgs = "";
         SysMex sysMex = new SysMex();
-        
-        
-        sysMex.setInputStringBytesSpaceSeperated(msg);
-
-        System.out.println("sysMex.getBytes().size() = " + sysMex.getBytes().size());
-
-        if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
-            SysMexAdf1 m1 = new SysMexAdf1();
-            m1.setInputStringBytesSpaceSeperated(msg);
-            if (m1.isCorrectReport()) {
-                return "#{success=true|msg=Received Result Format 1 for sample ID " + m1.getSampleId() + "}";
-            }
-        } else if (sysMex.getBytes().size() > 200 && sysMex.getBytes().size() < 208) {
-            SysMexAdf2 m2 = new SysMexAdf2();
-            m2.setInputStringBytesSpaceSeperated(msg);
-            if (m2.isCorrectReport()) {
-                return "#{success=true|msg=Received Result Format 2 for sample ID " + m2.getSampleId() + "}";
-            } else {
-                return extractDataFromSysMexAdf2(m2);
-            }
-        }
-        return "#{success=false|msg=Wrong Data Communication}";
+        return extractDataFromSysMexTypeA(msg);
     }
 
-    public String extractDataFromSysMexAdf2(SysMexAdf2 adf2) {
+    public String extractDataFromSysMexTypeA(String msg) {
+        SysMexTypeA a = new SysMexTypeA();
+        a.setInputString(msg);
+        Long sampleId = a.getSampleId();
+        System.out.println("sampleId = " + sampleId);
+        PatientSample ps = patientSampleFromId(sampleId);
         String temMsgs = "";
-        Long sampleId = adf2.getSampleId();
-        PatientSample ps = patientSampleFromId(adf2.getSampleId());
-
         if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
         }
@@ -270,43 +243,44 @@ public class LimsMiddlewareController {
                         String test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
                         switch (test) {
                             case "WBC":
-                                priv.setStrValue(adf2.getWbc());
+                                priv.setStrValue(a.getWbc() + "");
+                                priv.setDoubleValue(a.getWbc());
                                 break;
                             case "NEUT%":
-                                priv.setStrValue(adf2.getNeutPercentage());
+                                priv.setStrValue(a.getNeutPercentage() + "");
                                 break;
                             case "LYMPH%":
-                                priv.setStrValue(adf2.getLymphPercentage());
+                                priv.setStrValue(a.getLymphPercentage() + "");
                                 break;
                             case "BASO%":
-                                priv.setStrValue(adf2.getBasoPercentage());
+                                priv.setStrValue(a.getBasoPercentage() + "");
                                 break;
                             case "MONO%":
-                                priv.setStrValue(adf2.getMonoPercentage());
+                                priv.setStrValue(a.getMonoPercentage() + "");
                                 break;
                             case "EO%":
-                                priv.setStrValue(adf2.getEoPercentage());
+                                priv.setStrValue(a.getEoPercentage() + "");
                                 break;
                             case "RBC":
-                                priv.setStrValue(adf2.getRbc());
+                                priv.setStrValue(a.getRbc() + "");
                                 break;
                             case "HGB":
-                                priv.setStrValue(adf2.getHgb());
+                                priv.setStrValue(a.getHgb() + "");
                                 break;
                             case "HCT":
-                                priv.setStrValue(adf2.getHct());
+                                priv.setStrValue(a.getHct() + "");
                                 break;
                             case "MCV":
-                                priv.setStrValue(adf2.getMcv());
+                                priv.setStrValue(a.getMcv() + "");
                                 break;
                             case "MCH":
-                                priv.setStrValue(adf2.getMch());
+                                priv.setStrValue(a.getMch() + "");
                                 break;
                             case "MCHC":
-                                priv.setStrValue(adf2.getMchc());
+                                priv.setStrValue(a.getMchc() + "");
                                 break;
                             case "PLT":
-                                priv.setStrValue(adf2.getPlt());
+                                priv.setStrValue(a.getPlt() + "");
                                 break;
 
                         }
