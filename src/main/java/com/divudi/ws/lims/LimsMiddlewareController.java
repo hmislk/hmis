@@ -187,13 +187,7 @@ public class LimsMiddlewareController {
         }
     }
 
-    public static String removeFirstFiveCharacters(String message) {
-        if (message.length() <= 5) {
-            return "";
-        }
-        return message.substring(5);
-    }
-
+  
     private String msgFromSysmex(String msg) {
         return extractDataFromSysMexTypeA(msg);
     }
