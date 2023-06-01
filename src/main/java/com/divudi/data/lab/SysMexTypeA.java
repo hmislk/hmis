@@ -67,59 +67,45 @@ public class SysMexTypeA {
 
         try {
             String sampleIdString = inputString.substring(sampleIdStart, sampleIdEnd).trim();
-            System.out.println("sampleIdString = " + sampleIdString);
             sampleId = Long.parseLong(sampleIdString.replaceAll("\\s+", ""));
 
             String webStr = inputString.substring(wbcStart, wbcEnd);
-            System.out.println("webStr = " + webStr);
             wbc = Double.parseDouble(webStr) / wbcDiv;
 
             String rbcStr = inputString.substring(rbcStart, rbcEnd);
-            System.out.println("rbcStr = " + rbcStr);
             rbc = Double.parseDouble(rbcStr) / rbcDiv;
 
             String hgbStr = inputString.substring(hgbStart, hgbEnd);
-            System.out.println("hgbStr = " + hgbStr);
             hgb = Double.parseDouble(hgbStr) / hgbDiv;
 
             String hctStr = inputString.substring(hctStart, hctEnd);
-            System.out.println("hctStr = " + hctStr);
             hct = Double.parseDouble(hctStr) / hctDiv;
 
             String mcvStr = inputString.substring(mcvStart, mcvEnd);
-            System.out.println("mcvStr = " + mcvStr);
             mcv = Double.parseDouble(mcvStr) / mcvDiv;
 
             String mchStr = inputString.substring(mchStart, mchEnd);
-            System.out.println("mchStr = " + mchStr);
             mch = Double.parseDouble(mchStr) / mchDiv;
 
             String mchcStr = inputString.substring(mchcStart, mchcEnd);
-            System.out.println("mchcStr = " + mchcStr);
             mchc = Double.parseDouble(mchcStr) / mchcDiv;
 
             String pltStr = inputString.substring(pltStart, pltEnd);
-            System.out.println("pltStr = " + pltStr);
             plt = Double.parseDouble(pltStr) / pltDiv;
 
             String lymphPercentageStr = inputString.substring(lymphPercentStart, lymphPercentEnd);
-            System.out.println("lymphPercentageStr = " + lymphPercentageStr);
             lymphPercentage = Double.parseDouble(lymphPercentageStr) / lymphPercentageDiv;
 
             String monoPercentageStr = inputString.substring(monoPercentStart, monoPercentEnd);
-            System.out.println("monoPercentageStr = " + monoPercentageStr);
             monoPercentage = Double.parseDouble(monoPercentageStr) / monoPercentageDiv;
 
             String neutPercentageStr = inputString.substring(neutPercentStart, neutPercentEnd);
-            System.out.println("neutPercentageStr = " + neutPercentageStr);
             neutPercentage = Double.parseDouble(neutPercentageStr) / neutPercentageDiv;
 
             String eoPercentageStr = inputString.substring(eoPercentStart, eoPercentEnd);
-            System.out.println("eoPercentageStr = " + eoPercentageStr);
             eoPercentage = Double.parseDouble(eoPercentageStr) / eoPercentageDiv;
 
             String basoPercentageStr = inputString.substring(basoPercentStart, basoPercentEnd);
-            System.out.println("basoPercentageStr = " + basoPercentageStr);
             basoPercentage = Double.parseDouble(basoPercentageStr) / basoPercentageDiv;
 
         } catch (NumberFormatException e) {
