@@ -187,18 +187,8 @@ public class LimsMiddlewareController {
         }
     }
 
-    public static String removeFirstFiveCharacters(String message) {
-        if (message.length() <= 5) {
-            return "";
-        }
-        return message.substring(5);
-    }
-
+  
     private String msgFromSysmex(String msg) {
-        System.out.println("msgFromSysmex");
-        System.out.println("msg = " + msg);
-        System.out.println("msg = " + msg.length());
-        SysMex sysMex = new SysMex();
         return extractDataFromSysMexTypeA(msg);
     }
 
@@ -206,7 +196,6 @@ public class LimsMiddlewareController {
         SysMexTypeA a = new SysMexTypeA();
         a.setInputString(msg);
         Long sampleId = a.getSampleId();
-        System.out.println("sampleId = " + sampleId);
         PatientSample ps = patientSampleFromId(sampleId);
         String temMsgs = "";
         if (ps == null) {
@@ -248,41 +237,52 @@ public class LimsMiddlewareController {
                                 break;
                             case "NEUT%":
                                 priv.setStrValue(a.getNeutPercentage() + "");
+                                priv.setDoubleValue(a.getNeutPercentage());
                                 break;
                             case "LYMPH%":
                                 priv.setStrValue(a.getLymphPercentage() + "");
+                                priv.setDoubleValue(a.getLymphPercentage());
                                 break;
                             case "BASO%":
                                 priv.setStrValue(a.getBasoPercentage() + "");
+                                priv.setDoubleValue(a.getBasoPercentage());
                                 break;
                             case "MONO%":
                                 priv.setStrValue(a.getMonoPercentage() + "");
+                                priv.setDoubleValue(a.getMonoPercentage());
                                 break;
                             case "EO%":
                                 priv.setStrValue(a.getEoPercentage() + "");
+                                priv.setDoubleValue(a.getEoPercentage());
                                 break;
                             case "RBC":
                                 priv.setStrValue(a.getRbc() + "");
+                                priv.setDoubleValue(a.getRbc());
                                 break;
                             case "HGB":
                                 priv.setStrValue(a.getHgb() + "");
+                                priv.setDoubleValue(a.getHgb());
                                 break;
                             case "HCT":
                                 priv.setStrValue(a.getHct() + "");
+                                priv.setDoubleValue(a.getHct());
                                 break;
                             case "MCV":
                                 priv.setStrValue(a.getMcv() + "");
+                                priv.setDoubleValue(a.getMcv());
                                 break;
                             case "MCH":
                                 priv.setStrValue(a.getMch() + "");
+                                priv.setDoubleValue(a.getMch());
                                 break;
                             case "MCHC":
                                 priv.setStrValue(a.getMchc() + "");
+                                priv.setDoubleValue(a.getMchc());
                                 break;
                             case "PLT":
                                 priv.setStrValue(a.getPlt() + "");
+                                priv.setDoubleValue(a.getPlt());
                                 break;
-
                         }
                     }
                 }
