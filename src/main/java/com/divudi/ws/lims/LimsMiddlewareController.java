@@ -196,7 +196,9 @@ public class LimsMiddlewareController {
         SysMexTypeA a = new SysMexTypeA();
         a.setInputString(msg);
         Long sampleId = a.getSampleId();
+        System.out.println("sampleId = " + sampleId);
         PatientSample ps = patientSampleFromId(sampleId);
+        System.out.println("ps = " + ps);
         String temMsgs = "";
         if (ps == null) {
             return "#{success=false|msg=Wrong Sample ID. Please resent results " + sampleId + "}";
