@@ -49,6 +49,11 @@ public class CommonController implements Serializable {
     public void increment() {
         number++;
     }
+    
+    public static String formatNumber(double number, String format) {
+        DecimalFormat decimalFormat = new DecimalFormat(format);
+        return decimalFormat.format(number);
+    }
 
     public String getBaseUrl() {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();

@@ -716,9 +716,9 @@ public class PatientReportController implements Serializable {
             if(priv.getInvestigationItem().getFormatString()!=null && !priv.getInvestigationItem().getFormatString().trim().equals("")){
                 if(priv.getInvestigationItem().getIxItemValueType()==InvestigationItemValueType.Varchar){
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
-                    
+                    priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
+                    priv.setDoubleValue(tmpDbl);
                 }
-                
             }
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
                 String sql = "select i "
