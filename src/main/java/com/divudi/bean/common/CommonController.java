@@ -49,6 +49,11 @@ public class CommonController implements Serializable {
     public void increment() {
         number++;
     }
+    
+    public static String formatNumber(double number, String format) {
+        DecimalFormat decimalFormat = new DecimalFormat(format);
+        return decimalFormat.format(number);
+    }
 
     public String getBaseUrl() {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
@@ -170,7 +175,22 @@ public class CommonController implements Serializable {
         s = d.format(date);
         return s;
     }
-    
+
+    public static double extractDoubleValue(String input) {
+        String cleanedInput = input.replaceAll(",", ""); // Remove commas
+        cleanedInput = cleanedInput.trim(); // Trim leading and trailing whitespace
+
+        if (cleanedInput.isEmpty()) {
+            return 0.0;
+        }
+
+        try {
+            return Double.parseDouble(cleanedInput);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
     public static String formatDate(Date date, String formatString) {
         String s = "";
         DateFormat d = new SimpleDateFormat(formatString);
