@@ -64,13 +64,13 @@
                                         <h:panelGroup>
                                             <p:inputTextarea id="txtNewPtComments"
                                                              value="#{patientController.current.comments}" 
-                                                              styleClass="form-control"
+                                                             styleClass="form-control"
                                                              rendered="#{webUserController.hasPrivilege('ClinicalPatientCommentsView')}"
                                                              disabled="#{!webUserController.hasPrivilege('ClinicalPatientCommentsEdit')}"
                                                              >
                                             </p:inputTextarea>
                                             <p:inputTextarea id="txtNewPtCommentsD"
-                                                              styleClass="form-control"
+                                                             styleClass="form-control"
                                                              rendered="#{!webUserController.hasPrivilege('ClinicalPatientCommentsView')}"
                                                              >
                                             </p:inputTextarea>
@@ -184,9 +184,14 @@
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column >
-                                            <h:commandButton value="View" action="/clinical/clinical_new_opd_visit" >
-                                                <f:setPropertyActionListener value="#{pe}" target="#{patientEncounterController.current}" ></f:setPropertyActionListener>
-                                            </h:commandButton>
+                                            <p:commandButton ajax="false" 
+                                                             value="View" 
+                                                             action="/clinical/clinical_new_opd_visit" 
+                                                             immediate="true"
+                                                             >
+                                                <f:setPropertyActionListener value="#{pe}" target="#{viewEncounterController.encounter}" />
+                                            </p:commandButton>
+
                                         </p:column>
                                     </p:dataTable>
                                 </p:tab>
