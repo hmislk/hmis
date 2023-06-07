@@ -217,7 +217,9 @@ public class PatientEncounterController implements Serializable {
         } else {
             // So, browser is requesting the image. Get ID value from actual request param.
             String id = context.getExternalContext().getRequestParameterMap().get("id");
+            System.out.println("id = " + id);
             ClinicalFindingValue image = clinicalFindingValueFacade.find(Long.valueOf(id)); // Assuming 'service' is your EJB session bean.
+            System.out.println("image = " + image);
             String imageType = image.getImageType();
             if (imageType == null || imageType.trim().equals("")) {
                 imageType = "image/png";

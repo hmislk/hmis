@@ -74,16 +74,6 @@ public class PhotoCamBean implements Serializable {
     }
 
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
-        if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
-            UtilityController.addErrorMessage("Patient ?");
-            return;
-        }
-        getPatientController().getCurrent().setBaImage(captureEvent.getData());
-        getPatientController().getCurrent().setFileName("patient_image_" + getPatientController().getCurrent().getId() + ".png");
-        getPatientController().getCurrent().setFileType("image/png");
-        getPatientController().saveSelected();
-        UtilityController.addSuccessMessage("Photo captured from webcam.");
-
         if (getPatientEncounterController().getCurrent() == null || getPatientEncounterController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;

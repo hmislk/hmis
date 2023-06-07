@@ -397,24 +397,27 @@
                         </h:form>
                     </div>
                     <div class="col-md-6" >
-                        <p:dataGrid var="image" value="#{patientEncounterController.encounterImages}" 
-                                    columns="3" layout="grid" paginator="true" rows="6">
-                            <p:panel header="#{image.imageName}">
-                                <p:graphicImage value="#{image.imageValue}" 
-                                                cache="false" 
-                                                rendered="#{not empty image.imageValue}" />
-                            </p:panel>
-                        </p:dataGrid>
+                        <p:galleria value="#{patientEncounterController.encounterImages}" var="photo" 
+                                    responsive="true" panelWidth="500" panelHeight="500" 
+                                    numVisible="5" autoPlay="true">
+                            <p:graphicImage value="#{patientEncounterController.image}" cache="false">
+                                <f:param name="id" value="#{photo.id}" />
+                            </p:graphicImage>
+                            <f:facet name="caption">
+                                <h:outputText value="#{photo.imageName}" />
+                            </f:facet>
+                            <f:facet name="thumbnail">
+                                <p:graphicImage value="#{patientEncounterController.image}" 
+                                                cache="false" style="height:75px; width:75px;">
+                                    <f:param name="id" value="#{photo.id}" />
+                                </p:graphicImage>
+                            </f:facet>
+                        </p:galleria>
+
 
 
                     </div>
-
                 </div>
-
-
-
-
-
             </ui:define>
         </ui:composition>
 
