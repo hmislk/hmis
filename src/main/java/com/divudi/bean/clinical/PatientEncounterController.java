@@ -66,6 +66,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.hl7.fhir.r5.model.Encounter;
+import org.primefaces.model.DefaultStreamedContent;
+import javax.faces.context.FacesContext;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PhaseId;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -200,6 +207,27 @@ public class PatientEncounterController implements Serializable {
     private String chartString;
 
     private InvestigationItem graphInvestigationItem;
+
+    public StreamedContent getImage() throws IOException {
+        FacesContext context = FacesContext.getCurrentInstance();
+
+        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
+            // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
+            return DefaultStreamedContent.builder().build();
+        } else {
+            // So, browser is requesting the image. Get ID value from actual request param.
+            String id = context.getExternalContext().getRequestParameterMap().get("id");
+            ClinicalFindingValue image = clinicalFindingValueFacade.find(Long.valueOf(id)); // Assuming 'service' is your EJB session bean.
+            String imageType = image.getImageType();
+            if (imageType == null || imageType.trim().equals("")) {
+                imageType = "image/png";
+            }
+            return DefaultStreamedContent.builder()
+                    .contentType(imageType)
+                    .stream(() -> new ByteArrayInputStream(image.getImageValue()))
+                    .build();
+        }
+    }
 
     public void listInstitutionEncounters() {
         System.out.println("listInstitutionEncounters = ");
@@ -616,7 +644,6 @@ public class PatientEncounterController implements Serializable {
             clinicalFindingValueFacade.create(encounterMedicine);
             //TO Do
 
-
         }
 
         save(getCurrent());
@@ -840,7 +867,7 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("No Encounter Type");
             return "";
         }
-        if(current.getPatient()==null){
+        if (current.getPatient() == null) {
             JsfUtil.addErrorMessage("No Patient");
             return "";
         }
@@ -2323,6 +2350,16 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getEncounterImage() {
+        if (encounterImage == null) {
+            encounterImage = new ClinicalFindingValue();
+            encounterImage.setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+            if (current != null) {
+                encounterImage.setEncounter(current);
+                if (current.getPatient() != null) {
+                    encounterImage.setPatient(current.getPatient());
+                }
+            }
+        }
         return encounterImage;
     }
 
