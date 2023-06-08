@@ -44,18 +44,28 @@
 
                         <h:panelGroup id="gpBillPreview">
                             <p:dataTable id="tbl" styleClass="noBorder normalFont" 
-                                         value="#{pharmacyAdjustmentController.billItems}" var="i"  
+                                         value="#{pharmacyAdjustmentController.billItems}" var="i" 
+
+                                         rows="10"
+                                         paginator="true" paginatorPosition="both"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                         rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+
+
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Adjustment List "/>
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/> 
-                                    <h:panelGrid columns="4">
-                                        <h:outputLabel value="From  "/>
-                                        <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                    <h:outputLabel value="Adjustment Report By Item for "/>
+                                    <h:panelGrid columns="2">
+                                        <h:outputLabel value="Department : "/>
+                                        <h:outputLabel value="#{pharmacyAdjustmentController.fromDepartment.name}"/> 
+                                        
+                                        <h:outputLabel value="From : "/>
+                                        <h:outputLabel value="#{pharmacyAdjustmentController.fromDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
-                                        <h:outputLabel value="To  "/>
-                                        <h:outputLabel value="#{reportsTransfer.toDate}">
+                                        <h:outputLabel value="To : "/>
+                                        <h:outputLabel value="#{pharmacyAdjustmentController.toDate}">
                                             <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
@@ -85,7 +95,10 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item">
+                                <p:column headerText="Item"
+                                          sortBy="#{i.item.name}"
+                                          filterBy="#{i.item.name}"
+                                          >
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
@@ -118,68 +131,6 @@
                                     <h:outputLabel value="#{i.bill.creater.webUserPerson.name}" 
                                                    style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-
-                                <p:column headerText="Quantity before Adjustment" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Quantity before Adjustment"/>
-                                    </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stockHistory.stockQty}" >
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Adjusted Quantity" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Adjusted Quantity"/>
-                                    </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}" >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-
-                                <p:column headerText="Purchase Rate Before Adjustment" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Purchase Rate Before Adjustment"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>                                  
-                                </p:column>
-
-                                <p:column headerText="Cost Value" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Purchase Rate after Adjustment"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}">
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>                                  
-                                </p:column>
-
-                                <p:column headerText="Purchase Rate Before Adjustment" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Retail Rate Before Adjustment"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.retailRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>                                  
-                                </p:column>
-
-                                <p:column headerText="Cost Value" style="text-align: right;">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Retail Sale After Adjustment"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>                                  
-                                </p:column>
-
-
-
-
-
-
-
-
-
 
                                 <p:column headerText="Type of Adjustment" style="text-align: right;">
                                     <f:facet name="header">
@@ -223,26 +174,6 @@
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
-
-
-
-
-
-
-
-
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column colspan="6"/>
-                                        <p:column style="text-align: right;" >
-                                            <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>                                        
-                                    </p:row>
-                                </p:columnGroup>
 
                             </p:dataTable>
                         </h:panelGroup>
