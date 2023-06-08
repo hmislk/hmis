@@ -153,8 +153,6 @@ public class PatientEncounter implements Serializable {
     private Double bmi = null;
     private Long pr = null;
     private Double height;
-    
-    
 
     public double getTransPaidByCompany() {
         return transPaidByCompany;
@@ -640,6 +638,9 @@ public class PatientEncounter implements Serializable {
     }
 
     public Date getEncounterDate() {
+        if (encounterDate == null) {
+            encounterDate = createdAt;
+        }
         return encounterDate;
     }
 
@@ -910,7 +911,5 @@ public class PatientEncounter implements Serializable {
     public void setWeight(Double weight) {
         this.weight = weight;
     }
-    
-    
 
 }

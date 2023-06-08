@@ -51,7 +51,9 @@
                                 <h:outputLabel value="Comment" ></h:outputLabel>
                                 <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" ></p:inputTextarea>
                                 <h:outputLabel value="" ></h:outputLabel>
-                                <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false" action="#{pharmacyAdjustmentController.adjustRetailRate()}" >
+                                <p:commandButton id="btnAdjust" value="Make Adjustment" 
+                                                 ajax="false" 
+                                                 action="#{pharmacyAdjustmentController.adjustRetailRate()}" >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnAdjust"/>
                             </p:panelGrid>
