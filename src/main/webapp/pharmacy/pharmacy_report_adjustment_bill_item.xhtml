@@ -97,7 +97,7 @@
                                           sortBy="#{i.bill.comments}"
                                           filterBy="#{i.bill.comments}"
                                           filterMatchMode="contains"
-                                          
+
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Comments"/>
@@ -105,12 +105,12 @@
                                     <h:outputLabel value="#{i.bill.comments}" 
                                                    style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="User"
                                           sortBy="#{i.bill.creater.webUserPerson.name}"
                                           filterBy="#{i.bill.creater.webUserPerson.name}"
                                           filterMatchMode="contains"
-                                          
+
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="User"/>
@@ -126,7 +126,7 @@
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.stockHistory.stockQty}" >
                                     </h:outputLabel>
                                 </p:column>
-                                
+
                                 <p:column headerText="Adjusted Quantity" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Adjusted Quantity"/>
@@ -147,12 +147,89 @@
 
                                 <p:column headerText="Cost Value" style="text-align: right;">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Current Purchase Rate"/>
+                                        <h:outputLabel value="Purchase Rate after Adjustment"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
+
+                                <p:column headerText="Purchase Rate Before Adjustment" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Rate Before Adjustment"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.retailRate}"  >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Cost Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Sale After Adjustment"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+
+
+
+
+
+
+
+
+
+                                <p:column headerText="Type of Adjustment" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Type of Adjustment"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? 'Stock Adjustment' : 
+                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? 'Retail Sale Adjustment' :
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? 'Purchase Rate Adjustment' : ''))}" >
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Before Adjustment" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Before Adjustment"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? i.pharmaceuticalBillItem.stockHistory.stockQty : 
+                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? i.pharmaceuticalBillItem.retailRate : 
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.purchaseRate : ''))}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="After Adjustment" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="After Adjustment"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? i.pharmaceuticalBillItem.qty : 
+                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate : 
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate : ''))}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Adjustment Difference" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Adjustment Difference"/>
+                                    </f:facet> 
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty != 0.0 ? (i.pharmaceuticalBillItem.qty - i.pharmaceuticalBillItem.stockHistory.stockQty) : 
+                                                            (i.pharmaceuticalBillItem.retailRate != i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate ? (i.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate - i.pharmaceuticalBillItem.retailRate) :
+                                                            (i.pharmaceuticalBillItem.purchaseRate != i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate ? (i.pharmaceuticalBillItem.stock.itemBatch.purcahseRate - i.pharmaceuticalBillItem.purchaseRate) : ''))}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+
+
+
+
+
+
 
                                 <p:columnGroup type="footer">
                                     <p:row>
