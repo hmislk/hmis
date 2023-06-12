@@ -231,6 +231,10 @@ public class PatientEncounterController implements Serializable {
         }
     }
 
+    public void updateEncounterImages() {
+        System.out.println("encounterImages = " + encounterImages.size());
+    }
+
     public void listInstitutionEncounters() {
         System.out.println("listInstitutionEncounters = ");
         String jpql = "select e "
@@ -1119,6 +1123,17 @@ public class PatientEncounterController implements Serializable {
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getEncounterMedicines().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
+    }
+
+    public void removeEncounterImage() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        getEncounterImages().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
     }
 
