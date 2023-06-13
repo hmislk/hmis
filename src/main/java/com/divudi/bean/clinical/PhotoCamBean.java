@@ -23,7 +23,15 @@ import javax.imageio.stream.FileImageOutputStream;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletContext;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.CaptureEvent;
+import org.primefaces.event.FileUploadEvent;
+import org.apache.commons.io.IOUtils;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -53,6 +61,8 @@ public class PhotoCamBean implements Serializable {
     @EJB
     private ClinicalFindingValueFacade clinicalFindingValueFacade;
 
+    private UploadedFile uploadedFile;
+
     public PatientController getPatientController() {
         return patientController;
     }
@@ -73,6 +83,42 @@ public class PhotoCamBean implements Serializable {
         UtilityController.addSuccessMessage("Photo captured from webcam.");
     }
 
+    public void uploadPhoto(FileUploadEvent event) {
+        System.out.println("uploadPhoto");
+        if (getPatientEncounterController().getCurrent() == null || getPatientEncounterController().getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Select Encounter");
+            return;
+        }
+        byte[] fileBytes;
+        try {
+            uploadedFile = event.getFile();
+            fileBytes = uploadedFile.getContent();
+            getPatientEncounterController().getEncounterImage().setImageValue(fileBytes);
+        } catch (Exception ex) {
+            Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+
+        getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
+        getPatientEncounterController().getEncounterImage().setImageType(event.getFile().getContentType());
+        getPatientEncounterController().getEncounterImage().setEncounter(getPatientEncounterController().getCurrent());
+        getPatientEncounterController().getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+        if (getPatientEncounterController().getEncounterImage().getId() == null) {
+            clinicalFindingValueFacade.create(getPatientEncounterController().getEncounterImage());
+        } else {
+            clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
+        }
+        getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + getPatientEncounterController().getEncounterImage().getId() + ".png");
+        clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
+        getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
+        System.out.println("getPatientEncounterController().getEncounterImages() = " + getPatientEncounterController().getEncounterImages().size());
+        getPatientEncounterController().setEncounterImage(null);
+        getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
+        getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
+        getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent());
+    }
+
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
         if (getPatientEncounterController().getCurrent() == null || getPatientEncounterController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
@@ -91,8 +137,11 @@ public class PhotoCamBean implements Serializable {
         getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + getPatientEncounterController().getEncounterImage().getId() + ".png");
         clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
         getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
+        System.out.println("getPatientEncounterController().getEncounterImages() = " + getPatientEncounterController().getEncounterImages().size());
         getPatientEncounterController().setEncounterImage(null);
-        JsfUtil.addSuccessMessage("Image Added");
+
+        getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
+        getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
     }
 
     public void oncapture(CaptureEvent captureEvent) {
@@ -121,6 +170,14 @@ public class PhotoCamBean implements Serializable {
 
     public PatientEncounterController getPatientEncounterController() {
         return patientEncounterController;
+    }
+
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
     }
 
 }
