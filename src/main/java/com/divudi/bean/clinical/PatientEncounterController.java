@@ -580,7 +580,7 @@ public class PatientEncounterController implements Serializable {
             UtilityController.addErrorMessage("Please select an investigation");
             return;
         }
-        if (encounterProcedure.getId() == null) {
+        if (encounterInvestigation.getId() == null) {
             clinicalFindingValueFacade.create(encounterInvestigation);
         } else {
             clinicalFindingValueFacade.edit(encounterInvestigation);
@@ -1799,14 +1799,16 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void saveSelected() {
-        current.setEncounterDate(new Date());
         current.setDepartment(sessionController.getDepartment());
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
+            if (current.getEncounterDate() == null) {
+                current.setEncounterDate(new Date());
+            }
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-
             current.setCreatedAt(new Date());
+            current.setEncounterDate(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -2421,7 +2423,7 @@ public class PatientEncounterController implements Serializable {
 
     private List<ClinicalFindingValue> fillEncounterInvestigations(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicine);
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigation);
         return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
@@ -2504,6 +2506,9 @@ public class PatientEncounterController implements Serializable {
                 if (current.getPatient() != null) {
                     encounterImage.setPatient(current.getPatient());
                 }
+                if(current.getPatient().getPerson()!=null){
+                    encounterImage.setPerson(current.getPatient().getPerson());
+                }
             }
         }
         return encounterImage;
@@ -2514,6 +2519,17 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getEncounterInvestigation() {
+        if (encounterInvestigation == null) {
+            encounterInvestigation = new ClinicalFindingValue();
+            encounterInvestigation.setEncounter(current);
+            encounterInvestigation.setClinicalFindingValueType(ClinicalFindingValueType.VisitInvestigation);
+            if (current != null) {
+                encounterInvestigation.setPatient(current.getPatient());
+            }
+            if (current.getPatient() != null) {
+                encounterInvestigation.setPerson(current.getPatient().getPerson());
+            }
+        }
         return encounterInvestigation;
     }
 

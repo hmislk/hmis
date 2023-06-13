@@ -116,6 +116,8 @@
                                                                  value="#{patientEncounterController.encounterInvestigation.lobValue}">
                                                 </p:inputTextarea>
 
+                                              
+                                                
                                                 <p:watermark value="Select an investigation." for="acIx"></p:watermark>
                                                 <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtSx"></p:watermark>
                                                 <h:panelGroup id="gpIx" >
@@ -129,9 +131,11 @@
                                                                  var="ix" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
-                                                            <p:commandLink ajax="true" 
-                                                                           actionListener="#{patientEncounterController.removeCfv}" 
-                                                                           oncomplete="PF('tblSx').update();">
+                                                            <p:commandLink id="clRemoveIx"
+                                                                           action="#{patientEncounterController.removeEncounterInvestigations()}" 
+                                                                           process="clRemoveIx"
+                                                                           update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
+                                                                           >
                                                                 <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
                                                                 <h:outputText value="&nbsp;(X)" />
                                                             </p:commandLink>
@@ -165,9 +169,9 @@
                                                     </div>
                                                     <div class="col-md-3" >
                                                         <p:commandButton ajax="true" 
-                                                                         id="btnAddOnlyDx" 
+                                                                         id="btnAddDx" 
                                                                          action="#{patientEncounterController.addDx}"
-                                                                         process="acDx txtDx btnAddOnlyDx" update="acDx txtDx gpDx"
+                                                                         process="acDx txtDx btnAddDx" update="acDx txtDx gpDx"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                     </div>
@@ -178,7 +182,7 @@
                                                 </p:inputTextarea>
                                                 <p:watermark value="Select Diagnosis." for="acDx"></p:watermark>
                                                 <p:watermark value="Write Details about the Diagnosis here and click Dx button or Dx &amp; Rx button." for="txtDx"></p:watermark>
-                                                <p:tooltip value="Add a Diagnosis" for="btnDx" ></p:tooltip>
+                                                <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
                                                                  rendered="#{patientEncounterController.current.diagnosis ne null and patientEncounterController.current.diagnosis.size() > 0}"
@@ -190,11 +194,11 @@
                                                                  var="edx" class="w-100">
                                                         <p:column headerText="Diagnosis">
                                                             <h:outputLabel value="#{edx.clinicalFindingItem.name}"></h:outputLabel>
-                                                            <p:commandLink ajax="true" 
-                                                                           actionListener="#{patientEncounterController.removeCfv}"
+                                                            <p:commandLink id="clRemoveDx" 
+                                                                           process="clRemoveDx" 
+                                                                           action="#{patientEncounterController.removeEncounterProcedure()}"
                                                                            update="gpDx">
                                                                 <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
-                                                                <h:outputText value="&nbsp;(X)" />
                                                             </p:commandLink>
                                                         </p:column>
                                                         <p:column headerText="Details">
