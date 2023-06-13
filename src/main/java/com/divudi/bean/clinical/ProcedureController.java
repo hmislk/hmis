@@ -47,7 +47,7 @@ public class ProcedureController implements Serializable {
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
 
-    public List<ClinicalFindingItem> completeDiagnosis(String qry) {
+    public List<ClinicalFindingItem> completeProcedures(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Therapeutic_Procedure);

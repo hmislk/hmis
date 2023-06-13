@@ -114,6 +114,9 @@ public class PhotoCamBean implements Serializable {
         getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
         System.out.println("getPatientEncounterController().getEncounterImages() = " + getPatientEncounterController().getEncounterImages().size());
         getPatientEncounterController().setEncounterImage(null);
+        getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
+        getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
+        getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent());
     }
 
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
@@ -136,6 +139,9 @@ public class PhotoCamBean implements Serializable {
         getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
         System.out.println("getPatientEncounterController().getEncounterImages() = " + getPatientEncounterController().getEncounterImages().size());
         getPatientEncounterController().setEncounterImage(null);
+
+        getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
+        getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
     }
 
     public void oncapture(CaptureEvent captureEvent) {

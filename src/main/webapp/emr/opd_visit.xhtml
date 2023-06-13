@@ -9,35 +9,31 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content" >
-                
+
                 <h:panelGroup rendered="true" >
                     <div class="row"   >
                         <div class="col-md-8 m-0 p-0" >
-                            <div class="row p-1" style="border: 3px solid red;">
-                                <div class="col-md-6 p-1 text-justify" style="border: 1px solid blue;">
+                            <div class="row p-0 m-0" >
+                                <div class="col-md-6 p-0 m-0 text-justify" >
                                     <h:form >
-                                        <div class="card mx-1" >
-                                            <div class="card card-header">
-                                                <div class="row align-items-center justify-content-between">
-                                                    <div class="col-md-4">
-                                                        Details
-                                                    </div>
-                                                    <div class="col-md-8 text-end">
-                                                        <p:commandButton value="Save" 
-                                                                         ajax="false"
-                                                                         action="#{patientEncounterController.saveSelected()}" 
-                                                                         icon="pi pi-save" 
-                                                                         class="p-button-rounded p-button-text-icon-left m-1" />
-                                                        <p:commandButton ajax="false" 
-                                                                         value="Print" 
-                                                                         icon="pi pi-print" 
-                                                                         class="p-button-rounded p-button-text-icon-left m-1">
-                                                            <p:printer target="txtComments" ></p:printer>
-                                                        </p:commandButton>
-                                                    </div>
-                                                </div>
+                                        <div class="card m-0 p-0">
+                                            <div class="card-header">
+                                                Details
                                             </div>
-                                            <div class="card card-body" >
+                                            <div class="card-body position-relative">
+                                                <div class="position-absolute top-0 end-0">
+                                                    <p:commandButton action="#{patientEncounterController.saveSelected()}"
+                                                                     ajax="false"
+                                                                     icon="pi pi-save"
+                                                                     class="me-2" 
+                                                                     title="Save"/>
+                                                    <p:commandButton ajax="false"
+                                                                     icon="pi pi-print"
+                                                                     class="me-2"
+                                                                     title="Print">
+                                                        <p:printer target="txtComments"/>
+                                                    </p:commandButton>
+                                                </div>
                                                 <p:inputTextarea id="txtComments" 
                                                                  queryDelay="0" 
                                                                  placeholder="Write comments here."
@@ -45,8 +41,7 @@
                                                                  autoResize="true"
                                                                  value="#{patientEncounterController.current.comments}" 
                                                                  completeMethod="#{patientEncounterController.completeClinicalComments}" 
-                                                                 minQueryLength="1"
-                                                                 >
+                                                                 minQueryLength="1">
                                                     <f:ajax event="keyup" execute="txtComments" ></f:ajax>
                                                 </p:inputTextarea>
                                                 <div class="row my-1" ></div>
@@ -84,75 +79,214 @@
                                             </div>
 
                                         </div>
-                                        <div class="row my-1" ></div>
-                                        <div class="card " >
-                                            <div class="card card-header" >
-                                                <p:outputLabel value="Diagnosis" ></p:outputLabel>
+
+
+                                        <div class="card">
+                                            <div class="card card-header">
+                                                <p:outputLabel value="Tests"></p:outputLabel>
                                             </div>
-                                            <div class="card card-body" >
-                                                <p:autoComplete id="acDx" value="#{patientEncounterController.diagnosis}"
-                                                                completeMethod="#{diagnosisController.completeDiagnosis}"
-                                                                var="dx" forceSelection="true"
-                                                                itemLabel="#{dx.name}" 
-                                                                itemValue="#{dx}"
-                                                                class="w-100"
-                                                                inputStyleClass="w-100"
-                                                                >
-                                                </p:autoComplete>
+                                            <div class="card card-body">
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acIx" 
+                                                                        value="#{patientEncounterController.encounterInvestigation.itemValue}"
+                                                                        completeMethod="#{investigationController.completeInvestigation}"
+                                                                        var="ix" forceSelection="true"
+                                                                        itemLabel="#{ix.name}" 
+                                                                        itemValue="#{ix}"
+                                                                        class="w-100"
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         id="btnIx" 
+                                                                         action="#{patientEncounterController.addEncounterInvestigation()}"
+                                                                         process="acIx txtIx btnIx" update="acIx txtIx gpIx"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
+                                                    </div>
+                                                </div>
+
+
+
+                                                <p:inputTextarea class="w-100" autoResize="true"
+                                                                 id="txtIx" 
+                                                                 value="#{patientEncounterController.encounterInvestigation.lobValue}">
+                                                </p:inputTextarea>
+
+                                                <p:watermark value="Select an investigation." for="acIx"></p:watermark>
+                                                <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtSx"></p:watermark>
+                                                <h:panelGroup id="gpIx" >
+                                                    <p:dataTable id="tblIx" 
+                                                                 rendered="#{patientEncounterController.encounterInvestigations ne null and patientEncounterController.encounterInvestigations.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterInvestigations}"
+                                                                 emptyMessage="No Investigations Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="ix" class="w-100">
+                                                        <p:column headerText="Procedure" >
+                                                            <h:outputLabel value="#{ix.itemValue.name}"></h:outputLabel>
+                                                            <p:commandLink ajax="true" 
+                                                                           actionListener="#{patientEncounterController.removeCfv}" 
+                                                                           oncomplete="PF('tblSx').update();">
+                                                                <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
+                                                                <h:outputText value="&nbsp;(X)" />
+                                                            </p:commandLink>
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{ix.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+
+
+
+                                        <div class="card">
+                                            <div class="card card-header">
+                                                <p:outputLabel value="Diagnosis"></p:outputLabel>
+                                            </div>
+                                            <div class="card card-body">
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acDx" 
+                                                                        value="#{patientEncounterController.diagnosis}"
+                                                                        completeMethod="#{diagnosisController.completeDiagnosis}"
+                                                                        var="dx" forceSelection="true"
+                                                                        itemLabel="#{dx.name}" 
+                                                                        itemValue="#{dx}"
+                                                                        class="w-100"
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         id="btnAddOnlyDx" 
+                                                                         action="#{patientEncounterController.addDx}"
+                                                                         process="acDx txtDx btnAddOnlyDx" update="acDx txtDx gpDx"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </div>
                                                 <p:inputTextarea class="w-100" autoResize="true"
                                                                  id="txtDx" 
-                                                                 value="#{patientEncounterController.diagnosisComments}" ></p:inputTextarea>
-                                                <h:panelGroup  class="w-100">
-                                                    <p:commandButton 
-                                                        ajax="false" 
-                                                        id="btnAddOnlyDx" 
-                                                        value="Dx" 
-                                                        action="#{patientEncounterController.addDx()}">
-                                                    </p:commandButton>
-                                                    <p:commandButton ajax="false" id="btnAddDxAndRx" value="Dx &amp; Rx" 
-                                                                     action="#{patientEncounterController.addDxAndRx()}" >
-                                                    </p:commandButton>
-                                                    <p:commandButton ajax="false" id="btnAddOnlyRx" value="Rx" 
-                                                                     action="#{patientEncounterController.addRxWithoutDx()}" >
-                                                    </p:commandButton>
+                                                                 value="#{patientEncounterController.diagnosisComments}">
+                                                </p:inputTextarea>
+                                                <p:watermark value="Select Diagnosis." for="acDx"></p:watermark>
+                                                <p:watermark value="Write Details about the Diagnosis here and click Dx button or Dx &amp; Rx button." for="txtDx"></p:watermark>
+                                                <p:tooltip value="Add a Diagnosis" for="btnDx" ></p:tooltip>
+                                                <h:panelGroup id="gpDx" >
+                                                    <p:dataTable id="tblDx" 
+                                                                 rendered="#{patientEncounterController.current.diagnosis ne null and patientEncounterController.current.diagnosis.size() > 0}"
+                                                                 value="#{patientEncounterController.current.diagnosis}"
+                                                                 emptyMessage="No Diagnosis Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="edx" class="w-100">
+                                                        <p:column headerText="Diagnosis">
+                                                            <h:outputLabel value="#{edx.clinicalFindingItem.name}"></h:outputLabel>
+                                                            <p:commandLink ajax="true" 
+                                                                           actionListener="#{patientEncounterController.removeCfv}"
+                                                                           update="gpDx">
+                                                                <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
+                                                                <h:outputText value="&nbsp;(X)" />
+                                                            </p:commandLink>
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{edx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                    </p:dataTable>
                                                 </h:panelGroup>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="card">
+                                            <div class="card card-header">
+                                                <p:outputLabel value="Procedures"></p:outputLabel>
+                                            </div>
+                                            <div class="card card-body">
+                                                <div class="row" >
+                                                    <div class="col-md-9" >
+                                                        <p:autoComplete id="acSx" 
+                                                                        value="#{patientEncounterController.encounterProcedure.itemValue}"
+                                                                        completeMethod="#{procedureController.completeProcedures}"
+                                                                        var="sx" forceSelection="true"
+                                                                        itemLabel="#{sx.name}" 
+                                                                        itemValue="#{sx}"
+                                                                        class="w-100"
+
+                                                                        inputStyleClass="w-100">
+                                                        </p:autoComplete>
+
+                                                    </div>
+                                                    <div class="col-md-3" >
+                                                        <p:commandButton ajax="true" 
+                                                                         id="btnSx" 
+                                                                         action="#{patientEncounterController.addEncounterProcedure}"
+                                                                         process="acSx txtSx btnSx" update="acSx txtSx gpSx"
+                                                                         icon="pi pi-plus">
+                                                        </p:commandButton>
+                                                        <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
+                                                    </div>
+                                                </div>
 
 
 
-                                                <p:watermark value="Select Diagnosis." for="acDx" ></p:watermark>
-                                                <p:watermark value="Write Details about the Diagnosis here and click Dx button or Dx &amp; Rx button." for="txtDx" ></p:watermark>
+                                                <p:inputTextarea class="w-100" autoResize="true"
+                                                                 id="txtSx" 
+                                                                 value="#{patientEncounterController.encounterProcedure.lobValue}">
+                                                </p:inputTextarea>
 
-
-                                                <p:dataTable id="tblDx" 
-                                                             value="#{patientEncounterController.current.diagnosis}"
-                                                             emptyMessage="No Diagnosis Added Yet" rows="5"
-                                                             paginator="true"
-                                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                                                             var="edx" class="w-100" >
-                                                    <p:column width="10" >
-                                                        <h:outputLabel value="#{edx.clinicalFindingItem.name}" ></h:outputLabel>
-                                                        <p:commandLink ajax="false" value="&nbsp;(X)" action="#{patientEncounterController.removeCfv()}" > 
-                                                            <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
-                                                        </p:commandLink>
-                                                    </p:column>
-                                                    <p:column width="10" >
-                                                        <h:outputLabel value="#{edx.lobValue}" ></h:outputLabel>
-                                                    </p:column>
-                                                </p:dataTable>
+                                                <p:watermark value="Select Procedure." for="acSx"></p:watermark>
+                                                <p:watermark value="Write Details about the Procedure here and click add procedure button." for="txtSx"></p:watermark>
+                                                <h:panelGroup id="gpSx" >
+                                                    <p:dataTable id="tblSx" 
+                                                                 rendered="#{patientEncounterController.encounterProcedures ne null and patientEncounterController.encounterProcedures.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterProcedures}"
+                                                                 emptyMessage="No Procedure Added Yet" rows="5"
+                                                                 paginatorAlwaysVisible="false"
+                                                                 paginator="true"
+                                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                                 var="sx" class="w-100">
+                                                        <p:column headerText="Procedure" >
+                                                            <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
+                                                            <p:commandLink ajax="true" 
+                                                                           actionListener="#{patientEncounterController.removeCfv}" 
+                                                                           oncomplete="PF('tblSx').update();">
+                                                                <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
+                                                                <h:outputText value="&nbsp;(X)" />
+                                                            </p:commandLink>
+                                                        </p:column>
+                                                        <p:column headerText="Details">
+                                                            <h:outputLabel value="#{sx.lobValue}"></h:outputLabel>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
 
                                             </div>
                                         </div>
+
                                     </h:form>
                                 </div>
+
+
+
                                 <div class="col-md-6 m-0 p-0"  >
                                     <div class="card">
-                                        <div class="card-header" >Images</div>
-                                        <div class="card-body" >
+                                        <div class="card-header">Images</div>
+                                        <div class="card-body">
                                             <h:form id="formImage" enctype="multipart/form-data" rendered="true">
-                                                <p:dataTable id="imageSwitcher" value="#{patientEncounterController.encounterImages}" var="photo"
+                                                <p:dataTable id="imageSwitcher" 
+                                                             styleClass="noHeader" 
+                                                             widgetVar="imageSwitcherTable" value="#{patientEncounterController.encounterImages}" var="photo"
                                                              paginator="true" 
                                                              paginatorAlwaysVisible="false"
-
                                                              rows="1" 
                                                              paginatorPosition="top"
                                                              paginatorTemplate="{FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
@@ -165,27 +299,90 @@
                                                                 <f:setPropertyActionListener value="#{photo}" target="#{patientEncounterController.removingClinicalFindingValue}" ></f:setPropertyActionListener>
                                                             </p:commandButton>
 
-                                                            <p:graphicImage value="#{patientEncounterController.image}" cache="false">
+                                                            <p:graphicImage value="#{patientEncounterController.image}" cache="false" style="width: 100%; height: 100%; object-fit: cover;">
                                                                 <f:param name="id" value="#{photo.id}" />
                                                             </p:graphicImage>
                                                         </div>
                                                     </p:column>
                                                 </p:dataTable>
-                                                <p:fileUpload value="#{photoCamBean.uploadedFile}" mode="advanced" dragDropSupport="true"
-                                                              multiple="false" update="imageSwitcher" accept="image/*" 
-                                                              class="m-2" title="Upload Image"
 
-                                                              listener="#{photoCamBean.uploadPhoto}" />
                                                 <h:outputScript library="photocam" name="webcam.js" />
-                                                <p:commandButton id="btnCaptureImage" onclick="PF('pc').capture();" icon="pi pi-camera"
-                                                                 action="#{patientEncounterController.updateEncounterImages}" update="imageSwitcher" />
-                                                <p:photoCam listener="#{photoCamBean.oncaptureVisitPhoto}" widgetVar="pc" width="400" height="300"
-                                                            photoWidth="800" photoHeight="600" />
 
+                                                <div style="display:none;">
+                                                    <p:photoCam listener="#{photoCamBean.oncaptureVisitPhoto}" 
+                                                                widgetVar="pc" width="400" height="300"
+                                                                photoWidth="800" photoHeight="600" />
+                                                </div>
+
+                                                <div class="row align-items-center"> <!-- Use Bootstrap row class -->
+                                                    <div class="col"> <!-- Use Bootstrap col class -->
+                                                        <p:commandButton id="btnCaptureImage" 
+                                                                         onclick="PF('pc').capture();" 
+                                                                         icon="pi pi-camera"
+                                                                         action="#{patientEncounterController.updateEncounterImages}" 
+                                                                         update="imageSwitcher" 
+                                                                         class="btn btn-primary h-50"/> <!-- Adjust height -->
+                                                    </div>
+                                                    <div class="col d-flex align-items-center">
+                                                        <p:fileUpload value="#{photoCamBean.uploadedFile}" 
+                                                                      auto="true"
+                                                                      mode="advanced" 
+                                                                      dragDropSupport="true"
+                                                                      multiple="false" update="imageSwitcher" accept="image/*" 
+                                                                      class="m-2" title="Upload Image"
+                                                                      listener="#{photoCamBean.uploadPhoto}" />
+                                                    </div>
+
+                                                </div>
                                             </h:form>
                                         </div>
 
+
+
+
                                     </div>
+
+                                    <script type="text/javascript">
+//<![CDATA[
+                                        $(document).ready(function () {
+                                            let dataTable = PF('imageSwitcherTable');
+                                            if (dataTable.paginator.cfg.rowCount <= 1) {
+                                                $('.ui-paginator').hide();
+                                            }
+                                        });
+//]]>
+                                    </script>
+
+                                    <style>
+                                        .noHeader thead {
+                                            display: none;
+                                        }
+                                        .noHeader .ui-paginator {
+                                            height: 10px;
+                                            padding: 0;
+                                            margin: 0;
+                                            position: relative;
+                                        }
+                                        .noHeader .ui-paginator .ui-paginator-page {
+                                            position: absolute;
+                                            top: 0;
+                                            margin: 0;
+                                        }
+                                        /* Adjust this according to your needs */
+                                        .noHeader .ui-paginator .ui-paginator-first,
+                                        .noHeader .ui-paginator .ui-paginator-prev,
+                                        .noHeader .ui-paginator .ui-paginator-next,
+                                        .noHeader .ui-paginator .ui-paginator-last {
+                                            position: relative;
+                                            top: -10px;
+                                        }
+                                    </style>
+
+
+
+
+
+
                                 </div>
                             </div>
 
@@ -297,11 +494,11 @@
                         </div>
                         <div class="col-md-4 m-0 p-0" >
                             <h:form >
-                                <div class="card " >
-                                    <div class="card card-header" >
+                                <div class="card m-0 p-0" >
+                                    <div class="card-header" >
                                         <p:outputLabel value="Patient Details" ></p:outputLabel>
                                     </div>
-                                    <div class="card card-body" >
+                                    <div class="card-body" >
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>

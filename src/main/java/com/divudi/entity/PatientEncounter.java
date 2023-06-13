@@ -409,6 +409,9 @@ public class PatientEncounter implements Serializable {
     }
 
     public List<ClinicalFindingValue> getClinicalFindingValues() {
+        if(clinicalFindingValues==null){
+            clinicalFindingValues = new ArrayList<>();
+        }
         return clinicalFindingValues;
     }
 
