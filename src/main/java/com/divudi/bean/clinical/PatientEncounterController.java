@@ -11,6 +11,7 @@ package com.divudi.bean.clinical;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.CommonFunctionsController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -71,8 +72,17 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.faces.FacesException;
+import javax.imageio.stream.FileImageOutputStream;
+import javax.servlet.ServletContext;
+import org.primefaces.event.CaptureEvent;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -210,6 +220,8 @@ public class PatientEncounterController implements Serializable {
     private String chartString;
 
     private InvestigationItem graphInvestigationItem;
+    
+     private UploadedFile uploadedFile;
 
     public StreamedContent getImage() throws IOException {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -2649,6 +2661,98 @@ public class PatientEncounterController implements Serializable {
     public void setEncounterFindingValues(List<ClinicalFindingValue> encounterFindingValues) {
         this.encounterFindingValues = encounterFindingValues;
     }
+    
+    
+    
+    public void uploadPhoto(FileUploadEvent event) {
+        System.out.println("uploadPhoto");
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Select Encounter");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            saveSelected();
+        }
+        byte[] fileBytes;
+        try {
+            uploadedFile = event.getFile();
+            fileBytes = uploadedFile.getContent();
+            getEncounterImage().setImageValue(fileBytes);
+        } catch (Exception ex) {
+            Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+
+        getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
+        getEncounterImage().setImageType(event.getFile().getContentType());
+        getEncounterImage().setEncounter(getCurrent());
+        getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+        if (getEncounterImage().getId() == null) {
+            clinicalFindingValueFacade.create(getEncounterImage());
+        } else {
+            clinicalFindingValueFacade.edit(getEncounterImage());
+        }
+        getEncounterImage().setImageName("encounter_image_" + getEncounterImage().getId() + ".png");
+        clinicalFindingValueFacade.edit(getEncounterImage());
+        getEncounterImages().add(getEncounterImage());
+        System.out.println("getEncounterImages() = " + getEncounterImages().size());
+        setEncounterImage(null);
+        getEncounterFindingValues().add(getEncounterImage());
+        setEncounterImages(fillEncounterImages(getCurrent()));
+        fillEncounterImages(getCurrent());
+    }
+
+    public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
+        System.out.println("oncaptureVisitPhoto");
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select Encounter");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            saveSelected();
+        }
+        getEncounterImage().setImageValue(captureEvent.getData());
+        getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
+        getEncounterImage().setImageType("image/png");
+        getEncounterImage().setEncounter(getCurrent());
+        getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+        if (getEncounterImage().getId() == null) {
+            clinicalFindingValueFacade.create(getEncounterImage());
+        } else {
+            clinicalFindingValueFacade.edit(getEncounterImage());
+        }
+        getEncounterImage().setImageName("encounter_image_" + getEncounterImage().getId() + ".png");
+        clinicalFindingValueFacade.edit(getEncounterImage());
+        getEncounterImages().add(getEncounterImage());
+        System.out.println("getEncounterImages() = " + getEncounterImages().size());
+        setEncounterImage(null);
+
+        getEncounterFindingValues().add(getEncounterImage());
+        setEncounterImages(fillEncounterImages(getCurrent()));
+    }
+
+
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 }
 

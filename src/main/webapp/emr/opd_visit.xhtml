@@ -313,7 +313,7 @@
                                                 <h:outputScript library="photocam" name="webcam.js" />
 
                                                 <div style="display:none;">
-                                                    <p:photoCam listener="#{photoCamBean.oncaptureVisitPhoto}" 
+                                                    <p:photoCam listener="#{patientEncounterController.oncaptureVisitPhoto}" 
                                                                 widgetVar="pc" width="400" height="300"
                                                                 photoWidth="800" photoHeight="600" />
                                                 </div>
@@ -328,13 +328,13 @@
                                                                          class="btn btn-primary h-50"/> <!-- Adjust height -->
                                                     </div>
                                                     <div class="col d-flex align-items-center">
-                                                        <p:fileUpload value="#{photoCamBean.uploadedFile}" 
+                                                        <p:fileUpload value="#{patientEncounterController.uploadedFile}" 
                                                                       auto="true"
                                                                       mode="advanced" 
                                                                       dragDropSupport="true"
                                                                       multiple="false" update="imageSwitcher" accept="image/*" 
                                                                       class="m-2" title="Upload Image"
-                                                                      listener="#{photoCamBean.uploadPhoto}" />
+                                                                      listener="#{patientEncounterController.uploadPhoto}" />
                                                     </div>
 
                                                 </div>

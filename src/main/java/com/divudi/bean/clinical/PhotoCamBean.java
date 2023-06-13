@@ -37,6 +37,16 @@ import org.primefaces.model.file.UploadedFile;
 @SessionScoped
 public class PhotoCamBean implements Serializable {
 
+    @Inject
+    PatientController patientController;
+    @Inject
+    private PatientEncounterController patientEncounterController;
+
+    @EJB
+    private ClinicalFindingValueFacade clinicalFindingValueFacade;
+
+    private UploadedFile uploadedFile;
+
     private List<String> photos = new ArrayList<>();
 
     private String getRandomImageName() {
@@ -48,16 +58,6 @@ public class PhotoCamBean implements Serializable {
     public List<String> getPhotos() {
         return photos;
     }
-
-    @Inject
-    PatientController patientController;
-    @Inject
-    private PatientEncounterController patientEncounterController;
-
-    @EJB
-    private ClinicalFindingValueFacade clinicalFindingValueFacade;
-
-    private UploadedFile uploadedFile;
 
     public PatientController getPatientController() {
         return patientController;
