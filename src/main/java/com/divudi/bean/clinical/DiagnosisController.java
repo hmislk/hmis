@@ -45,11 +45,10 @@ public class DiagnosisController implements Serializable {
 
     String selectText = "";
 
-    
-    public String navigateToManageDiagnoses(){
+    public String navigateToManageDiagnoses() {
         return "/emr/admin/diagnoses";
     }
-    
+
     public List<ClinicalEntity> completeDiagnosis(String qry) {
         List<ClinicalEntity> c;
         Map m = new HashMap();
@@ -185,6 +184,14 @@ public class DiagnosisController implements Serializable {
     }
 
     public List<ClinicalEntity> getItems() {
+        if (items == null) {
+            Map m = new HashMap();
+            m.put("t", SymanticType.Disease_or_Syndrome);
+            String sql;
+            sql = "select c from ClinicalFindingItem c where c.retired=false and c.symanticType=:t order by c.name";
+            items = getFacade().findByJpql(sql, m);
+        }
+
         return items;
     }
 

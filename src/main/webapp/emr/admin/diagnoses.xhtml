@@ -15,9 +15,26 @@
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-5">
+                            <h:panelGrid columns="2"  class="w-100" >
+                                <p:commandButton id="btnAdd"
+                                                 value="Add" 
+                                                 class="w-100"
+                                                 update="gpDetail lstSelect detailFocus" 
+                                                 action="#{diagnosisController.prepareAdd()}"  >
+                                </p:commandButton>
+                                <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                                 class="w-100"
+                                                 action="#{diagnosisController.delete()}" 
+                                                 process="lstSelect btnDelete"
+                                                 update="lstSelect gpDetail"
+                                                 value="Delete">
+                                </p:commandButton>
+                            </h:panelGrid>
 
-                            <h:panelGrid id="gpSelect">
-                                <p:selectOneListbox id="lstSelect" value="#{diagnosisController.current}">
+                            <h:panelGrid id="gpSelect" class="w-100">
+                                <p:selectOneListbox id="lstSelect" 
+                                                    value="#{diagnosisController.current}">
                                     <f:selectItems value="#{diagnosisController.items}" 
                                                    var="myItem" 
                                                    itemValue="#{myItem}" 
@@ -25,21 +42,7 @@
                                     <f:ajax render="gpDetail" execute="lstSelect">
                                     </f:ajax>
                                 </p:selectOneListbox>
-                                <div class="row mt-2">
-                                    <div class="col-md-4">
-                                        <p:commandButton id="btnAdd" value="Add" update="gpDetail lstSelect detailFocus" action="#{diagnosisController.prepareAdd()}"  >
-                                        </p:commandButton>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                    return false;" 
-                                                         action="#{diagnosisController.delete()}" 
-                                                         process="lstSelect btnDelete"
-                                                         update="lstSelect gpDetail"
-                                                         value="Delete">
-                                        </p:commandButton>
-                                    </div>
-                                </div>
+
                             </h:panelGrid>
 
                         </div>
