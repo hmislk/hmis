@@ -28,7 +28,8 @@
                                                  update="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" >
                                 </p:commandButton>
                                 <p:commandButton 
-                                    id="btnDelete" 
+                                    id="btnDelete"
+                                    ajax="false"
                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" 
                                     action="#{signController.delete()}"  
@@ -39,7 +40,10 @@
                             <h:panelGrid id="gpSelectText" class="w-100" >
                                 <p:selectOneListbox  id="lstSelect"   
                                                      value="#{signController.current}"
-                                                     class="w-100">
+                                                     class="w-100"
+                                                     filter="true"
+                                                     filterMatchMode="contains"
+                                                     scrollHeight="500">
                                     <f:selectItems  value="#{signController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>
