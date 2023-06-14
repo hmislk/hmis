@@ -41,6 +41,10 @@ public class VocabularyController implements Serializable {
     private Vocabulary current;
     private List<Vocabulary> items = null;
     String selectText = "";
+    
+    public String navigateToManageVocabularies(){
+        return "/emr/admin/vocabularies";
+    }
 
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;

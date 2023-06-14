@@ -47,6 +47,11 @@ public class SymptomController implements Serializable {
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
 
+    public String navigateToManageSymptoms(){
+        return "/emr/admin/symptoms";
+    }
+    
+    
     public List<ClinicalFindingItem> completeDiagnosis(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();

@@ -45,6 +45,11 @@ public class DiagnosisController implements Serializable {
 
     String selectText = "";
 
+    
+    public String navigateToManageDiagnoses(){
+        return "/emr/admin/diagnoses";
+    }
+    
     public List<ClinicalEntity> completeDiagnosis(String qry) {
         List<ClinicalEntity> c;
         Map m = new HashMap();

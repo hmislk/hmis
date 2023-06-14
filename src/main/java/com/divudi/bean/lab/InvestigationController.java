@@ -143,6 +143,12 @@ public class InvestigationController implements Serializable {
     private UploadedFile file;
     private StreamedContent downloadingFile;
 
+    
+    public String navigateToManageInvestigationForEmr(){
+        return "/emr/admin/investigations";
+    }
+    
+    
     public String toAddManyIx() {
         current = new Investigation();
         current.setInwardChargeType(InwardChargeType.Laboratory);
