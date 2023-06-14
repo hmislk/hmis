@@ -31,6 +31,7 @@
                                                  class="w-100" >
                                 </p:commandButton>
                                 <p:commandButton 
+                                    ajax="false"
                                     id="btnDelete" 
                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                 return false;" 
@@ -44,6 +45,9 @@
                                     id="lstSelect"   
                                     value="#{symptomController.current}"
                                     class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    scrollHeight="500"
                                     >
                                     <f:selectItems  value="#{symptomController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >

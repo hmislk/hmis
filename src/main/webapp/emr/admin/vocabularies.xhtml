@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-                
+
                 <p:focus id="selectFocus" context="gpSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
                 <p:panel header="Manage Vocabularies" >
@@ -39,6 +39,7 @@
 
                                 <p:selectOneListbox  id="lstSelect"  
                                                      filter="true"
+                                                     scrollHeight="500"
                                                      filterMatchMode="contains"
                                                      class="w-100 my-1"
                                                      value="#{vocabularyController.current}" style="min-width: 223px">
