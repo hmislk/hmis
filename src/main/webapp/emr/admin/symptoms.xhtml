@@ -16,45 +16,79 @@
             <p:focus id="selectFocus" context="gpSelect" />
             <p:focus id="detailFocus" context="gpDetail" />
 
-            <div class="row" >
-                <div class="col-md-5" >
-                    <h:panelGrid id="gpSelect" columns="1"  >
-                        <p:panel >
-                            <h:panelGrid id="gpSelectText" >
-                                <p:selectOneListbox  id="lstSelect"   value="#{symptomController.current}" style="min-width: 223px; max-height: 400px;">
+            <p:panel header="Manage Symptoms" >
+                <div class="row" >
+                    <div class="col-md-5" >
+                        <h:panelGrid id="gpSelect" columns="1"  class="w-100" >
+                            <h:panelGrid id="gpSelectButtons" 
+                                         columns="2" 
+                                         class="w-100"  >
+                                <p:commandButton id="btnAdd" 
+                                                 value="Add"
+                                                 action="#{symptomController.prepareAdd()}" 
+                                                 update="btnAdd  btnDelete btnSave lstSelect gpDetail detailFocus" 
+                                                 process="btnAdd" 
+                                                 class="w-100" >
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnDelete" 
+                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                return false;" 
+                                    action="#{symptomController.delete()}"  
+                                    value="Delete"  
+                                    class="w-100">
+                                </p:commandButton>
+                            </h:panelGrid>
+                            <h:panelGrid id="gpSelectText" class="w-100" >
+                                <p:selectOneListbox  
+                                    id="lstSelect"   
+                                    value="#{symptomController.current}"
+                                    class="w-100"
+                                    >
                                     <f:selectItems  value="#{symptomController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect" >
                                     </f:ajax>
                                 </p:selectOneListbox>
                             </h:panelGrid>
-                            <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                <p:commandButton id="btnAdd" value="Add" action="#{symptomController.prepareAdd()}" styleClass="buttons"  update="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" process="btnAdd" onclick="onSubmitButton();" >
-                                </p:commandButton>
-                                <p:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                            return false;" action="#{symptomController.delete()}"  value="Delete"  >
+
+
+                        </h:panelGrid  >
+                    </div>
+                    <div class="col-md-7" >
+                        <h:panelGrid id="gpDetail" columns="1" class="w-100">
+                            <h:panelGrid id="gpDetailText" columns="2"   class="w-100">
+                                <h:outputText id="lblName" value="Name" ></h:outputText>
+                                <p:inputText autocomplete="off"
+                                             id="txtName" 
+                                             class="w-100"
+                                             value="#{symptomController.current.name}"  >
+                                </p:inputText>
+                                <h:outputText id="lblCode" value="Code" ></h:outputText>
+                                <p:inputText 
+                                    autocomplete="off" 
+                                    id="txtCode" 
+                                    value="#{symptomController.current.code}"  
+                                    class="w-100">
+                                </p:inputText>                                    
+                                <h:outputText id="lblDes" value="Description" ></h:outputText>
+                                <p:inputTextarea id="txtDes" 
+                                                 class="w-100"
+                                                 value="#{symptomController.current.descreption}"  >
+                                </p:inputTextarea>
+                            </h:panelGrid>
+                            <h:panelGrid id="gpDetailButtons" columns="2">
+                                <p:commandButton id="btnSave" 
+                                                 value="Save" 
+                                                 action="#{symptomController.saveSelected()}" 
+                                                 update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  process="gpDetail" onclick="onSubmitButton();" >
                                 </p:commandButton>
                             </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid  >
-                </div>
-                <div class="col-md-7" >
-                    <h:panelGrid id="gpDetail" columns="1">
-                        <h:panelGrid id="gpDetailText" columns="2">
-                            <h:outputText id="lblName" value="Name" ></h:outputText>
-                            <p:inputText autocomplete="off" id="txtName" value="#{symptomController.current.name}"  ></p:inputText>
-                            <h:outputText id="lblCode" value="Code" ></h:outputText>
-                            <p:inputText autocomplete="off" id="txtCode" value="#{symptomController.current.code}"  ></p:inputText>                                    
-                            <h:outputText id="lblDes" value="Description" ></h:outputText>
-                            <p:inputTextarea id="txtDes" value="#{symptomController.current.descreption}"  ></p:inputTextarea>
                         </h:panelGrid>
-                        <h:panelGrid id="gpDetailButtons" columns="2">
-                            <p:commandButton id="btnSave" value="Save" action="#{symptomController.saveSelected()}" styleClass="buttons"  update="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  process="gpDetail" onclick="onSubmitButton();" >
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </h:panelGrid>
+                    </div>
                 </div>
-            </div>
-           
+            </p:panel>
+
+
         </h:form>
 
     </ui:define>
