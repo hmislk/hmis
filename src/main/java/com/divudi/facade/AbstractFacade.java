@@ -108,26 +108,27 @@ public abstract class AbstractFacade<T> {
 
     public T findFirstByJpql(String temSQL, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
-
-        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-            String paramName = entry.getKey();
-            Object paramValue = entry.getValue();
-
-            if (paramValue instanceof Date) {
-                qry.setParameter(paramName, (Date) paramValue, TemporalType.DATE);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        qry.setMaxResults(1);
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            String pPara = (String) m.getKey();
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                qry.setParameter(pPara, pVal, TemporalType.DATE);
+//                //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
             } else {
-                qry.setParameter(paramName, paramValue);
+                Object pVal = (Object) m.getValue();
+                qry.setParameter(pPara, pVal);
+//                //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
             }
         }
-
-        List<T> resultList;
         try {
-            resultList = qry.getResultList();
-        } catch (Exception e) {
-            resultList = new ArrayList<>();
+            return qry.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
         }
-
-        return resultList.isEmpty() ? null : resultList.get(0);
     }
 
     public AbstractFacade(Class<T> entityClass) {
