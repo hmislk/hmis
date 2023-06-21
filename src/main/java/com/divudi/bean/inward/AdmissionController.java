@@ -1,4 +1,4 @@
-    /*
+/*
  * Open Hospital Management Information System
  *
  * Dr M H B Ariyaratne
@@ -53,8 +53,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -88,6 +88,7 @@ public class AdmissionController implements Serializable {
     private List<Admission> items = null;
     private List<Patient> patientList;
     private boolean printPreview;
+    List<Admission> currentAdmissions;
     ///////////////////////////
     String selectText = "";
     private String ageText = "";
@@ -313,6 +314,24 @@ public class AdmissionController implements Serializable {
         return suggestions;
     }
 
+    public String navigateToListCurrentInpatients() {
+        listCurrentInpatients();
+        return "";
+
+    }
+
+    public void listCurrentInpatients() {
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select c "
+                + " from Admission c "
+                + " where c.retired=false "
+                + " and "
+                + " (c.paymentFinalized is null or c.paymentFinalized=false)"
+                + " order by c.bhtNo";
+        currentAdmissions = getFacade().findBySQL(sql, h, 20);
+    }
+
     public List<Admission> completePatientPaymentFinalized(String query) {
         List<Admission> suggestions;
         String sql;
@@ -425,8 +444,7 @@ public class AdmissionController implements Serializable {
         printPreview = false;
         bhtNumberCalculation();
     }
-    
-    
+
     public String toAdmitAMember() {
         patientRoom = null;
         items = null;
@@ -527,7 +545,7 @@ public class AdmissionController implements Serializable {
                 JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
                 return true;
             }
-            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration()==null) {
+            if (getPatientRoom().getRoomFacilityCharge().getMoChargeForAfterDuration() == null) {
                 JsfUtil.addErrorMessage("Plase Add Charge for After Duration Days");
                 return true;
             }
@@ -570,9 +588,9 @@ public class AdmissionController implements Serializable {
                 return true;
             }
         }
-        
+
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
-            if (getCurrent().getComments()==null || getCurrent().getComments().isEmpty()) {
+            if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 UtilityController.addErrorMessage("Please Add Reference No");
                 return true;
             }
@@ -997,8 +1015,6 @@ public class AdmissionController implements Serializable {
     public void setPatientSearchTab(int patientSearchTab) {
         this.patientSearchTab = patientSearchTab;
     }
-    
-    
 
     /**
      *

@@ -11,25 +11,21 @@ import com.divudi.data.clinical.ClinicalFindingValueType;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.util.JsfUtil;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
 import javax.faces.FacesException;
 import javax.faces.context.FacesContext;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.ServletContext;
-import org.primefaces.PrimeFaces;
 import org.primefaces.event.CaptureEvent;
-import org.primefaces.event.FileUploadEvent;
-import org.apache.commons.io.IOUtils;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.context.SessionScoped;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -37,9 +33,19 @@ import org.primefaces.model.file.UploadedFile;
  *
  * @author Buddhika
  */
-@Named(value = "photoCamBean")
-@RequestScoped
+@Named
+@SessionScoped
 public class PhotoCamBean implements Serializable {
+
+    @Inject
+    PatientController patientController;
+    @Inject
+    private PatientEncounterController patientEncounterController;
+
+    @EJB
+    private ClinicalFindingValueFacade clinicalFindingValueFacade;
+
+    private UploadedFile uploadedFile;
 
     private List<String> photos = new ArrayList<>();
 
@@ -52,16 +58,6 @@ public class PhotoCamBean implements Serializable {
     public List<String> getPhotos() {
         return photos;
     }
-
-    @Inject
-    PatientController patientController;
-    @Inject
-    private PatientEncounterController patientEncounterController;
-
-    @EJB
-    private ClinicalFindingValueFacade clinicalFindingValueFacade;
-
-    private UploadedFile uploadedFile;
 
     public PatientController getPatientController() {
         return patientController;
@@ -88,6 +84,9 @@ public class PhotoCamBean implements Serializable {
         if (getPatientEncounterController().getCurrent() == null || getPatientEncounterController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;
+        }
+        if (getPatientEncounterController().getCurrent().getId() == null) {
+            getPatientEncounterController().saveSelected();
         }
         byte[] fileBytes;
         try {
@@ -120,9 +119,13 @@ public class PhotoCamBean implements Serializable {
     }
 
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
-        if (getPatientEncounterController().getCurrent() == null || getPatientEncounterController().getCurrent().getId() == null) {
+        System.out.println("oncaptureVisitPhoto");
+        if (getPatientEncounterController().getCurrent() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;
+        }
+        if (getPatientEncounterController().getCurrent().getId() == null) {
+            getPatientEncounterController().saveSelected();
         }
         getPatientEncounterController().getEncounterImage().setImageValue(captureEvent.getData());
         getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + "000" + ".png");

@@ -46,6 +46,10 @@ public class SignController implements Serializable {
     private ClinicalFindingItem current;
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
+    
+    public String navigateToManageSigns(){
+        return "/emr/admin/signs";
+    }
 
     public List<ClinicalFindingItem> completeDiagnosis(String qry) {
         List<ClinicalFindingItem> c;
