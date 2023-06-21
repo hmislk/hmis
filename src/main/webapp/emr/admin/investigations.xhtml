@@ -22,7 +22,9 @@
                                 <p:panel header="Search Investigation" >
                                     <h:panelGrid id="gpSelectText" >
 
-                                        <p:inputText autocomplete="off" id="txtSearch" value="#{investigationController.selectText}" >
+                                        <p:inputText autocomplete="off" id="txtSearch" 
+                                                     value="#{investigationController.selectText}"
+                                                     class="w-100">
                                             <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                         </p:inputText>
 
@@ -53,22 +55,37 @@
                                 <f:facet name="header" >
                                     <h:outputLabel value="Edit Details" ></h:outputLabel>
                                     <p:commandButton style="float:right;" id="btnSave" value="Save"  
-                                                     action="#{investigationController.saveSelected()}" styleClass="buttons" 
+                                                     action="#{investigationController.saveSelectedForEhr()}" 
                                                      ajax="false"   >
                                     </p:commandButton>
                                 </f:facet>
-                                <h:panelGrid id="gpDetail" columns="1">
-                                    <h:panelGrid id="gpDetailText" columns="2">
-                                        <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtName" value="#{investigationController.current.name}" required="true" ></h:inputText>
-                                        <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtAddress"  class="pdInputText" value="#{investigationController.current.printName}"  ></h:inputText>
-                                        <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtFullName"  class="pdInputText" value="#{investigationController.current.fullName}"  ></h:inputText>
-                                        <p:outputLabel value="Item Code"/>
-                                        <p:inputText autocomplete="off" value="#{investigationController.current.code}"/>
-                                    </h:panelGrid>
+
+                                <h:panelGrid id="gpDetail" columns="2" class="w-100">
+                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" id="txtName" 
+                                                 value="#{investigationController.current.name}" 
+                                                 required="true" 
+                                                 class="w-100"></p:inputText>
+                                    <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        id="txtAddress"  
+
+                                        value="#{investigationController.current.printName}"  
+                                        class="w-100"></p:inputText>
+                                    <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtFullName"  
+
+                                                 value="#{investigationController.current.fullName}"  
+                                                 class="w-100"></p:inputText>
+                                    <p:outputLabel value="Item Code"/>
+                                    <p:inputText autocomplete="off" 
+                                                 id="txtCode"  
+                                                 value="#{investigationController.current.code}"
+                                                 class="w-100"/>
                                 </h:panelGrid>
+
                             </p:panel>
                         </div>
                     </div>

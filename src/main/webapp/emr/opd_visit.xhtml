@@ -10,6 +10,8 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content" >
 
+                <p:growl id="emrGrowl" ></p:growl>
+
                 <h:panelGroup rendered="true" >
                     <div class="row"   >
                         <div class="col-md-8 m-0 p-0" >
@@ -102,7 +104,7 @@
                                                         <p:commandButton ajax="true" 
                                                                          id="btnIx" 
                                                                          action="#{patientEncounterController.addEncounterInvestigation()}"
-                                                                         process="acIx txtIx btnIx" update="acIx txtIx gpIx"
+                                                                         process="acIx txtIx btnIx" update="acIx txtIx gpIx :#{p:resolveFirstComponentWithId('emrGrowl',view).clientId}"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                         <p:tooltip value="Add an Investigation" for="btnIx" ></p:tooltip>
@@ -111,13 +113,13 @@
 
 
 
-                                                <p:inputTextarea class="w-100" autoResize="true"
-                                                                 id="txtIx" 
-                                                                 value="#{patientEncounterController.encounterInvestigation.lobValue}">
-                                                </p:inputTextarea>
+                                                <p:inputText class="w-100" 
+                                                             id="txtIx" 
+                                                             value="#{patientEncounterController.encounterInvestigation.lobValue}">
+                                                </p:inputText>
 
-                                              
-                                                
+
+
                                                 <p:watermark value="Select an investigation." for="acIx"></p:watermark>
                                                 <p:watermark value="Write Details about the Investigation here and click add investigation button." for="txtSx"></p:watermark>
                                                 <h:panelGroup id="gpIx" >
@@ -134,7 +136,7 @@
                                                             <p:commandLink id="clRemoveIx"
                                                                            action="#{patientEncounterController.removeEncounterInvestigations()}" 
                                                                            process="clRemoveIx"
-                                                                           update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId}"
+                                                                           update=":#{p:resolveFirstComponentWithId('gpIx',view).clientId} :#{p:resolveFirstComponentWithId('emrGrowl',view).clientId}"
                                                                            >
                                                                 <f:setPropertyActionListener value="#{ix}" target="#{patientEncounterController.removingCfv}" />
                                                                 <h:outputText value="&nbsp;(X)" />
@@ -171,7 +173,8 @@
                                                         <p:commandButton ajax="true" 
                                                                          id="btnAddDx" 
                                                                          action="#{patientEncounterController.addDx}"
-                                                                         process="acDx txtDx btnAddDx" update="acDx txtDx gpDx"
+                                                                         process="acDx txtDx btnAddDx" 
+                                                                         update="acDx txtDx gpDx :#{p:resolveFirstComponentWithId('emrGrowl',view).clientId}"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                     </div>
@@ -185,8 +188,8 @@
                                                 <p:tooltip value="Add a Diagnosis" for="btnAddDx" ></p:tooltip>
                                                 <h:panelGroup id="gpDx" >
                                                     <p:dataTable id="tblDx" 
-                                                                 rendered="#{patientEncounterController.current.diagnosis ne null and patientEncounterController.current.diagnosis.size() > 0}"
-                                                                 value="#{patientEncounterController.current.diagnosis}"
+                                                                 rendered="#{patientEncounterController.encounterDiagnoses ne null and patientEncounterController.encounterDiagnoses.size() > 0}"
+                                                                 value="#{patientEncounterController.encounterDiagnoses}"
                                                                  emptyMessage="No Diagnosis Added Yet" rows="5"
                                                                  paginatorAlwaysVisible="false"
                                                                  paginator="true"
@@ -195,9 +198,10 @@
                                                         <p:column headerText="Diagnosis">
                                                             <h:outputLabel value="#{edx.clinicalFindingItem.name}"></h:outputLabel>
                                                             <p:commandLink id="clRemoveDx" 
+                                                                           value="(X)"
                                                                            process="clRemoveDx" 
-                                                                           action="#{patientEncounterController.removeEncounterProcedure()}"
-                                                                           update="gpDx">
+                                                                           action="#{patientEncounterController.removeEncounterDiagnoses()}"
+                                                                           update=":#{p:resolveFirstComponentWithId('tblDx',view).clientId} :#{p:resolveFirstComponentWithId('emrGrowl',view).clientId}">
                                                                 <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                             </p:commandLink>
                                                         </p:column>
@@ -233,7 +237,7 @@
                                                         <p:commandButton ajax="true" 
                                                                          id="btnSx" 
                                                                          action="#{patientEncounterController.addEncounterProcedure}"
-                                                                         process="acSx txtSx btnSx" update="acSx txtSx gpSx"
+                                                                         process="acSx txtSx btnSx :#{p:resolveFirstComponentWithId('emrGrowl',view).clientId}" update="acSx txtSx gpSx"
                                                                          icon="pi pi-plus">
                                                         </p:commandButton>
                                                         <p:tooltip value="Add a procedure" for="btnSx" ></p:tooltip>
@@ -260,9 +264,12 @@
                                                                  var="sx" class="w-100">
                                                         <p:column headerText="Procedure" >
                                                             <h:outputLabel value="#{sx.itemValue.name}"></h:outputLabel>
-                                                            <p:commandLink ajax="true" 
-                                                                           actionListener="#{patientEncounterController.removeCfv}" 
-                                                                           oncomplete="PF('tblSx').update();">
+                                                            <p:commandLink 
+                                                                id="btnRemoveSx"
+                                                                ajax="true" 
+                                                                           action="#{patientEncounterController.removeCfv}" 
+                                                                           process="btnRemoveSx"
+                                                                           update="tblSx :#{p:resolveFirstComponentWithId('emrGrowl',view).clientId}">
                                                                 <f:setPropertyActionListener value="#{sx}" target="#{patientEncounterController.removingCfv}" />
                                                                 <h:outputText value="&nbsp;(X)" />
                                                             </p:commandLink>

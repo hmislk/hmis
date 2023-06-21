@@ -211,8 +211,8 @@ public class PatientEncounterController implements Serializable {
     private String chartString;
 
     private InvestigationItem graphInvestigationItem;
-    
-     private UploadedFile uploadedFile;
+
+    private UploadedFile uploadedFile;
 
     public StreamedContent getImage() throws IOException {
         FacesContext context = FacesContext.getCurrentInstance();
@@ -612,6 +612,7 @@ public class PatientEncounterController implements Serializable {
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
         dx.setClinicalFindingItem(diagnosis);
+        dx.setClinicalFindingValueType(ClinicalFindingValueType.VisitDiagnosis);
         dx.setEncounter(current);
         dx.setPerson(current.getPatient().getPerson());
         dx.setStringValue(diagnosis.getName());
@@ -2509,7 +2510,7 @@ public class PatientEncounterController implements Serializable {
                 if (current.getPatient() != null) {
                     encounterImage.setPatient(current.getPatient());
                 }
-                if(current.getPatient().getPerson()!=null){
+                if (current.getPatient().getPerson() != null) {
                     encounterImage.setPerson(current.getPatient().getPerson());
                 }
             }
@@ -2652,9 +2653,7 @@ public class PatientEncounterController implements Serializable {
     public void setEncounterFindingValues(List<ClinicalFindingValue> encounterFindingValues) {
         this.encounterFindingValues = encounterFindingValues;
     }
-    
-    
-    
+
     public void uploadPhoto(FileUploadEvent event) {
         System.out.println("uploadPhoto");
         if (getCurrent() == null || getCurrent().getId() == null) {
@@ -2688,10 +2687,10 @@ public class PatientEncounterController implements Serializable {
         clinicalFindingValueFacade.edit(getEncounterImage());
         getEncounterImages().add(getEncounterImage());
         System.out.println("getEncounterImages() = " + getEncounterImages().size());
-        setEncounterImage(null);
         getEncounterFindingValues().add(getEncounterImage());
         setEncounterImages(fillEncounterImages(getCurrent()));
         fillEncounterImages(getCurrent());
+        setEncounterImage(null);
     }
 
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
@@ -2717,12 +2716,10 @@ public class PatientEncounterController implements Serializable {
         clinicalFindingValueFacade.edit(getEncounterImage());
         getEncounterImages().add(getEncounterImage());
         System.out.println("getEncounterImages() = " + getEncounterImages().size());
-        setEncounterImage(null);
-
         getEncounterFindingValues().add(getEncounterImage());
         setEncounterImages(fillEncounterImages(getCurrent()));
+        setEncounterImage(null);
     }
-
 
     public UploadedFile getUploadedFile() {
         return uploadedFile;
@@ -2731,19 +2728,6 @@ public class PatientEncounterController implements Serializable {
     public void setUploadedFile(UploadedFile uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
 
 }
 
