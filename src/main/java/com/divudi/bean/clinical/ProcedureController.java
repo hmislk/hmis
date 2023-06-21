@@ -46,8 +46,12 @@ public class ProcedureController implements Serializable {
     private ClinicalFindingItem current;
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
+    
+    public String navigateToManageProcedures(){
+        return "/emr/admin/index";
+    }
 
-    public List<ClinicalFindingItem> completeDiagnosis(String qry) {
+    public List<ClinicalFindingItem> completeProcedures(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Therapeutic_Procedure);

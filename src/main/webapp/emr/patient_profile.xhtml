@@ -278,49 +278,69 @@
                                     </h:form>
                                 </p:tab>
                                 <p:tab title="Visits" >
-                                    <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
-                                        <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
-                                            <f:facet name="header">
-                                                <h:outputText value="Date / Time" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.encounterDate}" >
-                                                <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
-                                            </h:outputText>
-                                        </p:column>
-                                        <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
-                                            <f:facet name="header">
-                                                <h:outputText value="Comments" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.comments}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}">
-                                            <f:facet name="header">
-                                                <h:outputText value="VisitWeight" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.visitWeight}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
-                                            <f:facet name="header">
-                                                <h:outputText value="BP" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.sbp}" />
-                                            <h:outputText value="/" />
-                                            <h:outputText value="#{visit.dbp}" />
-                                            <h:outputText value=" mmHg" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
-                                            <f:facet name="header">
-                                                <h:outputText value="BMI" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.bmi}" />
-                                        </p:column>
-                                        <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
-                                            <f:facet name="header">
-                                                <h:outputText value="PR" />
-                                            </f:facet>
-                                            <h:outputText value="#{visit.pr}" />
-                                        </p:column>
-                                    </p:dataTable>
+                                    <h:form>
+                                        <p:dataTable id="tblVisits" value="#{patientEncounterController.encounters}" var="visit" paginator="true" rows="10" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="5,10,15" currentPageReportTemplate="(Displaying {startRecord} - {endRecord} of {totalRecords} records)" >
+                                            <p:column sortBy="#{visit.encounterDate}" filterBy="#{visit.encounterDate}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Date / Time" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.encounterDate}" >
+                                                    <f:convertDateTime pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Comments" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.comments}" />
+                                            </p:column>
+                                            <p:column sortBy="#{visit.visitWeight}" filterBy="#{visit.visitWeight}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="VisitWeight" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.visitWeight}" />
+                                            </p:column>
+                                            <p:column sortBy="#{visit.sbp}" filterBy="#{visit.sbp}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="BP" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.sbp}" />
+                                                <h:outputText value="/" />
+                                                <h:outputText value="#{visit.dbp}" />
+                                                <h:outputText value=" mmHg" />
+                                            </p:column>
+                                            <p:column sortBy="#{visit.bmi}" filterBy="#{visit.bmi}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="BMI" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.bmi}" />
+                                            </p:column>
+                                            <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="PR" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.pr}" />
+                                            </p:column>
+                                            <p:column sortBy="#{visit.pr}" filterBy="#{visit.pr}">
+                                                <f:facet name="header">
+                                                    <h:outputText value="PR" />
+                                                </f:facet>
+                                                <h:outputText value="#{visit.pr}" />
+                                            </p:column>
+                                            <p:column >
+                                                <p:commandButton value="View" 
+                                                                 ajax="false"
+                                                                 action="#{viewEncounterController.navigateToNewEncounter}" 
+                                                                 onclick="this.form.target = '_blank'">
+                                                    <f:setPropertyActionListener value="#{visit}" 
+                                                                                 target="#{viewEncounterController.encounter}" >
+                                                    </f:setPropertyActionListener>
+                                                </p:commandButton>
+
+                                            </p:column>
+                                        </p:dataTable>
+                                    </h:form>
+
                                 </p:tab>
                             </p:tabView>
                         </div>

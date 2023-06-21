@@ -289,22 +289,89 @@ public class BillSearch implements Serializable {
             i++;
         }
     }
-    
-    
-    
+
+    public void fillTransactionTypeSummery() {
+        Map m = new HashMap();
+        String j;
+        if (billClassType == null) {
+            j = "select new com.divudi.data.BillSummery(b.paymentMethod, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        } else {
+            j = "select new com.divudi.data.BillSummery(b.paymentMethod, b.billClassType, sum(b.total), sum(b.discount), sum(b.netTotal), sum(b.vat), count(b), b.billType) "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        }
+
+        if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        if (user != null) {
+            j += " and b.creater=:wu ";
+            m.put("wu", user);
+        }
+        if (billType != null) {
+            j += " and b.billType=:bt ";
+            m.put("bt", billType);
+        }
+        if (billClassType != null) {
+            j += " and b.billClassType=:bct ";
+            m.put("bct", billClassType);
+        }
+
+        if (billClassType == null) {
+            j += " group by b.paymentMethod,  b.billType";
+        } else {
+            j += " group by b.paymentMethod, b.billClassType, b.billType";
+        }
+        Boolean bf = false;
+        if (bf) {
+            Bill b = new Bill();
+            b.getPaymentMethod();
+            b.getTotal();
+            b.getDiscount();
+            b.getNetTotal();
+            b.getVat();
+            b.getBillType();
+            b.getBillTime();
+            b.getInstitution();
+            b.getCreater();
+        }
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<Object> objs = billFacade.findObjectBySQL(j, m, TemporalType.TIMESTAMP);
+        billSummeries = new ArrayList<>();
+        Long i = 1l;
+        for (Object o : objs) {
+            BillSummery tbs = (BillSummery) o;
+            tbs.setKey(i);
+            billSummeries.add(tbs);
+            i++;
+        }
+    }
+
     public String listBillsFromBillTypeSummery() {
-        if(billSummery==null){
+        if (billSummery == null) {
             JsfUtil.addErrorMessage("No Summary Selected");
             return "";
         }
         String directTo;
         Map m = new HashMap();
         String j;
-        
+
         BillClassType tmpBillClassType = billSummery.getBillClassType();
         BillType tmpBllType = billSummery.getBillType();
-        
-        
+
         if (tmpBillClassType == null) {
             j = "select b "
                     + " from Bill b "
@@ -339,16 +406,76 @@ public class BillSearch implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
-        
-        if(tmpBillClassType==BillClassType.CancelledBill || tmpBillClassType==BillClassType.RefundBill){
+
+        if (tmpBillClassType == BillClassType.CancelledBill || tmpBillClassType == BillClassType.RefundBill) {
             directTo = "/reportIncome/bill_list_cancelled";
-        }else{
+        } else {
             directTo = "/reportIncome/bill_list";
         }
-        
+
         return directTo;
     }
     
+    public String listBillsFromBillTransactionTypeSummery() {
+        System.out.println("listBillsFromBillTransactionTypeSummery");
+        System.out.println("billSummery = " + billSummery);
+        if (billSummery == null) {
+            JsfUtil.addErrorMessage("No Summary Selected");
+            return "";
+        }
+        String directTo;
+        Map m = new HashMap();
+        String j;
+
+        BillClassType tmpBillClassType = billSummery.getBillClassType();
+        BillType tmpBllType = billSummery.getBillType();
+
+        if (tmpBillClassType == null) {
+            j = "select b "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        } else {
+            j = "select b "
+                    + " from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTime between :fd and :td ";
+        }
+
+         if (institution != null) {
+            j += " and b.institution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            j += " and b.department=:dep ";
+            m.put("dep", department);
+        }
+        
+        if (user != null) {
+            j += " and b.creater=:wu ";
+            m.put("wu", user);
+        }
+        if (tmpBllType != null) {
+            j += " and b.billType=:bt ";
+            m.put("bt", tmpBllType);
+        }
+        if (tmpBillClassType != null) {
+            j += " and b.billClassType=:bct ";
+            m.put("bct", tmpBillClassType);
+        }
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        
+        bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+
+        if (tmpBillClassType == BillClassType.CancelledBill || tmpBillClassType == BillClassType.RefundBill) {
+            directTo = "/reportInstitution/bill_list_cancelled";
+        } else {
+            directTo = "/reportInstitution/bill_list";
+        }
+        return directTo;
+    }
 
     public void fillBillFeeTypeSummery() {
         Map m = new HashMap();
@@ -418,10 +545,6 @@ public class BillSearch implements Serializable {
         }
     }
 
-    
-    
-    
-    
     public void clearSearchFIelds() {
         department = null;
         fromDate = null;
@@ -759,7 +882,7 @@ public class BillSearch implements Serializable {
         return lazyBills;
     }
 
-     public void createDealorPaymentTable() {
+    public void createDealorPaymentTable() {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -1288,7 +1411,7 @@ public class BillSearch implements Serializable {
                 UtilityController.addErrorMessage("You can't cancell this bill. Sample is already taken");
                 return true;
             }
-             if (patientInvestigation.getPrinted()) {
+            if (patientInvestigation.getPrinted()) {
                 UtilityController.addErrorMessage("You can't cancell this bill. Report is already printed");
                 return true;
             }
@@ -2415,9 +2538,6 @@ public class BillSearch implements Serializable {
 //            }
 //        }
 //    }
-
-    
-    
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {
@@ -2649,7 +2769,5 @@ public class BillSearch implements Serializable {
     public void setBillSummery(BillSummery billSummery) {
         this.billSummery = billSummery;
     }
-    
-    
 
 }

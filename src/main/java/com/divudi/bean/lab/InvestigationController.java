@@ -143,6 +143,10 @@ public class InvestigationController implements Serializable {
     private UploadedFile file;
     private StreamedContent downloadingFile;
 
+    public String navigateToManageInvestigationForEmr() {
+        return "/emr/admin/investigations";
+    }
+
     public String toAddManyIx() {
         current = new Investigation();
         current.setInwardChargeType(InwardChargeType.Laboratory);
@@ -221,19 +225,19 @@ public class InvestigationController implements Serializable {
             if (i.getInvestigationCategory() != null) {
                 j.setCategory(i.getInvestigationCategory().getName());
             }
-            if(i.getSample()!=null){
+            if (i.getSample() != null) {
                 j.setSample(i.getSample().getName());
             }
-            if(i.getInvestigationTube()!=null){
+            if (i.getInvestigationTube() != null) {
                 j.setTube(i.getInvestigationTube().getName());
             }
-            if(i.getMachine()!=null){
+            if (i.getMachine() != null) {
                 j.setAnalyzer(i.getMachine().getName());
             }
-            if(i.getPriority()!=null){
+            if (i.getPriority() != null) {
                 j.setPrintingName(i.getPriority().toString());
             }
-            
+
             jixlist.getInvestigations().add(j);
         }
         String j = "";
@@ -264,7 +268,6 @@ public class InvestigationController implements Serializable {
                     .collect(Collectors.joining("\n"));
 
         } catch (IOException ex) {
-            System.out.println("ex = " + ex);
         }
         return "/lab/investigation_format";
     }
@@ -744,6 +747,28 @@ public class InvestigationController implements Serializable {
         return suggestions;
     }
 
+    public List<Investigation> completeInvestigation(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and "
+                + " ( "
+                + " c.name like :n or "
+                + " c.fullName like :n or "
+                + " c.code like :n or c.printName like :n"
+                + " ) ";
+
+        m.put("n", "%" + query.toUpperCase() + "%");
+        jpql += " order by c.name";
+        suggestions = getFacade().findByJpql(jpql, m);
+        return suggestions;
+    }
+
     public List<InvestigationWithCount> completeInvestWithIiCount(String query) {
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
@@ -840,7 +865,6 @@ public class InvestigationController implements Serializable {
     public void setListMasterItemsOnly(Boolean listMasterItemsOnly) {
         this.listMasterItemsOnly = listMasterItemsOnly;
     }
-
 
     public String getBulkText() {
 
@@ -1108,6 +1132,55 @@ public class InvestigationController implements Serializable {
             getFacade().edit(i);
         }
         UtilityController.addSuccessMessage("Updated");
+    }
+
+    public void saveSelectedForEhr() {
+        getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
+        if (getCurrent().getPrintName() == null || getCurrent().getPrintName().trim().equals("")) {
+            getCurrent().setPrintName(getCurrent().getName());
+        }
+        if (getCurrent().getFullName() == null || getCurrent().getFullName().trim().equals("")) {
+            getCurrent().setFullName(getCurrent().getName());
+        }
+         if (getCurrent().getCode() == null || getCurrent().getCode().trim().equals("")) {
+            getCurrent().setCode(getCurrent().getName());
+        }
+
+        if (getCurrent().getInwardChargeType() == null) {
+            getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
+        }
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            if (billedAs == false) {
+                getCurrent().setBilledAs(getCurrent());
+            }
+            if (reportedAs == false) {
+                getCurrent().setReportedAs(getCurrent());
+            }
+            getFacade().edit(getCurrent());
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+
+            getFacade().create(getCurrent());
+            if (billedAs == false) {
+                getCurrent().setBilledAs(getCurrent());
+            }
+            if (reportedAs == false) {
+                getCurrent().setReportedAs(getCurrent());
+            }
+            getFacade().edit(getCurrent());
+            Item sc = new Item();
+            sc.setCreatedAt(new Date());
+            sc.setCreater(sessionController.getLoggedUser());
+            sc.setItemType(ItemType.SampleComponent);
+            sc.setName(getCurrent().getName());
+            sc.setParentItem(getCurrent());
+            getItemFacade().create(sc);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        getItems();
     }
 
     public void saveSelected() {

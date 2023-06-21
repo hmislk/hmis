@@ -212,37 +212,32 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
-public List<T> findByJpql(String temSQL, Map<String, Object> parameters) {
-    System.out.println("findByJpql");
-    System.out.println("JPQL: " + temSQL);
-    System.out.println("Parameters: " + parameters);
-    
-    TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
-    Set s = parameters.entrySet();
-    Iterator it = s.iterator();
-    while (it.hasNext()) {
-        Map.Entry m = (Map.Entry) it.next();
-        String pPara = (String) m.getKey();
-        if (m.getValue() instanceof Date) {
-            Date pVal = (Date) m.getValue();
-            qry.setParameter(pPara, pVal, TemporalType.DATE);
-        } else {
-            Object pVal = (Object) m.getValue();
-            qry.setParameter(pPara, pVal);
+    public List<T> findByJpql(String temSQL, Map<String, Object> parameters) {
+
+        TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            String pPara = (String) m.getKey();
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                qry.setParameter(pPara, pVal, TemporalType.DATE);
+            } else {
+                Object pVal = (Object) m.getValue();
+                qry.setParameter(pPara, pVal);
+            }
         }
+
+        List<T> ts;
+        try {
+            ts = qry.getResultList();
+        } catch (Exception e) {
+            ts = new ArrayList<>();
+        }
+
+        return ts;
     }
-    
-    List<T> ts;
-    try {
-        ts = qry.getResultList();
-        System.out.println("Results found: " + ts.size());
-    } catch (Exception e) {
-        System.out.println("Error executing query: " + e.getMessage());
-        ts = new ArrayList<>();
-    }
-    
-    return ts;
-}
 
     public List<T> findBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
@@ -792,7 +787,13 @@ public List<T> findByJpql(String temSQL, Map<String, Object> parameters) {
             }
             //    //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
-        return qry.getSingleResult();
+        T t;
+        try {
+            t = qry.getSingleResult();
+        } catch (Exception e) {
+            t = null;
+        }
+        return t;
     }
 
     public <U> List<T> testMethod(U[] a, Collection<U> all) {

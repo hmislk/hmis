@@ -139,17 +139,13 @@ public class VmpController implements Serializable {
     }
     
     public List<PharmaceuticalItem> ampsAndVmpsContainingVtm(Item item) {
-        System.out.println("ampsAndVmpsContainingVtm");
         List<PharmaceuticalItem> vmpsAndAmps = new ArrayList<>();
         if(!(item instanceof Vtm)){
-            System.out.println("item not a vtm");
             return vmpsAndAmps;
         }
         
         Vtm vtm = (Vtm) item;
-        System.out.println("vtm = " + vtm);
         List<Vmp> vmps = vmpsContainingVtm(vtm);
-        System.out.println("vmps = " + vmps);
         if (vmps == null || vmps.isEmpty()) {
             return vmpsAndAmps;
         }

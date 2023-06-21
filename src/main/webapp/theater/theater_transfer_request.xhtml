@@ -45,7 +45,7 @@
                                 <p:outputLabel value=" X #{vt.dblValue}" 
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
-                            <f:ajax execute="@this" event="blur" render="#{p:component('tab')}" listener="#{transferRequestController.onEdit()}"/>
+                            <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{transferRequestController.onEdit()}"/>
                         </p:autoComplete>
                         <p:inputText autocomplete="off" value="#{transferRequestController.currentBillItem.tmpQty}"/>
                         <p:commandButton value="Add Item" action="#{transferRequestController.addItem}" ajax="false"/>

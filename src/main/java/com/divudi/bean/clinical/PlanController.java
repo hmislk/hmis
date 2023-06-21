@@ -47,6 +47,12 @@ public class PlanController implements Serializable {
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
 
+    
+    public String navigateToManagePlans(){
+        return "/emr/admin/plans";
+    }
+    
+    
     public List<ClinicalFindingItem> completeDiagnosis(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();

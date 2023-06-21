@@ -25,6 +25,7 @@ import com.divudi.entity.WebUserDepartment;
 import com.divudi.entity.WebUserPrivilege;
 import com.divudi.entity.WebUserRole;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.LoginsFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.UserPreferenceFacade;
@@ -85,6 +86,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUserFacade webUserFacade;
     @EJB
     WebUserDashboardFacade webUserDashboardFacade;
+    @EJB
+    InstitutionFacade institutionFacade;
     /**
      * Controllers
      */
@@ -119,6 +122,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     private List<Privileges> privilegeses;
     Department department;
     List<Department> departments;
+
+    private List<Department> loggableDepartments;
+    private List<Institution> loggableInstitutions;
+
     Institution institution;
     private List<WebUserDashboard> dashboards;
     boolean paginator;
@@ -440,7 +447,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         department = null;
         institution = null;
         boolean l = checkUsersWithoutDepartment();
-        System.out.println("l = " + l);
         if (l) {
             return "/index.xhtml";
         } else {
@@ -450,28 +456,11 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean login() {
-
         getApplicationEjb().recordAppStart();
-
         if (userName.trim().equals("")) {
             UtilityController.addErrorMessage("Please enter a username");
             return false;
         }
-
-        if (false) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(2015, 05, 17, 23, 59, 59);//2015/june/17/23:00:00
-            calendar.set(Calendar.MILLISECOND, 999);
-
-            Date expired = calendar.getTime();
-            Date nowDate = new Date();
-
-            if (nowDate.after(expired)) {
-                UtilityController.addErrorMessage("Your Application has Expired");
-                return false;
-            }
-        }
-        // password
         if (isFirstVisit()) {
             prepareFirstVisit();
             return true;
@@ -623,6 +612,8 @@ public class SessionController implements Serializable, HttpSessionListener {
                     getFacede().edit(u);
 
                     setLoggedUser(u);
+                    loggableDepartments = fillLoggableDepts();
+                    loggableInstitutions = fillLoggableInstitutions();
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -736,6 +727,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
 
             setLoggedUser(u);
+            loggableDepartments = fillLoggableDepts();
+            loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -775,6 +768,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         if (getSecurityController().matchPassword(temPassword, u.getWebUserPassword())) {
             setLoggedUser(u);
+            loggableDepartments = fillLoggableDepts();
+            loggableInstitutions = fillLoggableInstitutions();
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -822,6 +817,8 @@ public class SessionController implements Serializable, HttpSessionListener {
 
                     getFacede().edit(u);
                     setLoggedUser(u);
+                    loggableDepartments = fillLoggableDepts();
+                    loggableInstitutions = fillLoggableInstitutions();
                     dashboards = webUserController.listWebUserDashboards(u);
                     loadDashboards();
                     setLogged(true);
@@ -846,7 +843,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                         department = departments.get(0);
                         selectDepartment();
                         UtilityController.addSuccessMessage("Logged successfully. Department is " + department.getName());
-                        System.out.println("logged = " + logged);
                     } else {
                         UtilityController.addSuccessMessage("Logged successfully!!!." + "\n Please select a department.");
                         UtilityController.addSuccessMessage(setGreetingMsg());
@@ -854,7 +850,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                     if (getApplicationController().isLogged(u) != null) {
                         UtilityController.addErrorMessage("This user is already logged.");
                     }
-                    System.out.println("logged = " + logged);
                     return true;
                 }
             }
@@ -1017,6 +1012,40 @@ public class SessionController implements Serializable, HttpSessionListener {
         return departmentFacade.findByJpql(sql, m);
     }
 
+    private List<Department> fillLoggableDepts() {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        sql = "select distinct wd.department "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false "
+                + " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.name";
+        return departmentFacade.findByJpql(sql, m);
+    }
+
+    public List<Institution> fillLoggableInstitutions() {
+        WebUser e = getLoggedUser();
+        if (e == null) {
+            return new ArrayList<>();
+        }
+        String jpql;
+        Map m = new HashMap();
+        m.put("wu", e);
+        jpql = "select DISTINCT wd.department.institution "
+                + " from WebUserDepartment wd "
+                + " where wd.retired=false "
+                + " and wd.department.retired=false "
+                + " and wd.webUser=:wu "
+                + " order by wd.department.institution.name";
+        return institutionFacade.findByJpql(jpql, m);
+    }
+
     public ApplicationEjb getApplicationEjb() {
         return applicationEjb;
     }
@@ -1041,6 +1070,8 @@ public class SessionController implements Serializable, HttpSessionListener {
         websiteUserGoingToLog = false;
         recordLogout();
         setLoggedUser(null);
+        loggableDepartments = null;
+        loggableInstitutions = null;
         setLogged(false);
         setActivated(false);
         getPharmacySaleController().clearForNewBill();
@@ -1593,6 +1624,20 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setAdminName(String adminName) {
         this.adminName = adminName;
+    }
+
+    public List<Department> getLoggableDepartments() {
+        if (loggableDepartments == null) {
+            loggableDepartments = fillLoggableDepts();
+        }
+        return loggableDepartments;
+    }
+
+    public List<Institution> getLoggableInstitutions() {
+        if (loggableInstitutions == null) {
+            loggableInstitutions = fillLoggableInstitutions();
+        }
+        return loggableInstitutions;
     }
 
 }

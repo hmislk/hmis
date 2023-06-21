@@ -24,12 +24,12 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.fromInstitution}"/>
         </h:panelGrid>
-        
-          
+
+
         <p:commandButton ajax="false" value="Download" >
             <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
         </p:commandButton>
-        
+
         <p:dataTable rowIndexVar="i" id="tbl"  value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="PURCHASE BILL SEARCH"/>
@@ -40,7 +40,19 @@
                     <h:outputLabel  ></h:outputLabel>
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>
-            </p:column>    
+            </p:column>   
+            <p:column headerText="Invoice NO" >
+                <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.invoiceNumber}">
+                    <h:outputLabel  ></h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
+            </p:column>  
+            <p:column headerText="Invoice Date" >
+                <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.invoiceDate}">
+                    <h:outputLabel  ></h:outputLabel>
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </h:commandLink>
+            </p:column>  
             <p:column headerText="Billed at"  >
                 <h:commandLink action="pharmacy_reprint_purchase" >
                     <h:outputLabel value="#{bill.createdAt}" >

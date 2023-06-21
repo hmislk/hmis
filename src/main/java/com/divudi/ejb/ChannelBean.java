@@ -550,13 +550,10 @@ public class ChannelBean {
         Date toDate = c.getTime();
         Integer tmp = 0;
         int rowIndex = 0;
-        System.err.println("Time 1 = " + new Date());
 
         createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate);
 
-        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
-        System.err.println("Time 3 = " + new Date());
 
         Date end = new Date();
         double time = (start.getTime() - end.getTime()) / 1000;

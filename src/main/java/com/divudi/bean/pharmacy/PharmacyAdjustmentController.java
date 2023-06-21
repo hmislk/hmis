@@ -33,6 +33,7 @@ import com.divudi.facade.PersonFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -110,7 +111,7 @@ public class PharmacyAdjustmentController implements Serializable {
     private Double rsr;
     private Double wsr;
     Date exDate;
-    
+
     private Date fromDate;
     private Date toDate;
 
@@ -119,13 +120,13 @@ public class PharmacyAdjustmentController implements Serializable {
     List<BillItem> billItems;
     List<Stock> stocks;
     List<Bill> bills;
-    
+
     private boolean printPreview;
 
     public Department getFromDepartment() {
         return fromDepartment;
     }
-    
+
     public void fillDepartmentAdjustmentByBillItem() {
         Date startTime = new Date();
         billItems = fetchBillItems(BillType.PharmacyAdjustment);
@@ -146,8 +147,6 @@ public class PharmacyAdjustmentController implements Serializable {
                 m.put("fdept", fromDepartment);
             }
         }
-        
-       
 
         sql += " order by bi.id";
 
@@ -156,7 +155,6 @@ public class PharmacyAdjustmentController implements Serializable {
         m.put("bt", bt);
 
         billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-
 
         return billItems;
     }
@@ -261,7 +259,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
         return items;
     }
-    
+
     public List<Stock> completeStaffZeroStocks(String qry) {
         List<Stock> items;
         String sql;
@@ -1340,6 +1338,9 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
+        }
         return fromDate;
     }
 
@@ -1348,13 +1349,14 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
-    
-    
 
 }

@@ -29,8 +29,8 @@ package com.divudi.data;
  * @author buddhika
  */
 public enum UploadType {
-    Client_Upload_Prior_To_Proposal("Client Upload Prior to Proposal"),
-    Company_Design_Upload("Company Design Upload");
+    User_Signature("User Signature"),
+    Web_Image("Web Image");
     
     private final String label;
     

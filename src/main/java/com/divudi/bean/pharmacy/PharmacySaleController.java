@@ -182,6 +182,18 @@ public class PharmacySaleController implements Serializable {
     ///////////////////
     private UserStockContainer userStockContainer;
     PaymentMethodData paymentMethodData;
+    
+    public String navigateToPharmacySaleWithoutStocks(){
+        prepareForPharmacySaleWithoutStock();
+        return "/pharmacy/pharmacy_sale_without_stock";
+    }
+    
+    private void prepareForPharmacySaleWithoutStock(){
+        clearBill();
+        clearBillItem();
+        searchController.createPreBillsNotPaid();
+        billPreview = false;
+    }
 
     public void searchPatientListener() {
         //  createPaymentSchemeItems();
@@ -551,7 +563,6 @@ public class PharmacySaleController implements Serializable {
     }
 
     public String toPharmacyRetailSale() {
-        System.out.println("6");
         return "/pharmacy/pharmacy_bill_retail_sale";
     }
 

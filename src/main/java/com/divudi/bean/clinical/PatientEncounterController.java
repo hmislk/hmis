@@ -17,7 +17,6 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.BillType;
 import com.divudi.data.SymanticType;
 import com.divudi.data.clinical.ClinicalFindingValueType;
-import com.divudi.data.clinical.ItemUsageType;
 import com.divudi.data.clinical.PrescriptionTemplateType;
 import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.data.lab.InvestigationResultForGraph;
@@ -54,7 +53,6 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -65,7 +63,17 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import org.hl7.fhir.r5.model.Encounter;
+import org.primefaces.model.DefaultStreamedContent;
+import javax.faces.context.FacesContext;
+import javax.faces.event.PhaseId;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.primefaces.event.CaptureEvent;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -150,6 +158,7 @@ public class PatientEncounterController implements Serializable {
     private ClinicalFindingValue encounterDiagnosis;
     private ClinicalFindingValue encounterImage;
     private ClinicalFindingValue encounterInvestigation;
+    private ClinicalFindingValue encounterProcedure;
     private ClinicalFindingValue encounterMedicalFitnessCertificate;
     private ClinicalFindingValue encounterMedicalCertificate;
     private ClinicalFindingValue encounterReferral;
@@ -160,10 +169,12 @@ public class PatientEncounterController implements Serializable {
     private List<ClinicalFindingValue> encounterDiagnoses;
     private List<ClinicalFindingValue> encounterImages;
     private List<ClinicalFindingValue> encounterInvestigations;
+    private List<ClinicalFindingValue> encounterProcedures;
     private List<ClinicalFindingValue> encounterMedicalFitnessCertificates;
     private List<ClinicalFindingValue> encounterMedicalCertificates;
     private List<ClinicalFindingValue> encounterReferrals;
     private List<ClinicalFindingValue> encounterPrescreptions;
+    private List<ClinicalFindingValue> encounterFindingValues;
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -201,6 +212,35 @@ public class PatientEncounterController implements Serializable {
 
     private InvestigationItem graphInvestigationItem;
 
+    private UploadedFile uploadedFile;
+
+    public StreamedContent getImage() throws IOException {
+        FacesContext context = FacesContext.getCurrentInstance();
+
+        if (context.getCurrentPhaseId() == PhaseId.RENDER_RESPONSE) {
+            // So, we're rendering the HTML. Return a stub StreamedContent so that it will generate right URL.
+            return DefaultStreamedContent.builder().build();
+        } else {
+            // So, browser is requesting the image. Get ID value from actual request param.
+            String id = context.getExternalContext().getRequestParameterMap().get("id");
+            System.out.println("id = " + id);
+            ClinicalFindingValue image = clinicalFindingValueFacade.find(Long.valueOf(id)); // Assuming 'service' is your EJB session bean.
+            System.out.println("image = " + image);
+            String imageType = image.getImageType();
+            if (imageType == null || imageType.trim().equals("")) {
+                imageType = "image/png";
+            }
+            return DefaultStreamedContent.builder()
+                    .contentType(imageType)
+                    .stream(() -> new ByteArrayInputStream(image.getImageValue()))
+                    .build();
+        }
+    }
+
+    public void updateEncounterImages() {
+        System.out.println("encounterImages = " + encounterImages.size());
+    }
+
     public void listInstitutionEncounters() {
         System.out.println("listInstitutionEncounters = ");
         String jpql = "select e "
@@ -214,10 +254,7 @@ public class PatientEncounterController implements Serializable {
         m.put("ins", sessionController.getInstitution());
         m.put("fd", fromDate);
         m.put("td", toDate);
-        System.out.println("m = " + m);
-        System.out.println("jpql = " + jpql);
         items = getFacade().findByJpql(jpql, m);
-        System.out.println("items = " + items.size());
     }
 
     public List<String> completeClinicalComments(String qry) {
@@ -496,6 +533,73 @@ public class PatientEncounterController implements Serializable {
 
     }
 
+    public void addEncounterProcedure() {
+        System.out.println("addEncounterProcedure");
+        System.out.println("current = " + current);
+        if (current == null) {
+            UtilityController.addErrorMessage("Please select a visit");
+            return;
+        }
+        System.out.println("encounterProcedure = " + encounterProcedure);
+        if (encounterProcedure == null) {
+            UtilityController.addErrorMessage("Please select a procedure");
+            return;
+        }
+        System.out.println("encounterProcedure.getItemValue() = " + encounterProcedure.getItemValue());
+        if (encounterProcedure.getItemValue() == null) {
+            UtilityController.addErrorMessage("Please select a procedure");
+            return;
+        }
+        System.out.println("encounterProcedure.getId() = " + encounterProcedure.getId());
+        if (encounterProcedure.getId() == null) {
+            clinicalFindingValueFacade.create(encounterProcedure);
+        } else {
+            clinicalFindingValueFacade.edit(encounterProcedure);
+        }
+
+        System.out.println("current.getClinicalFindingValues() = " + current.getClinicalFindingValues());
+        current.getClinicalFindingValues().add(encounterProcedure);
+        getFacade().edit(current);
+
+        getEncounterFindingValues().add(encounterProcedure);
+        setEncounterProcedures(fillEncounterProcedures(current));
+
+        encounterProcedure = null;
+
+        UtilityController.addSuccessMessage("Procedure added");
+
+    }
+
+    public void addEncounterInvestigation() {
+        if (current == null) {
+            UtilityController.addErrorMessage("Please select a visit");
+            return;
+        }
+        if (encounterInvestigation == null) {
+            UtilityController.addErrorMessage("Please select a procedure");
+            return;
+        }
+        if (encounterInvestigation.getItemValue() == null) {
+            UtilityController.addErrorMessage("Please select an investigation");
+            return;
+        }
+        if (encounterInvestigation.getId() == null) {
+            clinicalFindingValueFacade.create(encounterInvestigation);
+        } else {
+            clinicalFindingValueFacade.edit(encounterInvestigation);
+        }
+        current.getClinicalFindingValues().add(encounterInvestigation);
+        getFacade().edit(current);
+
+        getEncounterFindingValues().add(encounterInvestigation);
+        setEncounterInvestigations(fillEncounterInvestigations(current));
+
+        encounterInvestigation = null;
+
+        UtilityController.addSuccessMessage("Investigation added");
+
+    }
+
     public void addDx() {
         if (diagnosis == null) {
             UtilityController.addErrorMessage("Please select a diagnosis");
@@ -508,6 +612,7 @@ public class PatientEncounterController implements Serializable {
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
         dx.setClinicalFindingItem(diagnosis);
+        dx.setClinicalFindingValueType(ClinicalFindingValueType.VisitDiagnosis);
         dx.setEncounter(current);
         dx.setPerson(current.getPatient().getPerson());
         dx.setStringValue(diagnosis.getName());
@@ -515,10 +620,12 @@ public class PatientEncounterController implements Serializable {
         current.getClinicalFindingValues().add(dx);
         getFacade().edit(current);
         diagnosis = null;
-//        diagnosis = new ClinicalFindingItem();
         diagnosisComments = "";
+
+        getEncounterFindingValues().add(dx);
+        encounterDiagnoses = fillEncounterDiagnoses(current);
+
         UtilityController.addSuccessMessage("Diagnosis added");
-        setCurrent(getFacade().find(current.getId()));
     }
 
     public void addDxAndRx() {
@@ -545,9 +652,7 @@ public class PatientEncounterController implements Serializable {
         if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
             dxitems = favouriteController.listFavouriteItems(diagnosis, PrescriptionTemplateType.FavouriteDiagnosis, current.getWeight());
         } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
-            System.out.println("by age");
             Long ageInDays = getCurrent().getPatient().getAgeInDays();
-            System.out.println("ageInDays = " + ageInDays);
             dxitems = favouriteController.listFavouriteItems(diagnosis, PrescriptionTemplateType.FavouriteDiagnosis, null, ageInDays);
         } else {
             return;
@@ -569,9 +674,7 @@ public class PatientEncounterController implements Serializable {
             if (getCurrent().getWeight() != null && getCurrent().getWeight() > 0.1) {
                 availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplateType.FavouriteMedicine, current.getWeight());
             } else if (getCurrent().getPatient() != null && getCurrent().getPatient().getAgeInDays() != null) {
-                System.out.println("by age");
                 Long ageInDays = getCurrent().getPatient().getAgeInDays();
-                System.out.println("ageInDays = " + ageInDays);
 //                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplate.FavouriteMedicine, null, ageInDays);
             }
 
@@ -585,7 +688,6 @@ public class PatientEncounterController implements Serializable {
                 continue;
             }
 
-            System.out.println("availableFavouriteMedicines.size() = " + availableFavouriteMedicines.size());
             if (availableFavouriteMedicines.size() > 1) {
                 //TODO: Need to select the best out of the available
                 addingMedicine = availableFavouriteMedicines.get(0);
@@ -594,7 +696,6 @@ public class PatientEncounterController implements Serializable {
 
             }
             Prescription p = new Prescription();
-            System.out.println("addingMedicine = " + addingMedicine);
             p.setItem(addingMedicine.getItem());
             p.setCategory(addingMedicine.getCategory());
             p.setDepartment(sessionController.getDepartment());
@@ -623,13 +724,14 @@ public class PatientEncounterController implements Serializable {
             encounterMedicine.setPrescription(p);
             encounterMedicine.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
             clinicalFindingValueFacade.create(encounterMedicine);
-
             //TO Do
-            System.out.println("p = " + p);
 
         }
 
         save(getCurrent());
+
+        getEncounterFindingValues().add(dx);
+        fillEncounterDiagnoses(current);
 
         diagnosis = null;
         diagnosisComments = "";
@@ -783,7 +885,7 @@ public class PatientEncounterController implements Serializable {
     public List<ClinicalFindingValue> fillEncounterMedicines(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicine);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     public List<ClinicalFindingValue> fillPatientImages(Patient patient) {
@@ -825,9 +927,9 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<ClinicalFindingValue> fillCurrentEncounterFindingValues(PatientEncounter encounter, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
+        List<ClinicalFindingValue> vs;
         Map m = new HashMap();
         m.put("e", encounter);
-        m.put("ts", clinicalFindingValueTypes);
         m.put("ret", false);
         String sql;
         ClinicalFindingValue e = new ClinicalFindingValue();
@@ -835,10 +937,46 @@ public class PatientEncounterController implements Serializable {
         sql = "Select e "
                 + " from ClinicalFindingValue e "
                 + " where e.encounter=:e "
-                + " and e.retired=:ret "
-                + " and e.clinicalFindingValueType in :ts "
-                + " order by e.orderNo";
-        return clinicalFindingValueFacade.findByJpql(sql, m);
+                + " and e.retired=:ret ";
+        if (clinicalFindingValueTypes != null) {
+            sql += " and e.clinicalFindingValueType in :ts ";
+            m.put("ts", clinicalFindingValueTypes);
+        }
+        sql += " order by e.orderNo";
+        vs = clinicalFindingValueFacade.findByJpql(sql, m);
+        if (vs == null) {
+            vs = new ArrayList<>();
+        }
+        return vs;
+    }
+
+    public List<ClinicalFindingValue> loadCurrentEncounterFindingValues(PatientEncounter encounter, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
+        System.out.println("loadCurrentEncounterFindingValues");
+        List<ClinicalFindingValue> vs = new ArrayList<>();
+        if (encounterFindingValues == null) {
+            encounterFindingValues = fillEncounterFindingValues(current);
+        }
+        if (encounterFindingValues == null) {
+            encounterFindingValues = new ArrayList<>();
+        }
+        for (ClinicalFindingValue v : encounterFindingValues) {
+            System.out.println("v = " + v);
+            if (v == null) {
+                continue;
+            }
+            boolean canAdd = false;
+            for (ClinicalFindingValueType t : clinicalFindingValueTypes) {
+                if (v.getClinicalFindingValueType() != null) {
+                    if (v.getClinicalFindingValueType() == t) {
+                        canAdd = true;
+                    }
+                }
+            }
+            if (canAdd) {
+                vs.add(v);
+            }
+        }
+        return vs;
     }
 
     public String navigateToOldOpdVisitFromSearch() {
@@ -850,7 +988,7 @@ public class PatientEncounterController implements Serializable {
             JsfUtil.addErrorMessage("No Encounter Type");
             return "";
         }
-        if(current.getPatient()==null){
+        if (current.getPatient() == null) {
             JsfUtil.addErrorMessage("No Patient");
             return "";
         }
@@ -865,36 +1003,7 @@ public class PatientEncounterController implements Serializable {
     public void fillCurrentPatientLists(Patient patient) {
         encounters = fillPatientEncounters(patient);
 
-        patientBills = fillPatientBills(patient);
-        opdBills = new ArrayList<>();
-        pharmacyBills = new ArrayList<>();
-        channelBills = new ArrayList<>();
-
-        for (Bill b : patientBills) {
-            if (b.getBillType() == null) {
-                continue;
-            }
-            switch (b.getBillType()) {
-                case OpdBill:
-                    opdBills.add(b);
-                    break;
-                case PharmacySale:
-                    pharmacyBills.add(b);
-                    break;
-                case ChannelPaid:
-                case Channel:
-                case ChannelAgent:
-                case ChannelCash:
-                case ChannelOnCall:
-                case ChannelStaff:
-                    channelBills.add(b);
-                    break;
-
-            }
-        }
-
         investigations = fillPatientInvestigations(patient);
-
         patientClinicalFindingValues = fillCurrentPatientClinicalFindingValues(patient);
 
         patientAllergies = new ArrayList<>();
@@ -932,8 +1041,10 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void fillCurrentEncounterLists(PatientEncounter encounter) {
+        encounterFindingValues = fillCurrentEncounterFindingValues(encounter, null);
         encounterMedicines = fillEncounterMedicines(encounter);
         encounterInvestigations = fillEncounterInvestigations(encounter);
+        encounterProcedures = fillEncounterProcedures(encounter);
         encounterDiagnoses = fillEncounterDiagnoses(encounter);
         encounterImages = fillEncounterImages(encounter);
         encounterDiagnosticImages = fillEncounterDiadnosticImages(encounter);
@@ -1060,17 +1171,14 @@ public class PatientEncounterController implements Serializable {
 
     public void removePatientAllergy() {
         System.out.println("removePatientAllergy");
-        System.out.println("getRemovingClinicalFindingValue() = " + getRemovingClinicalFindingValue());
         if (getRemovingClinicalFindingValue() == null) {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
         }
-        System.out.println("getPatientAllergies() = " + getPatientAllergies().size());
         getRemovingClinicalFindingValue().setRetired(true);
         clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
         getPatientAllergies().remove(getRemovingClinicalFindingValue());
         setRemovingClinicalFindingValue(null);
-        System.out.println("getPatientAllergies() = " + getPatientAllergies().size());
     }
 
     public void removePatientMedicine() {
@@ -1106,6 +1214,17 @@ public class PatientEncounterController implements Serializable {
         setRemovingClinicalFindingValue(null);
     }
 
+    public void removeEncounterImage() {
+        if (getRemovingClinicalFindingValue() == null) {
+            JsfUtil.addErrorMessage("Select");
+            return;
+        }
+        getRemovingClinicalFindingValue().setRetired(true);
+        clinicalFindingValueFacade.edit(getRemovingClinicalFindingValue());
+        getEncounterImages().remove(getRemovingClinicalFindingValue());
+        setRemovingClinicalFindingValue(null);
+    }
+
     public void addPatientAllergy() {
         if (getPatientAllergy().getItemValue() == null) {
             JsfUtil.addErrorMessage("Select Allergy");
@@ -1134,7 +1253,6 @@ public class PatientEncounterController implements Serializable {
 
     public void addPatientMedicine() {
         System.out.println("addPatientMedicine");
-        System.out.println("getPatientMedicine().getPrescription().getItem() = " + getPatientMedicine().getPrescription().getItem());
         if (getPatientMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
@@ -1143,9 +1261,7 @@ public class PatientEncounterController implements Serializable {
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
         prescriptionFacade.create(getPatientMedicine().getPrescription());
         clinicalFindingValueFacade.create(getPatientMedicine());
-        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         getPatientMedicines().add(getPatientMedicine());
-        System.out.println("getPatientMedicines() = " + getPatientMedicines().size());
         setPatientMedicine(null);
         JsfUtil.addSuccessMessage("Added");
     }
@@ -1167,9 +1283,13 @@ public class PatientEncounterController implements Serializable {
         } else {
             clinicalFindingValueFacade.edit(getEncounterMedicine());
         }
-        getEncounterMedicines().add(getEncounterMedicine());
+
+        getEncounterFindingValues().add(getEncounterMedicine());
+        encounterMedicines = fillEncounterMedicines(current);
+
         updateDocuments();
         setEncounterMedicine(null);
+
         JsfUtil.addSuccessMessage("Added");
     }
 
@@ -1189,32 +1309,6 @@ public class PatientEncounterController implements Serializable {
                 }
             }
         }
-    }
-
-    public List<ItemUsage> fillCurrentEncounterMedicines() {
-        Map m = new HashMap();
-        m.put("pe", getCurrent());
-        m.put("t", ItemUsageType.EncounterItems);
-        String sql;
-        sql = "Select e "
-                + " from ItemUsage e "
-                + " where e.patientEncounter=:pe "
-                + " and e.type=:t "
-                + " order by e.id desc";
-        return itemUsageFacade.findByJpql(sql, m);
-    }
-
-    public List<ItemUsage> fillCurrentEncounterDiagnosis() {
-        Map m = new HashMap();
-        m.put("pe", getCurrent());
-        m.put("t", ItemUsageType.EncounterDiagnosis);
-        String sql;
-        sql = "Select e "
-                + " from ItemUsage e "
-                + " where e.patientEncounter=:pe "
-                + " and e.type=:t "
-                + " order by e.id desc";
-        return itemUsageFacade.findByJpql(sql, m);
     }
 
     public List<Bill> fillPatientBills(Patient patient) {
@@ -1313,7 +1407,58 @@ public class PatientEncounterController implements Serializable {
         }
         current.getClinicalFindingValues().remove(removingCfv);
         saveSelected();
+        getEncounterFindingValues().remove(removingCfv);
         UtilityController.addSuccessMessage("Removed");
+    }
+
+    public void removeEncounterProcedure() {
+        removeCfv();
+        encounterProcedures = fillEncounterProcedures(current);
+    }
+
+    public void removeEncounterInvestigations() {
+        removeCfv();
+        encounterInvestigations = fillEncounterInvestigations(current);
+    }
+
+    public void removeEncounterMedicines() {
+        removeCfv();
+        encounterMedicines = fillEncounterMedicines(current);
+    }
+
+    public void removeEncounterDiagnosticImages() {
+        removeCfv();
+        encounterDiagnosticImages = fillEncounterImages(current);
+    }
+
+    public void removeEncounterDiagnoses() {
+        removeCfv();
+        encounterDiagnoses = fillEncounterDiagnoses(current);
+    }
+
+    public void removeEncounterImages() {
+        removeCfv();
+        encounterImages = fillEncounterImages(current);
+    }
+
+    public void removeEncounterMedicalFitnessCertificates() {
+        removeCfv();
+        encounterMedicalFitnessCertificates = fillEncounterMedicalFitnessCertificates(current);
+    }
+
+    public void removeEncounterMedicalCertificates() {
+        removeCfv();
+        encounterMedicalCertificates = fillEncounterMedicalCertificates(current);
+    }
+
+    public void removeEncounterReferrals() {
+        removeCfv();
+        encounterReferrals = fillEncounterReferrals(current);
+    }
+
+    public void removeEncounterPrescriptions() {
+        removeCfv();
+        encounterPrescreptions = fillEncounterPrescreptions(current);
     }
 
     public ClinicalFindingItem getDiagnosis() {
@@ -1658,14 +1803,16 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void saveSelected() {
-        current.setEncounterDate(new Date());
         current.setDepartment(sessionController.getDepartment());
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
+            if (current.getEncounterDate() == null) {
+                current.setEncounterDate(new Date());
+            }
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-
             current.setCreatedAt(new Date());
+            current.setEncounterDate(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
@@ -2274,52 +2421,68 @@ public class PatientEncounterController implements Serializable {
         this.encounterImages = encounterImages;
     }
 
+    private List<ClinicalFindingValue> fillEncounterFindingValues(PatientEncounter encounter) {
+        return fillCurrentEncounterFindingValues(encounter, null);
+    }
+
     private List<ClinicalFindingValue> fillEncounterInvestigations(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicine);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitInvestigation);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    private List<ClinicalFindingValue> fillEncounterProcedures(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitProcedure);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     private List<ClinicalFindingValue> fillEncounterDiagnoses(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDiagnosis);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
-    private List<ClinicalFindingValue> fillEncounterImages(PatientEncounter encounter) {
+    public List<ClinicalFindingValue> fillEncounterImages(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitImage);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+    }
+
+    public List<ClinicalFindingValue> fillEncounterDiagnosticImages(PatientEncounter encounter) {
+        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
+        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDiagnosticImage);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     private List<ClinicalFindingValue> fillEncounterDiadnosticImages(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitDiagnosticImage);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     private List<ClinicalFindingValue> fillEncounterMedicalFitnessCertificates(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicalFitnessCertificate);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     private List<ClinicalFindingValue> fillEncounterMedicalCertificates(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitMedicalLeaveCertificate);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     private List<ClinicalFindingValue> fillEncounterReferrals(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitReferral);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     private List<ClinicalFindingValue> fillEncounterPrescreptions(PatientEncounter encounter) {
         List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
         clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
-        return fillCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
     }
 
     public ClinicalFindingValue getEncounterDiagnosticImage() {
@@ -2339,6 +2502,19 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getEncounterImage() {
+        if (encounterImage == null) {
+            encounterImage = new ClinicalFindingValue();
+            encounterImage.setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+            if (current != null) {
+                encounterImage.setEncounter(current);
+                if (current.getPatient() != null) {
+                    encounterImage.setPatient(current.getPatient());
+                }
+                if (current.getPatient().getPerson() != null) {
+                    encounterImage.setPerson(current.getPatient().getPerson());
+                }
+            }
+        }
         return encounterImage;
     }
 
@@ -2347,6 +2523,17 @@ public class PatientEncounterController implements Serializable {
     }
 
     public ClinicalFindingValue getEncounterInvestigation() {
+        if (encounterInvestigation == null) {
+            encounterInvestigation = new ClinicalFindingValue();
+            encounterInvestigation.setEncounter(current);
+            encounterInvestigation.setClinicalFindingValueType(ClinicalFindingValueType.VisitInvestigation);
+            if (current != null) {
+                encounterInvestigation.setPatient(current.getPatient());
+            }
+            if (current.getPatient() != null) {
+                encounterInvestigation.setPerson(current.getPatient().getPerson());
+            }
+        }
         return encounterInvestigation;
     }
 
@@ -2424,6 +2611,122 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatientBills(List<Bill> patientBills) {
         this.patientBills = patientBills;
+    }
+
+    public List<ClinicalFindingValue> getEncounterProcedures() {
+        return encounterProcedures;
+    }
+
+    public void setEncounterProcedures(List<ClinicalFindingValue> encounterProcedures) {
+        this.encounterProcedures = encounterProcedures;
+    }
+
+    public ClinicalFindingValue getEncounterProcedure() {
+        if (encounterProcedure == null) {
+            encounterProcedure = new ClinicalFindingValue();
+            encounterProcedure.setEncounter(current);
+            encounterProcedure.setClinicalFindingValueType(ClinicalFindingValueType.VisitProcedure);
+            if (current != null) {
+                encounterProcedure.setPatient(current.getPatient());
+            }
+            if (current.getPatient() != null) {
+                encounterProcedure.setPerson(current.getPatient().getPerson());
+            }
+        }
+        return encounterProcedure;
+    }
+
+    public void setEncounterProcedure(ClinicalFindingValue encounterProcedure) {
+        this.encounterProcedure = encounterProcedure;
+    }
+
+    public List<ClinicalFindingValue> getEncounterFindingValues() {
+        if (encounterFindingValues == null) {
+            encounterFindingValues = fillEncounterFindingValues(current);
+            if (encounterFindingValues == null) {
+                encounterFindingValues = new ArrayList<>();
+            }
+        }
+        return encounterFindingValues;
+    }
+
+    public void setEncounterFindingValues(List<ClinicalFindingValue> encounterFindingValues) {
+        this.encounterFindingValues = encounterFindingValues;
+    }
+
+    public void uploadPhoto(FileUploadEvent event) {
+        System.out.println("uploadPhoto");
+        if (getCurrent() == null || getCurrent().getId() == null) {
+            JsfUtil.addErrorMessage("Select Encounter");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            saveSelected();
+        }
+        byte[] fileBytes;
+        try {
+            uploadedFile = event.getFile();
+            fileBytes = uploadedFile.getContent();
+            getEncounterImage().setImageValue(fileBytes);
+        } catch (Exception ex) {
+            Logger.getLogger(PhotoCamBean.class.getName()).log(Level.SEVERE, null, ex);
+            JsfUtil.addErrorMessage("Error");
+            return;
+        }
+
+        getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
+        getEncounterImage().setImageType(event.getFile().getContentType());
+        getEncounterImage().setEncounter(getCurrent());
+        getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+        if (getEncounterImage().getId() == null) {
+            clinicalFindingValueFacade.create(getEncounterImage());
+        } else {
+            clinicalFindingValueFacade.edit(getEncounterImage());
+        }
+        getEncounterImage().setImageName("encounter_image_" + getEncounterImage().getId() + ".png");
+        clinicalFindingValueFacade.edit(getEncounterImage());
+        getEncounterImages().add(getEncounterImage());
+        System.out.println("getEncounterImages() = " + getEncounterImages().size());
+        getEncounterFindingValues().add(getEncounterImage());
+        setEncounterImages(fillEncounterImages(getCurrent()));
+        fillEncounterImages(getCurrent());
+        setEncounterImage(null);
+    }
+
+    public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
+        System.out.println("oncaptureVisitPhoto");
+        if (getCurrent() == null) {
+            JsfUtil.addErrorMessage("Select Encounter");
+            return;
+        }
+        if (getCurrent().getId() == null) {
+            saveSelected();
+        }
+        getEncounterImage().setImageValue(captureEvent.getData());
+        getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
+        getEncounterImage().setImageType("image/png");
+        getEncounterImage().setEncounter(getCurrent());
+        getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+        if (getEncounterImage().getId() == null) {
+            clinicalFindingValueFacade.create(getEncounterImage());
+        } else {
+            clinicalFindingValueFacade.edit(getEncounterImage());
+        }
+        getEncounterImage().setImageName("encounter_image_" + getEncounterImage().getId() + ".png");
+        clinicalFindingValueFacade.edit(getEncounterImage());
+        getEncounterImages().add(getEncounterImage());
+        System.out.println("getEncounterImages() = " + getEncounterImages().size());
+        getEncounterFindingValues().add(getEncounterImage());
+        setEncounterImages(fillEncounterImages(getCurrent()));
+        setEncounterImage(null);
+    }
+
+    public UploadedFile getUploadedFile() {
+        return uploadedFile;
+    }
+
+    public void setUploadedFile(UploadedFile uploadedFile) {
+        this.uploadedFile = uploadedFile;
     }
 
 }

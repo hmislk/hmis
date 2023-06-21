@@ -41,6 +41,10 @@ public class VocabularyController implements Serializable {
     private Vocabulary current;
     private List<Vocabulary> items = null;
     String selectText = "";
+    
+    public String navigateToManageVocabularies(){
+        return "/emr/admin/vocabularies";
+    }
 
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;
@@ -73,8 +77,7 @@ public class VocabularyController implements Serializable {
     }
 
     public void saveSelected() {
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
@@ -122,7 +125,6 @@ public class VocabularyController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());

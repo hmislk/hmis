@@ -427,10 +427,13 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private String msgFromSysmex() {
+        System.out.println("msgFromSysmex");
         String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
+        System.out.println("sysMex.getBytes().size() = " + sysMex.getBytes().size());
+        
         if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
             SysMexAdf1 m1 = new SysMexAdf1();
             m1.setInputStringBytesSpaceSeperated(msg);
@@ -1136,13 +1139,15 @@ public class PatientInvestigationController implements Serializable {
 
         samplingRequestResponse += "Login=1";
         String zplTemplate = "^XA\r\n"
-                + "^LH150,10\r\n"
-                + "^F010,20,^ADN,18,10^FD#{header}^FS\r\n"
-                + "^LH150,30\r\n"
-                + "^F010,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n"
-                + "^LH150,155\r\n"
-                + "^F010,20,^ADN,18,10^FD#{footer}^FS\r\n"
+                + "^LH170,10\r\n" // was 150
+                + "^FO30,20,^ADN,18,10^FD#{header}^FS\r\n" // was 10
+                + "^LH170,30\r\n" // was 150
+                + "^FO30,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n" // was 10
+                + "^LH170,155\r\n" // was 150
+                + "^FO30,20,^ADN,18,10^FD#{footer}^FS\r\n" // was 10
                 + "^XZ\r\n";
+
+
         String ptLabel = "";
         Bill tb;
         tb = patientSamples.get(0).getBill();
@@ -1901,4 +1906,5 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
 }
