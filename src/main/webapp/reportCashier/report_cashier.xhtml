@@ -15,8 +15,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <h:form>
-                                <p:accordionPanel>
-                                    <!--                                    <p:panelGrid columns="3" styleClass="alignTop">-->                                    
+                                <p:accordionPanel activeIndex="#{opdController.opdSummaryIndex}">
                                     <p:tab title="Common Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Department All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
