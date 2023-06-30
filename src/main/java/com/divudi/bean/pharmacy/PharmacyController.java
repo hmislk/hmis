@@ -68,6 +68,7 @@ public class PharmacyController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private int pharmacyAdminIndex;
+    private int pharmacySummaryIndex;
     
     
     /////
@@ -2004,6 +2005,14 @@ public class PharmacyController implements Serializable {
 
     public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
         this.pharmacyAdminIndex = pharmacyAdminIndex;
+    }
+
+    public int getPharmacySummaryIndex() {
+        return pharmacySummaryIndex;
+    }
+
+    public void setPharmacySummaryIndex(int pharmacySummaryIndex) {
+        this.pharmacySummaryIndex = pharmacySummaryIndex;
     }
 
 }
