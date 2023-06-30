@@ -12,64 +12,93 @@
 
             <ui:define name="content">
 
-                <h:form >
-                    <p:panel header="Store Administration" >
-                        <p:tabView orientation="left">
 
-                            <p:tab title="1) Store Item">
-                                <h:panelGrid columns="1" >     
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Store Item Category" action="/store/consumable_category/List" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" action="/store/make_list" value="2) Manage Makes" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="3) Item Master" action="store_item_master" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="4) Import from Excel" action="store_item_import" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="5) Import list of items with stock from Excel" action="store_item_import_with_stock" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="6) Import list of items and categories from Excel" action="store_item_import_with_category" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="7) Manufacturers" action="/pharmacy/pharmacy_manufacturer" ></p:commandButton>
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="2) Error Checking">
-                                <h:panelGrid columns="1">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Error Detection" action="store_error_checking" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Error Detection By Date" action="store_error_checking_date" ></p:commandButton>                                   
+                <p:panel header="Store Administration" >
+                    <div class="row">
+                        <div class="col-3">
 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="3) Stock Variant Report" 
-                                                     action="store_variant_category_stock_by_item" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="4) Stock Variant Adjustment" 
-                                                     action="store_variant_ajustment_pre_list" />
+                            <p:accordionPanel>
+                                <p:tab title="1) Store Item">
+                                    <h:form> 
+                                        <div class="d-grid gap-2">     
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Store Item Category" action="/store/consumable_category/List" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" action="/store/make_list" value="2) Manage Makes" />
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="3) Item Master" action="store_item_master" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="4) Import from Excel" action="store_item_import" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="5) Import list of items with stock from Excel" action="store_item_import_with_stock" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="6) Import list of items and categories from Excel" action="store_item_import_with_category" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="7) Manufacturers" action="/pharmacy/pharmacy_manufacturer" ></p:commandButton>
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="2) Error Checking">
+                                    <h:form> 
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Error Detection" action="store_error_checking" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Error Detection By Date" action="store_error_checking_date" ></p:commandButton>                                   
 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="5) Items Issues from Retired Items" 
-                                                     action="/store/store_search_issue_bill_item_error" />
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="3) Stock Variant Report" 
+                                                             action="store_variant_category_stock_by_item" />
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="4) Stock Variant Adjustment" 
+                                                             action="store_variant_ajustment_pre_list" />
 
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="3) Institutions">
-                                <h:panelGrid columns="1" >                                
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Distributor" action="store_dealer" ></p:commandButton>                                
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Item Distributors" action="store_items_distributors" ></p:commandButton>
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="4) Other">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Measurment Units" action="store_measurement_unit" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Frequencies" action="store_frequency_unit" ></p:commandButton>
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="5) Assets">
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Asset Categories" action="/store/asset_category/List" ></p:commandButton>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Asset Item Master" action="store_inventry_item_master" ></p:commandButton>
-                                </h:panelGrid>
-                            </p:tab>
-                            <p:tab title="6) Check Entered Data">
-                                <h:panelGrid columns="1">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Item Distributor" action="store_item_by_distributor" ></p:commandButton>
-                                </h:panelGrid>
-                            </p:tab>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="5) Items Issues from Retired Items" 
+                                                             action="/store/store_search_issue_bill_item_error" />
 
-                        </p:tabView>
-                        
-                    </p:panel>
-                </h:form>
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="3) Institutions">
+                                    <h:form> 
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Distributor" action="store_dealer" ></p:commandButton>                                
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Item Distributors" action="store_items_distributors" ></p:commandButton>
+
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="4) Other">
+                                    <h:form> 
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Measurment Units" action="store_measurement_unit" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Frequencies" action="store_frequency_unit" ></p:commandButton>
+
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="5) Assets">
+                                    <h:form> 
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Asset Categories" action="/store/asset_category/List" ></p:commandButton>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="2) Asset Item Master" action="store_inventry_item_master" ></p:commandButton>
+
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="6) Check Entered Data">
+                                    <h:form> 
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="1) Item Distributor" action="store_item_by_distributor" ></p:commandButton>
+
+
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                            </p:accordionPanel>
+
+
+
+                        </div>
+                        <div class="col-9">  
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+
+                        </div>
+                    </div>
+                </p:panel>
+
             </ui:define>
         </ui:composition>
 
