@@ -67,6 +67,9 @@ import javax.persistence.TemporalType;
 public class PharmacyController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private int pharmacyAdminIndex;
+    
+    
     /////
     @Inject
     private SessionController sessionController;
@@ -1993,6 +1996,14 @@ public class PharmacyController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public int getPharmacyAdminIndex() {
+        return pharmacyAdminIndex;
+    }
+
+    public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
+        this.pharmacyAdminIndex = pharmacyAdminIndex;
     }
 
 }
