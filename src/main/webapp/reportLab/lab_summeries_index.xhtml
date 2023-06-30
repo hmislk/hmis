@@ -8,105 +8,138 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">            
             <ui:define name="content">
-                <h:form>
-                    <p:panel header="Lab Summeries">                        
-                        <p:tabView orientation="left" >
-                            <p:tab title="Performance" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation List" action="investigation_counts"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill List" action="/reportLab/bill_list"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Client List" action="/reportLab/client_list"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Sample List" action="/lab/patient_sample_list"/> 
 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Average Turn Around Time" action="turn_over_time"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills"/> 
-                                    <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution"/>
-                                    <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Department" action="report_lab_by_billed_department"/>
-                                    <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution"/>
-                                    <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Department" action="report_lab_by_reported_department"/>
+                <p:panel header="Lab Summeries">  
+                    <div class="row">
+                        <div class="col-3"> 
 
-                                    <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Institutions" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution"/>
-
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Collecting Centres" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre(Summery)" action="report_lab_collection_centre_summery.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count(Summery)" action="report_lab_by_collection_centre_investigation_count_summery"/>                            
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Referring Doctors" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor(Summery)" action="report_lab_by_refering_doctor_summery.xhtml"/>
-                                </p:panelGrid>
-                            </p:tab>
-
-                            <p:tab title="Inward" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward"/>
-
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Income" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Income Summery" action="income_summery"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary Department" action="report_cashier_detailed_by_department.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by day" action="report_lab_by_date_summery.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily OPD Fee Summery" action="report_lab_by_date_summery_cash_credit.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily OPD Fee Summery with Counts" action="report_lab_by_date_summery_cash_credit_counts.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Inward Fee Summery" action="daily_inward_fee_summery.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Inward Fee Summery with Counts" action="daily_inward_fee_summery_counts.xhtml"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total.xhtml"/>
-
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Lab Summary" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
-                                </p:panelGrid>
-                            </p:tab>
-
-                            <p:tab title="Auditing" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Bills Cancelled after Approving Reports"
-                                                     action="/lab/report_cancelled_bill_search"/> 
-                                </p:panelGrid>
-                            </p:tab>
-
-                            <p:tab title="Clinical" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Test Results - Single" action="test_results_single"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Test Results" action="/lab/clinical_result_values"/> 
-
-                                </p:panelGrid>
-                            </p:tab>
-                        </p:tabView>
+                            <p:accordionPanel>
 
 
+                                <p:tab title="Performance" > 
+                                    <h:form>
 
-                    </p:panel> 
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation List" action="investigation_counts"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Bill List" action="/reportLab/bill_list"/> 
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Client List" action="/reportLab/client_list"/> 
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Sample List" action="/lab/patient_sample_list"/> 
 
-                </h:form>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Average Turn Around Time" action="turn_over_time"/> 
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Bill-vice turn-around time" action="turn_over_time_bills"/> 
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Institution" action="report_lab_by_billed_institution"/>
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Billed Department" action="report_lab_by_billed_department"/>
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution"/>
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="By Reported Department" action="report_lab_by_reported_department"/>
+
+                                            <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" styleClass="linkButton" ajax="false" value="OPD Bill Items For Credit Companies" action="#{searchController.toCreateBillItemListForCreditCompany()}"/>
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="Institutions" >
+                                    <h:form>
+                                        <h:panelGroup>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="By Ordering Institution" action="ix_count_by_billed_institution"/>
+
+                                        </h:panelGroup>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="Collecting Centres" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre(Detail)" action="report_lab_collection_centre.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre(Summery)" action="report_lab_collection_centre_summery.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count" action="report_lab_by_collection_centre_investigation_count.xhtml"/>                            
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report by Collection Centre Count(Summery)" action="report_lab_by_collection_centre_investigation_count_summery"/>                            
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="Referring Doctors" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor(Details)" action="report_lab_by_refering_doctor.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report by Referring Doctor(Summery)" action="report_lab_by_refering_doctor_summery.xhtml"/>
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Inward" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date" action="report_inward_service_detail_added_lab"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Inward Lab Summary by Added Date With Margin" action="report_inward_service_detail_added_lab_feeMargin"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Inward" action="report_investigation_summery_by_inward"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Inward by Date" action="report_lab_by_date_summery_inward"/>
+
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Income" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Income Summery" action="income_summery"/> 
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary Department" action="report_cashier_detailed_by_department.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by day" action="report_lab_by_date_summery.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type" action="report_investigation_summery_by_feetype"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee" action="report_investigation_summery_by_regent_fee"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily OPD Fee Summery" action="report_lab_by_date_summery_cash_credit.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily OPD Fee Summery with Counts" action="report_lab_by_date_summery_cash_credit_counts.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Inward Fee Summery" action="daily_inward_fee_summery.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Inward Fee Summery with Counts" action="daily_inward_fee_summery_counts.xhtml"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Report Summary by Month With Cash and Credit" action="report_lab_by_date_summery_cash_credit_only_total.xhtml"/>
+
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Lab Summary" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types"/> 
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary" action="report_opd_service_summery"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd by Date" action="report_investigation_summery_by_date_inward_opd"/>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Daily Summary Inward and Opd Count" action="report_investigation_summery_by_inward_opd_count"/>
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Auditing" >
+                                    <h:form>
+                                        <h:panelGroup>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Bills Cancelled after Approving Reports"
+                                                             action="/lab/report_cancelled_bill_search"/> 
+                                        </h:panelGroup>>
+                                    </h:form>
+
+                                </p:tab>
+
+                                <p:tab title="Clinical" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Test Results - Single" action="test_results_single"/> 
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="Test Results" action="/lab/clinical_result_values"/> 
+
+                                        </div>>
+                                    </h:form>
+                                </p:tab>
+
+                            </p:accordionPanel>
+                        </div>
+                        <div class="col-9">  
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+
+                        </div>
+                    </div>
+                </p:panel> 
+
+
             </ui:define>
 
 
