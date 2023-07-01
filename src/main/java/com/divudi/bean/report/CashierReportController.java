@@ -97,6 +97,10 @@ public class CashierReportController implements Serializable {
         toReciptNo = null;
         recreteModal();
     }
+    
+    public String navigateToDepartmentAllCashierReport(){
+        return "/reportCashier/report_cashier_summery_all";
+    }
 
     public CashierReportController() {
     }
