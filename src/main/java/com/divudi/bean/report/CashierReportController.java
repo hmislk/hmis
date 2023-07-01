@@ -101,7 +101,26 @@ public class CashierReportController implements Serializable {
     public String navigateToDepartmentAllCashierReport(){
         return "/reportCashier/report_cashier_summery_all";
     }
+    
+    public String navigateToCashierReport(){
+        return "/reportCashier/report_cashier_detailed_by_user_by_reciptno.xhtml";
+    }
+    
+    public String navigateToCashierSummary(){
+        return "/reportCashier/report_cashier_summery_by_user.xhtml";
+    }
+    
+    public String navigateToCashierSummaryUsingReciptNo(){
+        return "/reportCashier/report_cashier_summery_by_user_by_reciptno";
+    }
 
+    public String navigateToAllCashierReportUsingReciptNo(){
+        return "/reportCashier/report_cashier_summery_by_user_by_reciptno.xhtml";
+    }
+    
+    public String navigateToAllCashierSummary(){
+        return "/reportCashier/report_cashier_summery_all_total_only.xhtml";
+    }
     public CashierReportController() {
     }
 
