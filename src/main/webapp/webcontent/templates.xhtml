@@ -6,15 +6,13 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <body>
-
+    <h:body>
         <ui:composition template="./index.xhtml">
 
 
             <ui:define name="contents">
                 <h:form>
                     <h1>List of Templates</h1>
-
                     <p:dataTable value="#{webTemplateController.items}" 
                                  var="i"
                                  >
@@ -36,13 +34,7 @@
                         </p:column>
                     </p:dataTable>
                 </h:form>
-
-
-
-
             </ui:define>
-
         </ui:composition>
-
-    </body>
+    </h:body>
 </html>
