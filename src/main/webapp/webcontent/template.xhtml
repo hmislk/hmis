@@ -12,8 +12,26 @@
             <ui:define name="contents">
 
                 <h1>Template</h1>
-                
-               
+
+
+                <h:form class="form" >
+
+                    <p:outputLabel value="Name" for="txtName" class="form-label" ></p:outputLabel>
+                    <p:inputText id="txtName" value="#{webTemplateController.current.name}" 
+                                 required="true" requiredMessage="Please enter a name" 
+                                 class="form-control">
+                    </p:inputText>
+
+                    <p:outputLabel value="Description" class="form-label"></p:outputLabel>
+                    <p:inputText value="#{webTemplateController.current.description}" 
+                                 class="form-control"></p:inputText>
+
+                    <p:commandButton ajax="false" value="Save" action="#{webTemplateController.saveCurrent()}" >
+                    </p:commandButton>
+
+
+                </h:form>
+
 
 
             </ui:define>
