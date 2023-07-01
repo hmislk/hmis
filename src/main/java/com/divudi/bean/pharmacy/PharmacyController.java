@@ -59,8 +59,8 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -69,8 +69,7 @@ public class PharmacyController implements Serializable {
     private static final long serialVersionUID = 1L;
     private int pharmacyAdminIndex;
     private int pharmacySummaryIndex;
-    
-    
+
     /////
     @Inject
     private SessionController sessionController;
@@ -1070,7 +1069,6 @@ public class PharmacyController implements Serializable {
         //   //System.err.println("Institution Stock");
         List<Institution> insList = getCompany();
 
-
         institutionStocks = new ArrayList<>();
         grantStock = 0;
 
@@ -1085,7 +1083,6 @@ public class PharmacyController implements Serializable {
                 r.setDepartment((Department) obj[0]);
                 r.setStock((Double) obj[1]);
                 list.add(r);
-
 
                 //Total Institution Stock
                 totalStock += r.getStock();
