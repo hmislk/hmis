@@ -12,9 +12,12 @@
 
             <ui:define name="content">
 
-                <h:form>
+               
                     <p:panel header="Store Summaries" >
-                        <p:tabView orientation="left">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h:form>
+                                    <p:accordionPanel >
 
                             <p:tab title="1) Cashier ">
                                 <h:panelGrid columns="1">
@@ -87,10 +90,21 @@
                                 </h:panelGrid>
                             </p:tab>
 
-                        </p:tabView>
+                                </p:accordionPanel>>
+                           
+                                </h:form>
+                                 </div>
+                            <div class="col-md-9">
+                                <ui:insert name="subcontent" >
+                               
+                                </ui:insert>
+                            </div>
+                            
+                        </div>
+                        
                         
                     </p:panel>
-                </h:form>
+                
             </ui:define>
 
 
