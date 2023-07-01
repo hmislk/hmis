@@ -18,8 +18,13 @@
                                 <p:accordionPanel activeIndex="#{opdController.opdSummaryIndex}">
                                     <p:tab title="Common Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Department All Cashier Report" action="report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="1) Cashier Report" action="report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             value="Department All Cashier Report" 
+                                                             action="#{cashierReportController.navigateToDepartmentAllCashierReport}" 
+                                                             actionListener="#{cashierReportController.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="1) Cashier Report" 
+                                                             action="report_cashier_detailed_by_user.xhtml" 
+                                                             actionListener="#{commonReport.recreteModal}"/>
                                             <p:commandButton class="w-100" ajax="false" value="1.1) Cashier Report(Using Recipt No)" action="report_cashier_detailed_by_user_by_reciptno.xhtml" actionListener="#{commonReport.recreteModal2}"/>
                                             <p:commandButton class="w-100" ajax="false" value="2) Cashier Summary" action="report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
                                             <p:commandButton class="w-100" ajax="false" value="2.1) Cashier Summary(Using Recipt No)" action="report_cashier_summery_by_user_by_reciptno" actionListener="#{commonReport.recreteModal2}"/>

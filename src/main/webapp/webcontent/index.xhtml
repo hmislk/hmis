@@ -2,7 +2,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html">
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
 
     <h:head >
         <ui:define name="title">
@@ -17,6 +18,24 @@
                 <div class="row container container-fluid" >
                     <div class="col-3" >
                         <h:form >
+                            <div class="col" >
+                                <p:commandButton ajax="false" 
+                                                 class="btn btn-primary m-2 w-75" 
+                                                 action="#{webTemplateController.navigateToAddNewTemplate()}"
+                                                 value="Add New Template" icon="pi pi-plus"></p:commandButton>
+                            </div>
+
+                             <div class="col" >
+                               <p:commandButton ajax="false" 
+                                                class="btn btn-primary m-2 w-75" 
+                                                action="#{webTemplateController.navigateToListWebTemplates}" 
+                                                value="List Templates" 
+                                                icon="pi pi-list"></p:commandButton>
+
+                            </div>
+
+
+
                             <div class="col" >
                                 <h:commandButton class="btn btn-primary m-2 w-75" value="Add New Short Contents" action="#{webContentController.toAddNewWebContent()}" ></h:commandButton>
                             </div>
@@ -35,16 +54,16 @@
                             <div class="col" >
                                 <h:commandButton  class="btn btn-primary m-2 w-75" value="List Images" action="#{uploadController.toListUploads()}" ></h:commandButton>
                             </div>
-                             <div class="col" >
-                                 <h:commandButton  class="btn btn-primary m-2 w-75" value="Add Language" action="#{webLanguageController.toAddNewWebLanguage()}" ></h:commandButton>
+                            <div class="col" >
+                                <h:commandButton  class="btn btn-primary m-2 w-75" value="Add Language" action="#{webLanguageController.toAddNewWebLanguage()}" ></h:commandButton>
                             </div>
                             <div class="col" >
                                 <h:commandButton  class="btn btn-primary m-2 w-75" value="List Languages" action="#{webLanguageController.toListWebLanguage()}" ></h:commandButton>
                             </div>
                         </h:form>
-                        
+
                         <h1>#{webContentController.findSingleText('title')}</h1>
-                        
+
                         <ui:repeat value="#{webContentController.findMultipleWebText('vision')}" var="v" >
                             #{v}
                         </ui:repeat>
