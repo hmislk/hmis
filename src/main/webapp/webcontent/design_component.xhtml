@@ -3,7 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
 
@@ -25,6 +26,11 @@
                     <p:outputLabel value="Description" class="form-label"></p:outputLabel>
                     <p:inputText value="#{designComponentController.current.description}" 
                                  class="form-control"></p:inputText>
+                    
+                    <p:outputLabel value="Presentation Type"></p:outputLabel>
+                    <p:selectOneMenu value="#{designComponentController.current.componentPresentationType}">
+                        <f:selectItems value="#{designComponentController.componentPresentationTypes}"/>
+                    </p:selectOneMenu>
 
                     <p:commandButton ajax="false" value="Save" action="#{designComponentController.saveCurrent()}" >
                     </p:commandButton>

@@ -17,4 +17,7 @@ public enum TemplateComponentType {
     STAFF_LOGIN_PAGE,
     VIEW_MY_REPORT,
     PATIENT_PORTAL,
+    
 }
+
+
