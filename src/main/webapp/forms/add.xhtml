@@ -17,16 +17,16 @@
                 <h:form class="form" >
 
                     <p:outputLabel value="Name" for="txtName" class="form-label" ></p:outputLabel>
-                    <p:inputText id="txtName" value="#{templateComponentController.current.name}" 
+                    <p:inputText id="txtName" value="#{ComponentAsignmentController.current.name}" 
                                  required="true" requiredMessage="Please enter a name" 
                                  class="form-control">
                     </p:inputText>
 
                     <p:outputLabel value="Description" class="form-label"></p:outputLabel>
-                    <p:inputText value="#{templateComponentController.current.description}" 
+                    <p:inputText value="#{ComponentAsignmentController.current.description}" 
                                  class="form-control"></p:inputText>
 
-                    <p:commandButton ajax="false" value="Save" action="#{templateComponentController.saveCurrent()}" >
+                    <p:commandButton ajax="false" value="Save" action="#{ComponentAsignmentController.saveCurrent()}" >
                     </p:commandButton>
 
 
