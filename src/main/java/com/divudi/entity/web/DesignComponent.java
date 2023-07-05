@@ -1,5 +1,6 @@
 package com.divudi.entity.web;
 
+import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.data.web.TemplateComponentType;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -30,6 +31,12 @@ public class DesignComponent implements Serializable {
     private TemplateComponentType type;
     @ManyToOne
     private DesignComponent parent;
+    
+    @Enumerated(EnumType.STRING)
+    private ComponentPresentationType componentPresentationType;
+    
+    
+    
     
     
     
@@ -98,6 +105,14 @@ public class DesignComponent implements Serializable {
 
     public void setParent(DesignComponent parent) {
         this.parent = parent;
+    }
+
+    public ComponentPresentationType getComponentPresentationType() {
+        return componentPresentationType;
+    }
+
+    public void setComponentPresentationType(ComponentPresentationType componentPresentationType) {
+        this.componentPresentationType = componentPresentationType;
     }
     
 }

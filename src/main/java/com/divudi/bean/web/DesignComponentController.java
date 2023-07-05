@@ -1,5 +1,6 @@
 package com.divudi.bean.web;
 
+import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.web.DesignComponent;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.facade.web.DesignComponentFacade;
@@ -8,6 +9,7 @@ import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;
+import java.util.Arrays;
 
 /**
  *
@@ -22,7 +24,12 @@ public class DesignComponentController implements Serializable {
     
     private DesignComponent current;
     private List<DesignComponent> list;
+    
+    public List<ComponentPresentationType> getComponentPresentationTypes(){
+        return Arrays.asList(ComponentPresentationType.values());
+    }
 
+    
     public DesignComponent getCurrent() {
         return current;
     }
