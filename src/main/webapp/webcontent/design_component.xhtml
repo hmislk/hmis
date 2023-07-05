@@ -27,9 +27,15 @@
                     <p:inputText value="#{designComponentController.current.description}" 
                                  class="form-control"></p:inputText>
                     
-                    <p:outputLabel value="Presentation Type"></p:outputLabel>
-                    <p:selectOneMenu value="#{designComponentController.current.componentPresentationType}">
+                    
+                    <p:outputLabel value="Presentation Type" class="form-label"></p:outputLabel>
+                    <p:selectOneMenu value="#{designComponentController.current.componentPresentationType}" class="form-control">
                         <f:selectItems value="#{designComponentController.componentPresentationTypes}"/>
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Data Type" class="form-label"></p:outputLabel>
+                    <p:selectOneMenu value="#{designComponentController.current.componentDataType}" class="form-control">
+                        <f:selectItems value="#{designComponentController.componentDataTypes}"/>
                     </p:selectOneMenu>
 
                     <p:commandButton ajax="false" value="Save" action="#{designComponentController.saveCurrent()}" >

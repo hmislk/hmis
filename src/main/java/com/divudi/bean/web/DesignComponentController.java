@@ -1,5 +1,6 @@
 package com.divudi.bean.web;
 
+import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.entity.web.DesignComponent;
 import com.divudi.facade.util.JsfUtil;
@@ -27,6 +28,10 @@ public class DesignComponentController implements Serializable {
     
     public List<ComponentPresentationType> getComponentPresentationTypes(){
         return Arrays.asList(ComponentPresentationType.values());
+    }
+    
+    public List<ComponentDataType> getComponentDataTypes(){
+        return Arrays.asList(ComponentDataType.values());
     }
 
     

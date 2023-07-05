@@ -1,5 +1,6 @@
 package com.divudi.entity.web;
 
+import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.data.web.TemplateComponentType;
 import java.io.Serializable;
@@ -34,6 +35,9 @@ public class DesignComponent implements Serializable {
     
     @Enumerated(EnumType.STRING)
     private ComponentPresentationType componentPresentationType;
+    
+    @Enumerated(EnumType.STRING)
+    private ComponentDataType componentDataType;
     
     
     
@@ -113,6 +117,14 @@ public class DesignComponent implements Serializable {
 
     public void setComponentPresentationType(ComponentPresentationType componentPresentationType) {
         this.componentPresentationType = componentPresentationType;
+    }
+
+    public ComponentDataType getComponentDataType() {
+        return componentDataType;
+    }
+
+    public void setComponentDataType(ComponentDataType componentDataType) {
+        this.componentDataType = componentDataType;
     }
     
 }
