@@ -25,10 +25,10 @@
                         <p:column headerText="Actions">
                             <p:commandButton ajax="false" 
                                              value="Edit"
-                                             action="#{templateComponentController.navigateToEditTemplateComponent()}" >
+                                             action="#{designComponentController.navigateToEditDesignComponent()}" >
                                 <f:setPropertyActionListener 
                                     value="#{i}" 
-                                    target="#{templateComponentController.current}" >
+                                    target="#{designComponentController.current}" >
                                 </f:setPropertyActionListener>
                             </p:commandButton>
                         </p:column>
