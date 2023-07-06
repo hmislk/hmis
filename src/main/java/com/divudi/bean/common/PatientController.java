@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.bean.web.CaptureComponentController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -113,6 +114,8 @@ public class PatientController implements Serializable {
     BillController billController;
     @Inject
     PharmacySaleController pharmacySaleController;
+    @Inject
+    CaptureComponentController captureComponentController;
     /**
      *
      * Class Variables
@@ -246,6 +249,29 @@ public class PatientController implements Serializable {
         getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
         return "/emr/opd_visit";
+    }
+    
+    public String navigateToNewDataEntryForm() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        captureComponentController.setDataEntryForms(captureComponentController.listDataEntryForms());
+        PatientEncounter opdVisit;
+        opdVisit = new PatientEncounter();
+        opdVisit.setCreatedAt(Calendar.getInstance().getTime());
+        opdVisit.setCreater(getSessionController().getLoggedUser());
+        opdVisit.setPatient(current);
+        opdVisit.setInstitution(sessionController.getInstitution());
+        opdVisit.setDepartment(sessionController.getDepartment());
+        opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
+        getPatientEncounterController().setCurrent(opdVisit);
+        getPatientEncounterController().setStartedEncounter(opdVisit);
+        getPatientEncounterController().fillCurrentPatientLists(current);
+        getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
+        getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
+        getPatientEncounterController().saveSelected();
+        return "/emr/select_data_entry_form";
     }
 
     
