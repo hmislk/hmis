@@ -24,5 +24,6 @@ public enum ComponentPresentationType {
     ToggleSwitch,
     TriStateCheckBox,
     AutoComplete,
+    Calendar,
 
 }
