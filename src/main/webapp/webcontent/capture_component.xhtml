@@ -16,18 +16,26 @@
 
                 <h:form class="form" >
 
-                    <p:outputLabel value="Name" for="txtName" class="form-label" ></p:outputLabel>
-                    <p:inputText id="txtName" value="#{captureComponentController.current.name}" 
-                                 required="true" requiredMessage="Please enter a name" 
-                                 class="form-control">
-                    </p:inputText>
-
-                    <p:outputLabel value="Description" class="form-label"></p:outputLabel>
-                    <p:inputText value="#{captureComponentController.current.description}" 
-                                 class="form-control"></p:inputText>
-
-                    <p:commandButton ajax="false" value="Save" action="#{captureComponentController.saveCurrent()}" >
-                    </p:commandButton>
+                    <p:dataTable value="#{captureComponentController.dataEntryItems}" var="d">
+                        <p:column>
+                            <p:outputLabel value="#{d.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column>
+                            
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text'}">
+                                <p:inputText></p:inputText>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text_Area'}">
+                                <p:inputTextarea></p:inputTextarea>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Rating'}">
+                                <p:rating></p:rating>
+                            </h:panelGroup>
+                          
+                        </p:column>
+                    </p:dataTable>
 
 
                 </h:form>

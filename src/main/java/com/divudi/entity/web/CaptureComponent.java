@@ -4,6 +4,8 @@
  */
 package com.divudi.entity.web;
 
+import com.divudi.data.web.ComponentDataType;
+import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.data.web.TemplateComponentType;
 import java.io.Serializable;
 import javax.persistence.Entity;
@@ -35,7 +37,15 @@ public class CaptureComponent implements Serializable {
     @ManyToOne
     private CaptureComponent parent;
     
+    @Enumerated(EnumType.STRING)
+    private ComponentPresentationType componentPresentationType;
     
+    @Enumerated(EnumType.STRING)
+    private ComponentDataType componentDataType;
+    
+    
+    @ManyToOne
+    private DesignComponent designComponent;
     
     
 
@@ -47,6 +57,7 @@ public class CaptureComponent implements Serializable {
         this.id = id;
     }
 
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -102,6 +113,30 @@ public class CaptureComponent implements Serializable {
 
     public void setParent(CaptureComponent parent) {
         this.parent = parent;
+    }
+
+    public DesignComponent getDesignComponent() {
+        return designComponent;
+    }
+
+    public void setDesignComponent(DesignComponent designComponent) {
+        this.designComponent = designComponent;
+    }
+
+    public ComponentPresentationType getComponentPresentationType() {
+        return componentPresentationType;
+    }
+
+    public void setComponentPresentationType(ComponentPresentationType componentPresentationType) {
+        this.componentPresentationType = componentPresentationType;
+    }
+
+    public ComponentDataType getComponentDataType() {
+        return componentDataType;
+    }
+
+    public void setComponentDataType(ComponentDataType componentDataType) {
+        this.componentDataType = componentDataType;
     }
     
 }

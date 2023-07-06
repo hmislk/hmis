@@ -26,6 +26,8 @@ public class DesignComponentController implements Serializable {
     private DesignComponent current;
     private List<DesignComponent> list;
     
+    
+    
     public List<ComponentPresentationType> getComponentPresentationTypes(){
         return Arrays.asList(ComponentPresentationType.values());
     }
