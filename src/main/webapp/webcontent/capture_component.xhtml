@@ -29,6 +29,10 @@
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text_Area'}">
                                 <p:inputTextarea></p:inputTextarea>
                             </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_Number'}">
+                                <p:inputNumber></p:inputNumber>
+                            </h:panelGroup>
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Rating'}">
                                 <p:rating></p:rating>
@@ -97,12 +101,6 @@
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Calendar'}">
                                 <p:calendar></p:calendar>
                             </h:panelGroup>
-
-
-
-
-
-
 
                         </p:column>
                     </p:dataTable>

@@ -25,5 +25,5 @@ public enum ComponentPresentationType {
     TriStateCheckBox,
     AutoComplete,
     Calendar,
-
+    DataEntryForm,
 }
