@@ -4,7 +4,10 @@
  */
 package com.divudi.bean.web;
 
+import com.divudi.bean.clinical.PatientEncounterController;
+import com.divudi.bean.common.PatientController;
 import com.divudi.data.web.ComponentPresentationType;
+import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.web.CaptureComponent;
 import com.divudi.entity.web.DesignComponent;
 import com.divudi.facade.util.JsfUtil;
@@ -22,6 +25,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import javax.inject.Inject;
 
 /**
  *
@@ -37,39 +41,45 @@ public class CaptureComponentController implements Serializable {
     private CaptureComponent current;
 
     private List<CaptureComponent> items;
-    
+
     private List<CaptureComponent> dataEntryItems;
-    
+
     private List<DesignComponent> dataEntryForms;
 
     private DesignComponent selectedDataEntryForm;
+
+    @Inject
+    PatientController patientController;
+    private PatientEncounter opdVisit;
     
-    
+    @Inject
+    PatientEncounterController  patientEncounterController;
+
     @EJB
     CaptureComponentFacade facade;
-    
+
     @EJB
     DesignComponentFacade designComponentFacade;
 
     public String navigateToAddCaptureComponent() {
         dataEntryItems = new ArrayList<>();
         List<DesignComponent> designComponents = listDataEntryForms();
-        for(DesignComponent d: designComponents){
+        for (DesignComponent d : designComponents) {
             CaptureComponent tempCaptureComponent = new CaptureComponent();
             tempCaptureComponent.setName(d.getName());
             tempCaptureComponent.setComponentDataType(d.getComponentDataType());
             tempCaptureComponent.setComponentPresentationType(d.getComponentPresentationType());
             tempCaptureComponent.setDesignComponent(d);
             dataEntryItems.add(tempCaptureComponent);
-            
+
         }
         current = new CaptureComponent();
         return "/webcontent/capture_component.xhtml";
 
     }
-    
+
     public String navigateToSelectDataEntryForm() {
-        
+
         dataEntryForms = listDataEntryForms();
         return "/webcontent/select_data_entry_form";
 
@@ -80,24 +90,36 @@ public class CaptureComponentController implements Serializable {
         listItems();
         return "/webcontent/capture_components.xhtml";
     }
-    
-    public String navgateToStartDataEntry() {
 
+    public String navgateToStartDataEntry() {
         dataEntryItems = new ArrayList<>();
         List<DesignComponent> designComponents = listComponentsOfDataEntryForm(selectedDataEntryForm);
-        for(DesignComponent d: designComponents){
+        for (DesignComponent d : designComponents) {
             CaptureComponent tempCaptureComponent = new CaptureComponent();
             tempCaptureComponent.setName(d.getName());
             tempCaptureComponent.setComponentDataType(d.getComponentDataType());
             tempCaptureComponent.setComponentPresentationType(d.getComponentPresentationType());
             tempCaptureComponent.setDesignComponent(d);
             dataEntryItems.add(tempCaptureComponent);
-            
         }
         current = new CaptureComponent();
         return "/webcontent/capture_component.xhtml";
-
-       
+    }
+    
+    public String navgateToStartDataEntryForOPD() {
+        opdVisit=patientEncounterController.getCurrent();
+        dataEntryItems = new ArrayList<>();
+        List<DesignComponent> designComponents = listComponentsOfDataEntryForm(selectedDataEntryForm);
+        for (DesignComponent d : designComponents) {
+            CaptureComponent tempCaptureComponent = new CaptureComponent();
+            tempCaptureComponent.setName(d.getName());
+            tempCaptureComponent.setComponentDataType(d.getComponentDataType());
+            tempCaptureComponent.setComponentPresentationType(d.getComponentPresentationType());
+            tempCaptureComponent.setDesignComponent(d);
+            dataEntryItems.add(tempCaptureComponent);
+        }
+        current = new CaptureComponent();
+        return "/emr/data_entry_form";
     }
 
     public String navigateToEditCaptureComponent() {
@@ -129,38 +151,38 @@ public class CaptureComponentController implements Serializable {
         items = facade.findBySQL(jpql);
 
     }
-    
-    private List<DesignComponent> listDesignComponents(){
+
+    private List<DesignComponent> listDesignComponents() {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d";
-         designComponents = designComponentFacade.findBySQL(jpql);
-         
-        return designComponents; 
+        designComponents = designComponentFacade.findBySQL(jpql);
+
+        return designComponents;
     }
 
-    private List<DesignComponent> listDataEntryForms(){
+    public List<DesignComponent> listDataEntryForms() {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d"
                 + " where d.componentPresentationType=:pt";
         Map m = new HashMap();
         m.put("pt", ComponentPresentationType.DataEntryForm);
-         designComponents = designComponentFacade.findByJpql(jpql,m);
-         
-        return designComponents; 
+        designComponents = designComponentFacade.findByJpql(jpql, m);
+
+        return designComponents;
     }
-    
-    private List<DesignComponent> listComponentsOfDataEntryForm(DesignComponent dataEntryForm){
+
+    private List<DesignComponent> listComponentsOfDataEntryForm(DesignComponent dataEntryForm) {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d"
                 + " where d.dataEntryForm=:def";
         Map m = new HashMap();
         m.put("def", dataEntryForm);
-         designComponents = designComponentFacade.findByJpql(jpql,m);
-         
-        return designComponents; 
+        designComponents = designComponentFacade.findByJpql(jpql, m);
+
+        return designComponents;
     }
 
     public CaptureComponentController() {
@@ -210,8 +232,15 @@ public class CaptureComponentController implements Serializable {
     public CaptureComponentFacade getFacade() {
         return facade;
     }
-    
-    
+
+    public PatientEncounter getOpdVisit() {
+        return opdVisit;
+    }
+
+    public void setOpdVisit(PatientEncounter opdVisit) {
+        this.opdVisit = opdVisit;
+    }
+
     @FacesConverter(forClass = CaptureComponent.class)
     public static class CaptureComponentConverter implements Converter {
 
@@ -252,5 +281,4 @@ public class CaptureComponentController implements Serializable {
         }
     }
 
-    
 }
