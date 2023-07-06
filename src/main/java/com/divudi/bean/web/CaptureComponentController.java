@@ -5,11 +5,14 @@
 package com.divudi.bean.web;
 
 import com.divudi.entity.web.CaptureComponent;
+import com.divudi.entity.web.DesignComponent;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.facade.web.CaptureComponentFacade;
+import com.divudi.facade.web.DesignComponentFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;
 
@@ -27,12 +30,28 @@ public class CaptureComponentController implements Serializable {
     private CaptureComponent current;
 
     private List<CaptureComponent> items;
+    
+    private List<CaptureComponent> dataEntryItems;
+    
 
     @EJB
     CaptureComponentFacade facade;
+    
+    @EJB
+    DesignComponentFacade designComponentFacade;
 
     public String navigateToAddCaptureComponent() {
-
+        dataEntryItems = new ArrayList<>();
+        List<DesignComponent> designComponents = listDesignComponents();
+        for(DesignComponent d: designComponents){
+            CaptureComponent tempCaptureComponent = new CaptureComponent();
+            tempCaptureComponent.setName(d.getName());
+            tempCaptureComponent.setComponentDataType(d.getComponentDataType());
+            tempCaptureComponent.setComponentPresentationType(d.getComponentPresentationType());
+            tempCaptureComponent.setDesignComponent(d);
+            dataEntryItems.add(tempCaptureComponent);
+            
+        }
         current = new CaptureComponent();
         return "/webcontent/capture_component.xhtml";
 
@@ -73,6 +92,15 @@ public class CaptureComponentController implements Serializable {
         items = facade.findBySQL(jpql);
 
     }
+    
+    private List<DesignComponent> listDesignComponents(){
+        List<DesignComponent> designComponents;
+        String jpql = "select d "
+                + " from DesignComponent d";
+         designComponents = designComponentFacade.findBySQL(jpql);
+         
+        return designComponents; 
+    }
 
     public CaptureComponentController() {
 
@@ -93,5 +121,15 @@ public class CaptureComponentController implements Serializable {
     public void setItems(List<CaptureComponent> items) {
         this.items = items;
     }
+
+    public List<CaptureComponent> getDataEntryItems() {
+        return dataEntryItems;
+    }
+
+    public void setDataEntryItems(List<CaptureComponent> dataEntryItems) {
+        this.dataEntryItems = dataEntryItems;
+    }
+    
+    
 
 }
