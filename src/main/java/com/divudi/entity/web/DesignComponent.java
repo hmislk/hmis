@@ -33,17 +33,14 @@ public class DesignComponent implements Serializable {
     @ManyToOne
     private DesignComponent parent;
     
+    @ManyToOne
+    private DesignComponent dataEntryForm;
+    
     @Enumerated(EnumType.STRING)
     private ComponentPresentationType componentPresentationType;
     
     @Enumerated(EnumType.STRING)
     private ComponentDataType componentDataType;
-    
-    
-    
-    
-    
-    
     
 
     public Long getId() {
@@ -53,6 +50,7 @@ public class DesignComponent implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
+    
 
     @Override
     public int hashCode() {
@@ -125,6 +123,14 @@ public class DesignComponent implements Serializable {
 
     public void setComponentDataType(ComponentDataType componentDataType) {
         this.componentDataType = componentDataType;
+    }
+
+    public DesignComponent getDataEntryForm() {
+        return dataEntryForm;
+    }
+
+    public void setDataEntryForm(DesignComponent dataEntryForm) {
+        this.dataEntryForm = dataEntryForm;
     }
     
 }

@@ -12,8 +12,7 @@
 
             <ui:define name="contents">
                 <h:form>
-                    <h1>List of Components for #{designComponentController.current.name}</h1>
-                    <p:commandButton ajax="false" value="Back" action="#{designComponentController.navigateToEditDataEntryForm()}"></p:commandButton>
+                    <h1>List of Data Entry Forms</h1>
                     <p:dataTable value="#{designComponentController.list}" 
                                  var="i"
                                  >
@@ -26,7 +25,7 @@
                         <p:column headerText="Actions">
                             <p:commandButton ajax="false" 
                                              value="Edit"
-                                             action="#{designComponentController.navigateToEditDesignComponent()}" >
+                                             action="#{designComponentController.navigateToEditDataEntryForm()}" >
                                 <f:setPropertyActionListener 
                                     value="#{i}" 
                                     target="#{designComponentController.current}" >
