@@ -14,4 +14,5 @@ public enum ComponentDataType {
     Coded_Item,
     Boolean,
     Byte_Array,
+    Date,
 }
