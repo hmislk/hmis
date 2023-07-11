@@ -15,31 +15,68 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:form>
-            <nav class="bg-info text-white"  >
-                <div class="container d-flex flex-wrap text-white" >
-                    <ul class="nav me-auto">
-                        <li class="nav-item"><h:commandLink class="nav-link link-light px-2 " action="#{webContentController.toHome()}" >#{webContentController.findSingleText('home')}</h:commandLink></li>
-                        <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
-                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2"  action="#{webContentController.toChannel()}" >#{webContentController.findSingleText('channel')}</h:commandLink></li>
-                        <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
-                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2"  action="#{webContentController.toReports()}" >#{webContentController.findSingleText('reports')}</h:commandLink></li>
-                        <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
-                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2"  action="#{webContentController.toServices()}" >#{webContentController.findSingleText('services')}</h:commandLink></li>
-                        <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
-                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2"  action="#{webContentController.toAbout()}" >#{webContentController.findSingleText('about')}</h:commandLink></li>
-                        <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
-                        <li class="nav-item"><h:commandLink class="nav-link link-dark px-2"  action="#{webContentController.toContact()}" >#{webContentController.findSingleText('contact')}</h:commandLink></li>
-                        <li class="nav-item"><h:outputLabel class="nav-link link-secondary px-2 " value="|" ></h:outputLabel></li>
-                        <li class="nav-item">
-                            <h:commandLink class="nav-link link-dark px-2" action="#{sessionController.toLoginFromWeb()}" >
-                                <h:outputLabel value="#{webContentController.findSingleText('login')}" escape="false" ></h:outputLabel>
-                            </h:commandLink>
-                        </li>
+        <link type="text/css" rel="stylesheet" href="#{request.contextPath}/resources/css/html5up-hyperspace/main.css" />
 
-                    </ul>
-                </div>
-            </nav>
-        </h:form>
+        <h:outputStylesheet library="css/html5up-hyperspace" name="main.css"/>
+
+        <h:outputScript library="js/html5up-hyperspace" name="jquery.min.js" target="head" />
+        <h:outputScript library="js/html5up-hyperspace" name="jquery.scrollex.min.js" target="head" />
+        <h:outputScript library="js/html5up-hyperspace" name="jquery.scrolly.min.js" target="head" />
+        <h:outputScript library="js/html5up-hyperspace" name="browser.min.js" target="head" />
+        <h:outputScript library="js/html5up-hyperspace" name="breakpoints.min.js" target="head" />
+        <h:outputScript library="js/html5up-hyperspace" name="util.js" target="head" />
+        <h:outputScript library="js/html5up-hyperspace" name="main.js" target="head" />
+
+        <!-- Sidebar -->
+        <h:panelGroup id="sidebar">
+            <h:panelGroup class="inner">
+                <h:form>
+                    <h:commandLink value="Welcome" action="#intro" />
+                    <h:commandLink value="Who we are" action="#one" />
+                    <h:commandLink value="What we do" action="#two" />
+                    <h:commandLink value="Get in touch" action="#three" />
+                </h:form>
+            </h:panelGroup>
+        </h:panelGroup>
+
+        <!-- Wrapper -->
+        <h:panelGroup id="wrapper">
+
+            <!-- Intro -->
+            <h:panelGroup id="intro" styleClass="wrapper style1 fullscreen fade-up">
+                <h:outputText value="Hyperspace" />
+                <h:outputText value="Just another fine responsive site template designed by HTML5 UP and released for free under the Creative Commons." />
+                <h:commandLink value="Learn more" action="#one" />
+            </h:panelGroup>
+
+            <!-- One -->
+            <h:panelGroup id="one" styleClass="wrapper style2 spotlights">
+                <!-- First Section -->
+                <h:panelGroup>
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic01.jpg" />
+                    <h:outputText value="Sed ipsum dolor" />
+                    <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                    <h:commandLink value="Learn more" action="generic.html" />
+                </h:panelGroup>
+
+                <!-- Second Section -->
+                <h:panelGroup>
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
+                    <h:outputText value="Feugiat consequat" />
+                    <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                    <h:commandLink value="Learn more" action="generic.html" />
+                </h:panelGroup>
+
+                <!-- Third Section -->
+                <h:panelGroup>
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
+                    <h:outputText value="Ultricies aliquam" />
+                    <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                    <h:commandLink value="Learn more" action="generic.html" />
+                </h:panelGroup>
+            </h:panelGroup>
+            <!-- Two -->
+            <!-- And so on... -->
+        </h:panelGroup>
     </cc:implementation>
 </html>

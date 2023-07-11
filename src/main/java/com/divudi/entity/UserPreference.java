@@ -83,6 +83,7 @@ public class UserPreference implements Serializable {
     boolean opdSettleWithoutPatientPhoneNumber=false;
     boolean channelBillDouble=false;
     private boolean hasAwebsiteAsFrontEnd = false;
+    private String themeName;
     private boolean channelDoctorArivalMsgSend=false;
     String microBiologyFont;
     String logoName;
@@ -716,6 +717,15 @@ public class UserPreference implements Serializable {
         this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
     }
 
+    public String getThemeName() {
+        return themeName;
+    }
+
+    public void setThemeName(String themeName) {
+        this.themeName = themeName;
+    }
+
+    
     
     
     

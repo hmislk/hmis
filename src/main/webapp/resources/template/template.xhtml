@@ -38,19 +38,23 @@
 
             gtag('config', 'UA-167559394-1');
         </script>
+        <h:outputStylesheet library="css/html5up-hyperspace" name="main.css"/>
+
     </h:head>
     <h:body style="height: 100vh;">
+
         <p:growl id="publicGrowl" showDetail="true" sticky="false" />
         <h:panelGroup rendered="#{!sessionController.firstLogin}" >
+
             <h:panelGroup rendered ="#{not sessionController.logged}"  >
                 <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
                     <ez:web_header/>
-                    <ez:web_title/>
-                    <ui:insert name="web">
-                        <ez:webindex rendered="#{not sessionController.websiteUserGoingToLog}"/> 
-                        <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
-                    </ui:insert>
-                    <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
+                    <!--                    <ez:web_title/>
+                                        <ui:insert name="web">
+                                            <ez:webindex rendered="#{not sessionController.websiteUserGoingToLog}"/> 
+                                            <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
+                                        </ui:insert>
+                                        <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>-->
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not applicationController.hasAwebsiteAsFrontEnd}" >
                     <ui:insert name="login">
