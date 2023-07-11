@@ -35,8 +35,10 @@
                             <ul>
                                 <li><a href="#intro">#{webContentController.findSingleText('home')}</a></li>
                                 <li><a href="#one">#{webContentController.findSingleText('services')}</a></li>
-                                <li><a href="#two">What we do</a></li>
-                                <li><a href="#three">Get in touch</a></li>
+                                <li><a href="#two">#{webContentController.findSingleText('channel_doctor')}</a></li>
+                                <li><a href="#three">#{webContentController.findSingleText('view_my_reports')}</a></li>
+                                <li><a href="#four">#{webContentController.findSingleText('login')}</a></li>
+                                <li><a href="#five">#{webContentController.findSingleText('about_us')}</a></li>
                             </ul>
                         </nav>
                     </h:form>
@@ -66,7 +68,104 @@
                     </h:form>
 
 
-                    <h:form id="formLogin">
+                    
+                </div>
+
+                <!-- One -->
+                <div id="one" class="wrapper style2 spotlights">
+                    <!-- First Section -->
+
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic01.jpg" />
+                    <div class="content">
+                        <div class="inner">
+                            <h:outputText value="#{webContentController.findSingleText('service1_details')}" />
+                            <h:outputText value="#{webContentController.findSingleText('service2_details')}" />
+                            <h:commandLink value="Learn more" action="generic.html" />
+                        </div>
+                    </div>
+
+                    <!-- Second Section -->
+
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
+                    <div class="content">
+                        <div class="inner">
+                            <h:outputText value="Feugiat consequat" />
+                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                            <h:commandLink value="Learn more" action="generic.html" />
+                        </div>
+                    </div>
+
+                    <!-- Third Section -->
+
+                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
+                    <div class="content">
+                        <div class="inner">
+                            <h:outputText value="Ultricies aliquam" />
+                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                            <h:commandLink value="Learn more" action="generic.html" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- One -->
+                <div id="one" class="wrapper style3 fade-up">
+                    <div class="inner">
+                        <h2>#{webContentController.findSingleText('services')}</h2>
+                        <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                        <div class="features">
+                            <section>
+                                <span class="icon solid major fa-code"></span>
+                                <h3>Lorem ipsum amet</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-lock"></span>
+                                <h3>Aliquam sed nullam</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-cog"></span>
+                                <h3>Sed erat ullam corper</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-desktop"></span>
+                                <h3>Veroeros quis lorem</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon solid major fa-link"></span>
+                                <h3>Urna quis bibendum</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                            <section>
+                                <span class="icon major fa-gem"></span>
+                                <h3>Aliquam urna dapibus</h3>
+                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            </section>
+                        </div>
+                        <ul class="actions">
+                            <li><h:commandLink value="Learn more" action="generic.html" class="button" /></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Two -->
+                <div id="two" class="wrapper style4 fade-up">
+                    <div class="inner">
+                        <h1>#{webContentController.findSingleText('channel_doctor')}</h1>
+                    </div>
+                </div>
+                
+                <!-- Three -->
+                <div id="three" class="wrapper style5 fade-up">
+                    <div class="inner">
+                        <h1>#{webContentController.findSingleText('view_my_reports')}</h1>
+                    </div>
+                </div>
+                 <!-- Four -->
+                <div id="four" class="wrapper style1 fade-up">
+                <h:form id="formLogin">
 
                         <div class="container">
                             <div class="row justify-content-center">
@@ -130,87 +229,9 @@
                         </div>
                     </h:form>
                 </div>
-
-                <!-- One -->
-                <div id="one" class="wrapper style2 spotlights">
-                    <!-- First Section -->
-
-                    <h:graphicImage library="images/html5up-hyperspace" name="pic01.jpg" />
-                    <div class="content">
-                        <div class="inner">
-                            <h:outputText value="#{webContentController.findSingleText('service1_details')}" />
-                            <h:outputText value="#{webContentController.findSingleText('service2_details')}" />
-                            <h:commandLink value="Learn more" action="generic.html" />
-                        </div>
-                    </div>
-
-                    <!-- Second Section -->
-
-                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
-                    <div class="content">
-                        <div class="inner">
-                            <h:outputText value="Feugiat consequat" />
-                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
-                            <h:commandLink value="Learn more" action="generic.html" />
-                        </div>
-                    </div>
-
-                    <!-- Third Section -->
-
-                    <h:graphicImage library="images/html5up-hyperspace" name="pic02.jpg" />
-                    <div class="content">
-                        <div class="inner">
-                            <h:outputText value="Ultricies aliquam" />
-                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
-                            <h:commandLink value="Learn more" action="generic.html" />
-                        </div>
-                    </div>
-                </div>
-
-                <div id="two" class="wrapper style3 fade-up">
-                    <div class="inner">
-                        <h2>#{webContentController.findSingleText('services')}</h2>
-                        <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
-                        <div class="features">
-                            <section>
-                                <span class="icon solid major fa-code"></span>
-                                <h3>Lorem ipsum amet</h3>
-                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                            </section>
-                            <section>
-                                <span class="icon solid major fa-lock"></span>
-                                <h3>Aliquam sed nullam</h3>
-                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                            </section>
-                            <section>
-                                <span class="icon solid major fa-cog"></span>
-                                <h3>Sed erat ullam corper</h3>
-                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                            </section>
-                            <section>
-                                <span class="icon solid major fa-desktop"></span>
-                                <h3>Veroeros quis lorem</h3>
-                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                            </section>
-                            <section>
-                                <span class="icon solid major fa-link"></span>
-                                <h3>Urna quis bibendum</h3>
-                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                            </section>
-                            <section>
-                                <span class="icon major fa-gem"></span>
-                                <h3>Aliquam urna dapibus</h3>
-                                <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                            </section>
-                        </div>
-                        <ul class="actions">
-                            <li><h:commandLink value="Learn more" action="generic.html" class="button" /></li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Three -->
-                <section id="three" class="wrapper style1 fade-up">
+                
+                <!-- Five -->
+                <div id="five" class="wrapper style1 fade-up">
                     <div class="inner">
                         <h2>Get in touch</h2>
                         <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
@@ -236,6 +257,7 @@
                                     </ul>
                                 </form>
                             </section>
+                           
                             <section>
                                 <ul class="contact">
                                     <li>
@@ -266,7 +288,7 @@
                             </section>
                         </div>
                     </div>
-                </section>
+                </div>
 
                 <!-- Footer -->
                 <footer id="footer" class="wrapper style1-alt">
