@@ -33,8 +33,8 @@
                     <h:form>
                         <nav>
                             <ul>
-                                <li><a href="#intro">Welcome</a></li>
-                                <li><a href="#one">Who we are</a></li>
+                                <li><a href="#intro">#{webContentController.findSingleText('home')}</a></li>
+                                <li><a href="#one">#{webContentController.findSingleText('services')}</a></li>
                                 <li><a href="#two">What we do</a></li>
                                 <li><a href="#three">Get in touch</a></li>
                             </ul>
@@ -47,9 +47,88 @@
             <div id="wrapper">
                 <!-- Intro -->
                 <div id="intro" class="wrapper style1 fullscreen fade-up">
-                    <h:outputText value="Hyperspace" />
+                    <h:outputText value="#{webContentController.findSingleText('site_title')}" />
                     <h:outputText value="Just another fine responsive site template designed by HTML5 UP and released for free under the Creative Commons." />
                     <h:commandLink value="Learn more" action="#one" />
+                    <h:form >
+                        <h:selectOneMenu id="cmbLang" value="#{webContentController.language}" >
+                            <f:selectItems value="#{webLanguageController.items}" var="l" itemLabel="#{l.name}" itemValue="#{l}" ></f:selectItems>
+                            <f:ajax event="change" execute="cmbLang" render="@all" ></f:ajax>
+                        </h:selectOneMenu>
+
+
+                        <h:commandLink class="nav-link link-dark px-2" action="#{sessionController.toLoginFromWeb()}" >
+                            <h:outputLabel value="#{webContentController.findSingleText('login')}" escape="false" ></h:outputLabel>
+                        </h:commandLink>
+
+
+
+                    </h:form>
+
+
+                    <h:form id="formLogin">
+
+                        <div class="container">
+                            <div class="row justify-content-center">
+                                <div class="col-md-8 col-lg-6 col-sm-10 col-xs-12 mt-5">
+                                    <div class="card">
+                                        <div class="card-header d-flex align-items-center">
+                                            <div class="flex-grow-1">
+                                                <h4>Please Login</h4>
+                                            </div>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-3 d-flex align-items-center">
+                                                    <h:graphicImage library="image" name="lock.png" alt="Logo" styleClass="img-fluid mx-auto my-2"/>
+                                                </div>
+
+                                                <div class="col-md-9">
+
+                                                    <div class="row w-100">
+                                                        <div class="col">
+                                                            <div class="form-group">
+                                                                <label for="txtUserName">Username:</label>
+                                                                <h:inputText autocomplete="off" id="txtUserName"
+                                                                             value="#{sessionController.userName}"
+                                                                             required="true"
+                                                                             requiredMessage="Username is required"
+                                                                             class="form-control"></h:inputText>
+                                                                <h:message for="txtUserName" style="color:red;" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row w-100" >
+                                                        <div class="col" >
+                                                            <div class="form-group">
+                                                                <label for="txtPassword">Password:</label>
+                                                                <h:inputSecret id="txtPassword" value="#{sessionController.passord }"
+                                                                               required="true"
+                                                                               requiredMessage="Password is required"
+                                                                               class="form-control"></h:inputSecret>
+                                                                <h:message for="txtPassword" style="color:red;" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row w-100 mt-3">
+                                                        <div class="col d-flex justify-content-end">
+                                                            <p:commandButton value="Login" id="btnLogin"
+                                                                             action="#{sessionController.loginActionWithoutDepartment()}"
+                                                                             class="btn btn-primary mb-3"
+                                                                             ajax="false"></p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
                 </div>
 
                 <!-- One -->
@@ -59,8 +138,8 @@
                     <h:graphicImage library="images/html5up-hyperspace" name="pic01.jpg" />
                     <div class="content">
                         <div class="inner">
-                            <h:outputText value="Sed ipsum dolor" />
-                            <h:outputText value="Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus." />
+                            <h:outputText value="#{webContentController.findSingleText('service1_details')}" />
+                            <h:outputText value="#{webContentController.findSingleText('service2_details')}" />
                             <h:commandLink value="Learn more" action="generic.html" />
                         </div>
                     </div>
@@ -90,7 +169,7 @@
 
                 <div id="two" class="wrapper style3 fade-up">
                     <div class="inner">
-                        <h2>What we do</h2>
+                        <h2>#{webContentController.findSingleText('services')}</h2>
                         <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
                         <div class="features">
                             <section>
