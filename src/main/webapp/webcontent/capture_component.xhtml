@@ -16,6 +16,8 @@
 
                 <h:form class="form" >
 
+                    <h:commandButton value="Submit" ></h:commandButton>
+
                     <p:dataTable value="#{captureComponentController.dataEntryItems}" var="d">
                         <p:column>
                             <p:outputLabel value="#{d.name}"></p:outputLabel>
@@ -23,15 +25,30 @@
                         <p:column>
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text'}">
-                                <p:inputText></p:inputText>
+                                <p:inputText id="txtInputTextShortText" value="#{d.shortTextValue}">
+                                    <p:ajax event="blur" process="txtInputTextShortText" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:inputText>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text_Area'}">
-                                <p:inputTextarea></p:inputTextarea>
+                                <p:inputTextarea value="#{d.longTextValue}"></p:inputTextarea>
                             </h:panelGroup>
-                            
+
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_Number'}">
-                                <p:inputNumber></p:inputNumber>
+                                <p:inputNumber value="#{d.longValue}"
+                                               placeholder="Enter the Long Value"
+                                               rendered="#{d.componentDataType eq 'Long'}"></p:inputNumber>
+                                <p:inputNumber value="#{d.doubleValue}" 
+                                               id="txtInputNumberDouble"
+                                                placeholder="Enter the Double Value"
+                                               rendered="#{d.componentDataType eq 'Double'}">
+                                <p:ajax event="blur" process="txtInputNumberDouble" 
+                                            listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
+                                </p:inputNumber>
+                                <p:inputNumber value="#{d.intValue}" 
+                                                placeholder="Enter the Integer Value"
+                                               rendered="#{d.componentDataType eq 'Integer'}"></p:inputNumber>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Rating'}">

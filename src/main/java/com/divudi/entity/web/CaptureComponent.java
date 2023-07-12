@@ -47,6 +47,15 @@ public class CaptureComponent implements Serializable {
     @ManyToOne
     private DesignComponent designComponent;
     
+    private Double doubleValue;
+    private Long longValue;
+    private Integer intValue;
+    private String shortTextValue;
+    @Lob
+    private String longTextValue;
+    
+    
+    
     
 
     public Long getId() {
@@ -137,6 +146,46 @@ public class CaptureComponent implements Serializable {
 
     public void setComponentDataType(ComponentDataType componentDataType) {
         this.componentDataType = componentDataType;
+    }
+
+    public Double getDoubleValue() {
+        return doubleValue;
+    }
+
+    public void setDoubleValue(Double doubleValue) {
+        this.doubleValue = doubleValue;
+    }
+
+    public Long getLongValue() {
+        return longValue;
+    }
+
+    public void setLongValue(Long longValue) {
+        this.longValue = longValue;
+    }
+
+    public Integer getIntValue() {
+        return intValue;
+    }
+
+    public void setIntValue(Integer intValue) {
+        this.intValue = intValue;
+    }
+
+    public String getShortTextValue() {
+        return shortTextValue;
+    }
+
+    public void setShortTextValue(String shortTextValue) {
+        this.shortTextValue = shortTextValue;
+    }
+
+    public String getLongTextValue() {
+        return longTextValue;
+    }
+
+    public void setLongTextValue(String longTextValue) {
+        this.longTextValue = longTextValue;
     }
     
 }
