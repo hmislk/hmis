@@ -32,7 +32,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text_Area'}">
-                                <p:inputTextarea value="#{d.longTextValue}">
+                                <p:inputTextarea id="txtInputTextLongText" value="#{d.longTextValue}">
                                     <p:ajax event="blur" process="txtInputTextLongText" 
                                             listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
                                 </p:inputTextarea>
@@ -40,6 +40,7 @@
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_Number'}">
                                 <p:inputNumber value="#{d.longValue}"
+                                               id="txtInputNumberLong"
                                                placeholder="Enter the Long Value"
                                                rendered="#{d.componentDataType eq 'Long'}">
                                     <p:ajax event="blur" process="txtInputNumberLong" 
@@ -121,7 +122,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{d.componentPresentationType eq 'Slider'}">
-                                <p:slider value="#{d.intValue}" 
+                                <p:slider  value="#{d.intValue}" 
                                                id="integerSliderValue">
                                      
                                 </p:slider>
