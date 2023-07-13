@@ -18,67 +18,43 @@
                 <div class="row container container-fluid" >
                     <div class="col-3" >
                         <h:form >
+             
                             <div class="col" >
                                 <p:commandButton ajax="false" 
                                                  class="btn btn-primary m-2 w-75" 
-                                                 action="#{webTemplateController.navigateToAddNewTemplate()}"
-                                                 value="Add New Template" icon="pi pi-plus"></p:commandButton>
+                                                 action="#{designComponentController.navigateToAddNewDataEntryForm()}"
+                                                 value="Add New Data Entry Componant" icon="pi pi-plus"></p:commandButton>
                             </div>
 
                              <div class="col" >
                                <p:commandButton ajax="false" 
                                                 class="btn btn-primary m-2 w-75" 
-                                                action="#{webTemplateController.navigateToListWebTemplates}" 
-                                                value="List Templates" 
+                                                action="#{designComponentController.navigateToListDataEntryForms()}" 
+                                                value="List Data Entry Forms" 
                                                 icon="pi pi-list"></p:commandButton>
 
                             </div>
                             
-                            <div class="col" >
+                             <div class="col" >
                                 <p:commandButton ajax="false" 
                                                  class="btn btn-primary m-2 w-75" 
-                                                 action="#{templateComponentController.navigateToAddNewTemplateComponent()}"
-                                                 value="Add New Template Componant" icon="pi pi-plus"></p:commandButton>
+                                                 action="#{captureComponentController.navigateToSelectDataEntryForm()}"
+                                                 value="Start Data Entry" icon="pi pi-plus"></p:commandButton>
                             </div>
 
                              <div class="col" >
                                <p:commandButton ajax="false" 
                                                 class="btn btn-primary m-2 w-75" 
-                                                action="#{templateComponentController.navigateToListTemplateComponent()}" 
-                                                value="List Templates Componants" 
+                                                action="#{captureComponentController.navgateToListCaptureComponents()}" 
+                                                value="List Capture Componants" 
                                                 icon="pi pi-list"></p:commandButton>
 
                             </div>
 
-
-
-                            <div class="col" >
-                                <h:commandButton class="btn btn-primary m-2 w-75" value="Add New Short Contents" action="#{webContentController.toAddNewWebContent()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton class="btn btn-primary m-2 w-75" value="Add New Long Contents" action="#{webContentController.toAddNewWebContent()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton class="btn btn-primary m-2 w-75" value="Add New List Contents" action="#{webContentController.toAddNewWebContent()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton  class="btn btn-primary m-2 w-75" value="List Web Contents" action="#{webContentController.toListWebContent()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton  class="btn btn-primary m-2 w-75" value="Add Web Image" action="#{uploadController.toAddNewUpload()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton  class="btn btn-primary m-2 w-75" value="List Images" action="#{uploadController.toListUploads()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton  class="btn btn-primary m-2 w-75" value="Add Language" action="#{webLanguageController.toAddNewWebLanguage()}" ></h:commandButton>
-                            </div>
-                            <div class="col" >
-                                <h:commandButton  class="btn btn-primary m-2 w-75" value="List Languages" action="#{webLanguageController.toListWebLanguage()}" ></h:commandButton>
-                            </div>
+                    
                         </h:form>
 
-                        <h1>#{webContentController.findSingleText('title')}</h1>
+<!--                        <h1>#{webContentController.findSingleText('title')}</h1>-->
 
                         <ui:repeat value="#{webContentController.findMultipleWebText('vision')}" var="v" >
                             #{v}
