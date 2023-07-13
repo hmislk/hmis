@@ -41,13 +41,13 @@
                                                rendered="#{d.componentDataType eq 'Long'}"></p:inputNumber>
                                 <p:inputNumber value="#{d.doubleValue}" 
                                                id="txtInputNumberDouble"
-                                                placeholder="Enter the Double Value"
+                                               placeholder="Enter the Double Value"
                                                rendered="#{d.componentDataType eq 'Double'}">
-                                <p:ajax event="blur" process="txtInputNumberDouble" 
+                                    <p:ajax event="blur" process="txtInputNumberDouble" 
                                             listener="#{captureComponentController.saveByAjax(d)}" ></p:ajax>
                                 </p:inputNumber>
                                 <p:inputNumber value="#{d.intValue}" 
-                                                placeholder="Enter the Integer Value"
+                                               placeholder="Enter the Integer Value"
                                                rendered="#{d.componentDataType eq 'Integer'}"></p:inputNumber>
                             </h:panelGroup>
 
