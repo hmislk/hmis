@@ -1066,6 +1066,48 @@ public class PatientController implements Serializable {
             getFacade().edit(p);
         }
     }
+    
+    public String saveAndNavigateToProfile() {
+        if (current == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            return "";
+        }
+        if (current.getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return "";
+        }
+        if (current.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a name");
+            return "";
+        }
+        if (current.getPerson().getId() == null) {
+            current.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(current.getPerson());
+        } else {
+            getPersonFacade().edit(current.getPerson());
+        }
+        if (current.getId() == null) {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            current.setCreatedInstitution(getSessionController().getInstitution());
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        
+        if (current.getCreatedAt()==null){
+            current.setCreatedAt(new Date());
+            getFacade().edit(current);
+        }
+        
+        if (current.getPerson().getCreatedAt()==null){
+            current.getPerson().setCreatedAt(new Date());
+            getPersonFacade().edit(current.getPerson());
+        }
+        
+        return toEmrPatientProfile();
+    }
 
     public void saveSelectedPatient() {
         if (getCurrent().getPerson().getId() == null) {
