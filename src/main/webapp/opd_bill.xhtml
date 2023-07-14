@@ -21,7 +21,8 @@
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
                     You are NOT authorized
                 </h:panelGroup>
-
+                
+                <p:panel header="Summary">
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:form id="form">
                         <p:growl id="growl" ></p:growl>
@@ -84,7 +85,7 @@
 
 
                                 <h:panelGrid columns="2" >
-
+                                    
                                     <h:panelGrid columns="1" >
 
                                         <h:panelGroup id="panelPatient" >
@@ -95,10 +96,10 @@
                                                         listener="#{billController.onTabChange}" />
 
                                                 <p:tab id="tabNewPt" title="New Patient">
-                                                    <p:panel header="Enter New Patient Details" style="width: 550px;">
+                                                    <p:panel header="Enter New Patient Details" style="width: 750px;">
 
                                                         <p:panelGrid columns="2" >
-                                                            <p:selectOneMenu  id="cmbTitle"  style="width: 100px;"
+                                                            <p:selectOneMenu  id="cmbTitle"  style="width: 150px;"
                                                                               value="#{billController.newPatient.person.title}"  >
                                                                 <f:selectItem itemLabel="Select Title" />
                                                                 <f:selectItems value="#{billController.title}" var="i" 
@@ -110,7 +111,7 @@
                                                                          style="min-width: 350px;text-transform:capitalize;">
                                                             </p:inputText>
 
-                                                            <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 100px;">
+                                                            <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 150px;">
                                                                 <f:selectItem itemLabel="Select Gender"/>
                                                                 <f:selectItems value="#{billController.sex}"/>
                                                             </p:selectOneMenu>
@@ -160,7 +161,7 @@
 
                                                         </p:panelGrid>
                                                         <p:panelGrid columns="1" >
-                                                            <p:inputText style="width:506px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
+                                                            <p:inputText style="width:665px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
                                                         </p:panelGrid>
                                                         <p:watermark value="YEAR" for="year" />
                                                         <p:watermark value="MONTH" for="month" />
@@ -270,11 +271,12 @@
 
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="panelIx" >
+                                        
+                                        <h:panelGroup id="panelIx">
 
 
                                             <p:panel id='pIxAdd' header="Items / Services"
-                                                     style="min-height: 350px;"  >
+                                                     style="min-height: 350px; width: 750px"  >
 
 
 
@@ -355,15 +357,11 @@
 
 
                                         </h:panelGroup>
-
+                                        
                                     </h:panelGrid>
 
 
-                                    <h:panelGrid columns="1" >
-
-
-
-
+                                    <h:panelGrid columns="1">
                                         <h:panelGroup id="panelBillReferrals" >
                                             <h:panelGrid columns="3" >
                                                 <p:outputLabel value="Referring Institution" ></p:outputLabel>
@@ -762,6 +760,8 @@
                     </h:form>
 
                 </h:panelGroup>
+                </p:panel>
+                
             </ui:define>
 
         </ui:composition>
