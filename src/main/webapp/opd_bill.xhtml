@@ -29,7 +29,7 @@
                             <p:growl id="growl" ></p:growl>
                             <p:focus id="focusIx" for="acIx" />
                             <div class="row" >
-                                <div class="col-md-7" >
+                                <div class="col-md-6" >
                                     <h:panelGroup id="panelPatient" >
 
                                         <p:tabView id="tvPt" activeIndex="#{billController.patientSearchTab}"  >
@@ -38,10 +38,10 @@
                                                     listener="#{billController.onTabChange}" />
 
                                             <p:tab id="tabNewPt" title="New Patient">
-                                                <p:panel header="Enter New Patient Details" style="width: 550px;">
+                                                <p:panel header="Enter New Patient Details" style="width: 710px;">
 
                                                     <p:panelGrid columns="2" >
-                                                        <p:selectOneMenu  id="cmbTitle"  style="width: 100px;"
+                                                        <p:selectOneMenu  id="cmbTitle"  style="width: 200px;"
                                                                           value="#{billController.newPatient.person.title}"  >
                                                             <f:selectItem itemLabel="Select Title" />
                                                             <f:selectItems value="#{billController.title}" var="i" 
@@ -53,7 +53,7 @@
                                                                      style="min-width: 350px;text-transform:capitalize;">
                                                         </p:inputText>
 
-                                                        <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 100px;">
+                                                        <p:selectOneMenu id="txtNewSex"  value="#{billController.newPatient.person.sex}" style="width: 200px;">
                                                             <f:selectItem itemLabel="Select Gender"/>
                                                             <f:selectItems value="#{billController.sex}"/>
                                                         </p:selectOneMenu>
@@ -61,17 +61,17 @@
                                                         <h:panelGrid columns="4">
                                                             <p:inputText autocomplete="off"  id="year"  
                                                                          value="#{billController.yearMonthDay.year}" 
-                                                                         style="width: 80px; ">
+                                                                         style="width: 75px; ">
                                                                 <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
 
                                                                         listener="#{billController.dateChangeListen()}"  />
                                                             </p:inputText>
                                                             <p:inputText autocomplete="off" id="month"
-                                                                         style="width: 80px; " value="#{billController.yearMonthDay.month}">
+                                                                         style="width: 75px; " value="#{billController.yearMonthDay.month}">
                                                                 <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{billController.dateChangeListen()}"  />
                                                             </p:inputText>
                                                             <p:inputText autocomplete="off" id="day" 
-                                                                         style="width: 80px;" value="#{billController.yearMonthDay.day}">
+                                                                         style="width: 75px;" value="#{billController.yearMonthDay.day}">
                                                                 <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{billController.dateChangeListen()}" />
                                                             </p:inputText>
                                                             <p:calendar  value="#{billController.newPatient.person.dob}" 
@@ -85,7 +85,7 @@
                                                         <p:inputText  id="txtNewPtPhone" 
                                                                       autocomplete="off" maxlength="11" placeholder="Phone Number"
                                                                       value="#{billController.newPatient.person.phone}"
-                                                                      style="width: 135;">
+                                                                      style="width: 200;">
                                                         </p:inputText>
 
                                                         <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
@@ -94,7 +94,7 @@
                                                         </p:inputText>
 
 
-                                                        <p:inputText style="width:135px;" placeholder="National ID No." value="#{billController.newPatient.person.nic}"/>
+                                                        <p:inputText style="width:200px;" placeholder="National ID No." value="#{billController.newPatient.person.nic}"/>
                                                         <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Search &amp; Select Area"
                                                                         completeMethod="#{areaController.completeArea}" 
                                                                         var="pta" itemLabel="#{pta.name}" styleClass="shortinputOpd"
@@ -103,12 +103,12 @@
 
                                                     </p:panelGrid>
                                                     <p:panelGrid columns="1" >
-                                                        <p:inputText style="width:506px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
+                                                        <p:inputText style="width:655px;" placeholder="Address" value="#{billController.newPatient.person.address}"/>
                                                     </p:panelGrid>
                                                     <p:watermark value="YEAR" for="year" />
                                                     <p:watermark value="MONTH" for="month" />
                                                     <p:watermark value="DAYS" for="day" />
-                                                    <p:watermark for="calNewPtDob" value="Birthday" ></p:watermark>
+                                                    <p:watermark for="calNewPtDob" value="Birthday"></p:watermark>
                                                     <p:tooltip for="year" >
                                                         You can enter the age in years here. The system will calculate the approximate date of birth.
                                                     </p:tooltip>
@@ -210,7 +210,7 @@
                                     <h:panelGrid columns="1" >
                                         <h:panelGroup id="panelIx" >
                                             <p:panel id='pIxAdd' header="Items / Services"
-                                                     style="min-height: 350px;"  >
+                                                     style="min-height: 350px; width: 720px"  >
                                                 <p:focus  context="acIx"/>
                                                 <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true"
                                                                 value="#{billController.currentBillItem.item}" 
@@ -235,14 +235,14 @@
                                                     <p:ajax event="itemSelect"  listener="#{billController.fillBillSessions}" process="acIx" update="tblSs" ></p:ajax>
                                                     <f:ajax event="itemSelect"  execute="@this" render="txtQty" />
                                                 </p:autoComplete>
-                                                <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 75px;"  >
+                                                <h:commandButton id="btnAddIx" value="Add" action="#{billController.addToBill()}"  style="width: 95px;"  >
                                                     <f:ajax execute="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems" render="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd" />
                                                 </h:commandButton>
 
                                                 <h:panelGrid id="txtQty">
                                                     <h:inputText autocomplete="off" 
                                                                  rendered="#{billController.currentBillItem.item.requestForQuentity}"
-                                                                 value="#{billController.currentBillItem.qty}" >
+                                                                 value="#{billController.currentBillItem.qty}" style="width: 500px;">
                                                     </h:inputText>
                                                 </h:panelGrid>
                                                 <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
@@ -254,7 +254,7 @@
                                                 <p:calendar value="#{billController.currentBillItem.item}" pattern="dd MMMM yyyy hh:mm a" ></p:calendar>
                                                 <!--<p:defaultCommand target="btnAddIx" />-->
                                                 <p:panel header="Session"  >
-                                                    <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy" >
+                                                    <p:calendar id="calS" mode="inline" value="#{billController.sessionDate}" pattern="dd MMMM yyyy"  style="width: 50px; height: 50px;">
                                                         <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{billController.fillBillSessionsLstner}" />
                                                     </p:calendar>
                                                     <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
@@ -291,6 +291,7 @@
                                     </h:panelGrid>
                                 </div>
                                 <div class="col-md-5" >
+                                    <p:panel style="width:750px">
                                     <h:panelGrid columns="20"  >
                                         <h:panelGrid columns="1">                                
                                             <p:selectOneMenu   id="pay" value="#{billController.paymentMethod}">     
@@ -327,13 +328,13 @@
                                             <pa:slip paymentMethodData="#{billController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <p:commandButton  value="Settle" action="#{billController.settleBill}" ajax="false"  style="width: 200px; padding: 1px;border: 1px solid ; margin: auto;">
+                                        <p:commandButton  value="Settle" action="#{billController.settleBill}" ajax="false"  style="padding: 1px;border: 1px solid ; margin: auto;">
                                         </p:commandButton>
-                                        <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" >
+                                        <p:commandButton value="New Bill" ajax="false" action="#{billController.prepareNewBill()}" style="padding: 1px;border: 1px solid ; margin: auto;">
                                         </p:commandButton>
-                                        <p:commandButton value="Mark as Foreigner" action="#{billController.markAsForeigner}" rendered="#{!billController.foreigner}" ajax="false" ></p:commandButton>
-                                        <p:commandButton value="Mark as Local" action="#{billController.markAsLocal}" rendered="#{billController.foreigner}" ajax="false" ></p:commandButton>
-                                        <p:commandButton value="Print Last Bill" ajax="false" action="opd_bill_print_last" >
+                                        <p:commandButton value="Mark as Foreigner" action="#{billController.markAsForeigner}" rendered="#{!billController.foreigner}" ajax="false" style="padding: 1px;border: 1px solid ; margin: auto;"></p:commandButton>
+                                        <p:commandButton value="Mark as Local" action="#{billController.markAsLocal}" rendered="#{billController.foreigner}" ajax="false" style="padding: 1px;border: 1px solid ; margin: auto;"></p:commandButton>
+                                        <p:commandButton value="Print Last Bill" ajax="false" action="opd_bill_print_last" style="padding: 1px;border: 1px solid ; margin: auto;">
                                         </p:commandButton>
                                     </h:panelGrid>
                                     <h:panelGroup id="panelBillReferrals" >
@@ -607,7 +608,7 @@
                                         </h:panelGroup>
 
                                     </h:panelGroup>
-
+                                        </p:panel>
                                 </div>
                             </div>
                         </h:form>
