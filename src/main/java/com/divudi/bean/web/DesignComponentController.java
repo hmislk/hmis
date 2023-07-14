@@ -77,7 +77,7 @@ public class DesignComponentController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/webcontent/design_component";
+        return "/forms/design_component";
     }
     
     public String navigateToEditDataEntryForm(){
@@ -85,7 +85,7 @@ public class DesignComponentController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/webcontent/data_entry_form";
+        return "/forms/data_entry_form";
     }
     
     public String navigateToListDesignComponent(){
@@ -112,7 +112,7 @@ public class DesignComponentController implements Serializable {
         DesignComponent tempDataEntryForm = current;
         current = new DesignComponent();
         current.setDataEntryForm(tempDataEntryForm);
-        return "/webcontent/design_component";
+        return "/forms/design_component";
     }
     
     public String navigateToListComponentsOfDataEntryForm(){
@@ -127,7 +127,7 @@ public class DesignComponentController implements Serializable {
         }
      
         list = listComponentsOfDataEntryForm(current);
-        return "/webcontent/design_components";
+        return "/forms/design_components";
     }
     
     public void saveCurrent(){
