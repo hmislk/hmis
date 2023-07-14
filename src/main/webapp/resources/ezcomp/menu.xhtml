@@ -728,6 +728,7 @@
                     <p:menuitem  ajax="false"  action="#{institutionController.toAdminManageInstitutions()}" value="Manage Institutions" rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff" rendered="#{webUserController.hasPrivilege('AdminStaff')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/webcontent/index" value="Manage Web" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/forms/index" value="Manage Form" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{itemController.toManageItemdIndex()}" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>

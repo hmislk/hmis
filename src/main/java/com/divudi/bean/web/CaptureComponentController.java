@@ -51,9 +51,9 @@ public class CaptureComponentController implements Serializable {
     @Inject
     PatientController patientController;
     private PatientEncounter opdVisit;
-    
+
     @Inject
-    PatientEncounterController  patientEncounterController;
+    PatientEncounterController patientEncounterController;
 
     @EJB
     CaptureComponentFacade facade;
@@ -105,9 +105,9 @@ public class CaptureComponentController implements Serializable {
         current = new CaptureComponent();
         return "/webcontent/capture_component.xhtml";
     }
-    
+
     public String navgateToStartDataEntryForOPD() {
-        opdVisit=patientEncounterController.getCurrent();
+        opdVisit = patientEncounterController.getCurrent();
         dataEntryItems = new ArrayList<>();
         List<DesignComponent> designComponents = listComponentsOfDataEntryForm(selectedDataEntryForm);
         for (DesignComponent d : designComponents) {
@@ -187,6 +187,17 @@ public class CaptureComponentController implements Serializable {
 
     public CaptureComponentController() {
 
+    }
+
+    public void saveByAjax(CaptureComponent sc) {
+        if (sc == null) {
+            return;
+        }
+        if(sc.getId()==null){
+            facade.create(sc);
+        }else{
+            facade.edit(sc);
+        }
     }
 
     public CaptureComponent getCurrent() {

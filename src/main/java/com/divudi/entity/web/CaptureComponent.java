@@ -7,7 +7,9 @@ package com.divudi.entity.web;
 import com.divudi.data.web.ComponentDataType;
 import com.divudi.data.web.ComponentPresentationType;
 import com.divudi.data.web.TemplateComponentType;
+import com.divudi.entity.Item;
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,6 +18,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Temporal;
 
 /**
  *
@@ -28,7 +31,7 @@ public class CaptureComponent implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     private String name;
     @Lob
     private String description;
@@ -36,18 +39,31 @@ public class CaptureComponent implements Serializable {
     private TemplateComponentType type;
     @ManyToOne
     private CaptureComponent parent;
-    
+
     @Enumerated(EnumType.STRING)
     private ComponentPresentationType componentPresentationType;
-    
+
     @Enumerated(EnumType.STRING)
     private ComponentDataType componentDataType;
-    
-    
+
     @ManyToOne
     private DesignComponent designComponent;
-    
-    
+
+    private Double doubleValue;
+    private Long longValue;
+    private Integer intValue;
+    private String shortTextValue;
+    @Lob
+    private String longTextValue;
+    private Integer ratingIntValue;
+    private Byte[] byteArrayValue;
+    private Boolean booleanValue;
+
+    @ManyToOne
+    private Item itemValue;
+
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date dateValue;
 
     public Long getId() {
         return id;
@@ -57,7 +73,6 @@ public class CaptureComponent implements Serializable {
         this.id = id;
     }
 
-    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -138,5 +153,87 @@ public class CaptureComponent implements Serializable {
     public void setComponentDataType(ComponentDataType componentDataType) {
         this.componentDataType = componentDataType;
     }
+
+    public Double getDoubleValue() {
+        return doubleValue;
+    }
+
+    public void setDoubleValue(Double doubleValue) {
+        this.doubleValue = doubleValue;
+    }
+
+    public Long getLongValue() {
+        return longValue;
+    }
+
+    public void setLongValue(Long longValue) {
+        this.longValue = longValue;
+    }
+
+    public Integer getIntValue() {
+        return intValue;
+    }
+
+    public void setIntValue(Integer intValue) {
+        this.intValue = intValue;
+    }
+
+    public String getShortTextValue() {
+        return shortTextValue;
+    }
+
+    public void setShortTextValue(String shortTextValue) {
+        this.shortTextValue = shortTextValue;
+    }
+
+    public String getLongTextValue() {
+        return longTextValue;
+    }
+
+    public void setLongTextValue(String longTextValue) {
+        this.longTextValue = longTextValue;
+    }
+
+    public Integer getRatingIntValue() {
+        return ratingIntValue;
+    }
+
+    public void setRatingIntValue(Integer ratingIntValue) {
+        this.ratingIntValue = ratingIntValue;
+    }
+
+    public Byte[] getByteArrayValue() {
+        return byteArrayValue;
+    }
+
+    public void setByteArrayValue(Byte[] byteArrayValue) {
+        this.byteArrayValue = byteArrayValue;
+    }
+
+    public Boolean getBooleanValue() {
+        return booleanValue;
+    }
+
+    public void setBooleanValue(Boolean booleanValue) {
+        this.booleanValue = booleanValue;
+    }
+
+    public Date getDateValue() {
+        return dateValue;
+    }
+
+    public void setDateValue(Date dateValue) {
+        this.dateValue = dateValue;
+    }
+
+    public Item getItemValue() {
+        return itemValue;
+    }
+
+    public void setItemValue(Item itemValue) {
+        this.itemValue = itemValue;
+    }
+
+    
     
 }

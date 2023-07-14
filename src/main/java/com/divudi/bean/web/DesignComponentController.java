@@ -69,7 +69,7 @@ public class DesignComponentController implements Serializable {
     public String navigateToAddNewDataEntryForm(){
         current= new DesignComponent();
         current.setComponentPresentationType(ComponentPresentationType.DataEntryForm);
-        return "/webcontent/data_entry_form";
+        return "/forms/data_entry_form";
     }
     
     public String navigateToEditDesignComponent(){
@@ -95,7 +95,7 @@ public class DesignComponentController implements Serializable {
     
     public String navigateToListDataEntryForms(){
         list=listDataEntryForms();
-        return "/webcontent/data_entry_forms";
+        return "/forms/data_entry_forms";
     }
     
     public String navigateToAddComponentsToDataEntryForm(){
