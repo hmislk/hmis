@@ -20,27 +20,23 @@ public class EmrController implements Serializable {
 
     @Inject
     DiagnosisController diagnosisController;
-    
+
     /**
      * Creates a new instance of EmrController
      */
     public EmrController() {
     }
-    
+
     private int activeIndexOfReports = 0;
     private int activeIndexOfPatientProfile = 0;
     private int activeIndexOfSettings = 0;
 
-    public String navigateToSettings(){
+    public String navigateToSettings() {
         return "/emr/settings/index";
     }
-    
+
     public String navigateToClinicalPatientForReceptionist() {
         return "/clinical/clinical_patient_for_receptionist.xhtml?faces-redirect=true";
-    }
-
-    public String navigateToPatientRegistration() {
-        return "/patient_registration.xhtml?faces-redirect=true";
     }
 
     public String navigateToMembershipRegistration() {
@@ -62,8 +58,8 @@ public class EmrController implements Serializable {
     public String navigateToClinicalAdministration() {
         return "/clinical/clinical_administration.xhtml?faces-redirect=true";
     }
-    
-    public String navigateToManageDiagnoses(){
+
+    public String navigateToManageDiagnoses() {
         diagnosisController.fillItems();
         return "/clinical/clinical_diagnosis";
     }
@@ -72,8 +68,6 @@ public class EmrController implements Serializable {
         return "/emr/admin/index.xhtml?faces-redirect=true";
     }
 
-    
-
     public int getActiveIndexOfReports() {
         return activeIndexOfReports;
     }
@@ -81,9 +75,6 @@ public class EmrController implements Serializable {
     public void setActiveIndexOfReports(int activeIndexOfReports) {
         this.activeIndexOfReports = activeIndexOfReports;
     }
-    
-    
-    
 
 //    public void onTabChange(TabChangeEvent event) {
 //        String activeIndexStr = ((AccordionPanel) event.getComponent()).getActiveIndex();
@@ -92,7 +83,6 @@ public class EmrController implements Serializable {
 //        PrimeFaces.current().ajax().update("accordionForm:accordion"); //update accordion
 //        PrimeFaces.current().executeScript("PF('accordion').loadState();"); //load accordion state
 //    }
-
     public int getActiveIndexOfPatientProfile() {
         return activeIndexOfPatientProfile;
     }

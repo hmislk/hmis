@@ -366,7 +366,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient_add_to_queue";
+        return "/emr/patient_add_to_queue";
     }
 
     public void patientSelected() {
@@ -736,7 +736,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient_profile";
+        return "/emr/patient_profile";
     }
 
     public void createPatientBarcode() {
@@ -918,12 +918,12 @@ public class PatientController implements Serializable {
         yearMonthDay = null;
         getCurrent();
         getYearMonthDay();
-        return "/clinical/patient";
+        return "/emr/patient";
     }
 
     public String toViewPatient() {
         current = null;
-        return "/clinical/patient_profile";
+        return "/emr/patient_profile";
     }
 
     public String savePatientAndThenNavigateToPatientProfile() {
