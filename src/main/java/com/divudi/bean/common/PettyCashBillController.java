@@ -138,7 +138,7 @@ public class PettyCashBillController implements Serializable {
                 + " and b.billType= :btp "
                 + " and b.createdAt > :fd "
                 + " and b.invoiceNumber=:inv ";
-//                + " and upper(b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
+//                + " and (b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
         HashMap h = new HashMap();
         h.put("btp", BillType.PettyCash);
         h.put("fd", fd);

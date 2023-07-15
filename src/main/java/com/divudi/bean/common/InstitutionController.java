@@ -104,7 +104,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and (upper(c.name) like :qry or upper(c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -224,7 +224,7 @@ public class InstitutionController implements Serializable {
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
+        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
         Institution i = getFacade().findFirstBySQL(sql, m);
         if (i == null) {
             i = new Institution();

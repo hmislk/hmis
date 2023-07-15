@@ -94,7 +94,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Shift c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " and (c.hideShift=false or c.hideShift is null) ";
 
         if (getCurrentRoster() != null) {
@@ -115,7 +115,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Shift c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q ";
+                + " and (c.name) like :q ";
 
         if (getCurrentRoster() != null) {
             sql += " and c.roster=:rs";

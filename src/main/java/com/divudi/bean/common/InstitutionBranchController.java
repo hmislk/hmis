@@ -50,7 +50,7 @@ public class InstitutionBranchController implements Serializable {
         if (selectText.trim().equals("")) {
             sql = "select c from Institution c where c.institutionType=:tp and c.retired=false order by c.name";
         } else {
-            sql = "select c from Institution c where c.institutionType=:tp and c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            sql = "select c from Institution c where c.institutionType=:tp and c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
         }
 
         hm.put("tp", InstitutionType.branch);
@@ -62,13 +62,13 @@ public class InstitutionBranchController implements Serializable {
 
     public List<Institution> completeIns(String qry) {
         String sql;
-        sql = "select c from Institution c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+        sql = "select c from Institution c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
         return getFacade().findBySQL(sql);
     }
 
     public List<Institution> completeCompany(String qry) {
         String sql;
-        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
         return getFacade().findBySQL(sql);
     }
 
@@ -78,7 +78,7 @@ public class InstitutionBranchController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
+            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CreditCompany and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }

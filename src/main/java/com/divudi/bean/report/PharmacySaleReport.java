@@ -371,14 +371,14 @@ public class PharmacySaleReport implements Serializable {
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
-            sql += " and (upper(bi.bill.depId) like :di) ";
+            sql += " and ((bi.bill.depId) like :di) ";
             m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
 //        BillItem bi = new BillItem();
 //        bi.getBill().getReferenceBill().getDeptId();
 //        bi.getBill().getFromInstitution();
         if (searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")) {
-            sql += " and (upper(bi.bill.referenceBill.deptId) like :po) ";
+            sql += " and ((bi.bill.referenceBill.deptId) like :po) ";
             m.put("po", "%" + searchKeyword.getRefBillNo().toUpperCase().trim() + "%");
         }
 

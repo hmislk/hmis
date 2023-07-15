@@ -32,7 +32,7 @@ public class PharmaceuticalItemController implements Serializable {
     public List<PharmaceuticalItem> completeItem(String qry) {
         List<PharmaceuticalItem> a = null;
         if (qry != null) {
-            a = getPharmaceuticalItemFacade().findBySQL("select c from PharmaceuticalItem c where (type(c)=Amp or type(c)=Ampp) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getPharmaceuticalItemFacade().findBySQL("select c from PharmaceuticalItem c where (type(c)=Amp or type(c)=Ampp) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<PharmaceuticalItem>();

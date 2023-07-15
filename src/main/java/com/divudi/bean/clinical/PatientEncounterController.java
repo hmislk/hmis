@@ -190,7 +190,7 @@ public class PatientEncounterController implements Serializable {
         }
         String sql;
         sql = "select c.name from Item c where c.retired=false and "
-                + "upper(c.name) like :q "
+                + "(c.name) like :q "
                 + "order by c.name";
         Map tmpMap = new HashMap();
         tmpMap.put("q", qry.toUpperCase() + "%");
@@ -206,7 +206,7 @@ public class PatientEncounterController implements Serializable {
         sql = "select c.name from Item c where c.retired=false and "
                 + "type(c)= :cls and "
                 + "c.symanticType=:st and "
-                + "upper(c.name) like :q "
+                + "(c.name) like :q "
                 + "order by c.name";
         Map tmpMap = new HashMap();
         tmpMap.put("cls", ClinicalFindingItem.class);
@@ -225,7 +225,7 @@ public class PatientEncounterController implements Serializable {
         sql = "select c.name from Item c where c.retired=false and "
                 + "type(c)= :cls and "
                 + "c.symanticType=:st and "
-                + "upper(c.name) like :q "
+                + "(c.name) like :q "
                 + "order by c.name";
         Map tmpMap = new HashMap();
         tmpMap.put("cls", ClinicalFindingItem.class);
@@ -241,7 +241,7 @@ public class PatientEncounterController implements Serializable {
         }
         String sql;
         sql = "select c.name from Investigation c where c.retired=false and "
-                + "upper(c.name) like :q "
+                + "(c.name) like :q "
                 + "order by c.name";
         Map tmpMap = new HashMap();
         tmpMap.put("q", qry.toUpperCase() + "%");
@@ -259,7 +259,7 @@ public class PatientEncounterController implements Serializable {
                 + "(type(c)= :amp or type(c)= :vmp or "
                 + "type(c)= :vtm or "
                 + "(type(c)= :ce and c.symanticType=:st)) "
-                + "and upper(c.name) like :q "
+                + "and (c.name) like :q "
                 + "order by c.name";
         //////// // System.out.println(sql);
         Map tmpMap = new HashMap();
@@ -458,7 +458,7 @@ public class PatientEncounterController implements Serializable {
     }
 
 //    public List<PatientEncounter> getSelectedItems() {
-//        selectedItems = getFacade().findBySQL("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.data.PatientEncounterType.Agency and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findBySQL("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.data.PatientEncounterType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 //        return selectedItems;
 //    }
     public void prepareAdd() {

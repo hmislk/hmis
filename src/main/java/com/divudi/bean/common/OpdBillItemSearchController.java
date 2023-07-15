@@ -104,10 +104,10 @@ public class OpdBillItemSearchController implements Serializable {
                 billItemsOwn = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 100);
             } else {
                 sql = "select bi from BillItem bi join bi.bill b join b.patient.person p where "
-                        + "b.billType=:bType and (upper(p.name) like '%" + txtSearch.toUpperCase() + "%' "
-                        + " or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%' "
+                        + "b.billType=:bType and ((p.name) like '%" + txtSearch.toUpperCase() + "%' "
+                        + " or (b.insId) like '%" + txtSearch.toUpperCase() + "%' "
                         + " or p.phone like '%" + txtSearch + "%' or "
-                        + " upper(bi.item.name) like '%" + txtSearch.toUpperCase() + "%' ) and  "
+                        + " (bi.item.name) like '%" + txtSearch.toUpperCase() + "%' ) and  "
                         + "b.createdAt between :fromDate and :toDate order by bi.id desc";
                 billItemsOwn = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
             }
@@ -148,14 +148,14 @@ public class OpdBillItemSearchController implements Serializable {
         } else {
             sql = "select bi from BillItem bi join bi.bill b join b.patient.person"
                     + " p where b.institution=:ins and b.billType=:bType and"
-                    + "  (upper(b.patient.person.name) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.patient.person.phone) like '%" + txtSearch.toUpperCase() + "%' "
-                    + "  or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%' or "
-                    + " upper(b.toInstitution.name) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.paymentMethod) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.paymentScheme.name) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.netTotal) like '%" + txtSearch.toUpperCase() + "%' "
-                    + " or upper(b.total) like '%" + txtSearch.toUpperCase() + "%' ) "
+                    + "  ((b.patient.person.name) like '%" + txtSearch.toUpperCase() + "%' "
+                    + " or (b.patient.person.phone) like '%" + txtSearch.toUpperCase() + "%' "
+                    + "  or (b.insId) like '%" + txtSearch.toUpperCase() + "%' or "
+                    + " (b.toInstitution.name) like '%" + txtSearch.toUpperCase() + "%' "
+                    + " or (b.paymentMethod) like '%" + txtSearch.toUpperCase() + "%' "
+                    + " or (b.paymentScheme.name) like '%" + txtSearch.toUpperCase() + "%' "
+                    + " or (b.netTotal) like '%" + txtSearch.toUpperCase() + "%' "
+                    + " or (b.total) like '%" + txtSearch.toUpperCase() + "%' ) "
                     + " and b.createdAt between :fromDate and :toDate order by bi.id desc";
         }
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -180,11 +180,11 @@ public class OpdBillItemSearchController implements Serializable {
         }
         sql = "select bi from BillItem bi join bi.bill b join b.patient.person"
                 + " p where b.institution=:ins and b.billType=:bType and"
-                + "  (upper(b.patient.person.name) like :str "
-                + " or upper(b.patient.person.phone) like :str "
-                + "  or upper(b.insId) like :str or "
-                + " or upper(b.netTotal) like :str "
-                + " or upper(b.total) like :str ) "
+                + "  ((b.patient.person.name) like :str "
+                + " or (b.patient.person.phone) like :str "
+                + "  or (b.insId) like :str or "
+                + " or (b.netTotal) like :str "
+                + " or (b.total) like :str ) "
                 + " and b.createdAt between :fromDate and :toDate order by bi.id desc";
 
         List<BillItem> tmp = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
@@ -943,7 +943,7 @@ public class OpdBillItemSearchController implements Serializable {
                 sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where b.createdAt between :fromDate and :toDate order by pi.id desc";
                 patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 100);
             } else {
-                sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where (upper(p.name) like '%" + txtSearch.toUpperCase() + "%' or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or upper(i.name) like '%" + txtSearch.toUpperCase() + "%' ) and b.createdAt between :fromDate and :toDate order by pi.id desc";
+                sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where ((p.name) like '%" + txtSearch.toUpperCase() + "%' or (b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or (i.name) like '%" + txtSearch.toUpperCase() + "%' ) and b.createdAt between :fromDate and :toDate order by pi.id desc";
                 patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
             }
         }

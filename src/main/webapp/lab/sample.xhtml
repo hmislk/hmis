@@ -79,6 +79,9 @@
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     rowsPerPageTemplate="10,25,50"
                                     >
+                                    <p:column headerText="ID" width="100">
+                                        <p:outputLabel value="#{smpIx.id}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
+                                    </p:column>
                                     <p:column headerText="Bill No" width="100">
                                         <p:outputLabel value="#{smpIx.billItem.bill.insId}" styleClass="#{smpIx.billItem.bill.cancelled or smpIx.billItem.transRefund ? 'redtext':''}"/>
                                     </p:column>

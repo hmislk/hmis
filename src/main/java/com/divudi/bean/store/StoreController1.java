@@ -115,9 +115,9 @@ public class StoreController1 implements Serializable {
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) ";
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) ";
         items = getStockFacade().findBySQL(sql, m, 20);
 
         return items;
@@ -130,7 +130,7 @@ public class StoreController1 implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >:s and (upper(i.staff.code) like :n or upper(i.staff.person.name) like :n or upper(i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        sql = "select i from Stock i where i.stock >:s and ((i.staff.code) like :n or (i.staff.person.name) like :n or (i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         items = getStockFacade().findBySQL(sql, m, 20);
 
         return items;

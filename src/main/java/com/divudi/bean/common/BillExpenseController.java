@@ -58,7 +58,7 @@ public class BillExpenseController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from BillExpense c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -69,7 +69,7 @@ public class BillExpenseController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from BillExpense c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from BillExpense c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findBySQL("select c from BillExpense c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -77,7 +77,7 @@ public class BillExpenseController implements Serializable {
     public List<BillExpense> completeItem(String qry) {
         List<BillExpense> completeItems = getFacade().findBySQL("select c from Item c "
                 + " where ( type(c) = BillExpense or type(c) = Packege ) "
-                + " and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%'"
+                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
                 + "  order by c.name");
         return completeItems;
     }

@@ -194,16 +194,16 @@ public class StaffPaymentBillController implements Serializable {
         if (speciality != null) {
             sql = "select p from Staff p "
                     + " where p.retired=false "
-                    + " and (upper(p.person.name) like :q "
-                    + " or  upper(p.code) like :q ) "
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q ) "
                     + " and p.speciality=:sp "
                     + " order by p.person.name";
             hm.put("sp", getSpeciality());
         } else {
             sql = "select p from Staff p "
                     + " where p.retired=false "
-                    + " and (upper(p.person.name) like :q "
-                    + " or  upper(p.code) like :q )"
+                    + " and ((p.person.name) like :q "
+                    + " or  (p.code) like :q )"
                     + " order by p.person.name";
         }
         //////// // System.out.println(sql);
@@ -355,7 +355,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public List<Bill> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Bill c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from Bill c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -691,7 +691,7 @@ public class StaffPaymentBillController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         if (!getSelectText().equals("")) {
-            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate and upper(b.staff.person.name) like '%" + selectText.toUpperCase() + "%' order by b.staff.id  ";
+            sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate and (b.staff.person.name) like '%" + selectText.toUpperCase() + "%' order by b.staff.id  ";
         } else {
             sql = "select b from BillFee b where b.retired=false and (b.bill.billType!=:btp and b.bill.billType!=:btp2) and b.bill.cancelled=false and (b.feeValue - b.paidValue) > 0 and  b.bill.billDate between :fromDate and :toDate order by b.staff.id  ";
         }

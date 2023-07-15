@@ -43,10 +43,10 @@ public class SysMexAdf1 {
     private long sampleId;
 
     public boolean isCorrectReport() {
-        boolean flag = true;
         if (bytes == null || bytes.isEmpty()) {
             return false;
         }
+        System.out.println("bytes.size() = " + bytes.size());
         if (bytes.size() != 191) {
             return false;
         }
@@ -77,7 +77,7 @@ public class SysMexAdf1 {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-//                //// // System.out.println("e = " + e);
+                System.out.println("e = " + e);
                 bytes.add(null);
             }
         }

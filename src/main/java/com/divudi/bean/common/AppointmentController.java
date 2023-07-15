@@ -111,7 +111,7 @@ public class AppointmentController implements Serializable {
         String sql;
         HashMap hash = new HashMap();
         if (qry != null) {
-            sql = "select c from BilledBill c where c.paidAmount is null and c.billType= :btp and c.paymentMethod= :pm and c.cancelledBill is null and c.refundedBill is null and c.retired=false and upper(c.insId) like '%" + qry.toUpperCase() + "%' order by c.creditCompany.name";
+            sql = "select c from BilledBill c where c.paidAmount is null and c.billType= :btp and c.paymentMethod= :pm and c.cancelledBill is null and c.refundedBill is null and c.retired=false and (c.insId) like '%" + qry.toUpperCase() + "%' order by c.creditCompany.name";
             hash.put("btp", BillType.OpdBill);
             hash.put("pm", PaymentMethod.Credit);
             a = getFacade().findBySQL(sql, hash, TemporalType.TIME);

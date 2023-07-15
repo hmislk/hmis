@@ -53,7 +53,7 @@ public class StoreItemCategoryController implements Serializable {
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from StoreItemCategory c where "
-                + " c.retired=false and (upper(c.name) like :n) order by c.name";
+                + " c.retired=false and ((c.name) like :n) order by c.name";
 
         a = getFacade().findBySQL(sql, m, 20);
         //////// // System.out.println("a size is " + a.size());
@@ -69,7 +69,7 @@ public class StoreItemCategoryController implements Serializable {
         Map m = new HashMap();
         m.put("n", "%" + qry + "%");
         String sql = "select c from AssetCategory c where "
-                + " c.retired=false and (upper(c.name) like :n) order by c.name";
+                + " c.retired=false and ((c.name) like :n) order by c.name";
 
         a = getAssetCategoryFacade().findBySQL(sql, m, 20);
         //////// // System.out.println("a size is " + a.size());

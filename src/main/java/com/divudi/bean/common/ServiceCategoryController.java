@@ -42,7 +42,7 @@ public class ServiceCategoryController implements Serializable {
     String selectText = "";
 
     public List<ServiceCategory> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ServiceCategory c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from ServiceCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

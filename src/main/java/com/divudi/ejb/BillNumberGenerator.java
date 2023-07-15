@@ -230,7 +230,7 @@ public class BillNumberGenerator {
                 + " where type(b)=:type "
                 + " AND b.retired=false "
                 + " AND b.department=:dep"
-                + " and upper(b.deptId)=:str "
+                + " and (b.deptId)=:str "
                 + " AND b.billType=:btp ";
 
         HashMap hm = new HashMap();

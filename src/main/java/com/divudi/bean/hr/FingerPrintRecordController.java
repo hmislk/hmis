@@ -150,14 +150,14 @@ public class FingerPrintRecordController implements Serializable {
     }
 
     public List<FingerPrintRecord> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<FingerPrintRecord> completeFingerPrintRecord(String qry) {
         List<FingerPrintRecord> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();

@@ -63,7 +63,7 @@ public class DoctorController implements Serializable {
         } else {
             sql = " select p from Doctor p "
                     + " where p.retired=false "
-                    + " and (upper(p.person.name) like :q or upper(p.code) like :q) "
+                    + " and ((p.person.name) like :q or (p.code) like :q) "
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
@@ -96,7 +96,7 @@ public class DoctorController implements Serializable {
             sql = "select c from Doctor c "
                     + "where c.retired=false "
                     + " and type(c)!=:class "
-                    + " and upper(c.person.name) like :q "
+                    + " and (c.person.name) like :q "
                     + " order by c.person.name";
 
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");

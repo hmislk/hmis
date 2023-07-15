@@ -81,7 +81,7 @@ public class AmppController implements Serializable {
     public List<Ampp> completeAmpp(String qry) {
         List<Ampp> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Ampp c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findBySQL("select c from Ampp c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -204,7 +204,7 @@ public class AmppController implements Serializable {
 
     public void searchItems(AjaxBehaviorEvent e) {
         selectedItems = getFacade().findBySQL("select c from Ampp c where c.retired=false "
-                + " and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+                + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 
     }
 
