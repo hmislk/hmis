@@ -197,7 +197,7 @@ public class MetadataSuperCategoryController implements Serializable {
         String temSql;
         HashMap m = new HashMap();
         m.put("n", "%" + qry.toUpperCase() + "%" );
-        temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and upper(i.name) like :n order by i.name";
+        temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and (i.name) like :n order by i.name";
         temLst = getFacade().findByJpql(temSql,m);
         return temLst;
     }

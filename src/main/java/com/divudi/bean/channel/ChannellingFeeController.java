@@ -199,9 +199,9 @@ public class ChannellingFeeController implements Serializable {
             Map m = new HashMap();
             m.put("qry", "%" + query.toUpperCase() + "%");
             if (getFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like :qry or upper(p.code) like :qry ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :qry or (p.code) like :qry ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and (upper(p.person.name) like :qry or  upper(p.code) like :qry) order by p.person.name";
+                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and ((p.person.name) like :qry or  (p.code) like :qry) order by p.person.name";
                 m.put("spe", getFee().getSpeciality());
             }
             staffSuggestions = getStaffFacade().findByJpql(sql, m);
@@ -220,15 +220,15 @@ public class ChannellingFeeController implements Serializable {
             if (speciality == null) {
                 sql = "select p from Staff p "
                         + " where p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or upper(p.code) like :qry ) "
+                        + " and ((p.person.name) like :qry "
+                        + " or (p.code) like :qry ) "
                         + " order by p.person.name";
             } else {
                 sql = "select p from Staff p "
                         + " where p.speciality=:spe "
                         + " and p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or  upper(p.code) like :qry) "
+                        + " and ((p.person.name) like :qry "
+                        + " or  (p.code) like :qry) "
                         + " order by p.person.name";
                 m.put("spe", speciality);
             }

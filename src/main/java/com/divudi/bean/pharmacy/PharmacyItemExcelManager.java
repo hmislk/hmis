@@ -636,7 +636,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + " where c.retired=false "
                 + " and (c.departmentType is null"
                 + " or c.departmentType!=:dep )"
-                + " and upper(c.name) like :nm ";
+                + " and (c.name) like :nm ";
         return getItemFacade().findFirstByJpql(sql, m);
     }
 
@@ -1354,7 +1354,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.toUpperCase());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n "
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n "
                             + " AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
@@ -1540,7 +1540,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and upper(c.name)=:n ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n ", m);
                 //System.out.println("m is " + m);
 
                 if (amp == null) {
@@ -1660,7 +1660,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.toUpperCase());
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and upper(c.code)=:n ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.code)=:n ", m);
                 //System.out.println("m = " + m);
                 //System.out.println("amp");
                 if (amp == null) {
@@ -1769,7 +1769,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 //System.out.println("strAmp = " + strAmp);
                 m = new HashMap();
                 m.put("n", strAmp.trim().toUpperCase());
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n ", m);
 
                 if (amp == null) {
                     error += strAmp + " is NOT found.\n";
@@ -2229,7 +2229,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.trim().toUpperCase());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -2454,7 +2454,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp.trim().toUpperCase());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -2588,7 +2588,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 m.put("dep", DepartmentType.Store);
                 m.put("n", itenName.toUpperCase());
 
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:dep ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:dep ", m);
 
                 if (amp == null) {
                     amp = new Amp();
@@ -2670,7 +2670,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 String sql;
                 m.put("strAmp", itemName.toUpperCase());
                 //   //System.out.println("m = " + m);
-                sql = "Select amp from Amp amp where amp.retired=false and upper(amp.name)=:strAmp";
+                sql = "Select amp from Amp amp where amp.retired=false and (amp.name)=:strAmp";
                 //   //System.out.println("sql = " + sql);
                 Amp amp = getAmpFacade().findFirstByJpql(sql, m);
                 //   //System.out.println("amp = " + amp);
@@ -2775,7 +2775,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 m = new HashMap();
                 m.put("n", strAmp);
 
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n", m);
                 if (amp == null) {
 
                 } else {
@@ -2857,7 +2857,7 @@ public class PharmacyItemExcelManager implements Serializable {
                     continue;
                 }
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);

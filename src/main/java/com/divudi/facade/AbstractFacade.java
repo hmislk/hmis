@@ -694,7 +694,7 @@ public abstract class AbstractFacade<T> {
         javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
         ParameterExpression<String> p = cb.parameter(String.class);
 //        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
-        Predicate predicateField = cb.equal(cb.upper(rt.<String>get(fieldName)), fieldValue.toLowerCase());
+        Predicate predicateField = cb.equal(cb.(rt.<String>get(fieldName)), fieldValue.toLowerCase());
         Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), false);
         Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
 
@@ -719,7 +719,7 @@ public abstract class AbstractFacade<T> {
         javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
         ParameterExpression<String> p = cb.parameter(String.class);
 //        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
-        Predicate predicateField = cb.like(cb.upper(rt.<String>get(fieldName)), "*" + fieldValue.toLowerCase());
+        Predicate predicateField = cb.like(cb.(rt.<String>get(fieldName)), "*" + fieldValue.toLowerCase());
         //    Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), withoutRetired);
         //    Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
         //    (cb.like(pet.get(Pet_.name), "*do"));

@@ -178,9 +178,9 @@ public class ChannelSessionWizard implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (getSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
             suggestions = getStaffFacade().findBySQL(sql);
@@ -198,15 +198,15 @@ public class ChannelSessionWizard implements Serializable {
             if (speciality == null) {
                 sql = "select p from Staff p "
                         + " where p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or upper(p.code) like :qry ) "
+                        + " and ((p.person.name) like :qry "
+                        + " or (p.code) like :qry ) "
                         + " order by p.person.name";
             } else {
                 sql = "select p from Staff p "
                         + " where p.speciality=:spe "
                         + " and p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or  upper(p.code) like :qry) "
+                        + " and ((p.person.name) like :qry "
+                        + " or  (p.code) like :qry) "
                         + " order by p.person.name";
                 m.put("spe", speciality);
             }
