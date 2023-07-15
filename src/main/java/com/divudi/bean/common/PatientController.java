@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.bean.web.CaptureComponentController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -113,6 +114,8 @@ public class PatientController implements Serializable {
     BillController billController;
     @Inject
     PharmacySaleController pharmacySaleController;
+    @Inject
+    CaptureComponentController captureComponentController;
     /**
      *
      * Class Variables
@@ -247,6 +250,29 @@ public class PatientController implements Serializable {
         getPatientEncounterController().saveSelected();
         return "/emr/opd_visit";
     }
+    
+    public String navigateToNewDataEntryForm() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing");
+            return "";
+        }
+        captureComponentController.setDataEntryForms(captureComponentController.listDataEntryForms());
+        PatientEncounter opdVisit;
+        opdVisit = new PatientEncounter();
+        opdVisit.setCreatedAt(Calendar.getInstance().getTime());
+        opdVisit.setCreater(getSessionController().getLoggedUser());
+        opdVisit.setPatient(current);
+        opdVisit.setInstitution(sessionController.getInstitution());
+        opdVisit.setDepartment(sessionController.getDepartment());
+        opdVisit.setPatientEncounterType(PatientEncounterType.OpdVisit);
+        getPatientEncounterController().setCurrent(opdVisit);
+        getPatientEncounterController().setStartedEncounter(opdVisit);
+        getPatientEncounterController().fillCurrentPatientLists(current);
+        getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
+        getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
+        getPatientEncounterController().saveSelected();
+        return "/emr/select_data_entry_form";
+    }
 
     
     
@@ -340,7 +366,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient_add_to_queue";
+        return "/emr/patient_add_to_queue";
     }
 
     public void patientSelected() {
@@ -710,7 +736,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient_profile";
+        return "/emr/patient_profile";
     }
 
     public void createPatientBarcode() {
@@ -892,12 +918,12 @@ public class PatientController implements Serializable {
         yearMonthDay = null;
         getCurrent();
         getYearMonthDay();
-        return "/clinical/patient";
+        return "/emr/patient";
     }
 
     public String toViewPatient() {
         current = null;
-        return "/clinical/patient_profile";
+        return "/emr/patient_profile";
     }
 
     public String savePatientAndThenNavigateToPatientProfile() {
@@ -943,10 +969,10 @@ public class PatientController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Patient p where p.retired=false "
-                    + " and upper(p.person.name) like :q "
-                    + " or upper(p.code) like :q "
-                    + " or upper(p.person.nic) like :q"
-                    + " or upper(p.person.mobile) like :q "
+                    + " and (p.person.name) like :q "
+                    + " or (p.code) like :q "
+                    + " or (p.person.nic) like :q"
+                    + " or (p.person.mobile) like :q "
                     + "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             //////System.out.println(sql);
@@ -965,13 +991,13 @@ public class PatientController implements Serializable {
         String sql;
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false "
-                + " and ( upper(p.person.name) like  :q "
-                + " or upper(p.code) like :q "
-                + " or upper(p.person.nic) like :q "
-                + " or upper(p.person.mobile) like :q "
-                + " or upper(p.person.phone) like :q "
-                + " or upper(p.person.address) like :q "
-                + " or upper(p.phn) like :q) ";
+                + " and ( (p.person.name) like  :q "
+                + " or (p.code) like :q "
+                + " or (p.person.nic) like :q "
+                + " or (p.person.mobile) like :q "
+                + " or (p.person.phone) like :q "
+                + " or (p.person.address) like :q "
+                + " or (p.phn) like :q) ";
 
         if (getReportKeyWord().isAdditionalDetails()) {
             sql += " and p.code is not null ";
@@ -1039,6 +1065,48 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(p);
         }
+    }
+    
+    public String saveAndNavigateToProfile() {
+        if (current == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            return "";
+        }
+        if (current.getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return "";
+        }
+        if (current.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a name");
+            return "";
+        }
+        if (current.getPerson().getId() == null) {
+            current.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(current.getPerson());
+        } else {
+            getPersonFacade().edit(current.getPerson());
+        }
+        if (current.getId() == null) {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            current.setCreatedInstitution(getSessionController().getInstitution());
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        
+        if (current.getCreatedAt()==null){
+            current.setCreatedAt(new Date());
+            getFacade().edit(current);
+        }
+        
+        if (current.getPerson().getCreatedAt()==null){
+            current.getPerson().setCreatedAt(new Date());
+            getPersonFacade().edit(current.getPerson());
+        }
+        
+        return toEmrPatientProfile();
     }
 
     public void saveSelectedPatient() {
@@ -1257,7 +1325,7 @@ public class PatientController implements Serializable {
         sql = "select p FROM Patient p "
                 + " where p.code is not null"
                 + " and p.retired=false "
-                + " and upper(p.code) like :q "
+                + " and (p.code) like :q "
                 + " order by p.code desc ";
         m.put("q", "%" + s.toUpperCase() + "%");
 
@@ -1350,7 +1418,7 @@ public class PatientController implements Serializable {
                         + " where p.code is not null"
                         + " and p.retired=false "
                         + " and p!=:p "
-                        + " and upper(p.code)=:q "
+                        + " and (p.code)=:q "
                         + " order by p.code desc ";
                 m.put("q", pt.getCode().toUpperCase());
                 m.put("p", pt);

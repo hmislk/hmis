@@ -689,8 +689,7 @@
                            icon="fa fa-fw fa-stethoscope"
                            rendered="#{webUserController.hasPrivilege('Clinical')}">
                     <p:menuitem ajax="false" action="#{patientController.toSearchPatient()}" icon="pi pi-search" value="Patient Search"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalPatientForReceptionist()}" value="Patients"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToPatientRegistration()}" value="Patient Registration"/>
+                    <p:menuitem ajax="false" action="#{patientController.toAddNewPatient()}" icon="fa fa-plus" value="Add New Patient"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToMembershipRegistration()}" value="Membership"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" value="Queue"/>
                     <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="Reports"/>
@@ -728,6 +727,7 @@
                     <p:menuitem  ajax="false"  action="#{institutionController.toAdminManageInstitutions()}" value="Manage Institutions" rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/admin_manage_staff_index" value="Manage Staff" rendered="#{webUserController.hasPrivilege('AdminStaff')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/webcontent/index" value="Manage Web" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/forms/index" value="Manage Form" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{itemController.toManageItemdIndex()}" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>

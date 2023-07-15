@@ -34,6 +34,14 @@
         <servlet-name>Faces Servlet</servlet-name>
         <url-pattern>/faces/*</url-pattern>
     </servlet-mapping>
+    
+    <context-param>
+        <param-name>FacesServletMapping</param-name>
+        <param-value>/faces/</param-value>
+    </context-param>
+    
+    
+    
     <session-config>
         <session-timeout>
             30

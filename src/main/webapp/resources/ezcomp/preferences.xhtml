@@ -48,7 +48,8 @@
                 </p:row>
                 <p:row >
                     <p:column >
-                        <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                        <p:commandButton id="btnSave" ajax="false" value="Save" 
+                                         action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
                     </p:column>
                     <p:column >
                         <h:panelGroup>
@@ -71,6 +72,11 @@
                         <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
+
+                            <h:outputLabel value="Template Name" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.themeName}" />
+
 
                             <p:commandButton id="btnWeb" 
                                              ajax="false" 

@@ -52,7 +52,7 @@ public class RosterController implements Serializable {
         hm.put("q", '%' + qry.toUpperCase() + '%');
         String sql = "select c from Roster c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
         List<Roster> a = getFacade().findByJpql(sql, hm);
 

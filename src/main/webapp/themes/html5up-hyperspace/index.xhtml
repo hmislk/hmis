@@ -1,0 +1,358 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Hyperspace by HTML5 UP</title>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+    </h:head>
+    <h:body class="is-preload">
+
+
+        <!-- Sidebar -->
+
+        <section id="sidebar">
+            <div class="inner">
+                <nav>
+                    <ul>
+                        <h:form>
+                            <li><h:outputLink value="#home">#{webContentController.findSingleText('home')}</h:outputLink></li>
+                            <li><h:outputLink value="#about">#{webContentController.findSingleText('about')}</h:outputLink></li>
+                            <li><h:outputLink value="#services">#{webContentController.findSingleText('services')}</h:outputLink></li>
+                            <li><h:outputLink value="#consult">#{webContentController.findSingleText('consult')}</h:outputLink></li>
+                            <li><h:outputLink value="#reports">#{webContentController.findSingleText('reports')}</h:outputLink></li>
+                            <li><h:outputLink value="#portal">#{webContentController.findSingleText('portal')}</h:outputLink></li>
+                            <li><h:outputLink value="#contact">#{webContentController.findSingleText('contact')}</h:outputLink></li>
+                        </h:form>
+                    </ul>
+                </nav>
+            </div>
+        </section>
+
+
+
+        <!-- Wrapper -->
+        <div id="wrapper">
+
+            <!-- Home -->
+            <section id="home" class="wrapper style1 fullscreen fade-up">
+                <div class="inner">
+                    <h1>#{webContentController.findSingleText('site_title')}</h1>
+                    <p>#{webContentController.findSingleText('tagline')}</p>
+                    <ul class="actions">
+                        <li>
+                            <h:outputLink
+                                class="button scrolly"
+                                value="#about">#{webContentController.findSingleText('learn_more')}</h:outputLink>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- about -->
+            <section id="about" class="wrapper style2 spotlights">
+                <section>
+                    <a href="#" class="image"><img src="images/pic01.jpg" alt="" data-position="center center" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>#{webContentController.findSingleText('about')}</h2>
+                            <p>#{webContentController.findSingleText('about_details')}</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <a href="#" class="image"><img src="images/pic02.jpg" alt="" data-position="top center" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>#{webContentController.findSingleText('vision')}</h2>
+                            <p>#{webContentController.findSingleText('vision_details')}</p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <a href="#" class="image"><img src="images/pic03.jpg" alt="" data-position="25% 25%" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>#{webContentController.findSingleText('mission')}</h2>
+                            <p>#{webContentController.findSingleText('mission_details')}</p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- services -->
+            <section id="services" class="wrapper style3 fade-up">
+                <div class="inner">
+                    <h2>#{webContentController.findSingleText('services')}</h2>
+                    <p>#{webContentController.findSingleText('services_details')}</p>
+                    <div class="features">
+                        <section>
+                            <span class="#{webContentController.findSingleText('service1_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service1')}</h3>
+                            <p>#{webContentController.findSingleText('service1_details')}</p>
+                        </section>
+                        <section>
+                            <span class="#{webContentController.findSingleText('service2_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service2')}</h3>
+                            <p>#{webContentController.findSingleText('service2_details')}</p>
+                        </section>
+                        <section>
+                            <span class="#{webContentController.findSingleText('service3_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service3')}</h3>
+                            <p>#{webContentController.findSingleText('service3_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service4_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service4')}</h3>
+                            <p>#{webContentController.findSingleText('service4_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service5_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service5')}</h3>
+                            <p>#{webContentController.findSingleText('service5_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service6_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service6')}</h3>
+                            <p>#{webContentController.findSingleText('service6_details')}</p>
+                        </section>
+                        
+                        <section>
+                            <span class="#{webContentController.findSingleText('service7_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service7')}</h3>
+                            <p>#{webContentController.findSingleText('service7_details')}</p>
+                        </section>
+
+                        <section>
+                            <span class="#{webContentController.findSingleText('service8_icon')}"></span>
+                            <h3>#{webContentController.findSingleText('service8')}</h3>
+                            <p>#{webContentController.findSingleText('service8_details')}</p>
+                        </section>
+
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- consult -->
+            <section id="consult" class="wrapper style1 fade-up">
+                <div class="inner">
+                    <h2>#{webContentController.findSingleText('book_consultation')}</h2>
+                    <h:form>
+                        <table>
+                            <tr>
+                                <td><p:outputLabel for="speciality" value="Speciality:" /></td>
+                                <td>
+                                    <p:autoComplete id="speciality"
+                                                    placeholder="#{webContentController.findSingleText('search_speciality')}"
+                                                    value="#{specialityController.current}" 
+                                                    completeMethod="#{specialityController.completeDoctorSpeciality}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><p:outputLabel for="consultant" value="#{webContentController.findSingleText('consultant')}" /></td>
+                                <td>
+                                    <p:selectOneMenu id="consultant" value="#{yourManagedBean.consultant}">
+                                        <f:selectItem itemLabel="#{webContentController.findSingleText('select_consultant')}" ></f:selectItem>
+                                        <f:selectItems value="#{consultantController.items}"
+                                                       var="consultant"
+                                                       itemLabel="#{consultant.person.nameWithTitle}"
+                                                       itemValue="#{consultant}" />
+                                    </p:selectOneMenu>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel for="name" value="#{webContentController.findSingleText('patient_name')}" /></td>
+                                <td><h:inputText id="name" value="#{patientController.password}" /></td>
+                            </tr>
+                            <tr>
+                                <td><h:outputLabel for="phone" value="#{webContentController.findSingleText('phone_number')}" /></td>
+                                <td>
+                                    <h:inputText id="phone"
+                                                 value="#{patientController.password}" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <p:commandButton value="#{webContentController.findSingleText('reserver_booking')}" styleClass="btn btn-primary" />
+                                </td>
+                            </tr>
+                        </table>
+                    </h:form>
+                </div>
+            </section>
+
+
+
+            <!-- reports -->
+            <section id="reports" class="wrapper style2 spotlights">
+                <section>
+                    <a href="#" class="image"><img src="images/pic01.jpg" alt="" data-position="center center" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>Sed ipsum dolor</h2>
+                            <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
+                            <ul class="actions">
+                                <li><a href="generic.html" class="button">Learn more</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <a href="#" class="image"><img src="images/pic02.jpg" alt="" data-position="top center" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>Feugiat consequat</h2>
+                            <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
+                            <ul class="actions">
+                                <li><a href="generic.html" class="button">Learn more</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <a href="#" class="image"><img src="images/pic03.jpg" alt="" data-position="25% 25%" /></a>
+                    <div class="content">
+                        <div class="inner">
+                            <h2>Ultricies aliquam</h2>
+                            <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
+                            <ul class="actions">
+                                <li><a href="generic.html" class="button">Learn more</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <!-- portal -->
+            <section id="portal" class="wrapper style3 fade-up">
+                <div class="inner">
+                    <h2>What we do</h2>
+                    <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                    <div class="features">
+                        <section>
+                            <span class="icon solid major fa-code"></span>
+                            <h3>Lorem ipsum amet</h3>
+                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                        </section>
+                        <section>
+                            <span class="icon solid major fa-lock"></span>
+                            <h3>Aliquam sed nullam</h3>
+                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                        </section>
+                        <section>
+                            <span class="icon solid major fa-cog"></span>
+                            <h3>Sed erat ullam corper</h3>
+                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                        </section>
+                        <section>
+                            <span class="icon solid major fa-desktop"></span>
+                            <h3>Veroeros quis lorem</h3>
+                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                        </section>
+                        <section>
+                            <span class="icon solid major fa-link"></span>
+                            <h3>Urna quis bibendum</h3>
+                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                        </section>
+                        <section>
+                            <span class="icon major fa-gem"></span>
+                            <h3>Aliquam urna dapibus</h3>
+                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                        </section>
+                    </div>
+                    <ul class="actions">
+                        <li><a href="generic.html" class="button">Learn more</a></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- contact -->
+            <section id="contact" class="wrapper style1 fade-up">
+                <div class="inner">
+                    <h2>Get in touch</h2>
+                    <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                    <div class="split style1">
+                        <section>
+                            <form method="post" action="#">
+                                <div class="fields">
+                                    <div class="field half">
+                                        <label for="name">Name</label>
+                                        <input type="text" name="name" id="name" />
+                                    </div>
+                                    <div class="field half">
+                                        <label for="email">Email</label>
+                                        <input type="text" name="email" id="email" />
+                                    </div>
+                                    <div class="field">
+                                        <label for="message">Message</label>
+                                        <textarea name="message" id="message" rows="5"></textarea>
+                                    </div>
+                                </div>
+                                <ul class="actions">
+                                    <li><a href="" class="button submit">Send Message</a></li>
+                                </ul>
+                            </form>
+                        </section>
+                        <section>
+                            <ul class="contact">
+                                <li>
+                                    <h3>Address</h3>
+                                    <span>12345 Somewhere Road #654<br />
+                                        Nashville, TN 00000-0000<br />
+                                        USA</span>
+                                </li>
+                                <li>
+                                    <h3>Email</h3>
+                                    <a href="#">user@untitled.tld</a>
+                                </li>
+                                <li>
+                                    <h3>Phone</h3>
+                                    <span>(000) 000-0000</span>
+                                </li>
+                                <li>
+                                    <h3>Social</h3>
+                                    <ul class="icons">
+                                        <li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+                                        <li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+                                        <li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
+                                        <li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+                                        <li><a href="#" class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </section>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <footer id="footer" class="wrapper style1-alt">
+            <div class="inner">
+                <ul class="menu">
+                    <li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+                </ul>
+            </div>
+        </footer>
+
+        <!-- Scripts -->
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="assets/js/jquery.scrollex.min.js"></script>
+        <script src="assets/js/jquery.scrolly.min.js"></script>
+        <script src="assets/js/browser.min.js"></script>
+        <script src="assets/js/breakpoints.min.js"></script>
+        <script src="assets/js/util.js"></script>
+        <script src="assets/js/main.js"></script>
+
+    </h:body>
+</html>

@@ -99,16 +99,26 @@
                                         </p:column>
                                         <p:column headerText="Actions">
                                             <div class="d-flex justify-content-between">
-                                                <p:commandButton value="EMR" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
+                                                <p:commandButton value="Profile" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="OPD Visit" 
                                                                  action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
+                                                
+                                                
+                                                <p:commandButton value="Data Entry" 
+                                                                 action="#{patientController.navigateToNewDataEntryForm}" ajax="false" styleClass="mx-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
                                                 <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
+                                                
+                                                
+                                                
+                                                
                                             </div>
                                         </p:column>
 

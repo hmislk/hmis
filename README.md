@@ -138,4 +138,5 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 
 
 ## License
-MIT License details are attached as the LICENSE.md
+AGPL License details are attached as the LICENSE.md
+WE have used HTML5UP template and its license is available under the respective folder.

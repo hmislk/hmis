@@ -59,14 +59,17 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
 public class PharmacyController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private int pharmacyAdminIndex;
+    private int pharmacySummaryIndex;
+
     /////
     @Inject
     private SessionController sessionController;
@@ -137,9 +140,9 @@ public class PharmacyController implements Serializable {
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) "
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) "
                 + " order by i.stock desc";
         items = getStockFacade().findBySQL(sql, m, 30);
 
@@ -154,9 +157,9 @@ public class PharmacyController implements Serializable {
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select distinct(i.itemBatch.item) from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) "
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) "
                 + " and i.stock>0 ";
         if (getCategory() != null) {
             sql += " and i.itemBatch.item.category=:cat ";
@@ -175,9 +178,9 @@ public class PharmacyController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.stock >:s and "
-                + "(upper(i.staff.code) like :n or "
-                + "upper(i.staff.person.name) like :n or "
-                + "upper(i.itemBatch.item.name) like :n ) "
+                + "((i.staff.code) like :n or "
+                + "(i.staff.person.name) like :n or "
+                + "(i.itemBatch.item.name) like :n ) "
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         items = getStockFacade().findBySQL(sql, m, 20);
 
@@ -1066,7 +1069,6 @@ public class PharmacyController implements Serializable {
         //   //System.err.println("Institution Stock");
         List<Institution> insList = getCompany();
 
-
         institutionStocks = new ArrayList<>();
         grantStock = 0;
 
@@ -1081,7 +1083,6 @@ public class PharmacyController implements Serializable {
                 r.setDepartment((Department) obj[0]);
                 r.setStock((Double) obj[1]);
                 list.add(r);
-
 
                 //Total Institution Stock
                 totalStock += r.getStock();
@@ -1993,6 +1994,22 @@ public class PharmacyController implements Serializable {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public int getPharmacyAdminIndex() {
+        return pharmacyAdminIndex;
+    }
+
+    public void setPharmacyAdminIndex(int pharmacyAdminIndex) {
+        this.pharmacyAdminIndex = pharmacyAdminIndex;
+    }
+
+    public int getPharmacySummaryIndex() {
+        return pharmacySummaryIndex;
+    }
+
+    public void setPharmacySummaryIndex(int pharmacySummaryIndex) {
+        this.pharmacySummaryIndex = pharmacySummaryIndex;
     }
 
 }

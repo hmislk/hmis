@@ -580,7 +580,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("n", strAmp.toUpperCase());
                 m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -807,7 +807,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("n", strAmp.toUpperCase());
                 m.put("t", DepartmentType.Store);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:t", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:t", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -1255,7 +1255,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("v", vmp);
                 m.put("n", strAmp);
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);
@@ -1389,7 +1389,7 @@ public class StoreItemExcelManager implements Serializable {
                 m.put("dep", DepartmentType.Store);
                 m.put("n", itenName.toUpperCase());
 
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.departmentType=:dep ", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.departmentType=:dep ", m);
 
                 if (amp == null) {
                     amp = new Amp();
@@ -1471,7 +1471,7 @@ public class StoreItemExcelManager implements Serializable {
                 String sql;
                 m.put("strAmp", itemName.toUpperCase());
                 //   ////System.out.println("m = " + m);
-                sql = "Select amp from Amp amp where amp.retired=false and upper(amp.name)=:strAmp";
+                sql = "Select amp from Amp amp where amp.retired=false and (amp.name)=:strAmp";
                 //   ////System.out.println("sql = " + sql);
                 Amp amp = getAmpFacade().findFirstByJpql(sql, m);
                 //   ////System.out.println("amp = " + amp);
@@ -1578,7 +1578,7 @@ public class StoreItemExcelManager implements Serializable {
                 m = new HashMap();
                 m.put("n", strAmp);
 
-                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n", m);
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n", m);
                 if (amp == null) {
 
                 } else {
@@ -1663,7 +1663,7 @@ public class StoreItemExcelManager implements Serializable {
                 }
                 ////System.out.println("cat = " + cat.getName());
                 if (!strCat.equals("")) {
-                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where upper(c.name)=:n AND c.vmp=:v", m);
+                    amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where (c.name)=:n AND c.vmp=:v", m);
                     if (amp == null) {
                         amp = new Amp();
                         amp.setName(strAmp);

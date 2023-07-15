@@ -662,9 +662,9 @@ public class InvestigationController implements Serializable {
         Map m = new HashMap();
         sql = "select c from Investigation c "
                 + " where c.retired=false  "
-                + " and (upper(c.name) like :n or "
-                + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
         sql += " and c.institution = :ins ";
         sql += " order by c.name";
         m.put("n", "%" + query.toUpperCase() + "%");
@@ -691,9 +691,9 @@ public class InvestigationController implements Serializable {
         if (institution != null) {
             sql = "select c from Investigation c "
                     + " where c.retired=false  "
-                    + " and (upper(c.name) like :n or "
-                    + " upper(c.fullName) like :n or "
-                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                    + " and ((c.name) like :n or "
+                    + " (c.fullName) like :n or "
+                    + " (c.code) like :n or (c.printName) like :n ) ";
             sql += " and c.institution = :ins ";
             sql += " order by c.name";
             m.put("n", "%" + query.toUpperCase() + "%");
@@ -701,9 +701,9 @@ public class InvestigationController implements Serializable {
         } else {
             sql = "select c from Investigation c "
                     + " where c.retired=false  "
-                    + " and (upper(c.name) like :n or "
-                    + " upper(c.fullName) like :n or "
-                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                    + " and ((c.name) like :n or "
+                    + " (c.fullName) like :n or "
+                    + " (c.code) like :n or (c.printName) like :n ) ";
             sql += " and c.institution is null ";
             sql += " order by c.name";
             m.put("n", "%" + query.toUpperCase() + "%");
@@ -724,9 +724,9 @@ public class InvestigationController implements Serializable {
         //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
-                + " and (upper(c.name) like :n or "
-                + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
         //////// // System.out.println(sql);
 
         m.put("n", "%" + query.toUpperCase() + "%");
@@ -780,9 +780,9 @@ public class InvestigationController implements Serializable {
         //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
-                + " and (upper(c.name) like :n or "
-                + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
         //////// // System.out.println(sql);
 
         m.put("n", "%" + query.toUpperCase() + "%");
@@ -816,8 +816,8 @@ public class InvestigationController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            // sql = "select c from Investigation c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            // sql = "select c from Investigation c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -899,7 +899,7 @@ public class InvestigationController implements Serializable {
                 + " where c.retired=:r ";
         m.put("r", false);
         if (selectText != null && !selectText.trim().equals("")) {
-            sql += " and upper(c.name) like :st ";
+            sql += " and (c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
         if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
@@ -1022,13 +1022,13 @@ public class InvestigationController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
 
     public List<Investigation> completeItem(String qry) {
-        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -1045,7 +1045,7 @@ public class InvestigationController implements Serializable {
 //                    + " from Item c "
 //                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
 //                    + " and c.retired=false "
-//                    + " and upper(c.name) like :qry "
+//                    + " and (c.name) like :qry "
 //                    + " and c.institution=:ins ";
 //            sql += "order by c.name";
 //            List<Investigation> completeItems = getFacade().findByJpql(sql, m);
@@ -1064,7 +1064,7 @@ public class InvestigationController implements Serializable {
 //            m.put("pak", Investigation.class);
             m.put("ins", getSessionController().getInstitution());
             sql = "select c from Item c where ( type(c) = Investigation or type(c) = Packege ) "
-                    + "and c.retired=false and c.institution=:ins and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+                    + "and c.retired=false and c.institution=:ins and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
             List<Investigation> completeItems = getFacade().findByJpql(sql, m);
             return completeItems;
         } else {

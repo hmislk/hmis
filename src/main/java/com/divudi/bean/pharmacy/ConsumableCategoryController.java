@@ -137,7 +137,7 @@ public class ConsumableCategoryController implements Serializable {
         sql = "select c from Category c"
                 + "  where c.retired=false"
                 + " and (type(c)= :parm ) "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
 
         temMap.put("parm", ConsumableCategory.class);
