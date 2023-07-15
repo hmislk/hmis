@@ -174,6 +174,9 @@ public class WebContentController implements Serializable {
             return word;
         }
         String txt;
+        if (wc.getType() == null) {
+            wc.setType(ShortText);
+        }
         switch (wc.getType()) {
             case ShortText:
                 txt = wc.getShortContext();
