@@ -57,6 +57,9 @@ import org.primefaces.model.DashboardColumn;
 import org.primefaces.model.DashboardModel;
 import org.primefaces.model.DefaultDashboardColumn;
 import org.primefaces.model.DefaultDashboardModel;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.ServletContext;
 
 /**
  *
@@ -143,6 +146,57 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String institutionName;
     private String departmentName;
     private String adminName;
+
+    // A field to store the landing page
+    private String landingPage;
+    private boolean directedToLandingPage = false;
+
+    public String navigateToWebHomePage() {
+        String webhome = "";
+        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+            webhome += "index.xhtml";
+        } else {
+            webhome += "themes/";
+            webhome += getApplicationPreference().getThemeName() + "/index.xhtml";
+        }
+        return getLandingPage();
+    }
+
+    public String getLandingPage() {
+        if (landingPage == null) {
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+            ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+            String url = request.getRequestURL().toString();
+
+            if (url.endsWith("/")) {
+                url = url.substring(0, url.length() - 1);
+            }
+            landingPage = url;
+            System.out.println("1 landingPage = " + landingPage);
+
+            // Get the correct FacesServletMapping from the web.xml context-param
+            String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+            if (facesServletMapping == null) {
+                facesServletMapping = "/faces/"; // Default value
+            }
+
+            landingPage += facesServletMapping;
+            System.out.println("2 landingPage = " + landingPage);
+
+            if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+                landingPage += "index.xhtml";
+            } else {
+                landingPage += "themes/";
+                landingPage += getApplicationPreference().getThemeName() + "/index.xhtml";
+            }
+            System.out.println("3 landingPage = " + landingPage);
+
+        }
+        directedToLandingPage = true;
+        return landingPage;
+    }
 
     public Date currentTime() {
         return new Date();
@@ -1638,6 +1692,14 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggableInstitutions = fillLoggableInstitutions();
         }
         return loggableInstitutions;
+    }
+
+    public boolean isDirectedToLandingPage() {
+        return directedToLandingPage;
+    }
+
+    public void setDirectedToLandingPage(boolean directedToLandingPage) {
+        this.directedToLandingPage = directedToLandingPage;
     }
 
 }
