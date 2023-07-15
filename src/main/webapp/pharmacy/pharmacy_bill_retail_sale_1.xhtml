@@ -38,10 +38,10 @@
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </p:panel>
-                        <h:panelGrid id="sale" columns="2" class="alignTop" >
+                        <h:panelGrid id="sale" class="alignTop" columns="3" >
 
-
-                            <p:panel >
+                            
+                            <p:panel style="height: 1050px">
                                 <f:facet name="header" >
                                     <h:outputLabel value="Pharmacy Retail Bill(Sale 2)" />
                                 </f:facet>
@@ -281,8 +281,8 @@
 
 
 
-
-                            <p:panel>
+                        
+                            <p:panel style="height: 1050px">
 
 
                                 <f:facet name="header" >
