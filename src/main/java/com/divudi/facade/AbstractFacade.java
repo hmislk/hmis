@@ -689,50 +689,51 @@ public abstract class AbstractFacade<T> {
     }
 
     public List<T> findExact(String fieldName, String fieldValue, boolean withoutRetired) {
-        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        ParameterExpression<String> p = cb.parameter(String.class);
-//        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
-        Predicate predicateField = cb.equal(cb.(rt.<String>get(fieldName)), fieldValue.toLowerCase());
-        Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), false);
-        Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
+//        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+//        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
+//        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+//        ParameterExpression<String> p = cb.parameter(String.class);
+////        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
+////        Predicate predicateField = cb.equal(cb.(rt.<String>get(fieldName)), fieldValue.toLowerCase());
+//        Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), false);
+////        Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
+//
+//        if (withoutRetired && !fieldValue.equals("")) {
+//            cq.where(predicateFieldRetired);
+//        } else if (withoutRetired) {
+//            cq.where(predicateRetired);
+//        } else if (!fieldValue.equals("")) {
+//            cq.where(predicateField);
+//        }
+//
+//        if (!fieldName.equals("")) {
+//            cq.orderBy(cb.asc(rt.get(fieldName)));
+//        }
 
-        if (withoutRetired && !fieldValue.equals("")) {
-            cq.where(predicateFieldRetired);
-        } else if (withoutRetired) {
-            cq.where(predicateRetired);
-        } else if (!fieldValue.equals("")) {
-            cq.where(predicateField);
-        }
-
-        if (!fieldName.equals("")) {
-            cq.orderBy(cb.asc(rt.get(fieldName)));
-        }
-
-        return getEntityManager().createQuery(cq).getResultList();
+        return null;
     }
 
     public List<T> findContains(String fieldName, String fieldValue) {
-        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        ParameterExpression<String> p = cb.parameter(String.class);
-//        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
-        Predicate predicateField = cb.like(cb.(rt.<String>get(fieldName)), "*" + fieldValue.toLowerCase());
-        //    Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), withoutRetired);
-        //    Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
-        //    (cb.like(pet.get(Pet_.name), "*do"));
-
-        if (!fieldValue.equals("")) {
-            cq.where(predicateField);
-        }
-
-        if (!fieldName.equals("")) {
-            cq.orderBy(cb.asc(rt.get(fieldName)));
-        }
-
-        return getEntityManager().createQuery(cq).getResultList();
+//        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+//        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
+//        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
+//        ParameterExpression<String> p = cb.parameter(String.class);
+////        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
+//        Predicate predicateField = cb.like(cb.(rt.<String>get(fieldName)), "*" + fieldValue.toLowerCase());
+//        //    Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), withoutRetired);
+//        //    Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
+//        //    (cb.like(pet.get(Pet_.name), "*do"));
+//
+//        if (!fieldValue.equals("")) {
+//            cq.where(predicateField);
+//        }
+//
+//        if (!fieldName.equals("")) {
+//            cq.orderBy(cb.asc(rt.get(fieldName)));
+//        }
+//
+//        return getEntityManager().createQuery(cq).getResultList();
+        return null;
     }
 
     public T findByField(String fieldName, String fieldValue, boolean withoutRetired) {
