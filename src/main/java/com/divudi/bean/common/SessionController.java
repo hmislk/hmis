@@ -159,7 +159,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             webhome += "themes/";
             webhome += getApplicationPreference().getThemeName() + "/index.xhtml";
         }
-        return getLandingPage();
+        return webhome;
     }
 
     public String getLandingPage() {
