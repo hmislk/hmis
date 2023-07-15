@@ -64,7 +64,7 @@ public class SessionNumberGenerateConrtroller implements Serializable {
         String sql;
         Map m=new HashMap();
         sql = " SELECT sg FROM SessionNumberGenerator sg WHERE sg.retired=false"
-                + " and upper(sg.name) like '%" + qry.toUpperCase() + "%' "
+                + " and (sg.name) like '%" + qry.toUpperCase() + "%' "
                 + " and sg.speciality=:sp"
                 + " and sg.staff=:s "
                 + " order by sg.name";

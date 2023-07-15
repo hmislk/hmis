@@ -261,22 +261,22 @@ public class ItemsDistributorsController implements Serializable {
                 + " and b.institution.retired=false and b.retired=false";
 
         if (getSearchKeyword().getInstitution() != null && !getSearchKeyword().getInstitution().trim().equals("")) {
-            sql += " and  (upper(b.institution.name) like :ins )";
+            sql += " and  ((b.institution.name) like :ins )";
             tmp.put("ins", "%" + getSearchKeyword().getInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  (upper(b.item.name) like :itm )";
+            sql += " and  ((b.item.name) like :itm )";
             tmp.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and  (upper(b.item.code) like :cde )";
+            sql += " and  ((b.item.code) like :cde )";
             tmp.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCategory() != null && !getSearchKeyword().getCategory().trim().equals("")) {
-            sql += " and  (upper(b.item.category.name) like :cat )";
+            sql += " and  ((b.item.category.name) like :cat )";
             tmp.put("cat", "%" + getSearchKeyword().getCategory().trim().toUpperCase() + "%");
         }
 

@@ -66,7 +66,7 @@ public class ConsultantController implements Serializable {
         } else {
             sql = "select c from Consultant c "
                     + " where c.retired=false"
-                    + " and upper(c.person.name) like :q ";
+                    + " and (c.person.name) like :q ";
 
             sql += " and c.speciality=:s ";
             sql += " order by c.codeInterger , c.person.name ";

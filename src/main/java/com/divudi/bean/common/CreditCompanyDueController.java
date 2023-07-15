@@ -913,7 +913,7 @@ public class CreditCompanyDueController implements Serializable {
 //        } else {
 //            sql = "select c from Admission c where c.retired=false and "
 //                    + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
-//                    + " and ( (upper(c.bhtNo) like :q )or (upper(c.patient.person.name)"
+//                    + " and ( ((c.bhtNo) like :q )or ((c.patient.person.name)"
 //                    + " like :q) ) order by c.bhtNo";
 //            //////// // System.out.println(sql);
 //            //      h.put("btp", BillType.InwardPaymentBill);

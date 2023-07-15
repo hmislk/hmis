@@ -333,8 +333,8 @@ public class PharmacyIssueController implements Serializable {
         List<Item> items;
         String sql;
         sql = "select i from Item i where i.retired=false "
-                + " and upper(i.name) like :n and type(i)=:t "
-                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and upper(ibs.itemBatch.item.name) like :n ) order by i.name ";
+                + " and (i.name) like :n and type(i)=:t "
+                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
@@ -355,9 +355,9 @@ public class PharmacyIssueController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findBySQL(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);

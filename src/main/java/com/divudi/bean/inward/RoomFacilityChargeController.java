@@ -66,7 +66,7 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " FROM PatientRoom pr"
 //                    + " WHERE pr.retired=false "
 //                    + " AND pr.discharged=true )"
-//                    + " AND upper(rm.name) LIKE :q"
+//                    + " AND (rm.name) LIKE :q"
 //                    + " ORDER BY rm.name";
     public List<RoomFacilityCharge> completeRoom(String query) {
         List<RoomFacilityCharge> suggestions;
@@ -85,7 +85,7 @@ public class RoomFacilityChargeController implements Serializable {
                     + " FROM PatientRoom pr"
                     + " WHERE pr.retired=false "
                     + " AND pr.discharged=false)"
-                    + " AND upper(rm.name) LIKE :q"
+                    + " AND (rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm);
@@ -104,7 +104,7 @@ public class RoomFacilityChargeController implements Serializable {
             sql = "SELECT rm FROM "
                     + " RoomFacilityCharge rm "
                     + " WHERE rm.retired=false "
-                    + " AND upper(rm.name) LIKE :q"
+                    + " AND (rm.name) LIKE :q"
                     + " ORDER BY rm.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm);
@@ -132,7 +132,7 @@ public class RoomFacilityChargeController implements Serializable {
 //                    + " RoomFacilityCharge p "
 //                    + " where p.retired=false"
 //                    + " and (p.room.filled=false or p.room=:rm) "
-//                    + " and upper(p.name) like :q"
+//                    + " and (p.name) like :q"
 //                    + " order by p.name";
 //            
 //            hm.put("rm", getCurrent().getRoom());
@@ -146,7 +146,7 @@ public class RoomFacilityChargeController implements Serializable {
 //    }
     public List<RoomFacilityCharge> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from RoomFacilityCharge c "
-                + "where c.retired=false  and upper(c.name)"
+                + "where c.retired=false  and (c.name)"
                 + " like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }

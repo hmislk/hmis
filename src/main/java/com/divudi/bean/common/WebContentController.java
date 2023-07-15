@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.data.WebContentType;
+import static com.divudi.data.WebContentType.ShortText;
 import com.divudi.entity.WebContent;
 import com.divudi.entity.WebLanguage;
 import com.divudi.facade.WebContentFacade;
@@ -78,30 +79,30 @@ public class WebContentController implements Serializable {
     }
 
     public String toAddNewWebContent() {
-        selected = null;
+        selected = new WebContent();
         return "/webcontent/web_content";
     }
 
     public String toAddNewShortWebContent() {
-        selected = null;
+        selected = new WebContent();
         selected.setType(WebContentType.ShortText);
         return toEditWebContent();
     }
 
     public String toAddNewLongWebContent() {
-        selected = null;
+        selected = new WebContent();
         selected.setType(WebContentType.LongText);
         return toEditWebContent();
     }
 
     public String toAddNewListWebContent() {
-        selected = null;
+        selected = new WebContent();
         selected.setType(WebContentType.List);
         return toEditWebContent();
     }
 
     public String toAddNewImageWebContent() {
-        selected = null;
+        selected = new WebContent();
         selected.setType(WebContentType.Image);
         return toEditWebContent();
     }
@@ -172,7 +173,21 @@ public class WebContentController implements Serializable {
         if (wc == null || getLanguage() == null) {
             return word;
         }
-        return wc.getShortContext();
+        String txt;
+        if (wc.getType() == null) {
+            wc.setType(ShortText);
+        }
+        switch (wc.getType()) {
+            case ShortText:
+                txt = wc.getShortContext();
+                break;
+            case LongText:
+                txt = wc.getLongContext();
+                break;
+            default:
+                txt = "ERROR";
+        }
+        return txt;
     }
 
     public List<WebLanguage> getLanguages() {

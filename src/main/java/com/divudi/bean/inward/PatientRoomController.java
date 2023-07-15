@@ -48,7 +48,7 @@ public class PatientRoomController implements Serializable {
     }
 
     public List<PatientRoom> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PatientRoom c where c.retired=false and i.patientRoomType = com.divudi.data.PatientRoomType.Pharmacy and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from PatientRoom c where c.retired=false and i.patientRoomType = com.divudi.data.PatientRoomType.Pharmacy and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

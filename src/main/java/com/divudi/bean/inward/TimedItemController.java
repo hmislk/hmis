@@ -84,7 +84,7 @@ public class TimedItemController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<TimedItem>();
         } else {
-            sql = "select c from TimedItem c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -124,12 +124,12 @@ public class TimedItemController implements Serializable {
         } else {
             if (departmentType == null) {
                 sql = "select c from TimedItem c "
-                        + " where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' "
+                        + " where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' "
                         + " order by c.name";
                 suggestions = getFacade().findBySQL(sql);
             } else {
                 sql = "select c from TimedItem c "
-                        + " where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' "
+                        + " where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' "
                         + " and c.departmentType=:dt "
                         + " order by c.name";
                 Map m = new HashMap();
@@ -178,7 +178,7 @@ public class TimedItemController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from TimedItem c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from TimedItem c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            String sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
             selectedItems = getFacade().findBySQL(sql);
 
         }
@@ -187,7 +187,7 @@ public class TimedItemController implements Serializable {
 
     public List<TimedItem> getSelectedTheatreItems() {
         String sql = "select c from TimedItem c "
-                + " where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' "
+                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
                 + " and c.departmentType=:dt "
                 + " order by c.name";
         Map m = new HashMap();
@@ -199,7 +199,7 @@ public class TimedItemController implements Serializable {
 
     public List<TimedItem> getSelectedInwardItems() {
         String sql = "select c from TimedItem c "
-                + " where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' "
+                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
                 + " and c.departmentType=:dt "
                 + " order by c.name";
         Map m = new HashMap();

@@ -969,10 +969,10 @@ public class PatientController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Patient p where p.retired=false "
-                    + " and upper(p.person.name) like :q "
-                    + " or upper(p.code) like :q "
-                    + " or upper(p.person.nic) like :q"
-                    + " or upper(p.person.mobile) like :q "
+                    + " and (p.person.name) like :q "
+                    + " or (p.code) like :q "
+                    + " or (p.person.nic) like :q"
+                    + " or (p.person.mobile) like :q "
                     + "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             //////System.out.println(sql);
@@ -991,13 +991,13 @@ public class PatientController implements Serializable {
         String sql;
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false "
-                + " and ( upper(p.person.name) like  :q "
-                + " or upper(p.code) like :q "
-                + " or upper(p.person.nic) like :q "
-                + " or upper(p.person.mobile) like :q "
-                + " or upper(p.person.phone) like :q "
-                + " or upper(p.person.address) like :q "
-                + " or upper(p.phn) like :q) ";
+                + " and ( (p.person.name) like  :q "
+                + " or (p.code) like :q "
+                + " or (p.person.nic) like :q "
+                + " or (p.person.mobile) like :q "
+                + " or (p.person.phone) like :q "
+                + " or (p.person.address) like :q "
+                + " or (p.phn) like :q) ";
 
         if (getReportKeyWord().isAdditionalDetails()) {
             sql += " and p.code is not null ";
@@ -1325,7 +1325,7 @@ public class PatientController implements Serializable {
         sql = "select p FROM Patient p "
                 + " where p.code is not null"
                 + " and p.retired=false "
-                + " and upper(p.code) like :q "
+                + " and (p.code) like :q "
                 + " order by p.code desc ";
         m.put("q", "%" + s.toUpperCase() + "%");
 
@@ -1418,7 +1418,7 @@ public class PatientController implements Serializable {
                         + " where p.code is not null"
                         + " and p.retired=false "
                         + " and p!=:p "
-                        + " and upper(p.code)=:q "
+                        + " and (p.code)=:q "
                         + " order by p.code desc ";
                 m.put("q", pt.getCode().toUpperCase());
                 m.put("p", pt);
