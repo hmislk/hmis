@@ -187,6 +187,9 @@
                                 <h:outputLabel value="#{pi.billItem.item.name}" >
                                 </h:outputLabel>
 
+                                <h:outputLabel value="#{pi.billItem.item.id}" >
+                                </h:outputLabel>
+
                             </p:column>
 
                             <p:column headerText="Reporting Department"  styleClass="alignTop">
@@ -277,9 +280,9 @@
                             </p:column>
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
-                                
-                                
-                                
+
+
+
                                 <p:dataTable value="#{patientReportController.patientReports(pi)}" var="dpr" emptyMessage="" 
                                              rowStyleClass="#{dpr.retired eq true ? 'noDisplayRow':''}" 
                                              styleClass="noBorderGrid summeryBorder noBorder" >
