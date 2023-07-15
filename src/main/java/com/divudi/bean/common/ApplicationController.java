@@ -71,6 +71,17 @@ public class ApplicationController {
         }
     }
 
+    public String getLandingPage(){
+        if(getApplicationPreference().isHasAwebsiteAsFrontEnd()){
+            if(getApplicationPreference().getThemeName()==null||getApplicationPreference().getThemeName().trim().equals("")){
+                return "/index.xhtml";
+            }
+            return "/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+        }else{
+            return "/index.xhtml";
+        }
+    }
+    
     public Date getStartTime() {
         return startTime;
     }

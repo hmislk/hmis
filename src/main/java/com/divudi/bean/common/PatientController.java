@@ -366,7 +366,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient_add_to_queue";
+        return "/emr/patient_add_to_queue";
     }
 
     public void patientSelected() {
@@ -736,7 +736,7 @@ public class PatientController implements Serializable {
             return "";
         }
         patientSelected();
-        return "/clinical/patient_profile";
+        return "/emr/patient_profile";
     }
 
     public void createPatientBarcode() {
@@ -918,12 +918,12 @@ public class PatientController implements Serializable {
         yearMonthDay = null;
         getCurrent();
         getYearMonthDay();
-        return "/clinical/patient";
+        return "/emr/patient";
     }
 
     public String toViewPatient() {
         current = null;
-        return "/clinical/patient_profile";
+        return "/emr/patient_profile";
     }
 
     public String savePatientAndThenNavigateToPatientProfile() {
@@ -1065,6 +1065,48 @@ public class PatientController implements Serializable {
         } else {
             getFacade().edit(p);
         }
+    }
+    
+    public String saveAndNavigateToProfile() {
+        if (current == null) {
+            UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
+            return "";
+        }
+        if (current.getPerson() == null) {
+            UtilityController.addErrorMessage("No Person. Not Saved");
+            return "";
+        }
+        if (current.getPerson().getName().trim().equals("")) {
+            UtilityController.addErrorMessage("Please enter a name");
+            return "";
+        }
+        if (current.getPerson().getId() == null) {
+            current.getPerson().setCreatedAt(Calendar.getInstance().getTime());
+            current.getPerson().setCreater(getSessionController().getLoggedUser());
+            getPersonFacade().create(current.getPerson());
+        } else {
+            getPersonFacade().edit(current.getPerson());
+        }
+        if (current.getId() == null) {
+            current.setCreatedAt(new Date());
+            current.setCreater(getSessionController().getLoggedUser());
+            current.setCreatedInstitution(getSessionController().getInstitution());
+            getFacade().create(current);
+        } else {
+            getFacade().edit(current);
+        }
+        
+        if (current.getCreatedAt()==null){
+            current.setCreatedAt(new Date());
+            getFacade().edit(current);
+        }
+        
+        if (current.getPerson().getCreatedAt()==null){
+            current.getPerson().setCreatedAt(new Date());
+            getPersonFacade().edit(current.getPerson());
+        }
+        
+        return toEmrPatientProfile();
     }
 
     public void saveSelectedPatient() {

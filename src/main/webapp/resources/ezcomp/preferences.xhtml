@@ -73,6 +73,11 @@
                             <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
 
+                            <h:outputLabel value="Template Name" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.themeName}" />
+
+
                             <p:commandButton id="btnWeb" 
                                              ajax="false" 
                                              value="Save" 
