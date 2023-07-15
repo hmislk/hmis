@@ -71,21 +71,10 @@
             <section id="home" class="wrapper style1 fullscreen fade-up">
                 <div class="inner" >
                     <h1>#{webContentController.findSingleText('site_title')}</h1>
-                    <div>
-                        <p>#{webContentController.findSingleText('tagline')}</p>
-                        <img src="#{webContentController.findSingleText('about_image')}" alt="Descriptive text" style="width: 50%; margin-right: 20px;" />
-                    </div>
+                    <img src="#{webContentController.findSingleText('about_image')}" alt="Descriptive text" style="width: 50%; margin-right: 20px;" />
+                    <p>#{webContentController.findSingleText('tagline')}</p>
                 </div>
-                <ul class="actions">
-                    <li>
-                        <h:outputLink
-                            class="button scrolly"
-                            value="#about">#{webContentController.findSingleText('learn_more')}</h:outputLink>
-                    </li>
-                </ul>
             </section>
-
-
 
             <!-- about -->
             <section id="about" class="wrapper style2 spotlights">
