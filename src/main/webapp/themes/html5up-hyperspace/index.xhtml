@@ -133,23 +133,23 @@
             <!-- consult -->
             <section id="consult" class="wrapper style1 fade-up">
                 <div class="inner">
-                    <h2>Book a Consultation</h2>
+                    <h2>#{webContentController.findSingleText('book_consultation')}</h2>
                     <h:form>
                         <table>
                             <tr>
                                 <td><p:outputLabel for="speciality" value="Speciality:" /></td>
                                 <td>
                                     <p:autoComplete id="speciality"
-                                                    placeholder="Search here for a speciality"
+                                                    placeholder="#{webContentController.findSingleText('search_speciality')}"
                                                     value="#{specialityController.current}" 
                                                     completeMethod="#{specialityController.completeDoctorSpeciality}" />
                                 </td>
                             </tr>
                             <tr>
-                                <td><p:outputLabel for="consultant" value="Consultant:" /></td>
+                                <td><p:outputLabel for="consultant" value="#{webContentController.findSingleText('consultant')}" /></td>
                                 <td>
                                     <p:selectOneMenu id="consultant" value="#{yourManagedBean.consultant}">
-                                        <f:selectItem itemLabel="Select a Doctor" ></f:selectItem>
+                                        <f:selectItem itemLabel="#{webContentController.findSingleText('select_consultant')}" ></f:selectItem>
                                         <f:selectItems value="#{consultantController.items}"
                                                        var="consultant"
                                                        itemLabel="#{consultant.person.nameWithTitle}"
@@ -158,11 +158,11 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td><h:outputLabel for="name" value="Patient Name:" /></td>
+                                <td><h:outputLabel for="name" value="#{webContentController.findSingleText('patient_name')}" /></td>
                                 <td><h:inputText id="name" value="#{patientController.password}" /></td>
                             </tr>
                             <tr>
-                                <td><h:outputLabel for="phone" value="Phone Number:" /></td>
+                                <td><h:outputLabel for="phone" value="#{webContentController.findSingleText('phone_number')}" /></td>
                                 <td>
                                     <h:inputText id="phone"
                                                  value="#{patientController.password}" />
@@ -170,7 +170,7 @@
                             </tr>
                             <tr>
                                 <td colspan="2">
-                                    <p:commandButton value="Reserve" styleClass="btn btn-primary" />
+                                    <p:commandButton value="#{webContentController.findSingleText('reserver_booking')}" styleClass="btn btn-primary" />
                                 </td>
                             </tr>
                         </table>
