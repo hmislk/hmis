@@ -20,15 +20,43 @@
             <div class="inner">
                 <nav>
                     <ul>
-                        <h:form>
-                            <li><h:outputLink value="#home">#{webContentController.findSingleText('home')}</h:outputLink></li>
-                            <li><h:outputLink value="#about">#{webContentController.findSingleText('about')}</h:outputLink></li>
-                            <li><h:outputLink value="#services">#{webContentController.findSingleText('services')}</h:outputLink></li>
-                            <li><h:outputLink value="#consult">#{webContentController.findSingleText('consult')}</h:outputLink></li>
-                            <li><h:outputLink value="#reports">#{webContentController.findSingleText('reports')}</h:outputLink></li>
-                            <li><h:outputLink value="#portal">#{webContentController.findSingleText('portal')}</h:outputLink></li>
-                            <li><h:outputLink value="#contact">#{webContentController.findSingleText('contact')}</h:outputLink></li>
-                        </h:form>
+
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#home">#{webContentController.findSingleText('home')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#about">#{webContentController.findSingleText('about')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#services">#{webContentController.findSingleText('services')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#consult">#{webContentController.findSingleText('consult')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#reports">#{webContentController.findSingleText('reports')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#portal">#{webContentController.findSingleText('portal')}</h:outputLink>
+                            </h:form>
+                        </li>
+                        <li>
+                            <h:form>
+                                <h:outputLink value="#contact">#{webContentController.findSingleText('contact')}</h:outputLink>
+                            </h:form>
+                        </li>
+
                     </ul>
                 </nav>
             </div>
@@ -41,18 +69,23 @@
 
             <!-- Home -->
             <section id="home" class="wrapper style1 fullscreen fade-up">
-                <div class="inner">
+                <div class="inner" >
                     <h1>#{webContentController.findSingleText('site_title')}</h1>
-                    <p>#{webContentController.findSingleText('tagline')}</p>
-                    <ul class="actions">
-                        <li>
-                            <h:outputLink
-                                class="button scrolly"
-                                value="#about">#{webContentController.findSingleText('learn_more')}</h:outputLink>
-                        </li>
-                    </ul>
+                    <div>
+                        <p>#{webContentController.findSingleText('tagline')}</p>
+                        <img src="#{webContentController.findSingleText('about_image')}" alt="Descriptive text" style="width: 50%; margin-right: 20px;" />
+                    </div>
                 </div>
+                <ul class="actions">
+                    <li>
+                        <h:outputLink
+                            class="button scrolly"
+                            value="#about">#{webContentController.findSingleText('learn_more')}</h:outputLink>
+                    </li>
+                </ul>
             </section>
+
+
 
             <!-- about -->
             <section id="about" class="wrapper style2 spotlights">
@@ -66,9 +99,10 @@
                     </div>
                 </section>
                 <section>
-                    <a href="#" class="image"><img src="images/pic02.jpg" alt="" data-position="top center" /></a>
+                    <a href="#" class="image"><img src="#{webContentController.findSingleText('about_image')}" alt="" data-position="top center" /></a>
                     <div class="content">
                         <div class="inner">
+
                             <h2>#{webContentController.findSingleText('vision')}</h2>
                             <p>#{webContentController.findSingleText('vision_details')}</p>
                         </div>
@@ -124,7 +158,7 @@
                             <h3>#{webContentController.findSingleText('service6')}</h3>
                             <p>#{webContentController.findSingleText('service6_details')}</p>
                         </section>
-                        
+
                         <section>
                             <span class="#{webContentController.findSingleText('service7_icon')}"></span>
                             <h3>#{webContentController.findSingleText('service7')}</h3>
@@ -149,7 +183,7 @@
                     <h:form>
                         <table>
                             <tr>
-                                <td><p:outputLabel for="speciality" value="Speciality:" /></td>
+                                <td><p:outputLabel for="speciality" value="#{webContentController.findSingleText('speciality')}" /></td>
                                 <td>
                                     <p:autoComplete id="speciality"
                                                     placeholder="#{webContentController.findSingleText('search_speciality')}"
@@ -194,43 +228,26 @@
 
             <!-- reports -->
             <section id="reports" class="wrapper style2 spotlights">
-                <section>
-                    <a href="#" class="image"><img src="images/pic01.jpg" alt="" data-position="center center" /></a>
-                    <div class="content">
-                        <div class="inner">
-                            <h2>Sed ipsum dolor</h2>
-                            <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
-                            <ul class="actions">
-                                <li><a href="generic.html" class="button">Learn more</a></li>
-                            </ul>
-                        </div>
+                <div class="content">
+                    <div class="inner">
+                        <h2>View Lab Reports</h2>
+                        <h:form id="labReportsForm">
+                            <div class="field">
+                                <label for="receiptNo">Receipt Number</label>
+                                <input type="text" name="receiptNo" id="receiptNo" />
+                            </div>
+                            <div class="field">
+                                <label for="phoneNo">Phone Number</label>
+                                <input type="text" name="phoneNo" id="phoneNo" />
+                            </div>
+                            <div class="actions">
+                                <p:commandButton value="View Reports" action="#{reportBean.viewReports}" styleClass="btn btn-primary" />
+                            </div>
+                        </h:form>
                     </div>
-                </section>
-                <section>
-                    <a href="#" class="image"><img src="images/pic02.jpg" alt="" data-position="top center" /></a>
-                    <div class="content">
-                        <div class="inner">
-                            <h2>Feugiat consequat</h2>
-                            <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
-                            <ul class="actions">
-                                <li><a href="generic.html" class="button">Learn more</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-                <section>
-                    <a href="#" class="image"><img src="images/pic03.jpg" alt="" data-position="25% 25%" /></a>
-                    <div class="content">
-                        <div class="inner">
-                            <h2>Ultricies aliquam</h2>
-                            <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus.</p>
-                            <ul class="actions">
-                                <li><a href="generic.html" class="button">Learn more</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
+                </div>
             </section>
+
 
             <!-- portal -->
             <section id="portal" class="wrapper style3 fade-up">
