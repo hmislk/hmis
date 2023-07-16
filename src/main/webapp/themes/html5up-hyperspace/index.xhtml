@@ -321,54 +321,72 @@
             <!-- contact -->
             <section id="contact" class="wrapper style1 fade-up">
                 <div class="inner">
-                    <h2>Get in touch</h2>
-                    <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                    <h2>#{webContentController.findSingleText('contact')}</h2>
+                    <p>
+                        <h:outputText 
+                            escape="false"
+                            value="#{webContentController.findSingleText('contact_details')}" >
+                        </h:outputText>
+                    </p>
                     <div class="split style1">
                         <section>
                             <form method="post" action="#">
                                 <div class="fields">
                                     <div class="field half">
-                                        <label for="name">Name</label>
+                                        <label for="name">#{webContentController.findSingleText('name')}</label>
                                         <input type="text" name="name" id="name" />
                                     </div>
                                     <div class="field half">
-                                        <label for="email">Email</label>
+                                        <label for="email">#{webContentController.findSingleText('email')}</label>
                                         <input type="text" name="email" id="email" />
                                     </div>
                                     <div class="field">
-                                        <label for="message">Message</label>
+                                        <label for="message">#{webContentController.findSingleText('message')}</label>
                                         <textarea name="message" id="message" rows="5"></textarea>
                                     </div>
                                 </div>
                                 <ul class="actions">
-                                    <li><a href="" class="button submit">Send Message</a></li>
+                                    <li><a href="" class="button submit">#{webContentController.findSingleText('send_message')}</a></li>
                                 </ul>
                             </form>
                         </section>
                         <section>
                             <ul class="contact">
                                 <li>
-                                    <h3>Address</h3>
-                                    <span>12345 Somewhere Road #654<br />
-                                        Nashville, TN 00000-0000<br />
-                                        USA</span>
+                                    <h3>#{webContentController.findSingleText('address')}</h3>
+                                    <span>
+                                        <h:outputText 
+                                            escape="false"
+                                            value="#{webContentController.findSingleText('address_value')}" >
+                                        </h:outputText>
+                                    </span>
                                 </li>
                                 <li>
-                                    <h3>Email</h3>
-                                    <a href="#">user@untitled.tld</a>
+                                    <h3>#{webContentController.findSingleText('email')}</h3>
+                                    <span>
+                                        <h:outputText 
+                                            escape="false"
+                                            value="#{webContentController.findSingleText('email_value')}" >
+                                        </h:outputText>
+                                    </span>
                                 </li>
                                 <li>
-                                    <h3>Phone</h3>
-                                    <span>(000) 000-0000</span>
+                                    <h3>#{webContentController.findSingleText('phone')}</h3>
+                                    <span>
+                                        <h:outputText 
+                                            escape="false"
+                                            value="#{webContentController.findSingleText('phone_value')}" >
+                                        </h:outputText>
+                                    </span>
                                 </li>
                                 <li>
-                                    <h3>Social</h3>
+                                    <h3>#{webContentController.findSingleText('social')}</h3>
                                     <ul class="icons">
-                                        <li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
-                                        <li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
-                                        <li><a href="#" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
-                                        <li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-                                        <li><a href="#" class="icon brands fa-linkedin-in"><span class="label">LinkedIn</span></a></li>
+                                        <li><a href="#" class="icon brands fa-twitter"><span class="label">#{webContentController.findSingleText('twitter_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-facebook-f"><span class="label">#{webContentController.findSingleText('facebook_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-github"><span class="label">#{webContentController.findSingleText('github_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-instagram"><span class="label">#{webContentController.findSingleText('instagram_url')}</span></a></li>
+                                        <li><a href="#" class="icon brands fa-linkedin-in"><span class="label">#{webContentController.findSingleText('linkedin_url')}</span></a></li>
                                     </ul>
                                 </li>
                             </ul>
