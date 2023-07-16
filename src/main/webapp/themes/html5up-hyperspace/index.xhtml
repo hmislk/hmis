@@ -170,109 +170,146 @@
                 <div class="inner">
                     <h2>#{webContentController.findSingleText('book_consultation')}</h2>
                     <h:form>
-                        <table>
-                            <tr>
-                                <td><p:outputLabel for="speciality" value="#{webContentController.findSingleText('speciality')}" /></td>
-                                <td>
-                                    <p:autoComplete id="speciality"
-                                                    placeholder="#{webContentController.findSingleText('search_speciality')}"
-                                                    value="#{specialityController.current}" 
-                                                    completeMethod="#{specialityController.completeDoctorSpeciality}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><p:outputLabel for="consultant" value="#{webContentController.findSingleText('consultant')}" /></td>
-                                <td>
-                                    <p:selectOneMenu id="consultant" value="#{yourManagedBean.consultant}">
-                                        <f:selectItem itemLabel="#{webContentController.findSingleText('select_consultant')}" ></f:selectItem>
-                                        <f:selectItems value="#{consultantController.items}"
-                                                       var="consultant"
-                                                       itemLabel="#{consultant.person.nameWithTitle}"
-                                                       itemValue="#{consultant}" />
-                                    </p:selectOneMenu>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><h:outputLabel for="name" value="#{webContentController.findSingleText('patient_name')}" /></td>
-                                <td><h:inputText id="name" value="#{patientController.password}" /></td>
-                            </tr>
-                            <tr>
-                                <td><h:outputLabel for="phone" value="#{webContentController.findSingleText('phone_number')}" /></td>
-                                <td>
-                                    <h:inputText id="phone"
-                                                 value="#{patientController.password}" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <p:commandButton value="#{webContentController.findSingleText('reserver_booking')}" styleClass="btn btn-primary" />
-                                </td>
-                            </tr>
-                        </table>
+                        <div class="table-wrapper">
+                            <table>
+                                <tr>
+                                    <td><h:outputLabel for="speciality" value="#{webContentController.findSingleText('speciality')}" /></td>
+                                    <td>
+                                        <p:autoComplete id="speciality"
+                                                        style="width:100%;"
+                                                        inputStyle="width:100%;"
+                                                        placeholder="#{webContentController.findSingleText('search_speciality')}"
+                                                        value="#{specialityController.current}" 
+                                                        completeMethod="#{specialityController.completeDoctorSpeciality}" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel for="consultant" value="#{webContentController.findSingleText('consultant')}" /></td>
+                                    <td>
+                                        <h:selectOneMenu id="consultant" value="#{yourManagedBean.consultant}"
+                                                         style="width:100%;"
+                                                         >
+                                            <f:selectItem itemLabel="#{webContentController.findSingleText('select_consultant')}" ></f:selectItem>
+                                            <f:selectItems value="#{consultantController.items}"
+                                                           var="consultant"
+                                                           itemLabel="#{consultant.person.nameWithTitle}"
+                                                           itemValue="#{consultant}" />
+                                        </h:selectOneMenu>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel for="name" value="#{webContentController.findSingleText('patient_name')}" /></td>
+                                    <td><h:inputText id="name" value="#{patientController.password}" /></td>
+                                </tr>
+                                <tr>
+                                    <td><h:outputLabel for="phone" value="#{webContentController.findSingleText('phone_number')}" /></td>
+                                    <td>
+                                        <h:inputText id="phone"
+                                                     value="#{patientController.password}" />
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
                     </h:form>
+                    <ul class="actions">
+                        <li>
+                            <h:form >
+                                <h:commandLink 
+                                    value="#{webContentController.findSingleText('reserver_booking')}"
+                                    class="button">
+                                    Reserve
+                                </h:commandLink>
+                            </h:form>
+
+                        </li>
+                    </ul>
                 </div>
             </section>
+
 
 
 
             <!-- reports -->
-            <section id="reports" class="wrapper style2 spotlights">
-                <div class="content">
+            <h:form id="labReportsForm">
+                <section id="reports" class="wrapper style2 spotlights">
+
                     <div class="inner">
-                        <h2>View Lab Reports</h2>
-                        <h:form id="labReportsForm">
-                            <div class="field">
-                                <label for="receiptNo">Receipt Number</label>
-                                <input type="text" name="receiptNo" id="receiptNo" />
-                            </div>
-                            <div class="field">
-                                <label for="phoneNo">Phone Number</label>
-                                <input type="text" name="phoneNo" id="phoneNo" />
-                            </div>
-                            <div class="actions">
-                                <p:commandButton value="View Reports" action="#{reportBean.viewReports}" styleClass="btn btn-primary" />
-                            </div>
-                        </h:form>
+                        <h2>#{webContentController.findSingleText('view_lab_reports')}</h2>
+                        <p><h:outputText
+                                escape="false"
+                                value="#{webContentController.findSingleText('view_lab_report_details')}">
+                            </h:outputText>
+                        </p>
+
+                        <div class="table-wrapper">
+                            <table >
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{webContentController.findSingleText('receipt_number')}" ></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:inputText ></h:inputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <h:outputLabel value="#{webContentController.findSingleText('phone_number')}" ></h:outputLabel>
+                                    </td>
+                                    <td>
+                                        <h:inputText ></h:inputText>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <ul class="actions">
+                            <li>
+                                <h:form >
+                                    <h:commandLink 
+                                        class="button">
+                                        #{webContentController.findSingleText('reserve_booking')}"
+                                    </h:commandLink>
+                                </h:form>
+
+                            </li>
+                        </ul>
                     </div>
-                </div>
-            </section>
+
+                </section>
+            </h:form>
 
 
             <!-- portal -->
             <section id="portal" class="wrapper style3 fade-up">
                 <div class="inner">
-                    <h2>What we do</h2>
-                    <p>Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.</p>
+                    <h2>#{webContentController.findSingleText('portals')}</h2>
+                    <p>
+                        <h:outputText 
+                            escape="false"
+                            value="#{webContentController.findSingleText('portal_details')}" >
+                        </h:outputText>
+                    </p>
                     <div class="features">
                         <section>
                             <span class="icon solid major fa-code"></span>
-                            <h3>Lorem ipsum amet</h3>
-                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            <h3>#{webContentController.findSingleText('portal1')}</h3>
+                            <p>
+                                <h:outputText 
+                                    escape="false"
+                                    value="#{webContentController.findSingleText('portal1_details')}" >
+                                </h:outputText>
+                            </p>
                         </section>
                         <section>
-                            <span class="icon solid major fa-lock"></span>
-                            <h3>Aliquam sed nullam</h3>
-                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                        </section>
-                        <section>
-                            <span class="icon solid major fa-cog"></span>
-                            <h3>Sed erat ullam corper</h3>
-                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                        </section>
-                        <section>
-                            <span class="icon solid major fa-desktop"></span>
-                            <h3>Veroeros quis lorem</h3>
-                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                        </section>
-                        <section>
-                            <span class="icon solid major fa-link"></span>
-                            <h3>Urna quis bibendum</h3>
-                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
-                        </section>
-                        <section>
-                            <span class="icon major fa-gem"></span>
-                            <h3>Aliquam urna dapibus</h3>
-                            <p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+                            <span class="icon solid major fa-code"></span>
+                            <h3>#{webContentController.findSingleText('portal2')}</h3>
+                            <p>
+                                <h:outputText 
+                                    escape="false"
+                                    value="#{webContentController.findSingleText('portal2_details')}" >
+                                </h:outputText>
+                            </p>
                         </section>
                     </div>
                     <ul class="actions">

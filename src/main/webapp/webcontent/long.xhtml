@@ -19,7 +19,8 @@
                             <h:inputText class="form form-control" id="txtName" value="#{webContentController.selected.name}"></h:inputText>
 
                             <h:outputLabel class="form-label" for="txtContents"  value="Contents" ></h:outputLabel>
-                            <h:inputTextarea  class="form form-control" id="txtContents" value="#{webContentController.selected.longContext}"></h:inputTextarea>
+                            <p:textEditor secure="false" class="form form-control" id="txtContents" value="#{webContentController.selected.longContext}">
+                            </p:textEditor>
 
                             <h:outputLabel class="form-label" for="cmbLang"  value="Contents" ></h:outputLabel>
                             <h:selectOneMenu id="cmbLang" class="form form-control" value="#{webContentController.selected.webLanguage}" >

@@ -187,7 +187,7 @@ public class ClinicalFindingItemController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItemController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItem.class.getName());
             }
         }
     }
@@ -230,7 +230,7 @@ public class ClinicalFindingItemController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItemController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItem.class.getName());
             }
         }
     }
