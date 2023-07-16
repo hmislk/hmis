@@ -18,9 +18,9 @@
                                  value="#{webContentController.items}" 
                                  var="u"
                                  paginator="true" rows="10" 
-                                 lazy="true" rowsPerPageTemplate="5,10,15">
+                                 rowsPerPageTemplate="5,10,15">
 
-                        <p:column headerText="Name" filterBy="#{u.name}" filterMatchMode="contains">
+                        <p:column headerText="Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">
                             <h:outputText value="#{u.name}"/>
                         </p:column>
 

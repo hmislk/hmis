@@ -24,6 +24,7 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.Department;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
+import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
@@ -186,7 +187,7 @@ public class PatientEncounterController implements Serializable {
     private List<PatientInvestigation> investigations;
     private String selectText = "";
 
-    private ClinicalFindingItem diagnosis;
+    private Item diagnosis;
     private String diagnosisComments;
     private Investigation investigation;
 
@@ -611,7 +612,7 @@ public class PatientEncounterController implements Serializable {
         }
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
-        dx.setClinicalFindingItem(diagnosis);
+//        dx.setClinicalFindingItem(diagnosis);
         dx.setClinicalFindingValueType(ClinicalFindingValueType.VisitDiagnosis);
         dx.setEncounter(current);
         dx.setPerson(current.getPatient().getPerson());
@@ -639,7 +640,7 @@ public class PatientEncounterController implements Serializable {
         }
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
-        dx.setClinicalFindingItem(diagnosis);
+//        dx.setClinicalFindingItem(diagnosis);
         dx.setEncounter(current);
         dx.setPerson(current.getPatient().getPerson());
         dx.setStringValue(diagnosis.getName());
@@ -1461,11 +1462,11 @@ public class PatientEncounterController implements Serializable {
         encounterPrescreptions = fillEncounterPrescreptions(current);
     }
 
-    public ClinicalFindingItem getDiagnosis() {
+    public Item getDiagnosis() {
         return diagnosis;
     }
 
-    public void setDiagnosis(ClinicalFindingItem diagnosis) {
+    public void setDiagnosis(Item diagnosis) {
         this.diagnosis = diagnosis;
     }
 
