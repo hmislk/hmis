@@ -117,10 +117,10 @@
             <version>1.1</version>
         </dependency>
         <dependency>
-            <groupId>org.primefaces</groupId>  
-            <artifactId>primefaces</artifactId>  
+            <groupId>org.primefaces</groupId>
+            <artifactId>primefaces</artifactId>
             <version>12.0.0</version>
-            <type>jar</type>
+            <classifier>jakarta</classifier>
         </dependency>  
     
         <dependency>
