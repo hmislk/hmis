@@ -991,18 +991,12 @@ public class PatientController implements Serializable {
         String sql;
         HashMap hm = new HashMap();
         sql = "select p from Patient p where p.retired=false "
-                + " and ( (p.person.name) like  :q "
+                + " and ((p.person.name) like  :q "
                 + " or (p.code) like :q "
                 + " or (p.person.nic) like :q "
                 + " or (p.person.mobile) like :q "
                 + " or (p.person.phone) like :q "
-                + " or (p.person.address) like :q "
                 + " or (p.phn) like :q) ";
-
-        if (getReportKeyWord().isAdditionalDetails()) {
-            sql += " and p.code is not null ";
-        }
-
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
         patientList = getFacade().findBySQL(sql, hm, 20);

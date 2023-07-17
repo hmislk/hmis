@@ -14,32 +14,66 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <p:panel rendered="#{cc.attrs.patient!=null}" header="Searched Patient Details">
-            <p:panelGrid columns="2" >
-                <p:outputLabel value="Name" ></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}, " />
-                
-                <p:outputLabel value="Sex" ></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.person.sex}" />
-                
-                <p:outputLabel value="Age" ></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.age}" />
-                
-                <p:outputLabel value="Phone" ></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.person.phone}" />
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-2">
+                        <p:outputLabel value="Name" ></p:outputLabel>
+                    </div>
+                    <div class="col-md-10">
+                        <h:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}, " />
+                    </div>
 
-                <p:outputLabel value="PHN" rendered="#{cc.attrs.patient.phn ne ''}"></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.phn}"  rendered="#{cc.attrs.patient.phn ne ''}"/>
-                
-                 <p:outputLabel value="Code" rendered="#{cc.attrs.patient.code ne ''}"></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.code}"  rendered="#{cc.attrs.patient.code ne ''}"/>
-                
-                <h:outputLabel value="Membership" rendered="#{cc.attrs.patient.person.membershipScheme ne null}" /> 
-                <h:outputLabel value="#{cc.attrs.patient.person.membershipScheme.name}" rendered="#{cc.attrs.patient.person.membershipScheme ne null}" /> 
-                
-               
-                <p:outputLabel value="Address" ></p:outputLabel>
-                <h:outputLabel value="#{cc.attrs.patient.person.address}" />
-            </p:panelGrid>
+                    <div class="col-md-2">
+                        <p:outputLabel value="Sex" ></p:outputLabel>
+                    </div>
+                    <div class="col-md-10">
+                        <h:outputLabel value="#{cc.attrs.patient.person.sex}" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <p:outputLabel value="Age" ></p:outputLabel>
+                    </div>
+                    <div class="col-md-10">
+                        <h:outputLabel value="#{cc.attrs.patient.age}" />
+                    </div>
+
+                    <div class="col-md-2">
+                        <p:outputLabel value="Phone" ></p:outputLabel>
+                    </div>
+                    <div class="col-md-10">
+                        <h:outputLabel value="#{cc.attrs.patient.person.phone}" />
+                    </div>
+
+                    <div class="col-md-2" rendered="#{cc.attrs.patient.phn ne ''}">
+                        <p:outputLabel value="PHN"></p:outputLabel>
+                    </div>
+                    <div class="col-md-10" rendered="#{cc.attrs.patient.phn ne ''}">
+                        <h:outputLabel value="#{cc.attrs.patient.phn}"/>
+                    </div>
+
+                    <div class="col-md-2" rendered="#{cc.attrs.patient.code ne ''}">
+                        <p:outputLabel value="Code"></p:outputLabel>
+                    </div>
+                    <div class="col-md-10" rendered="#{cc.attrs.patient.code ne ''}">
+                        <h:outputLabel value="#{cc.attrs.patient.code}"/>
+                    </div>
+
+                    <div class="col-md-2" rendered="#{cc.attrs.patient.person.membershipScheme ne null}">
+                        <h:outputLabel value="Membership" /> 
+                    </div>
+                    <div class="col-md-10" rendered="#{cc.attrs.patient.person.membershipScheme ne null}">
+                        <h:outputLabel value="#{cc.attrs.patient.person.membershipScheme.name}" /> 
+                    </div>
+
+                    <div class="col-md-2">
+                        <p:outputLabel value="Address" ></p:outputLabel>
+                    </div>
+                    <div class="col-md-10">
+                        <h:outputLabel value="#{cc.attrs.patient.person.address}" />
+                    </div>
+                </div>
+            </div>
         </p:panel>
+
     </cc:implementation>
 </html>
