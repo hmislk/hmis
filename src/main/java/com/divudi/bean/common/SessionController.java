@@ -209,40 +209,60 @@ public class SessionController implements Serializable, HttpSessionListener {
         return landingPage;
     }
 
+//    public void redirectToLandingPage() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//
+//        String applicationName = servletContext.getServletContextName();
+//
+//        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+//        if (facesServletMapping == null) {
+//            facesServletMapping = "/faces/"; // Default value
+//        }
+//        String redirectPath;
+//        redirectPath = applicationName + facesServletMapping;
+//        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath += "index1.xhtml";
+//        } else {
+//            redirectPath += "themes/";
+//            redirectPath += getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(redirectPath);
+//
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
+//
+//    public void redirectToLandingPage1() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        String redirectPath;
+//        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath = "/index1.xhtml";
+//        } else {
+//            redirectPath = "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
+
     public void redirectToLandingPage() {
         FacesContext context = FacesContext.getCurrentInstance();
-
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
-        String applicationName = servletContext.getServletContextName();
-
         String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
         if (facesServletMapping == null) {
             facesServletMapping = "/faces/"; // Default value
         }
         String redirectPath;
-        redirectPath = applicationName + facesServletMapping;
         if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
-            redirectPath += "index.xhtml";
+            redirectPath = facesServletMapping + "index1.xhtml";
         } else {
-            redirectPath += "themes/";
-            redirectPath += getApplicationPreference().getThemeName() + "/index.xhtml";
-        }
-        try {
-            context.getExternalContext().redirect(redirectPath);
-
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
-    }
-
-    public void redirectToLandingPage1() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        String redirectPath;
-        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
-            redirectPath = "/index.xhtml";
-        } else {
-            redirectPath = "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+            redirectPath = facesServletMapping + "themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
         }
         try {
             context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
@@ -251,45 +271,27 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
     }
 
-    public void redirectToLandingPage2() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
-        if (facesServletMapping == null) {
-            facesServletMapping = "/faces"; // Default value
-        }
-        String redirectPath;
-        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
-            redirectPath = facesServletMapping + "/index.xhtml";
-        } else {
-            redirectPath = facesServletMapping + "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
-        }
-        try {
-            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
-    }
-
-    public void redirectToLandingPage3() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
-        if (facesServletMapping == null) {
-            facesServletMapping = "/faces"; // Default value
-        }
-        String redirectPath;
-        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
-            redirectPath = facesServletMapping + "/index.xhtml";
-        } else {
-            redirectPath = facesServletMapping + "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
-        }
-        try {
-            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
-    }
+//    public void redirectToLandingPage3() {
+//        FacesContext context = FacesContext.getCurrentInstance();
+//        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+//        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+//        System.out.println("facesServletMapping = " + facesServletMapping);
+//        if (facesServletMapping == null) {
+//            facesServletMapping = "/faces/"; // Default value
+//        }
+//        System.out.println("facesServletMapping = " + facesServletMapping);
+//        String redirectPath;
+//        if (getApplicationPreference().getThemeName() == null || !getApplicationPreference().getThemeName().trim().equals("")) {
+//            redirectPath = facesServletMapping + "index1.xhtml";
+//        } else {
+//            redirectPath = facesServletMapping + "themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+//        }
+//        try {
+//            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
+//    }
 
     public Date currentTime() {
         return new Date();
