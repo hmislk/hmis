@@ -20,11 +20,12 @@
                          style="height: 600px;">
                     <h:panelGrid columns="2" >
 
-                        <h:panelGroup>
+                       
 
                             <h:form>
-
-                                <p:panel id="panelSearch" header="Search Patients" >
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p:panel id="panelSearch" header="Search Patients" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Search Patients" />
                                         <p:commandButton id="btnAddPt" ajax="false"
@@ -90,17 +91,10 @@
                                     </h:panelGrid>
 
                                 </p:panel>
-
-
-                            </h:form>
-
-
-
-                        </h:panelGroup>
-
-                        <h:form>
-
-                            <p:panel id="panelDetails">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <p:panel id="panelDetails" style="width:800px">
                                 <f:facet name="header" >
                                     <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
@@ -265,6 +259,15 @@
 
 
                             </p:panel>
+                                    </div>
+                                </div>
+
+                                
+
+
+                            
+
+                            
 
                         </h:form>
 
