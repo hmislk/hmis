@@ -5,15 +5,6 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
     <h:head class="">
-        <ui:fragment rendered="#{!sessionController.logged}">
-            <ui:fragment rendered="#{applicationController.hasAwebsiteAsFrontEnd}">
-                <ui:fragment rendered="#{!sessionController.directedToLandingPage}">
-
-                    <meta http-equiv="refresh" content="0;url=#{sessionController.landingPage}" />
-
-                </ui:fragment>
-            </ui:fragment>
-        </ui:fragment>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
         <ui:insert name="title"   >
