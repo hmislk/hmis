@@ -75,11 +75,9 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-
-
-                        <h:panelGrid columns="2" >
-
-                            <h:panelGrid columns="1" >
+                        <div class="row">
+                            <div class="col-md-7">
+                                <h:panelGrid columns="1" >
 
                                 <p:panel  style="background-color: grey;" >
                                     <h:panelGroup id="panelPatient" >
@@ -299,9 +297,9 @@
                                 </h:panelGroup>
 
                             </h:panelGrid>
-
-
-                            <h:panelGrid columns="1" >
+                            </div>
+                            <div class="col-md-5">
+                                <h:panelGrid columns="1" >
 
                                 <p:dialog id="panDoc" header="Add New Doctor" widgetVar="dlg" resizable="false">  
                                     <h:panelGrid columns="2" style="margin-bottom:10px">  
@@ -546,9 +544,10 @@
 
 
                             </h:panelGrid>
+                            </div>
+                        </div>
 
-
-                        </h:panelGrid>
+                       
                     </p:panel>
                 </h:panelGroup>
 
