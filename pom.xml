@@ -120,7 +120,7 @@
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>12.0.0</version>
-            <classifier>jakarta</classifier>
+            <type>jar</type>
         </dependency>  
     
         <dependency>

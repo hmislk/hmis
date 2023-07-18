@@ -35,6 +35,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.facade.util.JsfUtil;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -149,7 +150,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     // A field to store the landing page
     private String landingPage;
-    private boolean directedToLandingPage = false;
 
     public String navigateToWebHomePage() {
         String webhome = "";
@@ -162,7 +162,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         return webhome;
     }
 
-    public String getLandingPage() {
+    public String getLandingPageOld() {
         if (landingPage == null) {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
@@ -194,8 +194,101 @@ public class SessionController implements Serializable, HttpSessionListener {
             System.out.println("3 landingPage = " + landingPage);
 
         }
-        directedToLandingPage = true;
         return landingPage;
+    }
+
+    public String getLandingPage() {
+        if (landingPage == null) {
+            if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+                landingPage = "index";
+            } else {
+                landingPage = "themes/";
+                landingPage += getApplicationPreference().getThemeName() + "/index";
+            }
+        }
+        return landingPage;
+    }
+
+    public void redirectToLandingPage() {
+        FacesContext context = FacesContext.getCurrentInstance();
+
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String applicationName = servletContext.getServletContextName();
+
+        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+        if (facesServletMapping == null) {
+            facesServletMapping = "/faces/"; // Default value
+        }
+        String redirectPath;
+        redirectPath = applicationName + facesServletMapping;
+        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+            redirectPath += "index.xhtml";
+        } else {
+            redirectPath += "themes/";
+            redirectPath += getApplicationPreference().getThemeName() + "/index.xhtml";
+        }
+        try {
+            context.getExternalContext().redirect(redirectPath);
+
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
+    }
+
+    public void redirectToLandingPage1() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        String redirectPath;
+        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+            redirectPath = "/index.xhtml";
+        } else {
+            redirectPath = "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+        }
+        try {
+            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
+    }
+
+    public void redirectToLandingPage2() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+        if (facesServletMapping == null) {
+            facesServletMapping = "/faces"; // Default value
+        }
+        String redirectPath;
+        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+            redirectPath = facesServletMapping + "/index.xhtml";
+        } else {
+            redirectPath = facesServletMapping + "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+        }
+        try {
+            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
+    }
+
+    public void redirectToLandingPage3() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+        String facesServletMapping = servletContext.getInitParameter("FacesServletMapping");
+        if (facesServletMapping == null) {
+            facesServletMapping = "/faces"; // Default value
+        }
+        String redirectPath;
+        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
+            redirectPath = facesServletMapping + "/index.xhtml";
+        } else {
+            redirectPath = facesServletMapping + "/themes/" + getApplicationPreference().getThemeName() + "/index.xhtml";
+        }
+        try {
+            context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
     }
 
     public Date currentTime() {
@@ -1692,14 +1785,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggableInstitutions = fillLoggableInstitutions();
         }
         return loggableInstitutions;
-    }
-
-    public boolean isDirectedToLandingPage() {
-        return directedToLandingPage;
-    }
-
-    public void setDirectedToLandingPage(boolean directedToLandingPage) {
-        this.directedToLandingPage = directedToLandingPage;
     }
 
 }
