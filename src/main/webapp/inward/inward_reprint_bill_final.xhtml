@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill"     
+      xmlns:bi="http://java.sun.com/jsf/composite/inward/bill" 
       xmlns:in="http://java.sun.com/jsf/composite/inward" >
 
     <h:body>
@@ -142,8 +142,8 @@
 
                                         <h:outputLabel value="Phone" >
                                         </h:outputLabel>
-                                        <p:inputMask mask="999-9999999" disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.phone}" >
-                                        </p:inputMask>
+                                        <p:inputText  disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.phone}" >
+                                        </p:inputText>
                                         <h:outputLabel value="Patient ​Address" ></h:outputLabel>
                                         <h:inputText disabled="#{!webUserController.hasPrivilege('InwardFinalBillReportEdit')}" value="#{inwardSearch.bill.patient.person.address}" ></h:inputText>
 
@@ -219,12 +219,12 @@
                         <p:spacer height="700" />
 
                         <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
-                            <bi:finalBill  hosCopy="true"     showProfessional="true"                                  
+                            <bi:finalBill  hosCopy="true" showProfessional="true"                              
                                            bill="#{inwardSearch.bill}"/>
                         </h:panelGroup>
 
                         <h:panelGroup id="claimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
-                            <bi:finalBill duplicate="true"   showProfessional="true"                                
+                            <bi:finalBill duplicate="true"   showProfessional="true"                            
                                           bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 
@@ -241,7 +241,7 @@
                         </h:panelGroup>
 
                         <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                
-                            <bi:finalBill duplicate="true"                                   
+                            <bi:finalBill duplicate="true"                               
                                           bill="#{inwardSearch.bill}" />
                         </h:panelGroup>
 

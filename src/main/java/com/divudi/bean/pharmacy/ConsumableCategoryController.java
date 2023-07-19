@@ -137,7 +137,7 @@ public class ConsumableCategoryController implements Serializable {
         sql = "select c from Category c"
                 + "  where c.retired=false"
                 + " and (type(c)= :parm ) "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
 
         temMap.put("parm", ConsumableCategory.class);
@@ -164,7 +164,7 @@ public class ConsumableCategoryController implements Serializable {
                         + " and c.code=:code ";
 
                 m.put("code", getSelected().getCode());
-                List<ConsumableCategory> list = getFacade().findBySQL(sql, m);
+                List<ConsumableCategory> list = getFacade().findByJpql(sql, m);
                 if (list.size() > 0) {
                     JsfUtil.addErrorMessage("Category Code " + getSelected().getCode() + " is alredy exsist.");
                     getSelected().setCode("");

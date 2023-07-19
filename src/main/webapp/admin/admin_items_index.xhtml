@@ -51,6 +51,12 @@
 
                                 </h:panelGrid>
                             </p:tab>
+                            <p:tab title="Reports">
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton   class="btn btn-primary w-100 my-2"  ajax="false" value="Item List"
+                                                       action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
+                                </h:panelGrid>
+                            </p:tab>
                             <p:tab title="Manage Metadata">
                                 <h:panelGrid columns="1" >
                                     <p:commandButton   class="btn btn-primary w-100 my-2"  ajax="false" value="Relationships" action="relationships" ></p:commandButton>

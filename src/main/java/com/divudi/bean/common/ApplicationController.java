@@ -13,7 +13,6 @@ import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.UserPreferenceFacade;
-import com.divudi.facade.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -38,7 +37,7 @@ public class ApplicationController {
     @EJB
     private EmailManagerEjb eejb;
     @EJB
-    UserPreferenceFacade userPreferenceFacade;
+    private UserPreferenceFacade userPreferenceFacade;
 
     private UserPreference applicationPreference;
 
@@ -57,10 +56,12 @@ public class ApplicationController {
     private String body;
 
     private boolean hasAwebsiteAsFrontEnd = false;
+    private String themeName;
 
     private void loadApplicationPreferances() {
         String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
         applicationPreference = userPreferenceFacade.findFirstByJpql(sql);
+        System.out.println("applicationPreference = " + applicationPreference);
         if (applicationPreference == null) {
             applicationPreference = new UserPreference();
             applicationPreference.setWebUser(null);
@@ -70,6 +71,8 @@ public class ApplicationController {
         }
     }
 
+    
+    
     public Date getStartTime() {
         return startTime;
     }
@@ -304,6 +307,25 @@ public class ApplicationController {
         this.applicationPreference = applicationPreference;
     }
 
+    public UserPreferenceFacade getUserPreferenceFacade() {
+        return userPreferenceFacade;
+    }
+
+    public void setUserPreferenceFacade(UserPreferenceFacade userPreferenceFacade) {
+        this.userPreferenceFacade = userPreferenceFacade;
+    }
+
+    public String getThemeName() {
+        String w = getApplicationPreference().getThemeName();
+        themeName=w;
+        return themeName;
+    }
+
+    public void setThemeName(String themeName) {
+        getApplicationPreference().setThemeName(themeName);
+        this.themeName = themeName;
+    }
+
     class InstitutionLastPhn {
 
         Institution institution;
@@ -336,5 +358,7 @@ public class ApplicationController {
     public void setInsPhns(List<InstitutionLastPhn> insPhns) {
         this.insPhns = insPhns;
     }
+    
+    
 
 }

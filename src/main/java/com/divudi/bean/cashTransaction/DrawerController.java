@@ -51,7 +51,7 @@ public class DrawerController implements Serializable {
                 + " where c.retired=false "
                 + " order by c.name";
 
-        drawers = getFacade().findBySQL(sql, hm);
+        drawers = getFacade().findByJpql(sql, hm);
     }
 
     public List<Drawer> getDrawers() {
@@ -71,7 +71,7 @@ public class DrawerController implements Serializable {
                 + " and c.name like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findBySQL(sql, hm);
+        list = getFacade().findByJpql(sql, hm);
 
         if (list == null) {
             list = new ArrayList<>();

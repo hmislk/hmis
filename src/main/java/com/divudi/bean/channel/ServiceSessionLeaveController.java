@@ -77,7 +77,7 @@ public class ServiceSessionLeaveController implements Serializable {
             sql = "select p from Staff p where p.retired=false and p.speciality=:sp order by p.person.name";
         }
 
-        suggestions = getStaffFacade().findBySQL(sql, m);
+        suggestions = getStaffFacade().findByJpql(sql, m);
 
 
         return suggestions;

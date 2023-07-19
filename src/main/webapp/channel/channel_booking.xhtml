@@ -357,8 +357,8 @@
                                     </p:inputText>
 
                                     <h:outputLabel value="Phone"/>
-                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
-                                    </p:inputMask>
+                                    <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
+                                    </p:inputText>
                                     <h:outputLabel value="Sex"/>
                                     <p:selectOneMenu id="txtNewSex"  value="#{channelBillController.newPatient.person.sex}" style="width: 200px;">
                                         <f:selectItem itemLabel="Select Sex"/>
@@ -986,8 +986,8 @@
                                     <p:outputLabel value="Name"/>
                                     <p:inputText autocomplete="off" value="#{bookingController.selectedBillSession.bill.patient.person.name}" />
                                     <h:outputLabel value="Phone"/>
-                                    <p:inputMask mask="999-9999999" autocomplete="off" maxlength="11" value="#{bookingController.selectedBillSession.bill.patient.person.phone}">
-                                    </p:inputMask>
+                                    <p:inputText  autocomplete="off" maxlength="11" value="#{bookingController.selectedBillSession.bill.patient.person.phone}">
+                                    </p:inputText>
                                     <p:outputLabel value="Current Serial No"/>
                                     <ui:repeat value="#{bookingController.selectedBillSession.bill.billItems}" var="bis" >
                                         <p:outputLabel value="#{bis.billSession.serialNo}">                                        
@@ -1023,7 +1023,7 @@
                                     </p:inputText>
                                     <p:inputText id="txtBsSearch2" value="#{channelSearchController.txtSearchRef}" placeholder="Agent Ref. No" >
                                     </p:inputText>
-                                    <p:inputMask id="txtBsSearch3" value="#{channelSearchController.txtSearchPhone}" mask="999-9999999" />
+                                    <p:inputText id="txtBsSearch3" value="#{channelSearchController.txtSearchPhone}"  />
                                     <h:outputLabel />
                                     <p:commandButton id="btnBsSearch" 
                                                      value="Search" action="#{channelSearchController.searchForBillSessions}" 

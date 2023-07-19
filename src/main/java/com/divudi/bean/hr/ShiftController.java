@@ -94,7 +94,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Shift c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " and (c.hideShift=false or c.hideShift is null) ";
 
         if (getCurrentRoster() != null) {
@@ -104,7 +104,7 @@ public class ShiftController implements Serializable {
 
         sql += " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        shifts = getFacade().findBySQL(sql, hm);
+        shifts = getFacade().findByJpql(sql, hm);
 
         return shifts;
     }
@@ -115,7 +115,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from Shift c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q ";
+                + " and (c.name) like :q ";
 
         if (getCurrentRoster() != null) {
             sql += " and c.roster=:rs";
@@ -124,7 +124,7 @@ public class ShiftController implements Serializable {
 
         sql += " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        shifts = getFacade().findBySQL(sql, hm);
+        shifts = getFacade().findByJpql(sql, hm);
 
         return shifts;
     }
@@ -247,7 +247,7 @@ public class ShiftController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("rs", getCurrentRoster());
 
-        shiftList = getFacade().findBySQL(sql, hm);
+        shiftList = getFacade().findByJpql(sql, hm);
     }
 
     public void createShiftListReport() {

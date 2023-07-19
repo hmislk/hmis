@@ -43,7 +43,7 @@ public class TheatreController implements Serializable {
     String selectText = "";
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Theatre and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Theatre and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

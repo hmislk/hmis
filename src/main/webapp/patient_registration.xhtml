@@ -20,11 +20,12 @@
                          style="height: 600px;">
                     <h:panelGrid columns="2" >
 
-                        <h:panelGroup>
+                       
 
                             <h:form>
-
-                                <p:panel id="panelSearch" header="Search Patients" >
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p:panel id="panelSearch" header="Search Patients" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Search Patients" />
                                         <p:commandButton id="btnAddPt" ajax="false"
@@ -90,17 +91,10 @@
                                     </h:panelGrid>
 
                                 </p:panel>
-
-
-                            </h:form>
-
-
-
-                        </h:panelGroup>
-
-                        <h:form>
-
-                            <p:panel id="panelDetails">
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <p:panel id="panelDetails" style="width:800px">
                                 <f:facet name="header" >
                                     <!--                                    <h:outputLabel value="Details of Selected Patient" />-->
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" />
@@ -191,11 +185,11 @@
                                                                 itemValue="#{npt}">
                                                 </p:autoComplete>
                                                 <h:outputLabel value="Phone"/>
-                                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" style="width: 280px;" value="#{patientController.current.person.phone}">
-                                                </p:inputMask>
+                                                <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" style="width: 280px;" value="#{patientController.current.person.phone}">
+                                                </p:inputText>
                                                 <h:outputLabel value="NIC" />
                                                 <p:inputText maxlength="12" value="#{patientController.current.person.nic}" style="width: 280px;"/>
-                                                <!--<p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />-->
+                                                <!--<p:inputText  value="#{patientController.current.person.nic}" />-->
                                                 <h:outputLabel value="Email"/>
                                                 <p:inputText autocomplete="off" value="#{patientController.current.person.email}" style="width: 280px;"/>
                                                 <h:outputLabel value="P/F/M No "/>
@@ -265,6 +259,15 @@
 
 
                             </p:panel>
+                                    </div>
+                                </div>
+
+                                
+
+
+                            
+
+                            
 
                         </h:form>
 

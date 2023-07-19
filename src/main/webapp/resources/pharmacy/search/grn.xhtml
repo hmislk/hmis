@@ -29,6 +29,11 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
             
         </h:panelGrid>
+        
+          
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tblBills" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
 
         <p:spacer height="30"/>
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >

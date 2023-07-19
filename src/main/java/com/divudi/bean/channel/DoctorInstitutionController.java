@@ -49,10 +49,10 @@ public class DoctorInstitutionController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from DoctorInstitution c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findBySQL(sql, hm);
+        list = getFacade().findByJpql(sql, hm);
 
         if (list == null) {
             list = new ArrayList<>();

@@ -93,7 +93,7 @@ public class MetadataSuperCategoryController implements Serializable {
         jpql = "select m from MetadataCategory m where m.parentCategory=:pc order by m.name";
         Map m = new HashMap();
         m.put("pc", current);
-        return categoryFacade.findBySQL(jpql, m);
+        return categoryFacade.findByJpql(jpql, m);
     }
 
     public Category getCategory() {
@@ -197,8 +197,8 @@ public class MetadataSuperCategoryController implements Serializable {
         String temSql;
         HashMap m = new HashMap();
         m.put("n", "%" + qry.toUpperCase() + "%" );
-        temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and upper(i.name) like :n order by i.name";
-        temLst = getFacade().findBySQL(temSql,m);
+        temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false and (i.name) like :n order by i.name";
+        temLst = getFacade().findByJpql(temSql,m);
         return temLst;
     }
 
@@ -210,7 +210,7 @@ public class MetadataSuperCategoryController implements Serializable {
             Map m = new HashMap();
             m.put("cat", cat);
             //////// // System.out.println("common report cat sql is " + temSql + " and " + m.toString());
-            cis = getFacade().findBySQL(temSql, m);
+            cis = getFacade().findByJpql(temSql, m);
         } else {
             cis = new ArrayList<>();
         }

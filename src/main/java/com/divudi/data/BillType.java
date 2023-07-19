@@ -50,6 +50,7 @@ public enum BillType {
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,
+    PharmacySaleWithoutStock,
     PharmacyWholeSale,
     @Deprecated
     SandryGrn,

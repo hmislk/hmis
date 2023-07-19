@@ -23,7 +23,7 @@
                     <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
 
-                    <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
+                    <p:panel rendered="#{!pharmacySaleController.billPreview}">
                         <h:panelGroup id="panelError" >
                             <h:panelGroup  
                                 rendered="#{pharmacySaleController.errorMessage ne null}"
@@ -31,17 +31,19 @@
                                 <p:outputLabel value="#{pharmacySaleController.errorMessage}" ></p:outputLabel>
                             </h:panelGroup>
                         </h:panelGroup>
+                        
                         <p:panel>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 2" action="pharmacy_bill_retail_sale_1" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 3" action="pharmacy_bill_retail_sale_2" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
                             <p:commandButton value="Sale 4" action="pharmacy_bill_retail_sale_3" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
                         </p:panel>
-                        <h:panelGrid id="sale" columns="2" class="alignTop" >
+                        <h:panelGrid id="sale" columns="4" class="alignTop" >
 
-
-                            <p:panel >
-                                <f:facet name="header" >
+                            <div class="row">
+                                <div class="col-md-9" style="margin-top: 0px">
+                                    <p:panel style="width: 900px; height: 1035px">
+                                <f:facet name="header">
                                     <h:outputLabel value="Pharmacy Retail Bill(Sale 1)" />
                                 </f:facet>
                                 <h:panelGrid columns="1" >
@@ -279,11 +281,9 @@
                                 </p:panel> 
 
                             </p:panel>
-
-
-
-
-                            <p:panel>
+                                </div>
+                                <div class="col-md-3">
+                                    <p:panel style="width: 590px">
 
 
                                 <f:facet name="header" >
@@ -364,7 +364,7 @@
                                 </p:panelGrid>
 
 
-                                <p:panel header="Bill Details" id="pBillDetails"  >
+                                        <p:panel header="Bill Details" id="pBillDetails"  style="width: 600px">
                                     <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel id="total" value="#{pharmacySaleController.preBill.total}" >
@@ -391,7 +391,7 @@
 
                                 </p:panel>
 
-                                <p:panel header="Client Detail"> 
+                                        <p:panel header="Client Detail" style="width:600px"> 
                                     <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacySaleController.patientSearchTab}" >
                                         <p:ajax event="tabChange"  process="@this"
                                                 update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
@@ -516,6 +516,15 @@
 
 
                             </p:panel>
+                                </div>
+                                
+                            </div>
+                            
+
+
+
+
+                            
 
                         </h:panelGrid>
                     </p:panel>

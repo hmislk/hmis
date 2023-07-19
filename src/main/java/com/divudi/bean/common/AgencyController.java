@@ -58,7 +58,7 @@ public class AgencyController implements Serializable {
                 + "  p.retired=false and "
                 + " p.institutionType=:it "
                 + " order by p.name";
-        suggestions = getFacade().findBySQL(sql, m);
+        suggestions = getFacade().findByJpql(sql, m);
 
         Collections.shuffle(suggestions);
         List<Institution> b1s = suggestions.subList(0, suggestions.size() / 2);
@@ -106,8 +106,8 @@ public class AgencyController implements Serializable {
             sql = "select p from Institution p where"
                     + "  p.retired=false and "
                     + " p.institutionType=:it "
-                    + " and ((upper(p.name) like '%" + query.toUpperCase() + "%') "
-                    + " or (upper(p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
+                    + " and (((p.name) like '%" + query.toUpperCase() + "%') "
+                    + " or ((p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
                     + " order by p.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql, m, 20);
@@ -116,7 +116,7 @@ public class AgencyController implements Serializable {
     }
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

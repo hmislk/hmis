@@ -68,7 +68,7 @@ public class PharmacyUpdateBulkController implements Serializable {
         m.put("dep", DepartmentType.Store);
         m.put("cat", category);
 
-        amps = getAmpFacade().findBySQL(sql, m);
+        amps = getAmpFacade().findByJpql(sql, m);
     }
 
     public void fillPharmacyDiscountDisAllowedItems() {
@@ -87,7 +87,7 @@ public class PharmacyUpdateBulkController implements Serializable {
 
         m.put("dep", DepartmentType.Store);
 
-        amps = getAmpFacade().findBySQL(sql, m);
+        amps = getAmpFacade().findByJpql(sql, m);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk discount allowed(/faces/pharmacy/pharmacy_update_discount_allowed_bulk.xhtml)");
     }

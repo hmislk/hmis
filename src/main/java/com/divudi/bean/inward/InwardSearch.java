@@ -323,7 +323,7 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT p FROM PatientInvestigation p where p.retired=false and p.billItem=:bi";
         hm.put("bi", bit);
-        PatientInvestigation tmp = getPatientInvestigationFacade().findFirstBySQL(sql, hm);
+        PatientInvestigation tmp = getPatientInvestigationFacade().findFirstByJpql(sql, hm);
 
         if (tmp.getDataEntered()) {
             return true;
@@ -340,7 +340,7 @@ public class InwardSearch implements Serializable {
             HashMap hm = new HashMap();
             String sql = "select c from BillFee c where c.billItem=:b";
             hm.put("b", bi);
-            List<BillFee> rbf = getBillFeeFacade().findBySQL(sql, hm);
+            List<BillFee> rbf = getBillFeeFacade().findByJpql(sql, hm);
             for (BillFee bf : rbf) {
                 if (bf.getFee().getStaff() == null) {
                     p = p + bf.getFeeValue();
@@ -410,7 +410,7 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill=:b ";
         hm.put("b", getBill());
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql, hm);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql, hm);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -784,8 +784,8 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sbt", SurgeryBillType.TimedService);
         hm.put("bil", getBill());
-        ////// // System.out.println("getBillFacade().findFirstBySQL(sql, hm) = " + getBillFacade().findFirstBySQL(sql, hm));
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        ////// // System.out.println("getBillFacade().findFirstByJpql(sql, hm) = " + getBillFacade().findFirstByJpql(sql, hm));
+        Bill b = getBillFacade().findFirstByJpql(sql, hm);
         if (b == null && checkBathcReferenceBillTimeService()) {
             return false;
         } else {
@@ -805,7 +805,7 @@ public class InwardSearch implements Serializable {
         hm.put("sbt", SurgeryBillType.TimedService);
         hm.put("bil", getBill());
 
-        List<Bill> bs = getBillFacade().findBySQL(sql, hm);
+        List<Bill> bs = getBillFacade().findByJpql(sql, hm);
         ////// // System.out.println("bs = " + bs);
         for (Bill b : bs) {
             List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
@@ -1262,7 +1262,7 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill=:b ";
         hm.put("b", getBill());
-        billItems = getBillItemFacede().findBySQL(sql, hm);
+        billItems = getBillItemFacede().findByJpql(sql, hm);
         if (billItems == null) {
             billItems = new ArrayList<>();
         }

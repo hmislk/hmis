@@ -5,6 +5,7 @@
  */
 package com.divudi.ws.lims;
 
+import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SecurityController;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.entity.Bill;
@@ -39,6 +40,13 @@ import javax.ws.rs.Produces;
 import javax.enterprise.context.RequestScoped;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import com.divudi.data.LoginRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import org.hl7.fhir.r5.model.CodeableConcept;
+import org.hl7.fhir.r5.model.OperationOutcome;
 
 /**
  * REST Web Service
@@ -70,6 +78,72 @@ public class Lims {
     public Lims() {
     }
 
+    public OperationOutcome createOperationOutcomeForSuccess(String details) {
+        OperationOutcome outcome = new OperationOutcome();
+        outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.INFORMATION).setCode(OperationOutcome.IssueType.INFORMATIONAL).setDetails(new CodeableConcept().setText(details));
+        return outcome;
+    }
+
+    public OperationOutcome createOperationOutcomeForFailure(String details) {
+        OperationOutcome outcome = new OperationOutcome();
+        outcome.addIssue().setSeverity(OperationOutcome.IssueSeverity.ERROR).setCode(OperationOutcome.IssueType.SECURITY);
+        return outcome;
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/login/mw")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response login(LoginRequest request) {
+        System.out.println("login");
+        String username = request.getUsername();
+        String password = request.getPassword();
+
+        // Validate the username and password, such as checking them against a database or LDAP directory
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+
+        if (requestSendingUser != null) {
+// Return a 200 OK response indicating success
+            return Response.ok().entity(createOperationOutcomeForSuccess("Logged Successfully")).build();
+        } else {
+// Return an OperationOutcome resource indicating failure
+            // Return an OperationOutcome resource indicating failure
+            OperationOutcome outcome = createOperationOutcomeForFailure("Invalid username or password");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(outcome).build();
+        }
+    }
+
+//    @GET
+//    @Path("/samples/login/{username}/{password}")
+//    @Produces("application/json")
+//    public String checkUserCredentails(
+//            @PathParam("username") String username,
+//            @PathParam("password") String password) {
+//        boolean failed = false;
+//        JSONArray array = new JSONArray();
+//        JSONObject jSONObjectOut = new JSONObject();
+//        String errMsg = "";
+//        WebUser requestSendingUser = findRequestSendingUser(username, password);
+//        if (requestSendingUser == null) {
+//            errMsg += "Username / password mismatch.";
+//            failed = true;
+//        }
+//        if (failed) {
+//            JSONObject jSONObject = new JSONObject();
+//            jSONObject.put("result", "error");
+//            jSONObject.put("error", true);
+//            jSONObject.put("errorMessage", errMsg);
+//            jSONObject.put("errorCode", 1);
+//            return jSONObject.toString();
+//        } else {
+//            JSONObject jSONObject = new JSONObject();
+//            jSONObject.put("result", "success");
+//            jSONObject.put("error", false);
+//            jSONObject.put("successMessage", "Successfully Logged.");
+//            jSONObject.put("successCode", -1);
+//            return jSONObject.toString();
+//        }
+//    }
     @GET
     @Path("/samples/login/{username}/{password}")
     @Produces("application/json")
@@ -109,102 +183,92 @@ public class Lims {
             @PathParam("billId") String billId,
             @PathParam("username") String username,
             @PathParam("password") String password) {
-        boolean failed = false;
-        JSONArray array = new JSONArray();
-        JSONObject jSONObjectOut = new JSONObject();
-        String errMsg = "";
-        if (billId == null || billId.trim().equals("")) {
-            failed = true;
-            errMsg += "Bill Number not entered";
-        }
-        WebUser requestSendingUser = findRequestSendingUser(username, password);
-        if (requestSendingUser == null) {
-            errMsg += "Username / password mismatch.";
-            failed = true;
-        }
-        List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
-        if (patientBills == null || patientBills.isEmpty()) {
-            errMsg += "Bill Not Found. Pease reenter}";
-            failed = true;
+
+        // Validation
+        String validationError = validateInput(billId, username, password);
+        if (validationError != null) {
+            return constructErrorJson(1, validationError, billId);
         }
 
+        // Fetch necessary data
+        WebUser requestSendingUser = findRequestSendingUser(username, password);
+        List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
 
+        // Check if necessary data is present
+        if (requestSendingUser == null) {
+            return constructErrorJson(1, "Username / password mismatch.", billId);
+        }
+        if (patientBills == null || patientBills.isEmpty()) {
+            return constructErrorJson(1, "Bill Not Found. Please reenter.", billId);
+        }
         if (ptSamples == null || ptSamples.isEmpty()) {
-            errMsg += "Error in Sample Generation. Pease check investigation settings.}";
-            failed = true;
+            return constructErrorJson(2, "Error in Sample Generation. Please check investigation settings.", billId);
         }
 
-        if (failed) {
-            JSONObject jSONObject = new JSONObject();
-            jSONObject.put("error", true);
-            jSONObject.put("errorMessage", errMsg);
-            jSONObject.put("errorCode", 1);
-            jSONObject.put("ErrorBillId", billId);
-            return jSONObject.toString();
+        // Generate JSON response
+        JSONArray array = new JSONArray();
+        for (PatientSample ps : ptSamples) {
+            array.put(constructPatientSampleJson(ps));
         }
-
-        String tbis = "";
-
-        errMsg += "|message=";
-
-        if (ptSamples == null || ptSamples.isEmpty()) {
-
-            JSONObject jSONObject = new JSONObject();
-            jSONObject.put("error", true);
-            jSONObject.put("errorMessage", "Could not generate Samples for the Bill.");
-            jSONObject.put("errorCode", 2);
-            jSONObject.put("ErrorBillId", billId);
-
-            for (Bill b : patientBills) {
-                List<BillItem> tpiics = b.getBillItems();
-                tbis = "";
-                String temTube = "";
-                for (BillItem i : tpiics) {
-                    tbis += i.getItem().getName() + ", ";
-                    if (i.getItem() instanceof Investigation) {
-                        Investigation temIx = (Investigation) i.getItem();
-                        temTube = temIx.getInvestigationTube().getName();
-                    }
-                }
-                tbis = tbis.substring(0, tbis.length() - 2);
-                tbis += " - " + temTube;
-            }
-            jSONObject.put("tests", tbis);
-            return jSONObject.toString();
-
-        } else {
-            for (PatientSample ps : ptSamples) {
-
-                JSONObject jSONObject = new JSONObject();
-                jSONObject.put("name", ps.getPatient().getPerson().getName());
-                jSONObject.put("barcode", ps.getIdStr());
-                jSONObject.put("insid", ps.getBill().getInsId());
-
-                List<Item> tpiics = testComponantsForPatientSample(ps);
-                tbis = "";
-                String temTube = "";
-                for (Item i : tpiics) {
-                    tbis += i.getName() + ", ";
-                    if (i instanceof Investigation) {
-                        Investigation temIx = (Investigation) i;
-                        temTube = temIx.getInvestigationTube().getName();
-                    }
-                }
-                if (tbis.length() > 3) {
-                    tbis = tbis.substring(0, tbis.length() - 2);
-                }
-
-                tbis += " - " + temTube;
-
-                jSONObject.put("tests", tbis);
-                array.put(jSONObject);
-
-            }
-        }
+        JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("Barcodes", array);
-        String json = jSONObjectOut.toString();
-        return json;
+        return jSONObjectOut.toString();
+    }
+
+    private String validateInput(String billId, String username, String password) {
+        if (billId == null || billId.trim().equals("")) {
+            return "Bill Number not entered";
+        }
+        if (username == null || username.trim().equals("")) {
+            return "Username not entered";
+        }
+        if (password == null || password.trim().equals("")) {
+            return "Password not entered";
+        }
+        return null;
+    }
+
+    private String constructErrorJson(int errorCode, String errorMessage, String billId) {
+        JSONObject jSONObject = new JSONObject();
+        jSONObject.put("error", true);
+        jSONObject.put("errorMessage", errorMessage);
+        jSONObject.put("errorCode", errorCode);
+        jSONObject.put("ErrorBillId", billId);
+        return jSONObject.toString();
+    }
+
+    private JSONObject constructPatientSampleJson(PatientSample ps) {
+        JSONObject jSONObject = new JSONObject();
+        jSONObject.put("name", ps.getPatient().getPerson().getName());
+        jSONObject.put("age", ps.getPatient().getPerson().getAge());
+        jSONObject.put("sex", ps.getPatient().getPerson().getSex().toString());
+        jSONObject.put("barcode", ps.getIdStr());
+        jSONObject.put("insid", ps.getBill().getInsId());
+        jSONObject.put("deptid", ps.getBill().getDeptId());
+        jSONObject.put("billDate", CommonController.formatDate(ps.getBill().getCreatedAt(),"dd MMM yy"));
+        jSONObject.put("id", ps.getIdStr());
+        List<Item> tpiics = testComponantsForPatientSample(ps);
+        String tbis = "";
+        String temTube = "";
+        for (Item i : tpiics) {
+            tbis += i.getName() + ", ";
+            if (i instanceof Investigation) {
+                Investigation temIx = (Investigation) i;
+                if (temIx.getInvestigationTube() != null) {
+                    temTube = temIx.getInvestigationTube().getName();
+                } else {
+                    temTube = "";
+                }
+            }
+        }
+        jSONObject.put("tube", temTube);
+        if (tbis.length() > 3) {
+            tbis = tbis.substring(0, tbis.length() - 2);
+        }
+        tbis += " - " + temTube;
+        jSONObject.put("tests", tbis);
+        return jSONObject;
     }
 
     @GET
@@ -218,7 +282,6 @@ public class Lims {
 
         //// // System.out.println("password = " + password);
         //// // System.out.println("username = " + username);
-
         boolean failed = false;
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
@@ -272,7 +335,7 @@ public class Lims {
         m = new HashMap();
         m.put("pts", ps);
 
-        ts = itemFacade.findBySQL(j, m);
+        ts = itemFacade.findByJpql(j, m);
         return ts;
     }
 
@@ -293,15 +356,12 @@ public class Lims {
             j = "Select pi from PatientInvestigation pi "
                     + " where pi.cancelled=:can "
                     + " and pi.billItem.bill=:bill";
-            List<PatientInvestigation> pis = patientInvestigationFacade.findBySQL(j, m);
-
+            List<PatientInvestigation> pis = patientInvestigationFacade.findByJpql(j, m);
 
             for (PatientInvestigation ptix : pis) {
 
                 //// // System.out.println("ptix = " + ptix);
-
                 Investigation ix = ptix.getInvestigation();
-
 
                 ptix.setCollected(true);
                 ptix.setSampleCollecter(wu);
@@ -312,9 +372,7 @@ public class Lims {
 
                 List<InvestigationItem> ixis = getItems(ix);
 
-
                 for (InvestigationItem ixi : ixis) {
-
 
                     if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template) {
                         j = "select ps from PatientSample ps "
@@ -338,7 +396,7 @@ public class Lims {
                         //// // System.out.println("j = " + j);
                         //// // System.out.println("m = " + m);
 
-                        PatientSample pts = patientSampleFacade.findFirstBySQL(j, m);
+                        PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
                         //// // System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
@@ -377,7 +435,7 @@ public class Lims {
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
                         //// // System.out.println("j = " + j);
-                        ptsc = patientSampleComponantFacade.findFirstBySQL(j, m);
+                        ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);
@@ -417,7 +475,7 @@ public class Lims {
             Map m = new HashMap();
             m.put("item", temIx);
 
-            iis = investigationItemFacade.findBySQL(temSql, m);
+            iis = investigationItemFacade.findByJpql(temSql, m);
         } else {
             iis = new ArrayList<>();
         }
@@ -451,7 +509,7 @@ public class Lims {
         String j = "Select b from Bill b where b.insId=:id order by b.id desc";
         Map m = new HashMap();
         m.put("id", insId);
-        Bill b = billFacade.findFirstBySQL(j, m);
+        Bill b = billFacade.findFirstByJpql(j, m);
         if (b == null) {
             return null;
         }
@@ -467,7 +525,7 @@ public class Lims {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findBySQL(j, m);
+        return billFacade.findByJpql(j, m);
     }
 
     public List<PatientSample> getPatientSamplesForBillId(List<Bill> temBills, WebUser wu) {
@@ -488,10 +546,9 @@ public class Lims {
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
-        WebUser u = webUserFacade.findFirstBySQL(temSQL, m);
+        WebUser u = webUserFacade.findFirstByJpql(temSQL, m);
 
         //// // System.out.println("temSQL = " + temSQL);
-
         if (u == null) {
             return null;
         }

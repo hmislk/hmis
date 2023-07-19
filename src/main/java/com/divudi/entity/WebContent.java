@@ -41,10 +41,6 @@ public class WebContent implements Serializable {
     private String longContext;
     @ManyToOne
     private WebContent parent;
-    
-    
-    
-    
 
     public String getIdStr() {
         if (id == null) {
@@ -144,6 +140,9 @@ public class WebContent implements Serializable {
     }
 
     public WebContentType getType() {
+        if (type == null) {
+            type = WebContentType.ShortText;
+        }
         return type;
     }
 

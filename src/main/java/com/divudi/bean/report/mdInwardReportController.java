@@ -235,7 +235,7 @@ public class mdInwardReportController implements Serializable {
         m.put("td", toDate);
         m.put("bt", BillType.InwardFinalBill);
 
-        bills = getBillFacade().findBySQL(sql, m);
+        bills = getBillFacade().findByJpql(sql, m);
 
     }
 
@@ -382,7 +382,7 @@ public class mdInwardReportController implements Serializable {
         temMap.put("fromDate", fromDate);
 
         billItem = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-//        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         total = 0.0;
         for (BillItem b : billItem) {
             total += b.getNetValue();
@@ -670,7 +670,7 @@ public class mdInwardReportController implements Serializable {
 //        m.put("td", toDate);
 //        m.put("dept", dept);
 //        m.put("biTy", BillType.InwardFinalBill);
-//        billItem=getBillItemFacade().findBySQL(jpql, m,TemporalType.TIMESTAMP);
+//        billItem=getBillItemFacade().findByJpql(jpql, m,TemporalType.TIMESTAMP);
 //        
 //        
 //    }
@@ -858,7 +858,7 @@ public class mdInwardReportController implements Serializable {
         //        m.put("fd", fromDate);
         //        m.put("td", toDate);
         //        m.put("biTy", BillType.InwardPaymentBill);
-        //        bil = getBillFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        //        bil = getBillFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
     private double calTotInwdPaymentBills(Bill bill) {

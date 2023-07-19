@@ -224,7 +224,7 @@ public class StoreItemsDistributorsController implements Serializable {
 
         hm.put("ins", getCurrentInstituion());
 
-        items = getFacade().findBySQL(temSql, hm);
+        items = getFacade().findByJpql(temSql, hm);
 
         if (items == null) {
             items = new ArrayList<>();
@@ -245,28 +245,28 @@ public class StoreItemsDistributorsController implements Serializable {
                 + " and b.institution.retired=false and b.retired=false";
 
         if (getSearchKeyword().getInstitution() != null && !getSearchKeyword().getInstitution().trim().equals("")) {
-            sql += " and  (upper(b.institution.name) like :ins )";
+            sql += " and  ((b.institution.name) like :ins )";
             tmp.put("ins", "%" + getSearchKeyword().getInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  (upper(b.item.name) like :itm )";
+            sql += " and  ((b.item.name) like :itm )";
             tmp.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and  (upper(b.item.code) like :cde )";
+            sql += " and  ((b.item.code) like :cde )";
             tmp.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCategory() != null && !getSearchKeyword().getCategory().trim().equals("")) {
-            sql += " and  (upper(b.item.category.name) like :cat )";
+            sql += " and  ((b.item.category.name) like :cat )";
             tmp.put("cat", "%" + getSearchKeyword().getCategory().trim().toUpperCase() + "%");
         }
 
         sql += " order by b.institution.name,b.item.name ";
 
-        searchItems = getFacade().findBySQL(sql, tmp);
+        searchItems = getFacade().findByJpql(sql, tmp);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Store/Administration/Check entered data/Item Distributor(/faces/store/store_item_by_distributor.xhtml)");
 

@@ -47,8 +47,8 @@
                     <h:panelGrid columns="2"  styleClass="alignTop">
 
                         <p:panel>
-                            <p:panel header="Patient Detail" style="width: 815px;">
-                                <p:tabView  id="tvPt"  style="height: 200px;" activeIndex="#{admissionController.patientSearchTab}" >
+                            <p:panel header="Patient Detail" style="width: 815px; height: 400px;">
+                                <p:tabView  id="tvPt"  style="height: 600px;" activeIndex="#{admissionController.patientSearchTab}" >
                                     <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
                                     <p:tab  title="New Patient" id="tabNewPt">
 
@@ -56,7 +56,7 @@
 
                                     </p:tab>
                                     <p:tab id="tabSearchPt" title="Search Patient">
-                                        <h:panelGrid columns="1" >
+                                        <h:panelGrid columns="1" style="height: 1000px; width: 500px" >
                                             <in:searchPatient patient="#{admissionController.current.patient}"/>
                                         </h:panelGrid>
 
@@ -65,7 +65,7 @@
                             </p:panel>
 
                             <p:panel header="Hospital Use">
-                                <p:tabView style="width: 780px;height: 250px;">
+                                <p:tabView style="width: 780px;height: 350px;">
                                     <p:tab title="Special Details">
                                         <h:panelGrid columns="2">
 
@@ -153,9 +153,9 @@
                             </p:panel>
                         </p:panel>
 
-                        <p:panel style="height: 488px;">
-                            <p:panel header="Other" style="width: 465px;height: 260px;">                           
-                                <p:tabView style="height: 210px;">
+                        <p:panel style="height: 860px;">
+                            <p:panel header="Other" style="width: 465px;height: 460px;">                           
+                                <p:tabView style="height: 410px;">
                                     <p:tab title="Guardian Detail">
                                         <h:panelGrid columns="1">
                                             <!--<p:outputLabel  value="Name" />-->
@@ -165,9 +165,9 @@
                                             <!--<p:outputLabel value="Address" />-->
                                             <p:inputText id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                             <!--<p:outputLabel value="Mobile No" />-->
-                                            <p:inputMask id="gmno" mask="999-9999999"   value="#{admissionController.current.guardian.mobile}"  />
+                                            <p:inputText id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
                                             <!--<p:outputLabel value="Home Phone No" />-->
-                                            <p:inputMask id="ghno" mask="999-9999999"  value="#{admissionController.current.guardian.phone}"  />
+                                            <p:inputText id="ghno"   value="#{admissionController.current.guardian.phone}"  />
 
                                             <p:watermark value="Guardian Name" for="gname" />
                                             <p:watermark value="Guardian NIC" for="gnic" />

@@ -115,6 +115,8 @@ public class WebUserController implements Serializable {
     private Dashboard dashboard;
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
+    
+    private List<Department> departmentsOfSelectedUsersInstitution;
 
     public void removeSelectedItems() {
         for (WebUser s : itemsToRemove) {
@@ -176,6 +178,8 @@ public class WebUserController implements Serializable {
             UtilityController.addSuccessMessage("Updated");
         }
     }
+    
+    
 
     public void removeUser() {
 
@@ -200,7 +204,7 @@ public class WebUserController implements Serializable {
     public List<WebUser> completeUser(String qry) {
         List<WebUser> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from WebUser c where c.retired=false and  (upper(c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or upper(c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
+            a = getFacade().findBySQL("select c from WebUser c where c.retired=false and  ((c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -574,7 +578,7 @@ public class WebUserController implements Serializable {
         if (selectText.trim().equals("")) {
             items = getFacade().findBySQL("select c from WebUser c where c.retired=false order by c.webUserPerson.name");
         } else {
-            items = getFacade().findBySQL("select c from WebUser c where c.retired=false and upper(c.webUserPerson.name) like '%" + getSelectText().toUpperCase() + "%' order by c.webUserPerson.name");
+            items = getFacade().findBySQL("select c from WebUser c where c.retired=false and (c.webUserPerson.name) like '%" + getSelectText().toUpperCase() + "%' order by c.webUserPerson.name");
         }
         dycryptName();
     }
@@ -830,7 +834,7 @@ public class WebUserController implements Serializable {
                 + " order by d.id";
         Map m = new HashMap();
         m.put("u", wu);
-        wuds = getWebUserDashboardFacade().findBySQL(j, m);
+        wuds = getWebUserDashboardFacade().findByJpql(j, m);
         return wuds;
     }
 
@@ -916,6 +920,29 @@ public class WebUserController implements Serializable {
 
     public WebUserDashboardFacade getWebUserDashboardFacade() {
         return webUserDashboardFacade;
+    }
+
+    public List<Department> getDepartmentsOfSelectedUsersInstitution() {
+        departmentsOfSelectedUsersInstitution = new ArrayList<>();
+        if(getCurrent()==null){
+            return departmentsOfSelectedUsersInstitution;
+        }
+        if(getCurrent().getInstitution()==null){
+            return departmentsOfSelectedUsersInstitution;
+        }
+        String jpql = "select d "
+                + " from Department d "
+                + " where d.retired=false "
+                + " and d.institution=:ins "
+                + " order by d.name";
+        Map m = new HashMap();
+        m.put("ins", getCurrent().getInstitution());
+        departmentsOfSelectedUsersInstitution = getDepartmentFacade().findByJpql(jpql, m);
+        return departmentsOfSelectedUsersInstitution;
+    }
+
+    public void setDepartmentsOfSelectedUsersInstitution(List<Department> departmentsOfSelectedUsersInstitution) {
+        this.departmentsOfSelectedUsersInstitution = departmentsOfSelectedUsersInstitution;
     }
 
     @FacesConverter("webUs")

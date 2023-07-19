@@ -1,11 +1,3 @@
-/*
- * Milk Payment System for Lucky Lanka Milk Processing Company
- *
- * Development and Implementation of Web-based System by ww.divudi.com
- Development and Implementation of Web-based System by ww.divudi.com
- * (94) 71 5812399
- * (94) 71 5812399
- */
 package com.divudi.bean.common;
 import com.divudi.entity.Item;
 import com.divudi.entity.Packege;
@@ -51,7 +43,7 @@ public  class PackageNameController implements Serializable {
         } else {
             sql = "select p from Packege p where p.retired=false "
                     + "and (p.inactive=false or p.inactive is null)"
-                    + "and (upper(p.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
+                    + "and ((p.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }

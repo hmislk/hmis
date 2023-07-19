@@ -33,6 +33,7 @@ import javax.persistence.Temporal;
  * @author buddhika
  */
 @Entity
+@Deprecated
 public class ItemUsage implements Serializable {
 
     @ManyToOne

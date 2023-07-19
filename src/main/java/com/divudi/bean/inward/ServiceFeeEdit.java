@@ -88,7 +88,7 @@ public class ServiceFeeEdit implements Serializable {
                 + " and b.billItem=:billItem ";
         HashMap hm = new HashMap();
         hm.put("billItem", billItem);
-        billFees = getBillFeeFacade().findBySQL(sql, hm);
+        billFees = getBillFeeFacade().findByJpql(sql, hm);
 
         // System.err.println("Calculating BillFee 2 " + billFees);
     }

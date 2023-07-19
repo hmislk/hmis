@@ -23,11 +23,11 @@
     </managed-bean>
     <managed-bean>
         <managed-bean-name>personInstitutionJpa</managed-bean-name>
-        <managed-bean-class>com.divudi.facade.PersonInstitutionFacade</managed-bean-class>
-        <managed-bean-scope>session</managed-bean-scope>
-    </managed-bean>
+        <managed-bean-class>com.divudi.facade.forms.PersonInstitutionFacade</managed-bean-class>
+    
+        <managed-bean-scope>session</managed-bean-scope></managed-bean>
     <converter>
-        <converter-for-class>com.divudi.entity.PersonInstitution</converter-for-class>
+        <converter-for-class>com.divudi.entity.forms.PersonInstitution</converter-for-class>
         <converter-class>com.divudi.bean.common.PersonInstitutionConverter</converter-class>
     </converter>
     <navigation-rule>

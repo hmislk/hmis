@@ -40,7 +40,6 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -163,8 +162,7 @@ public class ApiMembership {
             @PathParam("nic") String nic) {
         JSONObject jSONObjectOut = new JSONObject();
         String json;
-        URLDecoder decoder = new URLDecoder();
-
+       
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
 //        //// // System.out.println("s = " + s);
 
@@ -182,10 +180,10 @@ public class ApiMembership {
 //            MembershipScheme ms = getMembershipSchemeFacade().find(2670l);
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
-            person.setName(decoder.decode(name, "+"));
+            person.setName(name);
             person.setSex(Sex.valueOf(sex));
             person.setDob(getCommonController().getConvertDateTimeFormat24(dob));
-            person.setAddress(decoder.decode(address, "+"));
+            person.setAddress(address);
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
             person.setCreatedAt(new Date());
@@ -594,7 +592,7 @@ public class ApiMembership {
         m.put("bTp", bt);
         m.put("class", BilledBill.class);
 
-        Bill b = getBillFacade().findFirstBySQL(sql, m);
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
 
 //        //// // System.out.println("b = " + b);
         return b;

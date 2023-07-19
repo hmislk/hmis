@@ -45,7 +45,7 @@ public class SampleController implements Serializable {
     String selectText = "";
 
     public List<Sample> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Sample c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from Sample c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -140,7 +140,7 @@ public class SampleController implements Serializable {
                     + " order by s.name";
             Map m = new HashMap();
             m.put("ret", false);
-            items = getFacade().findBySQL(j, m);
+            items = getFacade().findByJpql(j, m);
         }
         return items;
     }

@@ -14,6 +14,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
@@ -22,6 +23,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
+@Inheritance
 public class InvestigationItemValue implements Serializable {
 
     private static final long serialVersionUID = 1L;

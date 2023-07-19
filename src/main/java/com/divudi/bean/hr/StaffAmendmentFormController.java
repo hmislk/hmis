@@ -119,7 +119,7 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("stf", staff);
         hm.put("sh", shift);
 
-        return staffShiftFacade.findFirstBySQL(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findFirstByJpql(sql, hm, TemporalType.DATE);
     }
 
     private StaffShift createToStaffShift(Shift shift) {

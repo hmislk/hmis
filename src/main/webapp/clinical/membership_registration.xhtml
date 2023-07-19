@@ -150,7 +150,7 @@
                                                         <f:selectItems value="#{patientController.sexs}"/>
                                                     </p:selectOneMenu>
                                                     <h:outputLabel value="NIC"/>
-                                                    <p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />
+                                                    <p:inputText  value="#{patientController.current.person.nic}" />
                                                     <h:outputLabel value="Code"/>
                                                     <p:inputText value="#{patientController.current.code}"/>
 
@@ -172,8 +172,8 @@
                                                     </p:calendar>
 
                                                     <h:outputLabel value="Phone"/>
-                                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
-                                                    </p:inputMask>
+                                                    <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
+                                                    </p:inputText>
                                                     <h:outputLabel value="Address"/>
                                                     <p:inputText autocomplete="off"  id="txtNewPtAddress" value="#{patientController.current.person.address}">
                                                     </p:inputText>

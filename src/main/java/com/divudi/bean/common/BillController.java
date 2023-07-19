@@ -229,7 +229,7 @@ public class BillController implements Serializable {
         String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
         Map m = new HashMap();
         m.put("bb", batchBill);
-        return billFacade.findBySQL(j, m);
+        return billFacade.findByJpql(j, m);
     }
 
     public List<Bill> getSelectedBills() {
@@ -415,7 +415,7 @@ public class BillController implements Serializable {
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and upper(b." + property + ") like '%" + value.toUpperCase() + " %'";
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
         Bill b = getBillFacade().findFirstByJpql(sql);
         //System.err.println("SQL " + sql);
         //System.err.println("Bill " + b);
@@ -471,15 +471,15 @@ public class BillController implements Serializable {
                     + " and c.cancelledBill is null "
                     + " and c.refundedBill is null "
                     + " and c.retired=false "
-                    + " and (upper(c.insId) like :q or"
-                    + " upper(c.patient.person.name) like :q "
-                    + " or upper(c.creditCompany.name) like :q ) "
+                    + " and ((c.insId) like :q or"
+                    + " (c.patient.person.name) like :q "
+                    + " or (c.creditCompany.name) like :q ) "
                     + " order by c.creditCompany.name";
             hash.put("btp", BillType.OpdBill);
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findBySQL(sql, hash);
+            a = getFacade().findByJpql(sql, hash);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -502,9 +502,9 @@ public class BillController implements Serializable {
                     + " and b.refunded=false "
                     + " and b.cancelled=false "
                     + " and b.toStaff is null "
-                    + " and ( upper(b.insId) like :q or "
-                    + " upper(b.deptId) like :q or "
-                    + " upper(b.toInstitution.name) like :q ) "
+                    + " and ( (b.insId) like :q or "
+                    + " (b.deptId) like :q or "
+                    + " (b.toInstitution.name) like :q ) "
                     + " order by b.deptId ";
             hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
             hash.put("pm", PaymentMethod.Credit);
@@ -516,7 +516,7 @@ public class BillController implements Serializable {
 //            //// // System.out.println("sql = " + sql);
 //            //// // System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
 //            //// // System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
-            a = getFacade().findBySQL(sql, hash);
+            a = getFacade().findByJpql(sql, hash);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -539,8 +539,8 @@ public class BillController implements Serializable {
                     + " and c.cancelledBill is null "
                     + " and c.retired=false "
                     + " and c.paymentMethod=:pm  "
-                    + " and ((upper(c.deptId) like :q ) "
-                    + " or (upper(c.fromInstitution.name)  like :q ))"
+                    + " and (((c.deptId) like :q ) "
+                    + " or ((c.fromInstitution.name)  like :q ))"
                     + " order by c.fromInstitution.name";
             hash.put("bts", billTypesListBilled);
             hash.put("pm", PaymentMethod.Credit);
@@ -569,8 +569,8 @@ public class BillController implements Serializable {
                     + " and c.retired=false "
                     + " and c.paymentMethod=:pm  "
                     + " and c.fromInstitution.institutionType=:insTp  "
-                    + " and ((upper(c.deptId) like :q ) "
-                    + " or (upper(c.fromInstitution.name)  like :q ))"
+                    + " and (((c.deptId) like :q ) "
+                    + " or ((c.fromInstitution.name)  like :q ))"
                     + " order by c.fromInstitution.name";
             hash.put("btp1", BillType.PharmacyGrnBill);
             hash.put("btp2", BillType.PharmacyPurchaseBill);
@@ -597,10 +597,10 @@ public class BillController implements Serializable {
                 + " and b.retired=false "
                 + " and b.patientEncounter.discharged=false ";
 
-        sql += " and  ((upper(b.patientEncounter.patient.person.name) like :q )";
-        sql += " or  (upper(b.patientEncounter.bhtNo) like :q )";
-        sql += " or  (upper(b.insId) like :q )";
-        sql += " or  (upper(b.procedure.item.name) like :q ))";
+        sql += " and  (((b.patientEncounter.patient.person.name) like :q )";
+        sql += " or  ((b.patientEncounter.bhtNo) like :q )";
+        sql += " or  ((b.insId) like :q )";
+        sql += " or  ((b.procedure.item.name) like :q ))";
         sql += " order by b.insId desc  ";
 
         temMap.put("billType", BillType.SurgeryBill);
@@ -629,7 +629,7 @@ public class BillController implements Serializable {
         hash.put("val", 0.1);
         hash.put("ins", institution);
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
+        List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -657,7 +657,7 @@ public class BillController implements Serializable {
         hash.put("val", 0.1);
         hash.put("ins", institution);
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
+        List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -689,7 +689,7 @@ public class BillController implements Serializable {
         hash.put("ins", getSessionController().getInstitution());
 //        hash.put("dep", getSessionController().getDepartment());
         //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findBySQL(sql, hash);
+        List<Bill> bill = getFacade().findByJpql(sql, hash);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -1408,9 +1408,9 @@ public class BillController implements Serializable {
         HashMap m = new HashMap();
         jpql = "Select b from Bill b where "
                 + "b.retired = false and "
-                + "upper(b.referralNumber) =:rid ";
+                + "(b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
         }
@@ -1967,6 +1967,10 @@ public class BillController implements Serializable {
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
     }
+    
+    public String toOpdBilling(){
+        return "/opd_bill";
+    }
 
     public void prepareNewBillForMember() {
         clearBillItemValues();
@@ -2084,7 +2088,6 @@ public class BillController implements Serializable {
             if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
-                        System.err.println("in");
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
                         //// // System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
                         double d = (bf.getFeeValue() - bf.getSettleValue());
@@ -2093,7 +2096,6 @@ public class BillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                     } else {
-                        System.err.println("IN");
                         bf.setSettleValue(bf.getSettleValue() + reminingCashPaid);
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
@@ -2520,13 +2522,13 @@ public class BillController implements Serializable {
 
         sql = "select p from BilledBill p where p.retired=false and "
                 + "p.cancelled=false and p.refunded=false and p.billType=:btp "
-                + " and (upper(p.patient.person.name)  "
-                + "like :q or upper(p.insId)  "
+                + " and ((p.patient.person.name)  "
+                + "like :q or (p.insId)  "
                 + "like :q) order by p.insId";
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 

@@ -51,7 +51,7 @@ public class CollectingCentreController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Institution>();
         } else {
-            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CollectingCentre and upper(p.name) like '%" + query.toUpperCase() + "%' order by p.name";
+            sql = "select p from Institution p where p.retired=false and p.institutionType=com.divudi.data.InstitutionType.CollectingCentre and (p.name) like '%" + query.toUpperCase() + "%' order by p.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -66,9 +66,9 @@ public class CollectingCentreController implements Serializable {
             selectedItems=institutionController.completeInstitution(selectText, InstitutionType.CollectingCentre);
         }
         
-//        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false "
+//        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false "
 //                + "and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre  "
-//                + "and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//                + "and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
