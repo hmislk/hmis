@@ -17,49 +17,46 @@
                                 <p:tab title="Manage" >
                                     <div class="d-grid gap-2">
 
-                                        <h:commandLink class="btn btn-primary w-100 mb-3"
+                                        <p:commandButton styleClass="linkButton"
                                                        action="#{institutionController.toAddNewInstitution()}" 
-                                                       >
-                                            <i class="bi bi-building-add float-left"></i>
-                                            <span class="float-right">Add New Institution </span>
-                                        </h:commandLink>
-                                        <h:commandLink class="btn btn-primary w-100 mb-3"  
+                                                       icon="bi bi-building-fill-add" value="Add New Institution">
+                                                      
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton"  
                                                        action="#{institutionController.toListInstitutions()}" 
-                                                       >
-                                            <i class="bi bi-building-check"></i>
-                                            List Institutions
-                                        </h:commandLink>
+                                                       icon="bi bi-building-fill-add" value="List Institutions">
+                                            
+                                        </p:commandButton>
 
 
-                                        <h:commandLink class="btn btn-primary w-100 mb-3"  
+                                        <p:commandButton styleClass="linkButton"  
                                                        action="#{departmentController.toAddNewDepartment()}" 
-                                                       >
-                                            <i class="bi bi-building-fill-add"></i>
-                                            Add New Department
-                                        </h:commandLink>
-                                        <h:commandLink class="btn btn-primary w-100 mb-3" 
+                                                       icon="bi bi-building-fill-add" value="Add New Department">
+                                           
+                                            
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
                                                        action="#{departmentController.toListDepartments()}" 
-                                                       >
-                                            <i class="bi bi-building-fill "></i>
-                                            List Departments
-                                        </h:commandLink>
+                                                       icon="bi bi-building-fill-add" value="List Departments">
+                                            
+                                        </p:commandButton>
 
 
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Branch" action="/lab/institution_branch" onclick="onSubmitButton();"/>
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" onclick="onSubmitButton();"/>
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre" onclick="onSubmitButton();"/>
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company" onclick="onSubmitButton();"/>
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" onclick="onSubmitButton();"/>
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" onclick="onSubmitButton();"/>
+                                        <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="/lab/institution_branch" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" />
                                     </div>
                                 </p:tab>
                                 <p:tab title="Preferences" >
                                     <div class="d-grid gap-2">
 
 
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" onclick="onSubmitButton();"/>
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" onclick="onSubmitButton();"/>
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" onclick="onSubmitButton();"/>
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" />
 
                                         
                                     </div>
@@ -68,8 +65,8 @@
                                     <div class="d-grid gap-2">
                                       
 
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" onclick="onSubmitButton();"/>
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" onclick="onSubmitButton();"/>
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" />
 
                                         
                                     </div>
