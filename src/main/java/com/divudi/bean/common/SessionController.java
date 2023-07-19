@@ -151,15 +151,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     // A field to store the landing page
     private String landingPage;
 
-    public String navigateToWebHomePage() {
-        String webhome = "";
-        if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
-            webhome += "index.xhtml";
-        } else {
-            webhome += "themes/";
-            webhome += getApplicationPreference().getThemeName() + "/index.xhtml";
-        }
-        return webhome;
+    public String navigateToLoginPage() {
+        
+        return "/index1.xhtml";
     }
 
     public String getLandingPageOld() {
