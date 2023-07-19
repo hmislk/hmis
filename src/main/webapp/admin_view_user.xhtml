@@ -9,9 +9,9 @@
 
     <h:body >
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/admin_manage_users.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>

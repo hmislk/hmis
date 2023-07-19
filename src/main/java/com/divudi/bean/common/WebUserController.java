@@ -116,6 +116,8 @@ public class WebUserController implements Serializable {
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
     
+    private int manageUsersIndex;
+    
     private List<Department> departmentsOfSelectedUsersInstitution;
 
     public void removeSelectedItems() {
@@ -943,6 +945,14 @@ public class WebUserController implements Serializable {
 
     public void setDepartmentsOfSelectedUsersInstitution(List<Department> departmentsOfSelectedUsersInstitution) {
         this.departmentsOfSelectedUsersInstitution = departmentsOfSelectedUsersInstitution;
+    }
+
+    public int getManageUsersIndex() {
+        return manageUsersIndex;
+    }
+
+    public void setManageUsersIndex(int manageUsersIndex) {
+        this.manageUsersIndex = manageUsersIndex;
     }
 
     @FacesConverter("webUs")
