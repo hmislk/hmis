@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin_manage_staff_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -24,15 +24,15 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" >
+                                    <h:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="min-width: 400px">
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </h:inputText>
 
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{doctorSpecialityController.current}" style="min-width: 223px">
+                                    <p:selectOneListbox  id="lstSelect" class="w-100" scrollHeight="500" value="#{doctorSpecialityController.current}" style="min-width: 400px">
                                         <f:selectItems  value="#{doctorSpecialityController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <h:commandButton id="btnAdd" value="Add" action="#{doctorSpecialityController.prepareAdd()}" styleClass="buttons" >
@@ -46,13 +46,13 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel style="min-width: 550px; height: 590px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Speciality Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{doctorSpecialityController.current.name}" required="true" ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" style="width:400px" value="#{doctorSpecialityController.current.name}" required="true" ></h:inputText>
                                     <h:outputText id="lblDescription" value="Income Name" ></h:outputText>
-                                    <h:inputTextarea  id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
+                                    <h:inputTextarea  style="width:400px" id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
                                     <h:commandButton id="btnSave" value="Save" action="#{doctorSpecialityController.saveSelected()}" styleClass="buttons">

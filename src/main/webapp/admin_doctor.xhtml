@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin_manage_staff_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -24,14 +24,14 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    <p:inputText autocomplete="off" value="#{doctorController.selectText}" >
+                                    <p:inputText autocomplete="off" value="#{doctorController.selectText}" style="width:400px">
                                         <f:ajax execute="@this" render="lstSelect" event="keyup" />
                                     </p:inputText>
 
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{doctorController.current}" style="min-width: 223px;">
+                                    <p:selectOneListbox  class="w-100" scrollHeight="500" id="lstSelect" value="#{doctorController.current}" style="min-width: 400px;">
                                         <f:selectItems  value="#{doctorController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.nameWithTitle}"  ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" />                                        
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <p:commandButton id="btnAdd" value="Add"  
@@ -45,34 +45,34 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel style="min-height: 600px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText  value="Name" />
-                                    <p:inputText autocomplete="off" value="#{doctorController.current.person.name}"  />
+                                    <p:inputText autocomplete="off" value="#{doctorController.current.person.name}" style="width:400px" />
                                     <h:outputText  value="Phone" />
-                                    <p:inputText  value="#{doctorController.current.person.phone}"  />
+                                    <p:inputText  value="#{doctorController.current.person.phone}" style="width:400px" />
                                     <h:outputText  value="Fax" />
-                                    <p:inputText autocomplete="off"  value="#{doctorController.current.person.fax}"  />
+                                    <p:inputText autocomplete="off"  value="#{doctorController.current.person.fax}"  style="width:400px"/>
                                     <h:outputText  value="Mobile" />
-                                    <p:inputText autocomplete="off" value="#{doctorController.current.person.mobile}"  />
+                                    <p:inputText autocomplete="off" value="#{doctorController.current.person.mobile}" style="min-width: 400px;"  />
                                     <h:outputText  value="Address" />
-                                    <p:inputText autocomplete="off" value="#{doctorController.current.person.address}"  />
+                                    <p:inputText autocomplete="off" value="#{doctorController.current.person.address}" style="min-width: 400px;" />
                                     <h:outputText  value="Code" />
-                                    <p:inputText autocomplete="off" value="#{doctorController.current.code}"  />
+                                    <p:inputText autocomplete="off" value="#{doctorController.current.code}" style="min-width: 400px;"  />
                                     <h:outputText value="Speciality" />
-                                    <h:selectOneListbox size="1" value="#{doctorController.current.speciality}" >
+                                    <h:selectOneListbox size="1" value="#{doctorController.current.speciality}" style="min-width: 400px;">
                                         <f:selectItem itemLabel="Please select a speciality"/>
                                         <f:selectItems value="#{specialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </h:selectOneListbox>
                                     <h:outputText value="Registration" />
-                                    <p:inputText autocomplete="off" value="#{doctorController.current.registration}" />
+                                    <p:inputText autocomplete="off" value="#{doctorController.current.registration}" style="min-width: 400px;"/>
                                     <h:outputText value="Qualification" />
-                                    <p:inputText autocomplete="off"  value="#{doctorController.current.qualification}" />
+                                    <p:inputText autocomplete="off"  value="#{doctorController.current.qualification}" style="min-width: 400px;"/>
                                     <h:outputText  value="Refering Charge" />
-                                    <p:inputText autocomplete="off"  value="#{doctorController.current.charge}"  />
+                                    <p:inputText autocomplete="off"  value="#{doctorController.current.charge}" style="min-width: 400px;" />
                                     <h:outputText  value="Creater" />
-                                    <h:outputText  value="#{doctorController.current.creater.webUserPerson.name}" />
+                                    <h:outputText  value="#{doctorController.current.creater.webUserPerson.name}" style="min-width: 400px;"/>
                                     <h:outputText  value="Created At" />
                                     <h:outputText  value="#{doctorController.current.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="yyyy MM dd hh:mm:ss a" ></f:convertDateTime>
