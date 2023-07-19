@@ -8,8 +8,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/admin_manage_users.xhtml">
+            <ui:define name="subcontent">
                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not  sessionController.firstLogin }" >
                     You are NOT authorized
                 </h:panelGroup>
@@ -19,19 +19,19 @@
                     <h:form>
 
 
-                        <p:panel header="Add New User" class="w-100" >
+                        <p:panel header="Add New User" >
 
 
-                            <p:panelGrid columns="3" style="text-align: left;" >
+                            <p:panelGrid columns="3" style="text-align: center;" >
                                 <p:commandButton id="btnCreateUser" value="Create User" action="#{webUserController.saveNewUser()}" ajax="false" >
                                 </p:commandButton>
                                 <p:commandButton  value="Back to Manage User" action="#{webUserController.backToAdminManageUsers()}" ajax="false" ></p:commandButton>
                             </p:panelGrid>
 
 
-                            <p:tabView class="w-100" >
+                            <p:tabView >
                                 <p:tab title="Basic" >
-                                    <p:panelGrid id="pg0" columns="2" style="text-align: left;" >
+                                    <p:panelGrid id="pg0" columns="2" style="text-align: left; ">
                                         <p:outputLabel for="txtName" value="Name" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <p:inputText id="txtName" class="w-100"
                                                      autocomplete="off"

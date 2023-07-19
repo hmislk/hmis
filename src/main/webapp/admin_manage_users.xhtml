@@ -8,28 +8,43 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
-                    <p:panelGrid columns="3" columnClasses="grid1 grid1">
-                        <p:panel header="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
-                            <p:panelGrid columns="1" >
-                                <p:commandButton styleClass="linkButton" ajax="false" value="Add New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser}" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="View Users" action="admin_view_user" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="View User Login Details" action="admin_logins_all" onclick="onSubmitButton();"/>
 
-                            </p:panelGrid>
-                        </p:panel>
-                    </p:panelGrid>
+                <div class="row">
+                    <div class="col-md-3">
+                        <h:form>
+                            <p:accordionPanel>
+
+                                <p:tab title="Manage Users"  rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton styleClass="linkButton" ajax="false" value="Add New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser}" onclick="onSubmitButton();"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="View Users" action="admin_view_user" onclick="onSubmitButton();"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="View User Login Details" action="admin_logins_all" onclick="onSubmitButton();"/>
+
+                                    </div>
+                                </p:tab>
+
+                            </p:accordionPanel>
 
 
-                    <h:panelGroup rendered="false" >
-                        <p:commandButton  styleClass="linkButton" ajax="false" value="Change Passwords" action="admin_change_password" onclick="onSubmitButton();"/>
-                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Privileges" action="admin_user_privilages" onclick="onSubmitButton();"/>                                
-                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add PaymentScheme to User" action="admin_user_paymentScheme" onclick="onSubmitButton();"/>
-                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Department to User" action="admin_user_department" onclick="onSubmitButton();"/>
 
-                    </h:panelGroup>
+                            <h:panelGroup rendered="false" >
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Change Passwords" action="admin_change_password" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Privileges" action="admin_user_privilages" onclick="onSubmitButton();"/>                                
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add PaymentScheme to User" action="admin_user_paymentScheme" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Department to User" action="admin_user_department" onclick="onSubmitButton();"/>
 
-                </h:form>
+                            </h:panelGroup>
+
+                        </h:form>
+                    </div>
+
+                    <div class="col-md-9">
+                        <ui:insert name="subcontent">
+
+                        </ui:insert>
+                    </div>
+                </div>
+
             </ui:define>
         </ui:composition>
     </h:body>
