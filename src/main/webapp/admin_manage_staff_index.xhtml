@@ -14,28 +14,42 @@
                 <h:form>
 
                     <p:panel header="Manage Staff" >
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p:accordionPanel>
+                                    <p:tab>
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100" ajax="false" value="Doctor Specialities" action="admin_doctor_speciality"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Doctors" action="admin_doctor"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Consultant" action="admin_doctor_consultant"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="All Specialities" action="admin_speciality"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Staff" action="/hr/hr_staff_admin"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{staffController.admin_staff_view_signature()}"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="admin_staff_signature"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Connect staff to user" action="admin_user_staff"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Staff List " action="admin_staff_list"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="/channel/person_institution"/>
+                                        <br />
+                                        <p:commandButton  class="w-100" ajax="false" value="Bulk Delete Staff" action="/admin/staff_bulk_delete" onclick="onSubmitButton();"/>
+                                        <p:commandButton  class="w-100" ajax="false" action="/channelling/maintanance/consultant/List" value="Show All Consultant Items"/>
+                                        <br />
+                                        <p:commandButton  class="w-100" ajax="false" action="/channelling/maintanance/doctor/List" value="Show All Doctor Items"/>
+                                        <br />
+                                        <p:commandButton  class="w-100" ajax="false" action="/channelling/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
+                                        <br />
+                                        <p:commandButton  class="w-100" ajax="false" action="/channelling/maintanance/speciality/List" value="Show All Speciality Items"/>
+                                    </div>
+                                    </p:tab></p:accordionPanel>   
 
-                        <h:panelGrid columns="1" >
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Doctor Specialities" action="admin_doctor_speciality"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Doctors" action="admin_doctor"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Consultant" action="admin_doctor_consultant"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="All Specialities" action="admin_speciality"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Staff" action="/hr/hr_staff_admin"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="View Staff Signatures" action="#{staffController.admin_staff_view_signature()}"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Connect staff to user" action="admin_user_staff"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Staff List " action="admin_staff_list"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Channelling Consultants to Institutions" action="/channel/person_institution"/>
-                            <br />
-                             <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Staff" action="/admin/staff_bulk_delete" onclick="onSubmitButton();"/>
-                            <p:commandButton  styleClass="linkButton" ajax="false" action="/channelling/maintanance/consultant/List" value="Show All Consultant Items"/>
-                            <br />
-                             <p:commandButton  styleClass="linkButton" ajax="false" action="/channelling/maintanance/doctor/List" value="Show All Doctor Items"/>
-                            <br />
-                             <p:commandButton  styleClass="linkButton" ajax="false" action="/channelling/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
-                            <br />
-                             <p:commandButton  styleClass="linkButton" ajax="false" action="/channelling/maintanance/speciality/List" value="Show All Speciality Items"/>
-                        </h:panelGrid>
+                            </div>
+
+                            <div class="col-md-9">
+                                <ui:insert name="subcontent">
+
+                                </ui:insert>
+                            </div>
+                        </div>
+
 
                     </p:panel>
 
