@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin_fees.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -21,10 +21,11 @@
                 <p:panel header="Department" styleClass="verticalAndHorizontalCentering">
                     <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
 
+                        
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{packageNameController.current}" style="min-width: 223px">
+                                    <h:selectOneListbox  id="lstSelect"   size="12" value="#{packageNameController.current}" style="min-width: 253px">
                                         <f:selectItems  value="#{packageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
@@ -47,11 +48,11 @@
 
                         <p:panel>
                             <h:panelGrid id="gpDetail" columns="1">
-                                <p:panel header="PackageItem Detail">
+                                <p:panel header="PackageItem Detail" style="width: 600px; height: 270px">
                                     <h:outputLabel value="Active" rendered="#{!packageNameController.current.inactive}" style="color: green;"></h:outputLabel>
                                     <h:outputLabel value="Inactive" rendered="#{packageNameController.current.inactive}" style="color: red;"></h:outputLabel>
 
-                                    <h:panelGrid id="gpDetailText" columns="2">
+                                    <h:panelGrid id="gpDetailText" columns="2" style="height: 150px">
 
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtName" value="#{packageNameController.current.name}"  ></h:inputText>

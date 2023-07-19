@@ -6,83 +6,92 @@
       xmlns:h="http://java.sun.com/jsf/html">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
+                <div class="row">
+                    <div class="col-md-3">
+                        <h:form>
+                            <p:panel header="Manage Financial Activities">
+                                <p:accordionPanel activeIndex="#{viewController.manageFeeIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title="Fees">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Item Fees"
+                                                             actionListener="#{viewController.makeAdminFeesAsPreviousPage()}"
+                                                             action="/common/manage_item_fees"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false"
+                                                             value="Item Fees List"
+                                                             action="/dataAdmin/manage_item_fees_bulk"/>
+                                        </div>
+                                    </p:tab>
 
-                <h:form>
+                                    <p:tab title="Manage Discount Schemes">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Discount Schemes"
+                                                             action="/membership/payment_scheme"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Pharmacy Discounts"
+                                                             action="/membership/payment_scheme_discount_pharmacy_by_category"/>
+                                        </div>
+                                    </p:tab>
 
+                                    <p:tab title="Manage Membership Schemes">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Membership Schemes"
+                                                             action="/membership/membership_scheme"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Membership Schemes Discounts"
+                                                             action="/membership/membership_scheme_discount_inward"/>
+                                        </div>
+                                    </p:tab>
 
-                    <p:panel header="Manage Financial Activities" >
-                        <p:tabView orientation="left" >
-                            <p:tab title="Fees" >
-                                <h:panelGrid columns="1" >  
-                                    <p:commandButton  styleClass="linkButton"
-                                                      ajax="false" value="Item Fees" 
-                                                      actionListener="#{viewController.makeAdminFeesAsPreviousPage()}"
-                                                      action="/common/manage_item_fees"  />
-                                    <p:commandButton styleClass="linkButton"
-                                                     ajax="false" 
-                                                     value="Item Fees List" 
-                                                     action="/dataAdmin/manage_item_fees_bulk" 
-                                                     />
-                                </h:panelGrid>
-                            </p:tab>
+                                    <p:tab title="Manage Packages">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Package Names"
+                                                             action="/lab/package_name"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Add Item to Package"
+                                                             action="/lab/package_item"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Manage Package Prices"
+                                                             action="/lab/package_item_prices"/>
+                                        </div>
+                                    </p:tab>
 
+                                    <p:tab title="Manage Medical Packages">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Medical Package Names"
+                                                             action="opd_medical_package_name"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Add Item to Package"
+                                                             action="opd_medical_package_item"/>
+                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                                             ajax="false" value="Manage Package Prices"
+                                                             action="opd_medical_package_item_prices"/>
+                                        </div>
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </p:panel>
+                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                             ajax="false"
+                                             value="Correct Item Fees"
+                                             action="/dataAdmin/bulk_update_itemsFees"/>
+                        </h:form>
+                    </div>
+                    <div class="col-md-9">
+                        <ui:insert name="subcontent">
 
-
-
-                            <p:tab title="Manage Discount Schemes" >
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Discount Schemes" action="/membership/payment_scheme" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Pharmacy Discounts" action="/membership/payment_scheme_discount_pharmacy_by_category" />
-                                </h:panelGrid>
-                            </p:tab>
-
-                            <p:tab title="Manage Membership Schemes" >
-                                <h:panelGrid columns="1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes" action="/membership/membership_scheme" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Membership Schemes Dicounts" action="/membership/membership_scheme_discount_inward" />
-                                </h:panelGrid>
-                            </p:tab>
-
-                            <p:tab title="Manage Packages"  >
-                                <h:panelGrid columns="1" columnClasses="grid1 grid1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Package Names" action="/lab/package_name" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Item to Package" action="/lab/package_item" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Package Prices" action="/lab/package_item_prices" />
-                                </h:panelGrid>
-                            </p:tab>
-
-
-                            <p:tab title="Manage Medical Packages"  >
-                                <h:panelGrid columns="1" columnClasses="grid1 grid1" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Medical Package Names" action="opd_medical_package_name" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Item to Package" action="opd_medical_package_item" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Package Prices" action="opd_medical_package_item_prices" />
-                                </h:panelGrid>
-                            </p:tab>
-                        </p:tabView>
-                        <p:tab title="Administration">
-                            <h:panelGrid columns="1" >
-                                <p:commandButton styleClass="linkButton"
-                                                 ajax="false" 
-                                                 value="Correct Item Fees" 
-                                                 action="/dataAdmin/bulk_update_itemsFees" 
-                                                 />
-                            </h:panelGrid>
-                        </p:tab>
-
-                    </p:panel>
-
-
-
-                </h:form>
+                        </ui:insert>
+                    </div>
+                </div>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
+
 </html>
