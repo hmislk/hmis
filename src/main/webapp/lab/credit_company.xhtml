@@ -24,11 +24,11 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel style="height: 400px">
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{creditCompanyController.current}" style="min-width: 223px">
+                                    <p:selectOneListbox  class="w-100" id="lstSelect"  style="min-width: 400px" scrollHeight="500" value="#{creditCompanyController.current}" >
                                         <f:selectItems  value="#{creditCompanyController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail " execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <h:commandButton id="btnAdd" value="Add" action="#{creditCompanyController.prepareAdd()}" styleClass="buttons" >
@@ -40,36 +40,36 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel style="width: 800px">
+                        <p:panel style="width: 670px; min-height: 200px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <p:tabView>
                                     <p:tab title="Institution Detail"> 
                                         <h:panelGrid id="gpDetailText" columns="2" style="width: 600px">
                                             <h:outputText id="lblName" value="Name" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtName" value="#{creditCompanyController.current.name}"  ></h:inputText>
+                                            <h:inputText autocomplete="off" id="txtName" style="min-width: 450px" value="#{creditCompanyController.current.name}"  ></h:inputText>
 
                                             <h:outputText id="lblAddress" value="Address" ></h:outputText>
-                                            <h:inputText  id="txtAddress" value="#{creditCompanyController.current.address}"  >
+                                            <h:inputText  id="txtAddress" style="min-width: 450px" value="#{creditCompanyController.current.address}"  >
                                             </h:inputText>
 
                                             <h:outputText id="lblTel" value="Tel" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtTel" value="#{creditCompanyController.current.mobile}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off" id="txtTel" value="#{creditCompanyController.current.mobile}"  ></h:inputText>
 
                                             <h:outputText id="lblFax" value="Fax" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtFax" value="#{creditCompanyController.current.fax}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off" id="txtFax" value="#{creditCompanyController.current.fax}"  ></h:inputText>
 
                                             <h:outputText id="lblEmail" value="Email" ></h:outputText>
-                                            <h:inputText autocomplete="off" id="txtEmail" value="#{creditCompanyController.current.email}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off" id="txtEmail" value="#{creditCompanyController.current.email}"  ></h:inputText>
 
                                             <h:outputText  value="Discount for Lab Bill" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{creditCompanyController.current.labBillDiscount}"  ></h:inputText>
+                                            <h:inputText  style="min-width: 450px" autocomplete="off"  value="#{creditCompanyController.current.labBillDiscount}"  ></h:inputText>
                                             <h:outputText  value="Discount for OPD Bill" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{creditCompanyController.current.opdBillDiscount}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off"  value="#{creditCompanyController.current.opdBillDiscount}"  ></h:inputText>
                                             <h:outputText  value="Discount for Inward Bill" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{creditCompanyController.current.inwardDiscount}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off"  value="#{creditCompanyController.current.inwardDiscount}"  ></h:inputText>
 
                                             <h:outputText  value="Discount for Pharmacy Bill" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{creditCompanyController.current.pharmacyDiscount}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off"  value="#{creditCompanyController.current.pharmacyDiscount}"  ></h:inputText>
 
 
                                         </h:panelGrid>
@@ -78,13 +78,13 @@
                                      <p:tab title="Contact Person Detail">
                                         <h:panelGrid id="gpContactPerson" columns="2">
                                             <h:outputText value="Contact Person Name" ></h:outputText>
-                                            <h:inputText autocomplete="off"  value="#{creditCompanyController.current.contactPerson.name}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off"  value="#{creditCompanyController.current.contactPerson.name}"  ></h:inputText>
 
                                             <h:outputText value="Contact Person Tel" ></h:outputText>
-                                            <h:inputText autocomplete="off" value="#{creditCompanyController.current.contactPerson.mobile}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off" value="#{creditCompanyController.current.contactPerson.mobile}"  ></h:inputText>
 
                                             <h:outputText value="Contact Person Email" ></h:outputText>
-                                            <h:inputText autocomplete="off" value="#{creditCompanyController.current.contactPerson.email}"  ></h:inputText>
+                                            <h:inputText style="min-width: 450px" autocomplete="off" value="#{creditCompanyController.current.contactPerson.email}"  ></h:inputText>
                                         </h:panelGrid>
                                     </p:tab>
                                 </p:tabView>
