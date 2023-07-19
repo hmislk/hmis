@@ -5,6 +5,7 @@
  * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
+ *
  */
 package com.divudi.bean.lab;
 
@@ -36,19 +37,27 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class InvestigationCategoryController implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+    /*
+    * EJBs
+    */
     @EJB
     private InvestigationCategoryFacade ejbFacade;
     @EJB
     MachineFacade machineFacade;
+    /*
+    * Controllers
+    */
+    @Inject
+    SessionController sessionController;
+    /*
+    * Class Variable
+    */
     List<InvestigationCategory> selectedItems;
     private InvestigationCategory current;
     private List<InvestigationCategory> items = null;
     private List<Machine> machines;
     String selectText = "";
+    int manageItemIndex;
 
     public List<InvestigationCategory> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from InvestigationCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -155,6 +164,16 @@ public class InvestigationCategoryController implements Serializable {
         machines = machineFacade.findAll("name", true);
         return machines;
     }
+
+    public int getManageItemIndex() {
+        return manageItemIndex;
+    }
+
+    public void setManageItemIndex(int manageItemIndex) {
+        this.manageItemIndex = manageItemIndex;
+    }
+    
+    
 
     /**
      *

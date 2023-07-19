@@ -15,7 +15,7 @@
                 <h:form>
 
                     <p:panel header="Manage Items/Services" rendered="true">
-                        <p:accordionPanel >
+                        <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}" >
                             <p:tab title="Manage Investigations">
                                 <h:panelGrid columns="1" >
                                     <p:commandButton   class="btn btn-primary w-100 my-2"  ajax="false" value="Investigations" action="/lab/investigation" />
