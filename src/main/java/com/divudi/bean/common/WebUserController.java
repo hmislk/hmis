@@ -766,7 +766,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getStaffController().setCurrent(selected.getStaff());
-        return "/admin_staff_signature";
+        return "/admin/institutions/admin_staff_signature";
     }
 
     public String toManageDepartments() {
@@ -845,7 +845,7 @@ public class WebUserController implements Serializable {
     }
 
     public String backToViewUsers() {
-        return "/admin_view_user";
+        return "/admin/users/admin_view_user";
     }
 
     public String changeCurrentUserPassword() {

@@ -42,12 +42,12 @@
                                         </p:commandButton>
 
 
-                                        <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="/lab/institution_branch" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="area" />
-                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="admin_staff_signature" />
+                                        <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="#{navigationController.navigateToArea()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToStaffSignature()}" />
                                     </div>
                                 </p:tab>
                                 <p:tab title="Preferences" >
@@ -65,8 +65,8 @@
                                     <div class="d-grid gap-2">
                                       
 
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="/admin/institution_bulk_delete" />
-                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="/admin/department_bulk_delete" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" />
+                                            <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  />
 
                                         
                                     </div>

@@ -25,7 +25,7 @@
                                         <p:commandButton  class="w-100" ajax="false" value="All Specialities" action="admin_speciality"/>
                                         <p:commandButton  class="w-100" ajax="false" value="Staff" action="/hr/hr_staff_admin"/>
                                         <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{staffController.admin_staff_view_signature()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="admin_staff_signature"/>
+                                        <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToStaffSignature()}"/>
                                         <p:commandButton  class="w-100" ajax="false" value="Connect staff to user" action="admin_user_staff"/>
                                         <p:commandButton  class="w-100" ajax="false" value="Staff List " action="admin_staff_list"/>
                                         <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="/channel/person_institution"/>

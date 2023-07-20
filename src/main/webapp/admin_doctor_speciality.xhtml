@@ -11,16 +11,13 @@
     <ui:define name="subcontent">
 
         <h:panelGroup >
-            <h:form  >
-                <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
+            <p:growl />
 
 
 
-                <p:panel header="Manage Doctor Speciality" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
-
+            <p:panel header="Manage Doctor Speciality" >
+                <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
+                    <h:form >
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
@@ -36,7 +33,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <h:commandButton id="btnAdd" value="Add" action="#{doctorSpecialityController.prepareAdd()}" styleClass="buttons" >
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
                                         </f:ajax>
                                     </h:commandButton>
                                     <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -45,6 +42,9 @@
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
+                    </h:form>
+
+                    <h:form >
 
                         <p:panel style="min-width: 550px; height: 590px">
                             <h:panelGrid id="gpDetail" columns="1">
@@ -55,17 +55,27 @@
                                     <h:inputTextarea  style="width:400px" id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save" action="#{doctorSpecialityController.saveSelected()}" styleClass="buttons">
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                    <h:commandButton id="btnSave" 
+                                                     value="Save" 
+                                                     action="#{doctorSpecialityController.saveSelected()}" 
+                                                     styleClass="buttons">
+                                        <f:ajax   
+                                            execute="gpDetail btnSave" 
+                                            render="lstSelect">
                                         </f:ajax>
                                     </h:commandButton>
                                     <p:defaultCommand target="btnSave"/>
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
-                    </h:panelGrid>
-                </p:panel>
-            </h:form>
+
+                    </h:form>
+
+
+
+
+                </h:panelGrid>
+            </p:panel>
 
         </h:panelGroup>
 

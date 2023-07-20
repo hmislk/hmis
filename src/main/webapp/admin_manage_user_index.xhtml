@@ -14,11 +14,11 @@
                             <h:panelGrid columns="1" >
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser()}" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Manage User Privialges" action="user_privilages" onclick="onSubmitButton();"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Users" action="admin_manage_users" onclick="onSubmitButton();"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Users" action="/admin/users/admin_manage_users" onclick="onSubmitButton();"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="User Loggins" action="admin_user_login" onclick="onSubmitButton();"/>
                             
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Add Department to User" action="user_department"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Remove User" action="admin_view_user"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Remove User" action="/admin/users/admin_view_user"/>
                                 
                             </h:panelGrid>
                         </p:panel>
