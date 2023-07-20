@@ -11,16 +11,16 @@
     <ui:define name="subcontent">
 
         <h:panelGroup >
-            <h:form  >
-                <p:growl />
-                <p:focus id="selectFocus" context="gpSelect" />
-                <p:focus id="detailFocus" context="gpDetail" />
+
+            <p:growl />
+            <p:focus id="selectFocus" context=":#{p:resolveFirstComponentWithId('gpSelect',view).clientId}" />
+            <p:focus id="detailFocus" context=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
 
 
 
-                <p:panel header="Manage Doctor Speciality" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
-
+            <p:panel header="Manage Doctor Speciality" >
+                <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
+                    <h:form >
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
@@ -45,6 +45,9 @@
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
+                    </h:form>
+
+                    <h:form >
 
                         <p:panel style="min-width: 550px; height: 590px">
                             <h:panelGrid id="gpDetail" columns="1">
@@ -63,9 +66,14 @@
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
-                    </h:panelGrid>
-                </p:panel>
-            </h:form>
+
+                    </h:form>
+
+
+
+
+                </h:panelGrid>
+            </p:panel>
 
         </h:panelGroup>
 
