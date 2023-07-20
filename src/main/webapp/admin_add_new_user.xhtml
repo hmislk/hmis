@@ -37,7 +37,8 @@
                                                      autocomplete="off"
                                                      required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                      value="#{webUserController.current.webUserPerson.name}"
-                                                     requiredMessage="Please enter a Name"></p:inputText>
+                                                     requiredMessage="Please enter a Name"
+                                                     style="width: 700px"></p:inputText>
                                         <p:outputLabel for="acTitle" value="Title" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <p:selectOneMenu 
                                             id="acTitle"
@@ -52,27 +53,28 @@
                                                        rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <p:inputText autocomplete="off" 
                                                      id="txtAddress"
-                                                      class="w-100"
+                                                      style="min-width: 700px"
                                                      required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                      value="#{webUserController.current.webUserPerson.address}"
                                                      requiredMessage="Please enter an address."></p:inputText>
                                         <p:outputLabel for="txtPhone" value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <p:inputText id="txtPhone" required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                      value="#{webUserController.current.webUserPerson.mobile}"
-                                                     requiredMessage="Plase enter a phone number"></p:inputText>
+                                                     requiredMessage="Plase enter a phone number"
+                                                     style="width: 700px"></p:inputText>
                                         <p:outputLabel value="Speciality" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
                                         <autocomplete:completeSpeciality value="#{webUserController.speciality}" disable="#{webUserController.createOnlyUser}" rendered="#{!webUserController.createOnlyUserForExsistingUser}"/>
 
                                         <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
                                         <p:inputText id="txtUsername"
                                                      autocomplete="off" required="true" maxlength="50" 
-                                                     value="#{webUserController.current.name}" ></p:inputText>
+                                                     value="#{webUserController.current.name}" style="width: 700px"></p:inputText>
 
                                         <p:outputLabel for="pw1" value="Password" ></p:outputLabel>
-                                        <p:password id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" />
+                                        <p:password id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
 
                                         <p:outputLabel value="Re-enter password" for="pw2"></p:outputLabel>
-                                        <p:password id="pw2" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" />
+                                        <p:password id="pw2" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
                                     </p:panelGrid>
                                 </p:tab>
                                 <p:tab title="Advance" >
@@ -96,7 +98,7 @@
                                         <autocomplete:department value="#{webUserController.department}" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></autocomplete:department>
 
                                         <h:outputLabel value="Code" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
-                                        <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:inputText>
+                                        <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
 
 
                                     </p:panelGrid>
