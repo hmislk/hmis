@@ -11,10 +11,7 @@
     <ui:define name="subcontent">
 
         <h:panelGroup >
-
             <p:growl />
-            <p:focus id="selectFocus" context=":#{p:resolveFirstComponentWithId('gpSelect',view).clientId}" />
-            <p:focus id="detailFocus" context=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" />
 
 
 
@@ -36,7 +33,7 @@
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <h:commandButton id="btnAdd" value="Add" action="#{doctorSpecialityController.prepareAdd()}" styleClass="buttons" >
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
+                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail" execute="" >
                                         </f:ajax>
                                     </h:commandButton>
                                     <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
@@ -58,8 +55,13 @@
                                     <h:inputTextarea  style="width:400px" id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
-                                    <h:commandButton id="btnSave" value="Save" action="#{doctorSpecialityController.saveSelected()}" styleClass="buttons">
-                                        <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
+                                    <h:commandButton id="btnSave" 
+                                                     value="Save" 
+                                                     action="#{doctorSpecialityController.saveSelected()}" 
+                                                     styleClass="buttons">
+                                        <f:ajax   
+                                            execute="gpDetail btnSave" 
+                                            render="lstSelect">
                                         </f:ajax>
                                     </h:commandButton>
                                     <p:defaultCommand target="btnSave"/>
