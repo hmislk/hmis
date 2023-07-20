@@ -20,8 +20,8 @@
                             <h:panelGrid columns="1" >
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Institution" action="/lab/institution"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}"/>
 
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Doctor Specialities" action="doctor_speciality"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Doctors" action="doctor"/>
