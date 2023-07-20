@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin/admin_items_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="item">
 
         <h:panelGroup >
             <h:form  >
@@ -24,11 +24,11 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel header="Parent Category" >
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="5" value="#{serviceSubCategoryController.parentCategory}" style="min-width: 223px" >
+                                    <p:selectOneListbox  id="lstSelect"  scrollHeight="500" class="w-100" value="#{serviceSubCategoryController.parentCategory}" style="min-width: 350px" >
                                         <f:selectItems  value="#{serviceCategoryController.items}"  var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpSelectText1 gpDetail" execute="lstSelect"  >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
 
                             </p:panel>
@@ -36,16 +36,16 @@
 
                         <p:panel header="Sub Category">
                             <h:panelGrid id="gpSelectText1" >
-                                <h:selectOneListbox  id="lstSelect1"   size="5" value="#{serviceSubCategoryController.current}" style="min-width: 223px">
+                                <p:selectOneListbox  id="lstSelect1"  scrollHeight="500" class="w-100" value="#{serviceSubCategoryController.current}" style="min-width: 350px">
                                     <f:selectItems  value="#{serviceSubCategoryController.items}" var="myItem" itemValue="#{myItem1}" itemLabel="#{myItem1.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect1" >
                                     </f:ajax>
-                                </h:selectOneListbox>
+                                </p:selectOneListbox>
 
                             </h:panelGrid>
                         </p:panel>
 
-                        <p:panel>
+                        <p:panel style="height: 570px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>

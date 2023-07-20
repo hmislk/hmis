@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin/admin_items_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -9,7 +9,7 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="item">
 
         <h:panelGroup >
             <h:form id="form"  >
@@ -68,19 +68,18 @@
                             </p:dataTable>
                         </p:panel>
                         <h:panelGrid columns="1" >
-                            <p:panel >
-                                <p:commandButton ajax="false" value="List All Items" action="#{itemController.createMasterItemsList()}" styleClass="noPrintButton" >
+                            <div class="d-grid gap-2">
+                                <p:commandButton ajax="false" value="List All Items" action="#{itemController.createMasterItemsList()}" class="w-100">
                                 </p:commandButton>
-                            </p:panel>
-                            <p:panel >
-                                <p:commandButton ajax="false" value="List All Master Items" action="#{itemController.createAllItemsList()}" styleClass="noPrintButton" >
+                            
+                            
+                                <p:commandButton ajax="false" value="List All Master Items" action="#{itemController.createAllItemsList()}" class="w-100" >
                                 </p:commandButton>
-                            </p:panel>
-                            <p:panel >
-                                <p:commandButton ajax="false" value="Make Selected Items as Master Items" action="#{itemController.makeSelectedAsMasterItems()}" styleClass="noPrintButton" >
+                           
+                                <p:commandButton ajax="false" value="Make Selected Items as Master Items" action="#{itemController.makeSelectedAsMasterItems()}" class="w-100">
                                 </p:commandButton>
-                            </p:panel>
-                            <p:panel >
+                            </div>
+                            <div class="d-grid gap-2">
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="Institution" ></h:outputLabel>
                                     <p:selectOneMenu id="cmbIns" value="#{itemController.instituion}" >
@@ -98,11 +97,11 @@
                                     </p:selectOneMenu>
                                 </h:panelGrid>
                                 <p:commandButton value="Create New Items for Selected Master Items"
-                                                 action="#{itemController.createNewItemsFromMasterItems}" ajax="false" ></p:commandButton>
+                                                 action="#{itemController.createNewItemsFromMasterItems}" ajax="false" class="w-100"></p:commandButton>
 
                                 <p:commandButton value="Update Items"
-                                                 action="#{itemController.updateItemsFromMasterItems}" ajax="false" ></p:commandButton>
-                            </p:panel>
+                                                 action="#{itemController.updateItemsFromMasterItems}" ajax="false" class="w-100"></p:commandButton>
+                        </div>
 
                         </h:panelGrid>
 

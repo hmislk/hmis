@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin/admin_items_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="item">
 
         <h:panelGroup >
             <h:form id="form"  >
@@ -21,11 +21,11 @@
                             <p:panel header="Search Service" >
                                 <h:panelGrid id="gpSelectText" >
 
-                                    <h:inputText autocomplete="off" id="txtSearch" value="#{theatreServiceController.selectText}" >
+                                    <h:inputText autocomplete="off" id="txtSearch" value="#{theatreServiceController.selectText}" style="width: 400px;">
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </h:inputText>
 
-                                    <p:selectOneListbox converter="serv"   id="lstSelect"   value="#{theatreServiceController.current}" style="min-width: 223px; height: 300px;">
+                                    <p:selectOneListbox converter="serv"   id="lstSelect"   value="#{theatreServiceController.current}" style="min-width: 400px;" scrollHeight="500" class="w-100">
                                         <f:selectItems  value="#{theatreServiceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >
@@ -48,7 +48,7 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel header="Edit Details">
+                        <p:panel header="Edit Details" style="height: 650px">
                             <f:facet name="header" >
 
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
@@ -65,19 +65,19 @@
 
 
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{theatreServiceController.current.name}" required="true" ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{theatreServiceController.current.name}" required="true" style="width: 400px;"></h:inputText>
                                     <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtAddress"   value="#{theatreServiceController.current.printName}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtAddress"   value="#{theatreServiceController.current.printName}"  style="width: 400px;"></h:inputText>
                                     <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtFullName"   value="#{theatreServiceController.current.fullName}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtFullName"   value="#{theatreServiceController.current.fullName}" style="width: 400px;" ></h:inputText>
                                     <p:outputLabel value="Item Code"/>
-                                    <p:inputText autocomplete="off" value="#{theatreServiceController.current.code}"/>
+                                    <p:inputText autocomplete="off" value="#{theatreServiceController.current.code}" style="width: 400px;"/>
 
                                     <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                     <p:autoComplete converter="categoryConverter" 
                                                     completeMethod="#{categoryController.completeServiceCategory}" 
                                                     var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" 
-                                                    forceSelection="true" value="#{theatreServiceController.current.category}" >                                    
+                                                    forceSelection="true" value="#{theatreServiceController.current.category}" style="width: 400px;">                                    
                                         <p:column>#{pta.name}</p:column>
                                         <p:column>#{pta.parentCategory}</p:column>                                        
                                     </p:autoComplete>
@@ -97,23 +97,23 @@
                                     </p:autoComplete>
 
                                     <h:outputText value="Institution" ></h:outputText>
-                                    <p:selectOneMenu id="cmbIns" value="#{theatreServiceController.current.institution}" >
+                                    <p:selectOneMenu id="cmbIns" value="#{theatreServiceController.current.institution}" style="width: 400px;">
                                         <f:selectItem itemLabel="Please select a Institution"/>
                                         <f:selectItems value="#{institutionController.companies}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                         <f:ajax execute="cmbIns" render="cmbDep" event="change"/>                                        
                                     </p:selectOneMenu>
                                     <h:outputText value="Department" ></h:outputText>
-                                    <p:selectOneMenu id="cmbDep" value="#{theatreServiceController.current.department}" >
+                                    <p:selectOneMenu id="cmbDep" value="#{theatreServiceController.current.department}" style="width: 400px;">
                                         <f:selectItem itemLabel="Please select a Department"/>
                                         <f:selectItems value="#{theatreServiceController.institutionDepatrments}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                     </p:selectOneMenu>
                                     <h:outputText value="Inward Charge Category" ></h:outputText>
-                                    <p:selectOneMenu id="cmbInward" value="#{theatreServiceController.current.inwardChargeType}" >
+                                    <p:selectOneMenu id="cmbInward" value="#{theatreServiceController.current.inwardChargeType}" style="width: 400px;">
                                         <f:selectItem itemLabel="Please select Charge"/>
                                         <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                     </p:selectOneMenu>
                                     <h:outputText value="Session Numbering" ></h:outputText>
-                                    <p:selectOneMenu  value="#{theatreServiceController.current.sessionNumberType}" >
+                                    <p:selectOneMenu  value="#{theatreServiceController.current.sessionNumberType}" style="width: 400px;">
                                         <f:selectItem itemLabel="Please select Session Numbering"/>
                                         <f:selectItems value="#{theatreServiceController.sessionNumberType}"/>
                                     </p:selectOneMenu>

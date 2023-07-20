@@ -25,11 +25,11 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="12" value="#{packageNameController.current}" style="min-width: 253px">
+                                    <p:selectOneListbox  id="lstSelect"   class="w-100" scrollHeight="500" value="#{packageNameController.current}" style="min-width:400px">
                                         <f:selectItems  value="#{packageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
@@ -46,7 +46,7 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel style="min-height: 550px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <p:panel header="PackageItem Detail" style="width: 600px; height: 270px">
                                     <h:outputLabel value="Active" rendered="#{!packageNameController.current.inactive}" style="color: green;"></h:outputLabel>
@@ -55,7 +55,7 @@
                                     <h:panelGrid id="gpDetailText" columns="2" style="height: 150px">
 
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtName" value="#{packageNameController.current.name}"  ></h:inputText>
+                                        <h:inputText autocomplete="off" id="txtName" value="#{packageNameController.current.name}" style="min-width: 400px" ></h:inputText>
                                         <h:outputText value="" ></h:outputText>
                                         <p:selectBooleanCheckbox value="#{packageNameController.current.inactive}" itemLabel="Service Inactive"/>
                                     </h:panelGrid>
