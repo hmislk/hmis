@@ -37,21 +37,22 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class InvestigationCategoryController implements Serializable {
+
     /*
     * EJBs
-    */
+     */
     @EJB
     private InvestigationCategoryFacade ejbFacade;
     @EJB
     MachineFacade machineFacade;
     /*
     * Controllers
-    */
+     */
     @Inject
     SessionController sessionController;
     /*
     * Class Variable
-    */
+     */
     List<InvestigationCategory> selectedItems;
     private InvestigationCategory current;
     private List<InvestigationCategory> items = null;
@@ -172,9 +173,14 @@ public class InvestigationCategoryController implements Serializable {
     public void setManageItemIndex(int manageItemIndex) {
         this.manageItemIndex = manageItemIndex;
     }
-    
-    
 
+    public String navigateToInvestigations() {
+        return "investigation.xhtml";
+    }
+
+    public String navigateToInvestigationFees() {
+        return "investigation_fee.xhtml";
+    }
     /**
      *
      */

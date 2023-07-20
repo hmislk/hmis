@@ -37,15 +37,15 @@
     </h:head>
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/admin/admin_items_index.xhtml">
+            <ui:define name="item">
                 <h:form>
                     <p:panel header="Manage Nationalities" >
 
                         <table>
                             <tr>
                                 <td>
-                                    <p:inputText id="txtNewName" value="#{categoryController.selectText}" ></p:inputText>
+                                    <p:inputText id="txtNewName" value="#{categoryController.selectText}" style="width: 850px;"></p:inputText>
                                     <p:commandButton id="btnNew"
                                                    ajax="false"
                                                      value="Add New"
