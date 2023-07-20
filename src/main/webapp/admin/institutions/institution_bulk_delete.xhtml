@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/admin/admin_institutions_index.xhtml"
+                template="admin_institutions_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -15,17 +15,15 @@
                 <p:growl />
                 <p:panel id="panalItem"  >
                     <f:facet name="header" >
-                        <h:outputLabel value="Department Delete"></h:outputLabel>
+                        <h:outputLabel value="Institution Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{departmentController.removeSelectedItems()}"
-                                     onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
-                                     >
+                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{institutionController.removeSelectedItems()}">
                     </p:commandButton>
 
-                    <p:dataTable id="dtF" value="#{departmentController.items}" var="sv" 
-                                 rowKey="#{sv.id}" selection="#{departmentController.itemsToRemove}" 
-                                 rows="100"
+                    <p:dataTable id="dtF" value="#{institutionController.items}" var="sv" 
+                                 rowKey="#{sv.id}" selection="#{institutionController.itemsToRemove}" 
+                                 rows="10"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="10,50,100,500"
@@ -33,17 +31,13 @@
                         <p:column id="colSelect"  selectionMode="multiple" >
                         </p:column>
 
-                        <p:column headerText="Type" sortBy="#{sv.departmentType.label}" filterBy="#{sv.departmentType.label}" filterMatchMode="contains"
+                        <p:column headerText="Type" sortBy="#{sv.institutionType.label}" filterBy="#{sv.institutionType.label}" filterMatchMode="contains"
                                   style="font-weight:normal ;color: black;text-align: left;" >
-                            <h:outputLabel value="#{sv.departmentType.label}" />
+                            <h:outputLabel value="#{sv.institutionType.label}" />
                         </p:column>
-                        <p:column headerText="Department" filterBy="#{sv.name}" filterMatchMode="contains" sortBy="#{sv.name}"
+                        <p:column headerText="Instiution" filterBy="#{sv.name}" filterMatchMode="contains" sortBy="#{sv.name}"
                                   style="font-weight:normal ;color: black;text-align: left; width: 400px;overflow: hidden;">
                             <h:outputLabel value="#{sv.name}" />
-                        </p:column>
-                        <p:column headerText="Instiution" filterBy="#{sv.institution.name}" filterMatchMode="contains" sortBy="#{sv.institution.name}"
-                                  style="font-weight:normal ;color: black;text-align: left; width: 400px;overflow: hidden;">
-                            <h:outputLabel value="#{sv.institution.name}" />
                         </p:column>
                         <p:column headerText="Address" filterBy="#{sv.address}" filterMatchMode="contains" sortBy="#{sv.address}"
                                   style="font-weight:normal ;color: black;text-align: left;overflow: hidden;">
@@ -61,7 +55,7 @@
                                   style="font-weight:normal ;color: black;text-align: left;width: 200px;"
                                   sortBy="#{sv.createdAt}" >
                             <h:outputLabel value="#{sv.createdAt}" >
-                                <f:convertDateTime timeZone="Asia/Colombo" pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
                         

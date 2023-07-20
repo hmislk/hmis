@@ -9,7 +9,7 @@
 
     <h:body >
 
-        <ui:composition template="/admin_manage_users.xhtml">
+        <ui:composition template="admin_manage_users.xhtml">
 
             <ui:define name="subcontent">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >

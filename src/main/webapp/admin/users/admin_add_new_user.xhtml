@@ -8,7 +8,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/admin_manage_users.xhtml">
+        <ui:composition template="admin_manage_users.xhtml">
             <ui:define name="subcontent">
                 <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not  sessionController.firstLogin }" >
                     You are NOT authorized

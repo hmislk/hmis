@@ -845,7 +845,7 @@ public class WebUserController implements Serializable {
     }
 
     public String backToViewUsers() {
-        return "/admin_view_user";
+        return "/admin/users/admin_view_user";
     }
 
     public String changeCurrentUserPassword() {
