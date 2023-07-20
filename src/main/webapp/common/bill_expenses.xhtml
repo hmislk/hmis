@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin/admin_items_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="item">
 
         <h:panelGroup >
             <h:form id="form"  >
@@ -21,11 +21,11 @@
                             <p:panel header="Search Service" >
                                 <h:panelGrid id="gpSelectText" >
 
-                                    <h:inputText autocomplete="off" id="txtSearch" value="#{billExpenseController.selectText}" >
+                                    <h:inputText autocomplete="off" id="txtSearch" value="#{billExpenseController.selectText}" style="width: 400px;">
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </h:inputText>
 
-                                    <p:selectOneListbox converter="billExpenseConverter"   id="lstSelect"   value="#{billExpenseController.current}" style="min-width: 223px; height: 300px;">
+                                    <p:selectOneListbox converter="billExpenseConverter"   id="lstSelect"   value="#{billExpenseController.current}" style="min-width: 400px; " scrollHeight="500" class="w-100">
                                         <f:selectItems  value="#{billExpenseController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >
@@ -49,7 +49,7 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel header="Edit Details">
+                        <p:panel header="Edit Details" style="height: 625px; width: 650px">
                             <f:facet name="header" >
 
                                 <h:outputLabel value="Edit Details" ></h:outputLabel>
@@ -63,13 +63,13 @@
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{billExpenseController.current.name}" required="true" ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{billExpenseController.current.name}" required="true" style="width: 500px;"></h:inputText>
                                     <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtAddress"   value="#{billExpenseController.current.printName}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtAddress"   value="#{billExpenseController.current.printName}"  style="width: 500px;"></h:inputText>
                                     <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtFullName"   value="#{billExpenseController.current.fullName}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtFullName"   value="#{billExpenseController.current.fullName}"  style="width: 500px;"></h:inputText>
                                     <p:outputLabel value="Item Code"/>
-                                    <p:inputText autocomplete="off" value="#{billExpenseController.current.code}"/>
+                                    <p:inputText autocomplete="off" value="#{billExpenseController.current.code}" style="width: 500px;"/>
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>

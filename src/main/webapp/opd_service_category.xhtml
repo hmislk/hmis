@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin/admin_items_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="item">
 
         <h:panelGroup >
             <h:form  >
@@ -24,11 +24,11 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{serviceCategoryController.current}" style="min-width: 223px">
+                                    <p:selectOneListbox  id="lstSelect"  scrollHeight="500" class="w-100" value="#{serviceCategoryController.current}" style="min-width: 400px">
                                         <f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
 
@@ -45,13 +45,13 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel style="width: 650px; height: 550px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{serviceCategoryController.current.name}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{serviceCategoryController.current.name}"  style="width: 550px;"></h:inputText>
                                     <h:outputText id="lblNameIn" value="Income Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtNameIn" value="#{serviceCategoryController.current.description}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtNameIn" value="#{serviceCategoryController.current.description}" style="width: 550px;" ></h:inputText>
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
