@@ -50,4 +50,36 @@ public class NavigationController implements Serializable {
         return "/admin/institutions/department_bulk_delete";
     }
     
+    public String navigateToAdminDoctorSpeciality(){
+        return "/admin/staff/admin_doctor_speciality";
+    }
+    
+     public String navigateToAdminDoctor(){
+        return "/admin/staff/admin_doctor";
+    }
+    public String navigateToAdminDoctorConsultant(){
+        return "/admin/staff/admin_doctor_consultant";
+    }
+    
+    public String navigateToDoctorSpecilaity(){
+        return "/admin/staff/admin_speciality";
+    }
+    
+    public String navigateToAdminUserStaff(){
+        return "/admin/staff/admin_user_staff";
+    }
+    public String navigateToStaffList(){
+        return "/admin/staff/admin_staff_list";
+    }
+    
+    public String navigateToPersonInstitution(){
+        return "/admin/staff/person_institution";
+    }
+    public String navigateToStaffBulkDelete(){
+        return "/admin/staff/staff_bulk_delete";
+    }
+    
+    public String navigateToAdminStaffSignature(){
+        return "/admin/staff/admin_staff_signature";
+    }
 }
