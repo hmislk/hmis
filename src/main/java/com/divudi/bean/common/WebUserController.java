@@ -115,6 +115,7 @@ public class WebUserController implements Serializable {
     private Dashboard dashboard;
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
+    private int manageDiscountIndex;
     
     private int manageUsersIndex;
     
@@ -953,6 +954,14 @@ public class WebUserController implements Serializable {
 
     public void setManageUsersIndex(int manageUsersIndex) {
         this.manageUsersIndex = manageUsersIndex;
+    }
+
+    public int getManageDiscountIndex() {
+        return manageDiscountIndex;
+    }
+
+    public void setManageDiscountIndex(int manageDiscountIndex) {
+        this.manageDiscountIndex = manageDiscountIndex;
     }
 
     @FacesConverter("webUs")
