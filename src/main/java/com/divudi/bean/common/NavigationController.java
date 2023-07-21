@@ -82,4 +82,80 @@ public class NavigationController implements Serializable {
     public String navigateToAdminStaffSignature(){
         return "/admin/staff/admin_staff_signature";
     }
+    
+    public String navigateToMembershipScheme(){
+        return "/admin/discount/membership_scheme";
+    }
+    
+    public String navigateToMembershipPaymentMethodAllowed(){
+        return "/admin/discount/membership_scheme_payment_method_allowed";
+    }
+    
+    public String navigateToMembershipSchemeDiscountInward(){
+        return "/admin/discount/membership_scheme_discount_inward";
+    }
+    
+    public String navigateToMembershipSchemeDiscountOpdByCategory(){
+        return "/admin/discount/membership_scheme_discount_opd_by_category";
+    }
+    
+    public String navigateToMembershipSchemeDiscountOpdByDepartment(){
+        return "/admin/discount/membership_scheme_discount_opd_by_department";
+    }
+    
+    public String navigateToMembershipSchemeDiscountPharmacyByCategory(){
+        return "/admin/discount/payment_method_discount_pharmacy_by_category";
+    }
+    
+    public String navigateToMembershipSchemeDiscountChannelingByDepartment(){
+        return "/admin/discount/membership_scheme_discount_channelling_by_department";
+    }
+    
+    public String navigateToPaymentScheme(){
+        return "/admin/discount/payment_scheme";
+    }
+    
+    public String navigateToPaymentSchemeDiscountChannel(){
+        return "/admin/discount/payment_scheme_discount_channel";
+    }
+    
+    public String navigateToPaymentSchemeDiscountOpdBtCategory(){
+        return "/admin/discount/payment_scheme_discount_opd_by_category";
+    }
+    
+    public String navigateToPaymentSchemeDiscountOpdByDepartment(){
+        return "/admin/discount/payment_scheme_discount_opd_by_department";
+    }
+    
+    public String navigateToPaymentSchemeDiscountOpdByItem(){
+        return "/admin/discount/payment_scheme_discount_opd_by_item";
+    }
+    
+    public String navigateToPaymentSchemeDiscountPharmacyByCategory(){
+        return "/admin/discount/payment_scheme_discount_pharmacy_by_category";
+    }
+    
+    public String navigateToPaymentMethodAllowed(){
+        return "/admin/discount/payment_scheme_payment_method_allowed";
+    }
+    
+    public String navigateToPaymentMethodDiscountOpdByCategory(){
+        return "/admin/discount/payment_scheme_payment_method_allowed";
+    }
+    
+    public String navigateToPaymentMethodDiscountOpdByDepartment(){
+        return "/admin/discount/payment_method_discount_opd_by_department";
+    }
+    
+    public String navigateToPaymentMethodDiscountOpdByItem(){
+        return "/admin/discount/payment_method_discount_opd_by_item";
+    }
+    
+    public String navigateToReportInward(){
+        return "/admin/discount/report_inward";
+    }
+    
+    public String navigateToReportOpd(){
+        return "/admin/discount/report_opd";
+    }
 }

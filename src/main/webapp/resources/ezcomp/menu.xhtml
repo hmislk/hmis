@@ -730,7 +730,7 @@
                     <p:menuitem  ajax="false"  action="/forms/index" value="Manage Form" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{itemController.toManageItemdIndex()}" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/admin_fees" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="admin/discount/admin_discounts" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/dataAdmin/admin_data_administration" value="Data Administration" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/admin/bill_contact_numbers.xhtml" value="Send Bulk SMS" rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" ></p:menuitem>
 

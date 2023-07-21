@@ -9,18 +9,18 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="admin_discounts.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="OPD Payment Discount Matrix" id="reportPrint">
+                    <p:panel header="OPD Membership Discount Matrix" id="reportPrint">
 
                         <p:panel header="Add new Matrix" >
                             <p:panelGrid columns="2" >
-                                <h:outputLabel value="Discount Scheme"/>
+                                <h:outputLabel value="Membership Scheme"/>
                                 <p:autoComplete forceSelection="true" 
-                                                value="#{opdMemberShipDiscountController.paymentScheme}" 
-                                                completeMethod="#{paymentSchemeController.completePaymentScheme}" 
+                                                value="#{opdMemberShipDiscountController.membershipScheme}" 
+                                                completeMethod="#{membershipSchemeController.completeMembershipScheme}" 
                                                 var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
                                 </p:autoComplete>
                                 <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
@@ -54,7 +54,7 @@
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton id="btnAdd" value="Add" ajax="false"
-                                                action="#{opdMemberShipDiscountController.saveOpdCategoryPaymentScheme()}" >
+                                                action="#{opdMemberShipDiscountController.saveOpdCategory()}" >
                                 </p:commandButton>
 
                                 <p:defaultCommand target="btnAdd"/>
@@ -63,7 +63,7 @@
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_investigation"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Fill"
-                                            action="#{opdMemberShipDiscountController.createItemsCategoryOpdPaymentScheme()}" />
+                                            action="#{opdMemberShipDiscountController.createItemsCategoryOpd()}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
@@ -76,10 +76,10 @@
                                          filteredValue="#{opdMemberShipDiscountController.filterItems}"
                                          var="a" editable="true" scrollable="true" scrollHeight="500">
 
-                                <p:column headerText="Discount Scheme">
+                                <p:column headerText="Member Ship Scheme">
                                     <p:autoComplete forceSelection="true" 
-                                                    value="#{a.paymentScheme}" 
-                                                    completeMethod="#{paymentSchemeController.completePaymentScheme}" 
+                                                    value="#{a.membershipScheme}" 
+                                                    completeMethod="#{membershipSchemeController.completeMembershipScheme}" 
                                                     var="mem" itemLabel="#{mem.name}" itemValue="#{mem}" >
                                     </p:autoComplete>
                                 </p:column>
@@ -123,7 +123,7 @@
                                     <p:commandButton ajax="false" value="Update" action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton value="Delete" action="#{opdMemberShipDiscountController.deleteCategoryOpdPaymentScheme}">
+                                    <p:commandButton value="Delete" action="#{opdMemberShipDiscountController.deleteCategoryOpd}">
                                         <f:setPropertyActionListener value="#{a}" target="#{opdMemberShipDiscountController.current}"/>
                                     </p:commandButton>
                                 </p:column>
