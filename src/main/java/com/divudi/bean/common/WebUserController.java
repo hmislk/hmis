@@ -115,6 +115,7 @@ public class WebUserController implements Serializable {
     private Dashboard dashboard;
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
+    private int manageDiscountIndex;
     
     private int manageUsersIndex;
     
@@ -766,7 +767,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getStaffController().setCurrent(selected.getStaff());
-        return "/admin_staff_signature";
+        return "/admin/institutions/admin_staff_signature";
     }
 
     public String toManageDepartments() {
@@ -845,7 +846,7 @@ public class WebUserController implements Serializable {
     }
 
     public String backToViewUsers() {
-        return "/admin_view_user";
+        return "/admin/users/admin_view_user";
     }
 
     public String changeCurrentUserPassword() {
@@ -953,6 +954,14 @@ public class WebUserController implements Serializable {
 
     public void setManageUsersIndex(int manageUsersIndex) {
         this.manageUsersIndex = manageUsersIndex;
+    }
+
+    public int getManageDiscountIndex() {
+        return manageDiscountIndex;
+    }
+
+    public void setManageDiscountIndex(int manageDiscountIndex) {
+        this.manageDiscountIndex = manageDiscountIndex;
     }
 
     @FacesConverter("webUs")

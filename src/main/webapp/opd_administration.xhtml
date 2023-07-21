@@ -20,8 +20,8 @@
                             <h:panelGrid columns="1" >
                                 <p:commandButton styleClass="linkButton" ajax="false" value="Institution" action="/lab/institution"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Departments" action="/management/department"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="/lab/collecting_centre"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="/lab/credit_company"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}"/>
 
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Doctor Specialities" action="doctor_speciality"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Doctors" action="doctor"/>
@@ -32,7 +32,7 @@
 
 
 
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="New User" action="admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser()}"/>
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="New User" action="/admin/users/admin_add_new_user" actionListener="#{webUserController.prepairAddNewUser()}"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Manage User Privialges" action="user_privilages"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Add Department to User" action="user_department"/>
                                 <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="staff_signature"/>

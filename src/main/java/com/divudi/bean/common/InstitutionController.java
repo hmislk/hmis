@@ -70,17 +70,17 @@ public class InstitutionController implements Serializable {
     private int managaeInstitutionIndex;
 
     public String toAdminManageInstitutions() {
-        return "/admin/admin_institutions_index";
+        return "/admin/institutions/admin_institutions_index";
     }
 
     public String toListInstitutions() {
         fillItems();
-        return "/admin/institutions";
+        return "/admin/institutions/institutions";
     }
 
     public String toAddNewInstitution() {
         current = new Institution();
-        return "/admin/institution";
+        return "/admin/institutions/institution";
     }
 
     public String toEditInstitution() {
