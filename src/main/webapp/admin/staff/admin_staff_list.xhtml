@@ -8,34 +8,35 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="admin_manage_staff_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Staff List" >
                         <p:panel>
-                            <h:panelGrid columns="1">
-                                <p:commandButton ajax="false" value="Fill All" 
+                            <div class="d-grid gap-2">
+                                <p:commandButton ajax="false" value="Fill All" class="w-100"
                                                  action="#{staffController.createStaffList}"
                                                   onclick="onSubmitButton();"/>
-                                <p:commandButton ajax="false" value="Fill Staff Only" 
+                                <p:commandButton ajax="false" value="Fill Staff Only" class="w-100"
                                                  action="#{staffController.createStaffOnly}"
                                                   onclick="onSubmitButton();"/>
                                 
-                                <p:commandButton ajax="false" value="Fill Doctors,Consultant" 
+                                <p:commandButton ajax="false" value="Fill Doctors,Consultant" class="w-100"
                                                  action="#{staffController.createDoctorsOnly}"
                                                   onclick="onSubmitButton();"/>
 
-                                <p:commandButton ajax="false" value="Fill All(Staff who has no speciality)"
+                                <p:commandButton ajax="false" value="Fill All(Staff who has no speciality)" class="w-100"
                                                  action="#{staffController.createStaffListWithOutSpecility}" 
                                                   onclick="onSubmitButton();"/>
-                            </h:panelGrid>
+                            
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
                                 <p:dataExporter type="xlsx" target="tbl1" fileName="Staff_Without_Specility"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="tbl1" />
                             </p:commandButton>
+                                </div>
                         </p:panel>
                         <p:panel >
                             <p:dataTable value="#{staffController.staffWithCode}"  var="s" id="tbl1" rowIndexVar="i">
