@@ -1384,7 +1384,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String getPrimeTheme() {
         if (primeTheme == null || primeTheme.equals("")) {
-            primeTheme = "nova-light";
+            primeTheme = "cerulean";
         }
         if (getLoggedUser() != null) {
             if (getLoggedUser().getPrimeTheme() != null) {
