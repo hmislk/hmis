@@ -13,14 +13,14 @@
             <ui:define name="item">
                 <h:form>
                     <p:panel header="Manage Relationships"  >
-                        <table >
+                        <table class="w-100">
                             <tr>
                                 <td>
-                                    <p:panel id="panelSelect" >
-                                        <table class="alignTop">
+                                    <p:panel id="panelSelect" class="w-100">
+                                        <table class="alignTop" >
                                             <tr  class="alignTop">
                                                 <td colspan="2"  class="alignTop">
-                                                    <p:selectOneListbox id="lstItems" value="#{relationshipController.current}" >
+                                                    <p:selectOneListbox id="lstItems" value="#{relationshipController.current}" style="min-width: 250px">
                                                         <f:selectItems value="#{relationshipController.items}" var="r" itemLabel="#{r.atobName} - #{r.btoaName} " itemValue="#{r}" ></f:selectItems>
                                                         <f:ajax event="change" execute="lstItems" render="panelDetails" ></f:ajax>
                                                     </p:selectOneListbox>
@@ -48,19 +48,19 @@
                                 </td>
                                 <td>
 
-                                    <p:panel id="panelDetails" >
-                                        <table >
+                                    <p:panel id="panelDetails" class="w-100">
+                                        <table class="w-100">
                                             <tr>
-                                                <td colspan="2">
-                                                    <p:panelGrid columns="2">
+                                                
+                                                    <p:panelGrid columns="2" class="w-100">
                                                         <p:outputLabel value="A to B Name:" for="atobName" />
-                                                        <p:inputText id="atobName" value="#{relationshipController.current.atobName}" title="A to B Name" />
+                                                        <p:inputText id="atobName" value="#{relationshipController.current.atobName}" title="A to B Name" style="min-width: 250px"/>
                                                         <p:outputLabel value="B to A Name:" for="btoaName" />
-                                                        <p:inputText id="btoaName" value="#{relationshipController.current.btoaName}" title="B to A Name" />
+                                                        <p:inputText id="btoaName" value="#{relationshipController.current.btoaName}" title="B to A Name" style="min-width: 250px"/>
                                                         <p:outputLabel value="Order No:" for="orderNo" />
-                                                        <p:inputText id="orderNo" value="#{relationshipController.current.orderNo}" title="Order No" />
+                                                        <p:inputText id="orderNo" value="#{relationshipController.current.orderNo}" title="Order No" style="min-width: 250px" />
                                                     </p:panelGrid>
-                                                </td>
+                                                
                                             </tr>
                                             <tr>
                                                 <td>

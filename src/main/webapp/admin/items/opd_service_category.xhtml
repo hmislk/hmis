@@ -19,18 +19,17 @@
 
 
                 <p:panel header="ManageService Category" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
-
-                        <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h:panelGrid id="gpSelect" columns="1" class="w-100"  >
+                            <p:panel class="w-100" >
                                 <h:panelGrid id="gpSelectText" >
-                                    <p:selectOneListbox  id="lstSelect"  scrollHeight="500" class="w-100" value="#{serviceCategoryController.current}" style="min-width: 400px">
-                                        <f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
-                                        <f:ajax render="gpDetail" execute="lstSelect" >
-                                        </f:ajax>
-                                    </p:selectOneListbox>
+                                    <p:selectOneMenu  id="lstSelect" class="w-100" value="#{serviceCategoryController.current}">
+                                        <f:selectItems  value="#{serviceCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                        <f:ajax render="gpDetail" execute="lstSelect" />
+                                    </p:selectOneMenu>
                                 </h:panelGrid>
-                                <h:panelGrid id="gpSelectButtons" columns="3"  >
+                                <h:panelGrid id="gpSelectButtons" columns="2" >
 
                                     <h:commandButton id="btnAdd" value="Add" action="#{serviceCategoryController.prepareAdd()}" styleClass="buttons" >
                                         <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail detailFocus" execute="" >
@@ -44,14 +43,15 @@
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
-
-                        <p:panel style="width: 650px; height: 550px">
+                        </div>
+                        <div class="col-md-5">
+                             <p:panel class="w-100">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{serviceCategoryController.current.name}"  style="width: 550px;"></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{serviceCategoryController.current.name}"  class="form-control"></h:inputText>
                                     <h:outputText id="lblNameIn" value="Income Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtNameIn" value="#{serviceCategoryController.current.description}" style="width: 550px;" ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtNameIn" value="#{serviceCategoryController.current.description}" class="form-control" ></h:inputText>
 
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">
@@ -65,7 +65,14 @@
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
-                    </h:panelGrid>
+                        </div>
+                    </div>
+                    
+
+                        
+
+                       
+                   
                 </p:panel>
             </h:form>
 
