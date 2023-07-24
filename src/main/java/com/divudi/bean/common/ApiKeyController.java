@@ -76,7 +76,7 @@ public class ApiKeyController implements Serializable {
                 + " where a.keyValue=:kv";
         Map m = new HashMap();
         m.put("kv", keyValue);
-        return getFacade().findFirstBySQL(j, m);
+        return getFacade().findFirstByJpql(j, m);
     }
 
     public void prepareAdd() {

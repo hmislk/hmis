@@ -62,7 +62,7 @@ public class PhDateController implements Serializable {
     public List<PhDate> completePhDate(String qry) {
         List<PhDate> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from PhDate c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findBySQL("select c from PhDate c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -100,7 +100,7 @@ public class PhDateController implements Serializable {
         m.put("fd", frDate);
         m.put("td", toDate);
 
-        phDates = getFacade().findBySQL(sql, m);
+        phDates = getFacade().findByJpql(sql, m);
         
         commonController.printReportDetails(frDate, toDate, startTime, "HR/Reports/HR holidays/Holiday report(/faces/hr/hr_report_ph_date.xhtml)");
 

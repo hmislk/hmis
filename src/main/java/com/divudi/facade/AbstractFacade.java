@@ -33,6 +33,19 @@ public abstract class AbstractFacade<T> {
         getEntityManager().flush();
 
     }
+    
+    public T findFirstByJpql(String jpql) {
+        System.out.println("findFirstByJpql");
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        qry.setMaxResults(1);
+        try {
+            T result = qry.getSingleResult();
+            System.out.println("result = " + result);            ;
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public List<Object> findObjects(String temSQL, Map<String, Object> parameters) {
         return findObjects(temSQL, parameters, TemporalType.DATE);
@@ -95,7 +108,18 @@ public abstract class AbstractFacade<T> {
         return q.getResultList();
     }
 
-    public T findFirstBySQL(String temSQL, Map<String, Object> parameters) {
+    public T findFirstByJpql(String temSQL, Map<String, Object> parameters, boolean withoutGettingWholeList) {
+        T t = null;
+        List<T> ts = findByJpql(temSQL, parameters);
+        if (ts != null) {
+            if (!ts.isEmpty()) {
+                t = ts.get(0);
+            }
+        }
+        return t;
+    }
+
+    public T findFirstByJpql(String temSQL, Map<String, Object> parameters) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
@@ -201,22 +225,20 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
-    public List<T> findBySQL(String temSQL, Map<String, Object> parameters) {
+    public List<T> findByJpql(String temSQL, Map<String, Object> parameters) {
+
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
-//        //////// // System.out.println("temSQL = " + temSQL);
         while (it.hasNext()) {
             Map.Entry m = (Map.Entry) it.next();
             String pPara = (String) m.getKey();
             if (m.getValue() instanceof Date) {
                 Date pVal = (Date) m.getValue();
                 qry.setParameter(pPara, pVal, TemporalType.DATE);
-//                //////// // System.out.println("Parameter " + pPara + "\t Val =" + pVal);
             } else {
                 Object pVal = (Object) m.getValue();
                 qry.setParameter(pPara, pVal);
-//                //////// // System.out.println("Parameter " + pPara + "\t Val =" + pVal);
             }
         }
 
@@ -226,6 +248,7 @@ public abstract class AbstractFacade<T> {
         } catch (Exception e) {
             ts = new ArrayList<>();
         }
+
         return ts;
     }
 
@@ -678,89 +701,11 @@ public abstract class AbstractFacade<T> {
         return getEntityManager().createQuery(cq).getResultList();
     }
 
-    public List<T> findExact(String fieldName, String fieldValue, boolean withoutRetired) {
-        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        ParameterExpression<String> p = cb.parameter(String.class);
-//        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
-        Predicate predicateField = cb.equal(cb.upper(rt.<String>get(fieldName)), fieldValue.toLowerCase());
-        Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), false);
-        Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
+    
 
-        if (withoutRetired && !fieldValue.equals("")) {
-            cq.where(predicateFieldRetired);
-        } else if (withoutRetired) {
-            cq.where(predicateRetired);
-        } else if (!fieldValue.equals("")) {
-            cq.where(predicateField);
-        }
+    
 
-        if (!fieldName.equals("")) {
-            cq.orderBy(cb.asc(rt.get(fieldName)));
-        }
-
-        return getEntityManager().createQuery(cq).getResultList();
-    }
-
-    public List<T> findContains(String fieldName, String fieldValue) {
-        javax.persistence.criteria.CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-        javax.persistence.criteria.CriteriaQuery<T> cq = cb.createQuery(entityClass);
-        javax.persistence.criteria.Root<T> rt = cq.from(entityClass);
-        ParameterExpression<String> p = cb.parameter(String.class);
-//        Predicate predicateField = cb.like(rt.<String>get(fieldName), fieldValue);
-        Predicate predicateField = cb.like(cb.upper(rt.<String>get(fieldName)), "*" + fieldValue.toLowerCase());
-        //    Predicate predicateRetired = cb.equal(rt.<Boolean>get("retired"), withoutRetired);
-        //    Predicate predicateFieldRetired = cb.and(predicateField, predicateRetired);
-        //    (cb.like(pet.get(Pet_.name), "*do"));
-
-        if (!fieldValue.equals("")) {
-            cq.where(predicateField);
-        }
-
-        if (!fieldName.equals("")) {
-            cq.orderBy(cb.asc(rt.get(fieldName)));
-        }
-
-        return getEntityManager().createQuery(cq).getResultList();
-    }
-
-    public T findByField(String fieldName, String fieldValue, boolean withoutRetired) {
-        List<T> lstAll = findExact(fieldName, fieldValue, true);
-
-        if (lstAll.isEmpty()) {
-//            //////// // System.out.println("Null");
-            return null;
-        } else {
-//            //////// // System.out.println("Not Null " + lstAll.get(0).toString());
-            return lstAll.get(0);
-        }
-    }
-
-    public String findByFieldContains(String fieldName, String fieldValue) {
-        List<T> lstAll = findContains(fieldName, fieldValue);
-
-        if (lstAll.isEmpty()) {
-//            //////// // System.out.println("Null");
-            return "";
-        } else {
-//            //////// // System.out.println("Not Null " + lstAll.get(0).toString());
-            return lstAll.get(0).toString();
-        }
-    }
-
-    public T findFirstByJpql(String jpql) {
-        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
-        qry.setMaxResults(1);
-        try {
-            T result = qry.getSingleResult();
-            return result;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    public T findFirstBySQL(String temSQL, Map<String, Object> parameters, TemporalType tt) {
+    public T findFirstByJpql(String temSQL, Map<String, Object> parameters, TemporalType tt) {
         TypedQuery<T> qry = getEntityManager().createQuery(temSQL, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
@@ -777,7 +722,13 @@ public abstract class AbstractFacade<T> {
             }
             //    //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
-        return qry.getSingleResult();
+        T t;
+        try {
+            t = qry.getSingleResult();
+        } catch (Exception e) {
+            t = null;
+        }
+        return t;
     }
 
     public <U> List<T> testMethod(U[] a, Collection<U> all) {

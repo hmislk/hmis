@@ -250,7 +250,7 @@ public class PharmacyIssueControllerOld implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -265,7 +265,7 @@ public class PharmacyIssueControllerOld implements Serializable {
         Map m = new HashMap<>();
         List<Item> items;
         String sql;
-        sql = "select i from Item i where i.retired=false and upper(i.name) like :n and type(i)=:t and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and upper(ibs.itemBatch.item.name) like :n ) order by i.name ";
+        sql = "select i from Item i where i.retired=false and (i.name) like :n and type(i)=:t and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
@@ -283,7 +283,7 @@ public class PharmacyIssueControllerOld implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >:s and i.department=:d and upper(i.itemBatch.item.name) like :n order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        sql = "select i from Stock i where i.stock >:s and i.department=:d and (i.itemBatch.item.name) like :n order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         items = getStockFacade().findBySQL(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
         //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);

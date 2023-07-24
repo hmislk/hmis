@@ -134,7 +134,7 @@ public class BillBeanController implements Serializable {
         hm.put("ps", paymentScheme);
         hm.put("pm", paymentMethod);
 
-        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstBySQL(sql, hm);
+        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstByJpql(sql, hm);
 
         if (allowedPaymentMethod != null) {
             return true;
@@ -152,7 +152,7 @@ public class BillBeanController implements Serializable {
         hm.put("ms", membershipScheme);
         hm.put("pm", paymentMethod);
 
-        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstBySQL(sql, hm);
+        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstByJpql(sql, hm);
 
         if (allowedPaymentMethod != null) {
             return true;
@@ -181,7 +181,7 @@ public class BillBeanController implements Serializable {
         hm.put("btp", billType);
         hm.put("inw", inwardChargeType);
 
-        BillItem b = getBillItemFacade().findFirstBySQL(sql, hm);
+        BillItem b = getBillItemFacade().findFirstByJpql(sql, hm);
 //        System.err.println("BillItem " + b);
         return b;
     }
@@ -196,7 +196,7 @@ public class BillBeanController implements Serializable {
         hm.put("b", bill);
         hm.put("inw", inwardChargeType);
 
-        BillItem b = getBillItemFacade().findFirstBySQL(sql, hm);
+        BillItem b = getBillItemFacade().findFirstByJpql(sql, hm);
 //        System.err.println("BillItem " + b);
         return b;
     }
@@ -2163,7 +2163,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", forwardBill);
         hm.put("srgBtp", surgeryBillType);
-        Bill bill = getBillFacade().findFirstBySQL(sql, hm);
+        Bill bill = getBillFacade().findFirstByJpql(sql, hm);
 
         return bill;
     }
@@ -2182,7 +2182,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", bi);
 
-        return getEncounterComponentFacade().findBySQL(sql, hm);
+        return getEncounterComponentFacade().findByJpql(sql, hm);
 
     }
 
@@ -2193,7 +2193,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", bi);
 
-        return getEncounterComponentFacade().findBySQL(sql, hm);
+        return getEncounterComponentFacade().findByJpql(sql, hm);
 
     }
 
@@ -2204,7 +2204,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", b);
 
-        return getBillItemFacade().findFirstBySQL(sql, hm);
+        return getBillItemFacade().findFirstByJpql(sql, hm);
     }
 
     public double getTotalByBillItem(Bill bill) {
@@ -2266,7 +2266,7 @@ public class BillBeanController implements Serializable {
                 + " and f.item=:itm";
         HashMap hm = new HashMap();
         hm.put("itm", billItem.getItem());
-        return getItemFeeFacade().findBySQL(sql, hm);
+        return getItemFeeFacade().findByJpql(sql, hm);
     }
 
     public ItemFee getItemFee(BillItem billItem, FeeType feeType) {
@@ -2279,14 +2279,14 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("itm", billItem.getItem());
         hm.put("ftp", feeType);
-        return getItemFeeFacade().findFirstBySQL(sql, hm);
+        return getItemFeeFacade().findFirstByJpql(sql, hm);
     }
 
 //    public Fee getFee(FeeType feeType) {
 //        HashMap hm = new HashMap();
 //        String sql = "Select f from Fee f where f.retired=false and f.FeeType=:nm";
 //        hm.put("nm", FeeType.Matrix);
-//        return getFeeFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+//        return getFeeFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
 //    }
     public BillFee createBillFee(BillItem billItem, Fee i) {
         BillFee f;
@@ -2635,9 +2635,9 @@ public class BillBeanController implements Serializable {
         sql = "select b from BilledBill b where"
                 + " b.billType = :billType and b.retired=false"
                 + " and  b.createdAt between :fromDate and :toDate"
-                + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
+                + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
@@ -2656,9 +2656,9 @@ public class BillBeanController implements Serializable {
         sql = "select b from PreBill b where"
                 + " b.billType = :billType and b.retired=false"
                 + " and  b.createdAt between :fromDate and :toDate"
-                + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
+                + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
@@ -2675,7 +2675,7 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where b.billType = :billType and b.institution.id=" + ins.getId() + " and b.retired=false and  b.createdAt between :fromDate "
-                + " and :toDate and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+                + " and :toDate and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
@@ -2694,7 +2694,7 @@ public class BillBeanController implements Serializable {
         if (searchStr == null || searchStr.trim().equals("")) {
             sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and b.creater.id = " + user.getId() + " order by b.id desc  ";
         } else {
-            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
         }
 
         temMap.put("billType", type);
@@ -2716,7 +2716,7 @@ public class BillBeanController implements Serializable {
         if (searchStr == null || searchStr.trim().equals("")) {
             sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and b.creater.id = " + user.getId() + " order by b.id desc  ";
         } else {
-            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
         }
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
@@ -3593,7 +3593,7 @@ public class BillBeanController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("b", b);
-        return getBillFeeFacade().findBySQL(sql, hm);
+        return getBillFeeFacade().findByJpql(sql, hm);
     }
 
     public List<BillFee> getBillFee(BillItem b) {
@@ -3625,7 +3625,7 @@ public class BillBeanController implements Serializable {
                 + " and b.billItem=:b ";
         HashMap hs = new HashMap();
         hs.put("b", billItem);
-        List<EncounterComponent> list = getEncounterComponentFacade().findBySQL(sql, hs);
+        List<EncounterComponent> list = getEncounterComponentFacade().findByJpql(sql, hs);
 
         return list;
     }

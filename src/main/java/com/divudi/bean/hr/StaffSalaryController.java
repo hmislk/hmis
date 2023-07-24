@@ -701,8 +701,6 @@ public class StaffSalaryController implements Serializable {
 //        
         for (int i = 0; i < numOfWeeks; i++) {
 
-            System.err.println("FROM = " + i + " - " + frmCal.getTime());
-            System.err.println("TO =  " + i + " - " + toCal.getTime());
 //            ////// // System.out.println("i = " + i);
             double workedWithinTimeFrameVarified = getHumanResourceBean().calculateWorkTimeForOverTimeByDate(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             //// // System.out.println("*** worked Within TimeFrameVarified(S) = " + workedWithinTimeFrameVarified);
@@ -711,7 +709,6 @@ public class StaffSalaryController implements Serializable {
 //            workedWithinTimeFrameVarified += getHumanResourceBean().calculateLeaveTimeForOverTime(frmCal.getTime(), toCal.getTime(), getCurrent().getStaff());
             double otSec = humanResourceBean.getOverTimeFromRoster(getCurrent().getStaff().getWorkingTimeForOverTimePerWeek(), 1, workedWithinTimeFrameVarified);
 
-            System.err.println("OT Min : " + otSec / 60);
 
             overTimeSec += otSec;
             frmCal.add(Calendar.DATE, 7);
@@ -1192,19 +1189,19 @@ public class StaffSalaryController implements Serializable {
             //Set Holiday Allowance
             //Set Holiday Allowance
             //Set Holiday Allowance
+            //Set Holiday Allowance
+            //Set Holiday Allowance
+            //Set Holiday Allowance
 
             //Set Holiday Allowance
             System.err.println("Salary OT");
             Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
-            System.err.println("count(DayType.MurchantileHoliday) = " + count);
             getCurrent().setMerchantileCount(count);
 
             count = setHoliDayAllowance(PaysheetComponentType.PoyaAllowance, DayType.Poya);
-            System.err.println("count(DayType.Poya) = " + count);
             getCurrent().setPoyaCount(count);
 
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.DayOffAllowance, DayType.DayOff);
-            System.err.println("count(DayType.DayOff) = " + count);
             getCurrent().setDayOffCount(count);
 
             count = setDayOffSleepingDayAllowance(PaysheetComponentType.SleepingDayAllowance, DayType.SleepingDay);
@@ -1257,7 +1254,7 @@ public class StaffSalaryController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sc", getSalaryCycle());
         hm.put("stf", getCurrent().getStaff());
-        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstBySQL(sql, hm);
+        StaffSalaryComponant salaryComponant = staffSalaryComponantFacade.findFirstByJpql(sql, hm);
 
         if (salaryComponant != null) {
             getCurrent().getStaffSalaryComponants().add(salaryComponant);
@@ -1332,7 +1329,6 @@ public class StaffSalaryController implements Serializable {
         if (staffShiftEarlyIn == null) {
             return;
         }
-        System.err.println("staffShiftEarlyIn.size()" + staffShiftEarlyIn.size());
         if (staffShiftEarlyIn.size() != 2) {
             return;
         }
@@ -1343,8 +1339,6 @@ public class StaffSalaryController implements Serializable {
             staffShiftLateInTenMinuteLinked.add(stf);
         }
 
-        System.err.println("staffShiftEarlyIn.size()" + staffShiftEarlyIn.size());
-        System.err.println("Late in Shift Reference Count " + staffShiftLateInTenMinuteLinked.size());
         if (staffShiftLateInTenMinuteLinked.size() >= shiftCount) {
             stfCurrent.setReferenceStaffShiftLateIn(stfCurrent);
             stfCurrent.setConsiderForLateIn(true);
@@ -1377,7 +1371,7 @@ public class StaffSalaryController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("stf", stfCurrent);
         List<StaffShift> listReturn = new ArrayList<>();
-        List<StaffShift> list = staffShiftFacade.findBySQL(sql, hm);
+        List<StaffShift> list = staffShiftFacade.findByJpql(sql, hm);
 
         if (list != null) {
             listReturn.addAll(list);
@@ -1390,7 +1384,7 @@ public class StaffSalaryController implements Serializable {
         hm = new HashMap();
         hm.put("stf", stfCurrent);
 
-        list = staffShiftFacade.findBySQL(sql, hm);
+        list = staffShiftFacade.findByJpql(sql, hm);
 
         if (list != null) {
             listReturn.addAll(list);
@@ -1788,7 +1782,7 @@ public class StaffSalaryController implements Serializable {
         hm.put("stf", getCurrent().getStaff());
         hm.put("tp", PaysheetComponentType.LoanNetSalary);
 
-        StaffPaysheetComponent staffPaysheetComponent = getStaffPaysheetComponentFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        StaffPaysheetComponent staffPaysheetComponent = getStaffPaysheetComponentFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
         if (staffPaysheetComponent != null) {
             getCurrent().setBankBranch(staffPaysheetComponent.getBankBranch());
             getCurrent().setAccountNo(staffPaysheetComponent.getAccountNo());
@@ -2029,7 +2023,7 @@ public class StaffSalaryController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        return getStaffSalaryFacade().findFirstBySQL(sql, hm, TemporalType.DATE);
+        return getStaffSalaryFacade().findFirstByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffSalary> getItems() {

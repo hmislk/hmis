@@ -168,7 +168,7 @@ public class VariantAdjustment implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bil", getReportedBill());
 
-        List<StockVarientBillItem> tmp = getStockVarientBillItemFacade().findBySQL(sql, hm);
+        List<StockVarientBillItem> tmp = getStockVarientBillItemFacade().findByJpql(sql, hm);
         //System.err.println("Size "+tmp.size());
         for (StockVarientBillItem i : tmp) {
             StockVarientBillItem bi = new StockVarientBillItem();

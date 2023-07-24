@@ -50,7 +50,7 @@ public class StoreDealorController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t and upper(c.name) like :q order by c.name";
+                + " c.institutionType =:t and (c.name) like :q order by c.name";
         //////// // System.out.println(sql);
         m.put("t", InstitutionType.StoreDealor);
         m.put("q", "%" + query.toUpperCase() + "%");
@@ -142,7 +142,7 @@ public class StoreDealorController implements Serializable {
                     + " order by i.name";
             HashMap hm = new HashMap();
             hm.put("tp", InstitutionType.StoreDealor);
-            items = getEjbFacade().findBySQL(sql, hm);
+            items = getEjbFacade().findByJpql(sql, hm);
         }
         return items;
     }

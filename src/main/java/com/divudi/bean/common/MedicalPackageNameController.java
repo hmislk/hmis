@@ -51,7 +51,7 @@ public  class MedicalPackageNameController implements Serializable {
         } else {
             sql = "select p from MedicalPackage p where p.retired=false"
                     + " and (p.inactive=false or p.inactive is null)"
-                    + "and (upper(p.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
+                    + "and ((p.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }

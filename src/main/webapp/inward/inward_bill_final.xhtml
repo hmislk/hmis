@@ -154,7 +154,7 @@
                                     <p:autoComplete converter="fac" forceSelection="true"
                                                     value="#{b.printRoomFacilityCharge}" 
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                                    var="rf" itemLabel="#{rf.name}" itemValue="#{rf}"     >
+                                                    var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" >
                                         <p:ajax event="itemSelect" process="@this" listener="#{patientRoomController.edit(b)}"/>
                                     </p:autoComplete>                                        
                                 </p:column>                                                                          
@@ -536,7 +536,7 @@
                     </h:panelGroup>
 
                     <h:panelGroup id="claimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
-                        <bi:finalBill duplicate="true"   showProfessional="true"                                
+                        <bi:finalBill duplicate="true"   showProfessional="true"                            
                                       bill="#{bhtSummeryController.current}" />
                     </h:panelGroup>
 

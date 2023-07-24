@@ -16,5 +16,11 @@ public enum ItemType {
     AnalyzerTest,
     SampleComponent,
     Appointment,
+    Vtm,
+    Atm,
+    Vmp,
+    Amp,
+    Vmpp,
+    Ampp,
     Other,
 }

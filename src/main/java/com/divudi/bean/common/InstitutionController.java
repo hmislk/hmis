@@ -67,19 +67,20 @@ public class InstitutionController implements Serializable {
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
+    private int managaeInstitutionIndex;
 
     public String toAdminManageInstitutions() {
-        return "/admin/admin_institutions_index";
+        return "/admin/institutions/admin_institutions_index";
     }
 
     public String toListInstitutions() {
         fillItems();
-        return "/admin/institutions";
+        return "/admin/institutions/institutions";
     }
 
     public String toAddNewInstitution() {
         current = new Institution();
-        return "/admin/institution";
+        return "/admin/institutions/institution";
     }
 
     public String toEditInstitution() {
@@ -150,7 +151,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and (upper(c.name) like :qry or upper(c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -159,7 +160,7 @@ public class InstitutionController implements Serializable {
             sql += "  and c.institutionType in :types";
         }
         sql += " order by c.name";
-        return getFacade().findBySQL(sql, hm);
+        return getFacade().findByJpql(sql, hm);
     }
 
     public List<Institution> getSuppliers() {
@@ -270,14 +271,38 @@ public class InstitutionController implements Serializable {
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
-        Institution i = getFacade().findFirstBySQL(sql, m);
+        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
+        Institution i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
             i = new Institution();
             i.setName(name);
             i.setInstitutionType(type);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
+            getFacade().create(i);
+        } else {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+        return i;
+    }
+    
+    public Institution findAndSaveInstitutionByName(String name) {
+        if(name==null||name.trim().equals("")){
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        if (i == null) {
+            i = new Institution();
+            i.setName(name);
             getFacade().create(i);
         } else {
             i.setRetired(false);
@@ -647,6 +672,14 @@ public class InstitutionController implements Serializable {
 
     public void setAgency(Institution agency) {
         this.agency = agency;
+    }
+
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
+    }
+
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
     }
 
     @FacesConverter("institutionConverter")

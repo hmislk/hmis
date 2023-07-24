@@ -94,7 +94,7 @@ public class InwardPriceAdjustmntController implements Serializable {
 //                + " where pm.retired = false"
 //                + " and pm.paymentMethod =:pay";
 //        hm.put("pay", PaymentMethod.Cash);
-//        inwardPriceAdjustments = ejbFacade.findBySQL(sql, hm);
+//        inwardPriceAdjustments = ejbFacade.findByJpql(sql, hm);
 //        
 //        for(InwardPriceAdjustment pm : inwardPriceAdjustments){
 //            InwardPriceAdjustment prima = new InwardPriceAdjustment();
@@ -301,7 +301,7 @@ public class InwardPriceAdjustmntController implements Serializable {
                 + " order by a.department.name,a.category.name,a.fromPrice";
         hm.put("service", ServiceCategory.class);
         hm.put("sub", ServiceSubCategory.class);
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - service(/faces/inward/inward_price_adjustment_service.xhtml)");
     }
@@ -319,7 +319,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("service", ServiceCategory.class);
         hm.put("sub", ServiceSubCategory.class);
         hm.put("cat", PharmaceuticalItemCategory.class);
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
     }
 
     public void createCategroyInvestiagtion() {
@@ -336,7 +336,7 @@ public class InwardPriceAdjustmntController implements Serializable {
                 + " order by a.department.name,a.category.name,a.fromPrice";
         hm.put("cat", InvestigationCategory.class);
 
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Investigation"
                 + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
@@ -356,7 +356,7 @@ public class InwardPriceAdjustmntController implements Serializable {
                 + " order by a.department.name,a.category.name,a.fromPrice";
         hm.put("cat", PharmaceuticalItemCategory.class);
 
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Pharmacy"
                 + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");
@@ -376,7 +376,7 @@ public class InwardPriceAdjustmntController implements Serializable {
                 + " order by a.department.name,a.category.name,a.fromPrice";
         hm.put("cat", ConsumableCategory.class);
 
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Inward Administration/Price Metrix/Inward Price adjustment - Store"
                 + "(/faces/inward/inward_price_adjustment_investigation.xhtml)");

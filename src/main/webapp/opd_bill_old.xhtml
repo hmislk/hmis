@@ -137,11 +137,11 @@
                                                         </p:calendar>
                                                     </h:panelGrid>
 
-                                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                                    <p:inputText  id="txtNewPtPhone" 
                                                                  autocomplete="off" maxlength="11" placeholder="Phone Number"
                                                                  value="#{billController.newPatient.person.phone}"
                                                                  style="width: 135;">
-                                                    </p:inputMask>
+                                                    </p:inputText>
 
                                                     <p:inputText autocomplete="off" id="txtEmail" placeholder="Enter Email here"
                                                                  style="width: 350px;" value="#{billController.newPatient.person.email}">
@@ -441,7 +441,7 @@
                                         </p:autoComplete>
                                         <h:panelGroup >
                                             <p:watermark for="creditCom" value="Type at least 3 charactors of Collecting Centre." ></p:watermark>
-                                            <p:commandLink id="btnAddNewCc" value="Add" ajax="false" action="/lab/collecting_centre"
+                                            <p:commandLink id="btnAddNewCc" value="Add" ajax="false" action="#{navigationController.navigateToCollectingCenter()}"
                                                            actionListener="#{collectingCentreController.prepareAdd()}"  />  
 
                                         </h:panelGroup>
@@ -458,7 +458,7 @@
                                         </p:autoComplete> 
                                         <h:panelGroup >
                                             <p:watermark for="creditCompany" value="Type at least 3 charactors of Credit Company." ></p:watermark>
-                                            <p:commandLink id="btnAddNewCreditCom" value="Add" ajax="false" action="/lab/credit_company"
+                                            <p:commandLink id="btnAddNewCreditCom" value="Add" ajax="false" action="#{navigationController.navigateToCreditCompany()}"
                                                            actionListener="#{creditCompanyController.prepareAdd()}" />  
 
                                         </h:panelGroup>

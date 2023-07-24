@@ -756,7 +756,7 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("btp", BillType.PharmacyGrnBill);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
             return true;
@@ -772,7 +772,7 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("btp", BillType.PharmacyGrnReturn);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
             return true;
@@ -791,7 +791,7 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyPre);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
             return true;
@@ -809,7 +809,7 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyIssue);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, hm);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
 
         if (!tmp.isEmpty()) {
             return true;
@@ -867,7 +867,7 @@ public class PharmacyBillSearch implements Serializable {
 
 //    private void updateRemainingQty(PharmaceuticalBillItem nB) {
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + nB.getBillItem().getReferanceBillItem().getId();
-//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 //        po.setRemainingQty(po.getRemainingQty() + nB.getQty());
 //
 //        //System.err.println("Added Remaini Qty " + nB.getQty());
@@ -1763,7 +1763,7 @@ public class PharmacyBillSearch implements Serializable {
 
             pharmacyCancelReturnBillItemsWithReducingStock(cb);
 
-//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //
 //            for (PharmaceuticalBillItem ph : tmp) {
 //                getPharmacyBean().deductFromStock(ph.getItemBatch(), ph.getQtyInUnit() + ph.getFreeQtyInUnit(), getBill().getDepartment());
@@ -1933,7 +1933,6 @@ public class PharmacyBillSearch implements Serializable {
     private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
         //System.err.println("Batch " + pharmaceuticalBillItem.getItemBatch());
         double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
-        System.err.println("Stock Qty" + stockQty);
         if (Math.abs(pharmaceuticalBillItem.getQtyInUnit()+pharmaceuticalBillItem.getFreeQtyInUnit()) > stockQty) {
             return true;
         } else {
@@ -1987,7 +1986,7 @@ public class PharmacyBillSearch implements Serializable {
 //            pharmacyCancelBillItemsReduceStock(cb); //for create billfees ,billfee payments
             pharmacyCancelBillItemsReduceStock(cb, p);
 //
-//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+//            List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //
 //            for (PharmaceuticalBillItem ph : tmp) {
 //                double qty = ph.getQtyInUnit() + ph.getFreeQtyInUnit();
@@ -2119,7 +2118,7 @@ public class PharmacyBillSearch implements Serializable {
 
             pharmacyCancelBillItemsReduceStock(cb, p);
 
-//            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+//            //   List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (BillItem bi : getBill().getBillItems()) {
 //                double qty = bi.getPharmaceuticalBillItem().getQtyInUnit() + bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
 //                getPharmacyBean().deductFromStock(bi.getPharmaceuticalBillItem().getStock(), qty);
@@ -2165,7 +2164,7 @@ public class PharmacyBillSearch implements Serializable {
             Payment p = pharmacySaleController.createPayment(cb, getBill().getPaymentMethod());
             pharmacyCancelBillItemsAddStock(cb, p);
 
-            //        List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findBySQL("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
+            //        List<PharmaceuticalBillItem> tmp = getPharmaceuticalBillItemFacade().findByJpql("Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId());
 //            for (PharmaceuticalBillItem ph : tmp) {
 //                getPharmacyBean().addToStock(ph.getStock(), ph.getQtyInUnit());
 //
@@ -2383,7 +2382,7 @@ public class PharmacyBillSearch implements Serializable {
                 } else {
                     sql = "select b from BilledBill b where b.retired=false and"
                             + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and (upper(b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or upper(b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
                 }
 
                 temMap.put("toDate", getToDate());
@@ -2552,7 +2551,7 @@ public class PharmacyBillSearch implements Serializable {
         String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.billItem=:b ";
         HashMap hm = new HashMap();
         hm.put("b", bi);
-        List<BillFee> ls = getBillFeeFacade().findBySQL(sql, hm);
+        List<BillFee> ls = getBillFeeFacade().findByJpql(sql, hm);
 
         if (ls == null) {
             ls = new ArrayList<>();

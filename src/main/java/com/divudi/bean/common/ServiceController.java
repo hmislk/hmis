@@ -143,7 +143,7 @@ public class ServiceController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Service>();
         } else {
-            sql = "select c from Service c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Service c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -154,7 +154,7 @@ public class ServiceController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Service c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -163,7 +163,7 @@ public class ServiceController implements Serializable {
         if (selectRetiredText.trim().equals("")) {
             selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
         } else {
-            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
+            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true and (c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
         }
         return selectedRetiredItems;
     }
@@ -184,30 +184,6 @@ public class ServiceController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public void correctIx() {
-        List<Service> allItems = getEjbFacade().findAll();
-        for (Service i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Service> allItems = getEjbFacade().findAll();
-        for (Service i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
-
     public String getBulkText() {
 
         return bulkText;
@@ -220,7 +196,7 @@ public class ServiceController implements Serializable {
     public List<Service> completeItem(String qry) {
         List<Service> completeItems = getFacade().findBySQL("select c from Item c "
                 + " where ( type(c) = Service or type(c) = Packege ) "
-                + " and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%'"
+                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
                 + "  order by c.name");
         return completeItems;
     }
@@ -526,7 +502,7 @@ public class ServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from Service c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from Service c where c.retired=false and upper(c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from Service c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
         items = getFacade().findBySQL(sql);

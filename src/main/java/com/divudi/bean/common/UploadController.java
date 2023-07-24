@@ -94,7 +94,6 @@ public class UploadController implements Serializable {
             selected.setFileType(file.getContentType());
             saveUpload(selected);
         } catch (IOException ex) {
-            System.out.println("ex = " + ex);
         }
         return toListUploads();
     }

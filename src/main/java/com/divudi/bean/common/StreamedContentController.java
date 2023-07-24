@@ -72,7 +72,7 @@ public class StreamedContentController {
             String j = "select s from Upload s where s.id=:id";
             Map m = new HashMap();
             m.put("id", l);
-            Upload temImg = getUploadFacade().findFirstBySQL(j, m);
+            Upload temImg = getUploadFacade().findFirstByJpql(j, m);
             if (temImg != null) {
                 byte[] imgArr = null;
                 try {
@@ -111,7 +111,7 @@ public class StreamedContentController {
             String j = "select s from Upload s where s.webContent.id=:id";
             Map m = new HashMap();
             m.put("id", l);
-            Upload temImg = getUploadFacade().findFirstBySQL(j, m);
+            Upload temImg = getUploadFacade().findFirstByJpql(j, m);
             if (temImg != null) {
                 byte[] imgArr = null;
                 try {
@@ -183,7 +183,7 @@ public class StreamedContentController {
             String j = "select s from Upload s where lower(s.code)=:id";
             Map m = new HashMap();
             m.put("id", id.trim().toLowerCase());
-            Upload temImg = getUploadFacade().findFirstBySQL(j, m);
+            Upload temImg = getUploadFacade().findFirstByJpql(j, m);
             if (temImg != null) {
                 byte[] imgArr = null;
                 try {

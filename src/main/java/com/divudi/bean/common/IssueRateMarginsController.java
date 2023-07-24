@@ -210,7 +210,7 @@ public class IssueRateMarginsController implements Serializable {
         m.put("td", toDepartment);
         m.put("fi", fromInstitution);
         m.put("ti", toInstitution);
-        current = getFacade().findFirstBySQL(sql, m);
+        current = getFacade().findFirstByJpql(sql, m);
         if (current == null) {
             current = new IssueRateMargins();
             current.setFromDepartment(fromDepartment);

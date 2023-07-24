@@ -87,7 +87,7 @@ public class DoctorSpecialityController implements Serializable {
     public List<DoctorSpeciality> completeSpeciality(String qry) {
         //   ////System.out.println("qry = " + qry);
         List<DoctorSpeciality> lst;
-        lst = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        lst = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         //   ////System.out.println("lst = " + lst);
         return lst;
     }
@@ -96,7 +96,7 @@ public class DoctorSpecialityController implements Serializable {
         if (selectText ==null || selectText.trim().equals("") ) {
             selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findBySQL("select c from DoctorSpeciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
 
         return selectedItems;

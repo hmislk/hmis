@@ -9,8 +9,6 @@ import com.divudi.entity.Staff;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -19,7 +17,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class StaffCategory extends Category implements Serializable {
    
     private static final long serialVersionUID = 1L;

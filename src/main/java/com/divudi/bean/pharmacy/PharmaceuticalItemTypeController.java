@@ -152,7 +152,7 @@ public class PharmaceuticalItemTypeController implements Serializable {
         m.put("n", "%" + qry + "%");
         if (qry != null) {
             pharmaceuticalItemTypeList = getFacade().findBySQL("select c from PharmaceuticalItemType c where "
-                    + " c.retired=false and (upper(c.name) like :n) order by c.name", m, 20);
+                    + " c.retired=false and ((c.name) like :n) order by c.name", m, 20);
             //////// // System.out.println("a size is " + a.size());
         }
         if (pharmaceuticalItemTypeList == null) {

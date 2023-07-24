@@ -133,6 +133,10 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * Unawatuna Medical Centre, Unawatuna, Galle 2015 up to date
 * Kegalu Medi Lab, 2014 up to date
 * Raliable Medi Lab, Monaragala - 2016
+* Asiri Pharmacy, Karapitiya - 2019 to date
+* LifeCare Pharmacy, Thanipolgaha - 2020 to date
+
 
 ## License
-MIT License details are attached as the LICENSE.md
+AGPL License details are attached as the LICENSE.md
+WE have used HTML5UP template and its license is available under the respective folder.

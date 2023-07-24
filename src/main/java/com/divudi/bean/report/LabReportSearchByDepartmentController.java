@@ -123,7 +123,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
     public void searchAll() {
         String sql;
         if (txtSearch != null) {
-            sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where (upper(p.name) like '%" + txtSearch.toUpperCase() + "%' or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or upper(i.name) like '%" + txtSearch.toUpperCase() + "%' ) order by pi.id desc";
+            sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where ((p.name) like '%" + txtSearch.toUpperCase() + "%' or (b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or (i.name) like '%" + txtSearch.toUpperCase() + "%' ) order by pi.id desc";
             searchedPatientInvestigations = getPiFacade().findBySQL(sql, 50);
         } else {
             searchedPatientInvestigations = null;
@@ -646,7 +646,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
 //                tm.put("pm2", PaymentMethod.Card);
 //                tm.put("pm3", PaymentMethod.Cheque);
 //                tm.put("pm4", PaymentMethod.Slip);
-//                labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+//                labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
 //                calTotalsWithout();
 //            } else {
 //                sql = "select f from Bill f where f.retired=false and f.billType = :billType and (f.paymentMethod = :pm1 or f.paymentMethod = :pm2 or f.paymentMethod = :pm3 or f.paymentMethod = :pm4 ) and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
@@ -658,7 +658,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
 //                tm.put("pm2", PaymentMethod.Card);
 //                tm.put("pm3", PaymentMethod.Cheque);
 //                tm.put("pm4", PaymentMethod.Slip);
-//                labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+//                labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
 //                calTotalsWithout(getInstitution());
 //            }
 //        }
@@ -885,7 +885,7 @@ public class LabReportSearchByDepartmentController implements Serializable {
                 sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where b.createdAt between :fromDate and :toDate order by pi.id desc";
                 patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 100);
             } else {
-                sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where (upper(p.name) like '%" + txtSearch.toUpperCase() + "%' or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or upper(i.name) like '%" + txtSearch.toUpperCase() + "%' ) and b.createdAt between :fromDate and :toDate order by pi.id desc";
+                sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where ((p.name) like '%" + txtSearch.toUpperCase() + "%' or (b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or (i.name) like '%" + txtSearch.toUpperCase() + "%' ) and b.createdAt between :fromDate and :toDate order by pi.id desc";
                 patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
             }
         }

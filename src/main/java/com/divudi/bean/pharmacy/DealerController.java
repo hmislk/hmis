@@ -57,11 +57,11 @@ public class DealerController implements Serializable {
         Map m = new HashMap();
 
         sql = "select c from Institution c where c.retired=false and "
-                + " c.institutionType =:t and upper(c.name) like :q order by c.name";
+                + " c.institutionType =:t and (c.name) like :q order by c.name";
         //////// // System.out.println(sql);
         m.put("t", InstitutionType.Dealer);
         m.put("q", "%" + query.toUpperCase() + "%");
-        institutionList = getEjbFacade().findBySQL(sql, m);
+        institutionList = getEjbFacade().findByJpql(sql, m);
         //////// // System.out.println("suggestions = " + suggestions);
 
         return institutionList;
@@ -148,7 +148,7 @@ public class DealerController implements Serializable {
         String sql = "SELECT i FROM Institution i where i.retired=true and i.institutionType =:tp"
                 + " order by i.name";
         m.put("tp", InstitutionType.Dealer);
-        dealor = getEjbFacade().findBySQL(sql, m);
+        dealor = getEjbFacade().findByJpql(sql, m);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Check deleted data/Dealor list(/faces/dataAdmin/deleted_distributors.xhtml)");
 
@@ -172,7 +172,7 @@ public class DealerController implements Serializable {
                 + " order by i.name";
         HashMap hm = new HashMap();
         hm.put("tp", InstitutionType.Dealer);
-        items = getEjbFacade().findBySQL(sql, hm);
+        items = getEjbFacade().findByJpql(sql, hm);
         if (items == null) {
             items = new ArrayList<>();
         }

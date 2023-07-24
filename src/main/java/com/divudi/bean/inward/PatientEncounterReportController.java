@@ -41,7 +41,7 @@ public class PatientEncounterReportController implements Serializable {
         
         m.put("pNo", current);
         m.put("bt", BillType.PharmacyBhtPre);
-        billItem = getBillItemFacade().findBySQL(sql, m);
+        billItem = getBillItemFacade().findByJpql(sql, m);
         
     }
     

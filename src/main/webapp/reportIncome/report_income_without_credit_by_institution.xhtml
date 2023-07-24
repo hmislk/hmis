@@ -10,11 +10,11 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/reportIncome/report_income.xhtml">
 
 
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
 
                 <h:form>
@@ -32,7 +32,7 @@
                                 </p:calendar>  
 
                                 <h:outputLabel   value="Institution" />
-                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                    
                                                  requiredMessage="You must select a institution" >
                                     <f:selectItem itemLabel="Select Institution"/>
                                     <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />

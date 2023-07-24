@@ -243,7 +243,6 @@ public class StoreGrnController implements Serializable {
             i.setId(null);
         }
         for (BillItem i : getBillItems()) {
-            System.err.println("in");
             //// // System.out.println("bi = " + i.getSearialNo());
             //// // System.out.println("i.getTmpQty() = " + i.getTmpQty());
             //// // System.out.println("i.getQty() = " + i.getQty());
@@ -1028,7 +1027,6 @@ public class StoreGrnController implements Serializable {
     }
 
     public void updateItemDetail() {
-        System.err.println("******Update*************");
         //// // System.out.println("currentBillItem.getSearialNo() = " + currentBillItem.getSearialNo());
         //// // System.out.println("currentBillItem.getTmpQty() = " + currentBillItem.getTmpQty());
         //// // System.out.println("currentBillItem.getQty() = " + currentBillItem.getQty());

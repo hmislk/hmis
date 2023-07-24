@@ -4,96 +4,100 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                fsd
-                <h:form>
-                    <p:panel header="Administration ">
-                        <p:tabView orientation="left">
-                            <p:tab title="Manage Items" rendered="#{webUserController.hasPrivilege('LabItems')}">
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Categories" action="/lab/investigation_category"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Tubes" action="/lab/investigation_tube"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Speciman" action="/lab/investigation_speciman"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigations" action="#{investigationController.toManageInvestigationDetails()}"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Analyzers" action="/lab/machine"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Analyzer Tests" action="/lab/analyzer_test"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Sample Components" action="/lab/sample_component"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Fees" action="/lab/investigation_fee"  rendered="#{webUserController.hasPrivilege('LabInvestigationFee')}"/>
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Replaceable Investigations" action="/lab/replaceable_ix"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Items" action="/lab/investigation_values"  />
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Manage Reports">
-                                <p:panelGrid columns="1" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabReports')}" >
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Report Format Categories" action="/lab/report_format_category"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Report Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="/lab/report_format"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="#{investigationItemController.toEditInvestigationFormat()}"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Field Values" action="/lab/investigation_item_value"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Pathology Templates" action="/lab/investigation_item_value_path"  />
-
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Flags" action="/lab/flags"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Calculations" action="/lab/calculation"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Dynamic Labels" action="/lab/dynamic_labels"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Validators" action="/lab/investigation_value_component"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Antibiotics" action="/lab/antibiotic"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Report Existing" action="/reportLab/investigation_existing"  />
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="Lists">
-                                <p:panelGrid columns="1" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabLists')}">
-                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List" action="/lab/investigation_list"  />
-                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Lab Investigation List by Category" action="/lab/investigation_list_by_category"  />
-                                </p:panelGrid>
-                            </p:tab>
-                            <p:tab title="SMS">
-                                <p:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
-                                    <p:outputLabel value="Number" ></p:outputLabel>
-                                    <p:inputText value="#{patientReportController.smsNumber}" ></p:inputText>
-                                    
-                                    <p:outputLabel value="Message" ></p:outputLabel>
-                                    <p:inputText value="#{patientReportController.smsMessage}" ></p:inputText>
-                                    
-                                    
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Send" 
-                                                      action="#{patientReportController.sendSms()}" />
-                                
-                                </p:panelGrid>
-                            </p:tab>
-
-                            <p:tab title="Setup">
-                                <p:panelGrid columns="1" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
-                                     <p:commandButton  styleClass="linkButton" ajax="false" value="Report Samples" actionListener="#{investigationController.listAllIxs}" action="/lab/report_samples"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Report Dynamic Lables" action="/lab/report_dynamic_lables"  />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Ix" action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" />
-                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Developer" action="/lab/setup" />
-                                
-                                </p:panelGrid>
-                            </p:tab>
-
-                        </p:tabView>
-                    </p:panel>
 
 
+                <p:panel header="Lab Administration ">
+                    <div class="row">  
+                        <div class="col-3"> 
 
-                    
+                            <p:accordionPanel>
+                                <p:tab title="Manage Items" rendered="#{webUserController.hasPrivilege('LabItems')}">
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Categories" action="/lab/investigation_category"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Tubes" action="/lab/investigation_tube"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Speciman" action="/lab/investigation_speciman"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Investigations" action="#{investigationController.toManageInvestigationDetails()}"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Analyzers" action="/lab/machine"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Analyzer Tests" action="/lab/analyzer_test"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Sample Components" action="/lab/sample_component"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Investigation Fees" action="/lab/investigation_fee"  rendered="#{webUserController.hasPrivilege('LabInvestigationFee')}"/>
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Replaceable Investigations" action="/lab/replaceable_ix"  />
+                                            <p:commandButton  class="w-100 "  ajax="false" value="Investigation Items" action="/lab/investigation_values"  />
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="Manage Reports">
+                                    <h:form>
+                                        <h:panelGroup  rendered="#{webUserController.hasPrivilege('LabReports')}" >
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Report Format Categories" action="/lab/report_format_category"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Report Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="/lab/report_format"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Investigation Formats" rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}" action="#{investigationItemController.toEditInvestigationFormat()}"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Field Values" action="/lab/investigation_item_value"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Pathology Templates" action="/lab/investigation_item_value_path"  />
+
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Flags" action="/lab/flags"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Calculations" action="/lab/calculation"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Dynamic Labels" action="/lab/dynamic_labels"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Validators" action="/lab/investigation_value_component"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Antibiotics" action="/lab/antibiotic"  />
+                                                <p:commandButton  class="w-100 "  ajax="false" value="Report Existing" action="/reportLab/investigation_existing"  />
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:form>
+                                </p:tab>
+                                <p:tab title="Lists">
+                                <h:form>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabLists')}">
+                                      <div class="d-grid gap-2">
+                                        <p:commandButton  class="w-100 "  ajax="false" value="Lab Investigation List" action="/lab/investigation_list"  />
+                                        <p:commandButton  class="w-100 "  ajax="false" value="Lab Investigation List by Category" action="/lab/investigation_list_by_category"  />
+                                      </div>
+                                    </h:panelGroup>
+                                </h:form>
+                                </p:tab>
+                                <p:tab title="SMS">
+                                    <p:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
+                                        <p:outputLabel value="Number" ></p:outputLabel>
+                                        <p:inputText value="#{patientReportController.smsNumber}" ></p:inputText>
+
+                                        <p:outputLabel value="Message" ></p:outputLabel>
+                                        <p:inputText value="#{patientReportController.smsMessage}" ></p:inputText>
 
 
-                                <!--                                <p:panel header="Collecting Centre" style="width: 400px;margin: auto;" collapsed="false" toggleable="true">
-                                                                    
-                                                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Add Lab Book to Collecting Centre" actionListener="#{investigationController.listAllIxs}" action="/lab/agent_referece_book"  />
-                                                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centre Credit Limit Update" actionListener="#{investigationController.listAllIxs}" action="/lab/institutions_udate_credit_limit"  />
-                                                                    <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centre History" actionListener="#{investigationController.listAllIxs}" action="/reportLab/collecting_centre_report_agent_history"  />
-                                                                </p:panel>-->
+                                        <p:commandButton  class="w-100 m-2 p-2"  ajax="false" value="Send" 
+                                                          action="#{patientReportController.sendSms()}" />
 
-                       
+                                    </p:panelGrid>
+                                </p:tab>
+
+                                <p:tab title="Setup">
+                                  <h:form>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSetUp')}">
+                                        <p:commandButton  class="w-100 m-2 p-2"  ajax="false" value="Report Samples" actionListener="#{investigationController.listAllIxs}" action="/lab/report_samples"  />
+                                        <p:commandButton  class="w-100 m-2 p-2"  ajax="false" value="Report Dynamic Lables" action="/lab/report_dynamic_lables"  />
+                                        <p:commandButton  class="w-100 m-2 p-2"  ajax="false" value="Upload Ix" action="#{investigationItemController.toUploadJsonToCreateAnInvestigation()}" />
+                                        <p:commandButton  class="w-100 m-2 p-2"  ajax="false" value="Developer" action="/lab/setup" />
+                                    </h:panelGroup>
+                                  </h:form>
+                                </p:tab>
+
+                            </p:accordionPanel>
+                        </div>
+                        <div class="col-9">  
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+
+                        </div>
+                    </div>
+                </p:panel>
 
 
-
-                </h:form>
             </ui:define>
 
 

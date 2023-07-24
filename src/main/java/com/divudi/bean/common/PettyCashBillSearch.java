@@ -414,7 +414,7 @@ public class PettyCashBillSearch implements Serializable {
                     bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 } else {
-                    sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and (upper(b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or upper(b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or upper(b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+                    sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
                     temMap.put("toDate", getToDate());
                     temMap.put("fromDate", getFromDate());
                     temMap.put("type", BillType.PaymentBill);

@@ -6,11 +6,11 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
-    <ui:composition template="/resources/template/template.xhtml">
+    <ui:composition template="/store/store_admin.xhtml">
 
-        <ui:define name="content">
+        <ui:define name="subcontent">
             <h:outputStylesheet library="css" name="jsfcrud.css"/>
-            <p:growl id="growl" autoUpdate="false" ></p:growl>
+            <p:growl id="growl"  ></p:growl>
             <h:form id="MakeListForm">
                 <p:panel header="Makes">
                     <p:dataTable id="datalist" value="#{makeController.items}" var="item"

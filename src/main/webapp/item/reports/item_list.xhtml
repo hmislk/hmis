@@ -1,0 +1,252 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/admin/items/admin_items_index.xhtml">
+
+            <ui:define name="item">
+                <f:view>
+
+
+                    <h:form>
+                        <p:panelGrid columns="4" >
+                            <p:commandButton value="Download" ajax="false"
+                                             >
+                                <p:dataExporter target="tblExport" type="xlsx" fileName="item list" ></p:dataExporter>
+                            </p:commandButton>
+
+
+                            <p:commandButton value="Load Services"
+                                             ajax="false"
+                                             action="#{itemController.fillServices()}"
+                                             >
+                            </p:commandButton>
+
+                            <p:commandButton value="Load Investigations"
+                                             ajax="false"
+                                             action="#{itemController.fillInvestigations()}"
+                                             >
+                            </p:commandButton>
+
+                        </p:panelGrid>
+
+
+
+
+                        <p:dataTable value="#{itemController.allItems}" 
+                                     var="item"
+                                     paginator="true"
+                                     rows="10"
+                                     id="tblView"
+                                     >
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Category"/>
+                                </f:facet>
+                                <h:outputText value="#{item.category.name}"/>
+                            </p:column>
+
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Institution"/>
+                                </f:facet>
+                                <h:outputText value="#{item.institution}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Department"/>
+                                </f:facet>
+                                <h:outputText value="#{item.department}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Name"/>
+                                </f:facet>
+                                <h:outputText value="#{item.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Code"/>
+                                </f:facet>
+                                <h:outputText value="#{item.code}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Barcode"/>
+                                </f:facet>
+                                <h:outputText value="#{item.barcode}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="PrintName"/>
+                                </f:facet>
+                                <h:outputText value="#{item.printName}"/>
+                            </p:column>
+
+                        </p:dataTable>
+                        <p:dataTable value="#{itemController.allItems}" 
+                                     var="item"
+                                     id="tblExport"
+                                     paginator="true"
+                                     rows="10"
+                                     style="display: none;"
+                                     >
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="TotalFee"/>
+                                </f:facet>
+                                <h:outputText value="#{item.totalFee}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="TotalFfee"/>
+                                </f:facet>
+                                <h:outputText value="#{item.totalFfee}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Id"/>
+                                </f:facet>
+                                <h:outputText value="#{item.id}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Category"/>
+                                </f:facet>
+                                <h:outputText value="#{item.category.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Total"/>
+                                </f:facet>
+                                <h:outputText value="#{item.total}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="DiscountAllowed"/>
+                                </f:facet>
+                                <h:outputText value="#{item.discountAllowed}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Institution"/>
+                                </f:facet>
+                                <h:outputText value="#{item.institution}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Department"/>
+                                </f:facet>
+                                <h:outputText value="#{item.department}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Name"/>
+                                </f:facet>
+                                <h:outputText value="#{item.name}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Code"/>
+                                </f:facet>
+                                <h:outputText value="#{item.code}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Barcode"/>
+                                </f:facet>
+                                <h:outputText value="#{item.barcode}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="PrintName"/>
+                                </f:facet>
+                                <h:outputText value="#{item.printName}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="ShortName"/>
+                                </f:facet>
+                                <h:outputText value="#{item.shortName}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="FullName"/>
+                                </f:facet>
+                                <h:outputText value="#{item.fullName}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Creater"/>
+                                </f:facet>
+                                <h:outputText value="#{item.creater}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="CreatedAt"/>
+                                </f:facet>
+                                <h:outputText value="#{item.createdAt}">
+                                    <f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="InwardChargeType"/>
+                                </f:facet>
+                                <h:outputText value="#{item.inwardChargeType}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Descreption"/>
+                                </f:facet>
+                                <h:outputText value="#{item.descreption}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="SymanticType"/>
+                                </f:facet>
+                                <h:outputText value="#{item.symanticType}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="DblValue"/>
+                                </f:facet>
+                                <h:outputText value="#{item.dblValue}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="DepartmentType"/>
+                                </f:facet>
+                                <h:outputText value="#{item.departmentType}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="ItemType"/>
+                                </f:facet>
+                                <h:outputText value="#{item.itemType}"/>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="TotalForForeigner"/>
+                                </f:facet>
+                                <h:outputText value="#{item.totalForForeigner}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </h:form>
+                </f:view>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

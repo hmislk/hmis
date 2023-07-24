@@ -34,7 +34,7 @@ import com.divudi.entity.pharmacy.UserStockContainer;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.entity.pharmacy.Vmpp;
 import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
 import com.divudi.facade.BillFacade;
@@ -213,7 +213,7 @@ public class StoreBean {
         HashMap hm = new HashMap();
         hm.put("wb", webUser);
 
-        List<UserStockContainer> usList = getUserStockContainerFacade().findBySQL(sql, hm);
+        List<UserStockContainer> usList = getUserStockContainerFacade().findByJpql(sql, hm);
 
         for (UserStockContainer usc : usList) {
             usc.setRetiredAt(new Date());
@@ -250,7 +250,7 @@ public class StoreBean {
                 + " and m.toDepartment=:to";
         hm.put("frm", fromDepartment);
         hm.put("to", toDepartment);
-        IssueRateMargins m = issueRateMarginsFacade.findFirstBySQL(sql, hm);
+        IssueRateMargins m = issueRateMarginsFacade.findFirstByJpql(sql, hm);
         if(m==null){
             m = new IssueRateMargins();
             m.setAtPurchaseRate(true);
@@ -447,7 +447,7 @@ public class StoreBean {
         m.put("s", d);
         m.put("item", item);
         sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item=:item order by i.itemBatch.dateOfExpire ";
-        items = getStockFacade().findBySQL(sql, m);
+        items = getStockFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -460,7 +460,7 @@ public class StoreBean {
         m.put("s", d);
         m.put("item", item);
         sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item=:item order by i.itemBatch.dateOfExpire ";
-        items = getStockFacade().findBySQL(sql, m);
+        items = getStockFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -600,7 +600,7 @@ public class StoreBean {
         sql = "Select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
         hm.put("bc", pharmaceuticalBillItem.getItemBatch());
         hm.put("stf", staff);
-        Stock s = getStockFacade().findFirstBySQL(sql, hm);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm);
         if (s == null) {
             s = new Stock();
             s.setStaff(staff);
@@ -639,7 +639,7 @@ public class StoreBean {
         sql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
         hm.put("bch", pharmaceuticalBillItem.getItemBatch());
         hm.put("dep", department);
-        Stock s = getStockFacade().findFirstBySQL(sql, hm);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm);
 //        //System.err.println("ss" + s);
         if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
@@ -681,7 +681,7 @@ public class StoreBean {
                 + " s.department=:dep";
         hm.put("bch", batch);
         hm.put("dep", department);
-        Stock s = getStockFacade().findFirstBySQL(sql, hm);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm);
         if (s == null) {
             s = new Stock();
             s.setDepartment(department);
@@ -716,7 +716,7 @@ public class StoreBean {
         //System.err.println("3 " + staff);
         hm.put("batch", pharmaceuticalBillItem.getItemBatch());
         hm.put("stf", staff);
-        Stock s = getStockFacade().findFirstBySQL(sql, hm);
+        Stock s = getStockFacade().findFirstByJpql(sql, hm);
         //System.err.println("4");
         if (s == null) {
             s = new Stock();
@@ -792,7 +792,7 @@ public class StoreBean {
         m.put("d", department);
         sql = "select s from Stock s where s.itemBatch.item=:i "
                 + " and s.department=:d order by s.itemBatch.dateOfExpire asc";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<ItemBatchQty> dl = new ArrayList<>();
         double toAddQty = qty;
         //System.err.println("QTY 1 : " + toAddQty);
@@ -826,7 +826,7 @@ public class StoreBean {
         m.put("q", 0.0);
         sql = "select s from Stock s where s.itemBatch.item=:i "
                 + " and s.department=:d and s.stock >:q order by s.itemBatch.dateOfExpire desc";
-        List<Stock> stocks = getStockFacade().findBySQL(sql, m);
+        List<Stock> stocks = getStockFacade().findByJpql(sql, m);
         List<StockQty> list = new ArrayList<>();
         double toAddQty = qty;
         for (Stock s : stocks) {
@@ -938,7 +938,7 @@ public class StoreBean {
         sql = "Select sh from StockHistory sh where sh.pbItem=:pbi";
         Map m = new HashMap();
         m.put("pbi", phItem);
-        sh = getStockHistoryFacade().findFirstBySQL(sql, m);
+        sh = getStockHistoryFacade().findFirstByJpql(sql, m);
         if (sh == null) {
             sh = new StockHistory();
         } else {
@@ -990,7 +990,7 @@ public class StoreBean {
         sql = "Select sh from StockHistory sh where sh.pbItem=:pbi";
         Map m = new HashMap();
         m.put("pbi", phItem);
-        sh = getStockHistoryFacade().findFirstBySQL(sql, m);
+        sh = getStockHistoryFacade().findFirstByJpql(sql, m);
         if (sh == null) {
             sh = new StockHistory();
         } else {
@@ -1042,7 +1042,7 @@ public class StoreBean {
         sql = "Select sh from StockHistory sh where sh.pbItem=:pbi";
         Map m = new HashMap();
         m.put("pbi", phItem);
-        sh = getStockHistoryFacade().findFirstBySQL(sql, m);
+        sh = getStockHistoryFacade().findFirstByJpql(sql, m);
         if (sh == null) {
             sh = new StockHistory();
         } else {
@@ -1143,7 +1143,7 @@ public class StoreBean {
 //
 //        String sql;
 //        sql = "select s from Stock s where s.itemBatch.item.id = " + item.getId() + " and s.staff.id = " + staff.getId() + " order by s.itemBatch.dateOfExpire desc";
-//        List<Stock> stocks = getStockFacade().findBySQL(sql);
+//        List<Stock> stocks = getStockFacade().findByJpql(sql);
 //        List<ItemBatchQty> dl = new ArrayList<>();
 //        double toAddQty = qty;
 //        for (Stock s : stocks) {
@@ -1206,7 +1206,7 @@ public class StoreBean {
         Map m = new HashMap();
         m.put("b", batch);
         m.put("d", department);
-        Stock s = getStockFacade().findFirstBySQL(sql, m);
+        Stock s = getStockFacade().findFirstByJpql(sql, m);
         if (s == null) {
             return 10.0;
         } else {
@@ -1266,7 +1266,7 @@ public class StoreBean {
         m.put("i", item);
         m.put("batchNo", batchNo);
         m.put("doe", doe);
-        ItemBatch ib = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ib = getItemBatchFacade().findFirstByJpql(sql, m);
         if (ib == null) {
             ib = new ItemBatch();
             ib.setDateOfExpire(doe);
@@ -1288,7 +1288,7 @@ public class StoreBean {
         m.put("pr", purchasePrice);
         m.put("rr", salePrice);
         m.put("doe", doe);
-        ItemBatch ib = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ib = getItemBatchFacade().findFirstByJpql(sql, m);
         if (ib == null) {
             ib = new ItemBatch();
             ib.setDateOfExpire(doe);
@@ -1315,7 +1315,7 @@ public class StoreBean {
         m.put("s", packUnit);
         m.put("d", ampp.getDblValue());
         sql = "select v from Vmpp v where v.retired=false and v.vmp =:vmp and v.dblValue =:d and v.packUnit=:s";
-        Vmpp v = getVmppFacade().findFirstBySQL(sql, m);
+        Vmpp v = getVmppFacade().findFirstByJpql(sql, m);
         if (v == null) {
             v = new Vmpp();
             v.setVmp(ampp.getAmp().getVmp());
@@ -1423,7 +1423,7 @@ public class StoreBean {
         }
         name = name.trim();
         PharmaceuticalItemCategory cat;
-        cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql("SELECT c FROM PharmaceuticalItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
+        cat = getPharmaceuticalItemCategoryFacade().findFirstByJpql("SELECT c FROM PharmaceuticalItemCategory c Where (c.name) = '" + name.toUpperCase() + "' ");
         if (cat == null && createNew == true) {
             cat = new PharmaceuticalItemCategory();
             cat.setName(name);
@@ -1442,7 +1442,7 @@ public class StoreBean {
         }
         name = name.trim();
         StoreItemCategory cat;
-        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where upper(c.name) = '" + name.toUpperCase() + "' ");
+        cat = getStoreItemCategoryFacade().findFirstByJpql("SELECT c FROM StoreItemCategory c Where (c.name) = '" + name.toUpperCase() + "' ");
         if (cat == null && createNew == true) {
             cat = new StoreItemCategory();
             cat.setName(name);
@@ -1471,9 +1471,9 @@ public class StoreBean {
         name = name.trim();
         String sql;
         Map map = new HashMap();
-        sql = "SELECT c FROM MeasurementUnit c Where upper(c.name) =:n ";
+        sql = "SELECT c FROM MeasurementUnit c Where (c.name) =:n ";
         map.put("n", name.toUpperCase());
-        m = getMeasurementUnitFacade().findFirstBySQL(sql, map);
+        m = getMeasurementUnitFacade().findFirstByJpql(sql, map);
         if (m == null && createNew == true) {
             m = new MeasurementUnit();
             m.setName(name);
@@ -1538,7 +1538,7 @@ public class StoreBean {
         m.put("u", packUnit);
         m.put("d", issueUnitsPerPack);
         sql = "select p from Vmpp p where p.vmp=:v and p.packUnit=:u and p.dblValue=:d";
-        Vmpp vmpp = getVmppFacade().findFirstBySQL(sql, m);
+        Vmpp vmpp = getVmppFacade().findFirstByJpql(sql, m);
         if (vmpp == null) {
             vmpp = new Vmpp();
             vmpp.setVmp(vmp);
@@ -1567,7 +1567,7 @@ public class StoreBean {
         m.put("v", vmpp);
         m.put("a", amp);
         sql = "select p from Ampp p where p.vmpp=:v and p.amp=:a";
-        ampp = getAmppFacade().findFirstBySQL(sql, m);
+        ampp = getAmppFacade().findFirstByJpql(sql, m);
         if (ampp == null) {
             ampp = new Ampp();
             ampp.setAmp(amp);
@@ -1594,7 +1594,7 @@ public class StoreBean {
         m.put("su", strengthUnit);
         m.put("c", cat);
         sql = "select v from VtmsVmps v where v.vtm=:vtm and v.strength=:s and v.strengthUnit=:su and v.pharmaceuticalItemCategory=:c";
-        VtmsVmps v = getVtmsVmpsFacade().findFirstBySQL(sql, m);
+        VirtualProductIngredient v = getVtmsVmpsFacade().findFirstByJpql(sql, m);
         Vmp vmp;
         if (v == null) {
             vmp = new Vmp();
@@ -1604,8 +1604,7 @@ public class StoreBean {
             vmp.setCreatedAt(Calendar.getInstance().getTime());
             getVmpFacade().create(vmp);
 
-            v = new VtmsVmps();
-            v.setCreatedAt(Calendar.getInstance().getTime());
+            v = new VirtualProductIngredient();
             v.setStrength(strength);
             v.setStrengthUnit(strengthUnit);
             v.setVtm(vtm);
@@ -1625,7 +1624,7 @@ public class StoreBean {
         Vtm vtm = null;
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
-        vtm = getVtmFacade().findFirstBySQL("SELECT c FROM Vtm c Where upper(c.name) =:n ", m);
+        vtm = getVtmFacade().findFirstByJpql("SELECT c FROM Vtm c Where (c.name) =:n ", m);
         if (vtm == null && createNew) {
             vtm = new Vtm();
             vtm.setName(name);
@@ -1689,7 +1688,7 @@ public class StoreBean {
         m.put("d", dept);
         m.put("t", BillType.StoreGrnBill);
         m.put("t1", BillType.StorePurchase);
-        ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return (double) ii.getPurcahseRate();
@@ -1717,7 +1716,7 @@ public class StoreBean {
         m.put("ins", ins);
         m.put("t", BillType.StoreGrnBill);
         m.put("t1", BillType.StorePurchase);
-        ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getPurcahseRate();
@@ -1754,7 +1753,7 @@ public class StoreBean {
         m.put("i", item);
         m.put("t", BillType.StoreGrnBill);
         m.put("t1", BillType.StorePurchase);
-        ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getPurcahseRate();
@@ -1780,7 +1779,7 @@ public class StoreBean {
         m.put("ins", ins);
         m.put("t", BillType.StoreGrnBill);
         m.put("t1", BillType.StorePurchase);
-        ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getRetailsaleRate();
@@ -1805,7 +1804,7 @@ public class StoreBean {
         m.put("i", item);
         m.put("t", BillType.StoreGrnBill);
         m.put("t1", BillType.StorePurchase);
-        ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return ii.getRetailsaleRate();
@@ -1831,7 +1830,7 @@ public class StoreBean {
         m.put("d", dept);
         m.put("t", BillType.StoreGrnBill);
         m.put("t1", BillType.StorePurchase);
-        ItemBatch ii = getItemBatchFacade().findFirstBySQL(sql, m);
+        ItemBatch ii = getItemBatchFacade().findFirstByJpql(sql, m);
         // //System.err.println("d = " + ii.getPurcahseRate());
         if (ii != null) {
             return (double) ii.getRetailsaleRate();

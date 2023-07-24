@@ -263,7 +263,7 @@ public  class UserDepartmentController implements Serializable {
         Map m = new HashMap();
         m.put("ins", currentInstituion);
         String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
-        currentInsDepartments = getDepartmentFacade().findBySQL(sql,m);
+        currentInsDepartments = getDepartmentFacade().findByJpql(sql,m);
         //////// // System.out.println("3");
         if (currentInsDepartments == null) {
             //////// // System.out.println("4");

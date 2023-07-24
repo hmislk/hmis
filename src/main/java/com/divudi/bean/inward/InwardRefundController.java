@@ -261,7 +261,7 @@ public class InwardRefundController implements Serializable {
         hm.put("btp", BillType.InwardFinalBill);
         hm.put("pe", getCurrent().getPatientEncounter());
 
-        Bill b = getBillFacade().findFirstBySQL(sql, hm);
+        Bill b = getBillFacade().findFirstByJpql(sql, hm);
 
         if (b == null) {
             paidAmount = 0;

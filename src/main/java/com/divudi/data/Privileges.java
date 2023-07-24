@@ -126,6 +126,7 @@ public enum Privileges {
     LabItems,
     LabItemFeeUpadate,
     LabItemFeeDelete,
+    LabPatientDetailsEdit,
     LabLists,
     LabSetUp,
     LabInwardBilling,
@@ -153,6 +154,7 @@ public enum Privileges {
     PharmacyOrderApproval,
     PharmacyOrderCancellation,
     PharmacySale,
+    PharmacySaleWithoutStock,
     PharmacySaleReprint,
     PharmacySaleCancel,
     PharmacySaleReturn,
@@ -380,7 +382,26 @@ public enum Privileges {
     //Administration
     SearchAll,
     ChangePreferece,
-    SendBulkSMS;
+    SendBulkSMS,
+    
+    
+    
+    ClinicalAdministrationEditLetter,
+    ClinicalPatientAdd,
+    ClinicalPatientEdit,
+    ClinicalPatientCommentsView,
+    ClinicalPatientCommentsEdit,
+    ClinicalPatientNameChange,
+    ClinicalMembershipAdd,
+    ClinicalMembershipEdit,
+     
+    ClinicalPatientPhoneNumberEdit,
+    
+    
+    
+    
+    
+    ;
 
     public String getLabel() {
         switch (this) {

@@ -27,6 +27,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
@@ -39,6 +40,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @author buddhika
  */
 @Entity
+@Inheritance
 @XmlRootElement
 public class Staff implements Serializable, IdentifiableWithNameOrCode {
 
@@ -360,6 +362,14 @@ public class Staff implements Serializable, IdentifiableWithNameOrCode {
     }
 
     public String getCode() {
+        if(code==null||code.trim().equals("")){
+            if(person!=null){
+                if(person.getName()!=null){
+                    String temName = person.getName() + "      ";
+                    code = temName.substring(0,5);
+                }
+            }
+        }
         return code;
     }
 

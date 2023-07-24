@@ -709,7 +709,7 @@ public class InwardReportController1 implements Serializable {
                     + " where i.retired=false"
                     + " and i.inwardChargeType=:inwTp"
                     + " and i.bill=:b ";
-            BillItem billItem = BillItemFacade.findFirstBySQL(sql, hm);
+            BillItem billItem = BillItemFacade.findFirstByJpql(sql, hm);
             admissionGross += billItem.getGrossValue();
             admissionDiscount += billItem.getDiscount();
             admissionNetValue += billItem.getNetValue();

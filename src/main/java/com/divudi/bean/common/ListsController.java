@@ -52,7 +52,7 @@ public class ListsController {
             Map m = new HashMap();
             m.put("it1", Amp.class);
             m.put("it2", Ampp.class);
-            ampsAndAmpp = getPharmaceuticalItemFacade().findBySQL(sql, m);
+            ampsAndAmpp = getPharmaceuticalItemFacade().findByJpql(sql, m);
         }
         return ampsAndAmpp;
     }
@@ -88,7 +88,7 @@ public class ListsController {
             tmpMap.put("ampp", Ampp.class);
             tmpMap.put("vmp", Vmp.class);
             tmpMap.put("vmpp", Vmpp.class);
-            pharmacyItems = getItemFacade().findBySQL(sql, tmpMap);
+            pharmacyItems = getItemFacade().findByJpql(sql, tmpMap);
         }
         return pharmacyItems;
     }

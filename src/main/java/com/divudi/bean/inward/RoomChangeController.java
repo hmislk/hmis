@@ -286,7 +286,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt desc";
         hm.put("pe", getCurrent());
-        return getPatientRoomFacade().findFirstBySQL(sql, hm);
+        return getPatientRoomFacade().findFirstByJpql(sql, hm);
     }
 
     public void changeGurdianRoom() {
@@ -310,7 +310,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and c.discharged!=true and upper(c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or upper(c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
+        selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
         return selectedItems;
     }
 
@@ -405,7 +405,7 @@ public class RoomChangeController implements Serializable {
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
         hm.put("class", GuardianRoom.class);
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -416,7 +416,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
