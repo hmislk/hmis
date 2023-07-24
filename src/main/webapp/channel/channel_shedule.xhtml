@@ -153,11 +153,16 @@
                                                                        var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" />
                                                     </p:selectOneMenu>
                                                     <p:outputLabel value="Start Time"/>                        
-                                                    <p:calendar  value="#{sheduleController.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                                    <p:calendar  value="#{sheduleController.current.startingTime}" 
+                                                                 navigator="true" pattern="HH:mm" timeOnly="true"
+                                                                 timeZone="Asia/Colombo">                            
                                                     </p:calendar>
 
                                                     <p:outputLabel value="End Time"/>                        
-                                                    <p:calendar  value="#{sheduleController.current.endingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                                    <p:calendar  value="#{sheduleController.current.endingTime}"
+                                                                 navigator="true" pattern="HH:mm" 
+                                                                 timeOnly="true"
+                                                                 timeZone="Asia/Colombo">                            
                                                     </p:calendar>
 
                                                     <p:outputLabel value="Starting Number"/>
