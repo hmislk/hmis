@@ -283,7 +283,7 @@ public class CommonReport implements Serializable {
     double billTotalStaff;
     double billTotalCancelStaff;
     double billTotalRefundStaff;
-
+    private int manageLabReportIndex;
     public double getBillTotal() {
         return billTotal;
     }
@@ -5553,6 +5553,14 @@ public class CommonReport implements Serializable {
 
     public void setManageInstitutionReportIndex(int manageInstitutionReportIndex) {
         this.manageInstitutionReportIndex = manageInstitutionReportIndex;
+    }
+
+    public int getManageLabReportIndex() {
+        return manageLabReportIndex;
+    }
+
+    public void setManageLabReportIndex(int manageLabReportIndex) {
+        this.manageLabReportIndex = manageLabReportIndex;
     }
 
     public class CollectingCenteRow {
