@@ -146,6 +146,27 @@ public class WebUserController implements Serializable {
         webUsers = getFacade().findBySQL(sql);
     }
 
+     private String usersExists;
+
+    public void checkUsersExists() {
+        if (thereAreUsersInTheSystem()) {
+            usersExists = "Users Exists";
+        } else {
+            usersExists = "Users Do Not Exists";
+        }
+    }
+
+    private boolean thereAreUsersInTheSystem() {
+        String jpql = "select w from WebUser w";
+        WebUser u = getFacade().findFirstByJpql(jpql);
+        if (u == null) {
+            return false;
+        }
+        return true;
+    }
+    
+    
+    
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         if (getInstitution() == null) {
@@ -943,6 +964,14 @@ public class WebUserController implements Serializable {
 
     public void setDepartmentsOfSelectedUsersInstitution(List<Department> departmentsOfSelectedUsersInstitution) {
         this.departmentsOfSelectedUsersInstitution = departmentsOfSelectedUsersInstitution;
+    }
+
+    public String getUsersExists() {
+        return usersExists;
+    }
+
+    public void setUsersExists(String usersExists) {
+        this.usersExists = usersExists;
     }
 
     @FacesConverter("webUs")

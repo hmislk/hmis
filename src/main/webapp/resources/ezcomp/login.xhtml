@@ -74,5 +74,21 @@
                 </div>
             </div>
         </h:form>
+
+        <h:panelGroup rendered="false" >
+            <h:form >
+
+                <div class="text-center pt-1 mb-5 pb-1">
+                    <p:commandButton class="btn m-1 w-75 btn"
+                                     value="Check"
+                                     ajax="false"
+                                     action="#{webUserController.checkUsersExists()}" >
+                    </p:commandButton>  
+
+                    <h1>#{webUserController.usersExists}</h1>
+                </div>
+            </h:form>
+        </h:panelGroup>
+
     </cc:implementation>
 </html>
