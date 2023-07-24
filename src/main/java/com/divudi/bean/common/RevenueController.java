@@ -55,6 +55,7 @@ public class RevenueController implements Serializable {
     Department department;
     Institution institution;
     List<StringsDoublesRow> rows;
+    private int revenueReportIndex;
     double grandTotal = 0.0;
     double cashTotal = 0.0;
     double creditTotal = 0.0;
@@ -408,6 +409,14 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Revenu
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public int getRevenueReportIndex() {
+        return revenueReportIndex;
+    }
+
+    public void setRevenueReportIndex(int revenueReportIndex) {
+        this.revenueReportIndex = revenueReportIndex;
     }
 
     

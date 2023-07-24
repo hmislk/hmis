@@ -11,12 +11,29 @@
 
             <ui:define name="content">
                 <p:panel header="Revenue Reports" >
-                    <h:form>
-                        <h:panelGrid columns="1" >
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Revenue Summery" action="revenue_summery" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Revenue Report" action="revenue_report" ></p:commandButton>
-                        </h:panelGrid>
-                    </h:form>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p:accordionPanel activeIndex="#{revenueController.revenueReportIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab>
+                                    <h:form>
+                                    <div class="d-grid gap-2"> 
+                                        <p:commandButton class="w-100" ajax="false" value="Revenue Summery" action="revenue_summery" ></p:commandButton>
+                                        <p:commandButton class="w-100" ajax="false" value="Revenue Report" action="revenue_report" ></p:commandButton>
+                                    </div>
+                                </h:form>
+                                </p:tab>
+                                
+                            </p:accordionPanel>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+
                 </p:panel>
             </ui:define>
 
