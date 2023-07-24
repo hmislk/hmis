@@ -18,13 +18,14 @@
 
 
 
-                <p:panel header="Manage Service Subcategory" >
-                    <h:panelGrid id ="gpVeda" columns="3" styleClass="alignTop">
-
-                        <h:panelGrid id="gpSelect" columns="1"  >
+                <p:panel header="Manage Service Subcategory" class="w-100">
+                    
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel header="Parent Category" >
-                                <h:panelGrid id="gpSelectText" >
-                                    <p:selectOneListbox  id="lstSelect"  scrollHeight="500" class="w-100" value="#{serviceSubCategoryController.parentCategory}" style="min-width: 350px" >
+                                <h:panelGrid id="gpSelectText" class="w-100">
+                                    <p:selectOneListbox  id="lstSelect"  scrollHeight="500" class="w-100" value="#{serviceSubCategoryController.parentCategory}" style="min-width: 300px">
                                         <f:selectItems  value="#{serviceCategoryController.items}"  var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpSelectText1 gpDetail" execute="lstSelect"  >
                                         </f:ajax>
@@ -33,10 +34,11 @@
 
                             </p:panel>
                         </h:panelGrid  >
-
-                        <p:panel header="Sub Category">
-                            <h:panelGrid id="gpSelectText1" >
-                                <p:selectOneListbox  id="lstSelect1"  scrollHeight="500" class="w-100" value="#{serviceSubCategoryController.current}" style="min-width: 350px">
+                            </div>
+                            <div class="col-md-4">
+                                 <p:panel header="Sub Category">
+                            <h:panelGrid id="gpSelectText1" class="w-100">
+                                <p:selectOneListbox  id="lstSelect1"  scrollHeight="500" class="w-100" value="#{serviceSubCategoryController.current}" style="min-width: 300px">
                                     <f:selectItems  value="#{serviceSubCategoryController.items}" var="myItem" itemValue="#{myItem1}" itemLabel="#{myItem1.name}" ></f:selectItems>
                                     <f:ajax render="gpDetail" execute="lstSelect1" >
                                     </f:ajax>
@@ -44,8 +46,9 @@
 
                             </h:panelGrid>
                         </p:panel>
-
-                        <p:panel style="height: 570px">
+                            </div>
+                            <div class="col-md-4">
+                                <p:panel style="height: 570px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
@@ -69,8 +72,16 @@
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
+                            </div>
+                        </div>
 
-                    </h:panelGrid>
+                        
+
+                       
+
+                        
+
+                    
                 </p:panel>
             </h:form>
 

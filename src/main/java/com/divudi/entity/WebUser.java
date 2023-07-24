@@ -153,11 +153,12 @@ public class WebUser implements Serializable {
     }
 
     public String getPrimeTheme() {
-        List<String> validThemes = Arrays.asList("luna-amber", "luna-blue", "luna-green", "luna-pink", "nova-colored", "nova-dark", "nova-light");
+        List<String> validThemes = Arrays.asList("cerulean", "darkly", "litera", "simplex", "solar",
+                "minty");
         if (validThemes.contains(primeTheme)) {
             return primeTheme;
         } else {
-            return "nova-light";
+            return "cerulean";
         }
     }
 

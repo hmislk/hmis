@@ -22,24 +22,26 @@
             </title>
         </ui:insert>
 
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"></link>
-        <h:outputStylesheet library="css" name="ohmis.css"/>
-        <h:outputScript library="js" name="jsfcrud.js"/>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"/>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"></link>
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async="true" src="https://www.googletagmanager.com/gtag/js?id=UA-167559394-1"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag('js', new Date());
+        <link rel="stylesheet" 
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <!--        <link 
+                    rel="stylesheet" 
+                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+                    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" 
+                    crossorigin="anonymous"/>-->
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
 
-            gtag('config', 'UA-167559394-1');
-        </script>
+        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
+        
+        <h:outputStylesheet library="css" name="ohmis.css"/>
+        
+        <h:outputScript library="js" name="jsfcrud.js"/>
+
     </h:head>
-    <h:body style="height: 100vh;">
+    <h:body style="height: 100vh;" class="bg-light">
         <p:growl id="publicGrowl" showDetail="true" sticky="false" />
         <h:panelGroup rendered="#{!sessionController.firstLogin}" >
             <h:panelGroup rendered ="#{not sessionController.logged}"  >
