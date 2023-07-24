@@ -874,19 +874,7 @@ public class PatientController implements Serializable {
 
     }
 
-    public StreamedContent getPhotoByByte(byte[] p) {
-        //////System.out.println("p is " + p);
-        FacesContext context = FacesContext.getCurrentInstance();
-        if (context.getRenderResponse()) {
-            return new DefaultStreamedContent();
-        } else if (p == null) {
-            return new DefaultStreamedContent();
-        } else {
-            InputStream targetStream = new ByteArrayInputStream(p);
-            StreamedContent str = DefaultStreamedContent.builder().contentType("image/png").name("photo.png").stream(() -> targetStream).build();
-            return str;
-        }
-    }
+ 
 
     public Title[] getTitles() {
         return Title.values();
