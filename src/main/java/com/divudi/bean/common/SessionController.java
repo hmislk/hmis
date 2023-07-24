@@ -927,6 +927,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
+        System.out.println("checkUsersWithoutDepartment");
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
         Map m = new HashMap();

@@ -1208,8 +1208,7 @@ public class BhtSummeryController implements Serializable {
 
         updatePaymentBillList();
         //For update Printing room
-        setCurrent(getBillFacade().findByField("id", getCurrent().getId().toString(), false));
-
+       
         ////System.out.println("1." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
         ////System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
         ////System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
