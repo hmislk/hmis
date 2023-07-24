@@ -15,8 +15,7 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h:outputStylesheet library="css" name="styles.css" ></h:outputStylesheet>
-                <h:outputStylesheet library="css" name="ohmis.css" ></h:outputStylesheet>
+                
                 <h:form>
                     <div class="card" >
                         <div class="card-header" >
@@ -28,12 +27,12 @@
 
                                     <div class="mb-3">
                                         <h:outputLabel value="Name" class="form-label" />
-                                        <h:inputText class="form-control" value="#{patientController.searchName}" />
+                                        <p:inputText class="form-control" value="#{patientController.searchName}" />
                                     </div>
 
                                     <div class="mb-3">
                                         <h:outputLabel value="Phone Number" class="form-label" />
-                                        <h:inputText class="form-control" value="#{patientController.searchPhone}" />
+                                        <p:inputText class="form-control" value="#{patientController.searchPhone}" />
                                     </div>
 
 
@@ -76,7 +75,6 @@
                                                  class="w-100 table table-sm table-striped"
                                                  paginator="true"
                                                  rows="10"
-                                                 styleClass="auto-width-datatable"
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="5,10,20"
                                                  >
@@ -101,16 +99,26 @@
                                         </p:column>
                                         <p:column headerText="Actions">
                                             <div class="d-flex justify-content-between">
-                                                <p:commandButton value="EMR" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
+                                                <p:commandButton value="Profile" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="OPD Visit" 
                                                                  action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
+                                                
+                                                
+                                                <p:commandButton value="Data Entry" 
+                                                                 action="#{patientController.navigateToNewDataEntryForm}" ajax="false" styleClass="mx-2">
+                                                    <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                </p:commandButton>
                                                 <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
+                                                
+                                                
+                                                
+                                                
                                             </div>
                                         </p:column>
 

@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin_fees.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -24,11 +24,11 @@
                         <h:panelGrid id="gpSelect" columns="1"  >
                             <p:panel >
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{medicalPackageNameController.current}" style="min-width: 223px">
+                                    <p:selectOneListbox  id="lstSelect"   class="w-100" scrollHeight="500" value="#{medicalPackageNameController.current}" style="min-width: 400px">
                                         <f:selectItems  value="#{medicalPackageNameController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
                                     <h:commandButton id="btnAdd" value="Add" action="#{medicalPackageNameController.prepareAdd()}" styleClass="buttons" >
@@ -42,7 +42,7 @@
                             </p:panel>
                         </h:panelGrid  >
 
-                        <p:panel>
+                        <p:panel style="min-width: 650px; height: 550px">
                             <h:panelGrid id="gpDetail" columns="1">
                                 <p:panel header="Package Name">
                                     <h:outputLabel value="Active" rendered="#{!medicalPackageNameController.current.inactive}" style="color: green;"></h:outputLabel>
@@ -51,9 +51,9 @@
                                     <h:panelGrid id="gpDetailText" columns="2">
 
                                         <h:outputText value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" value="#{medicalPackageNameController.current.name}"  ></h:inputText>
+                                        <h:inputText autocomplete="off" value="#{medicalPackageNameController.current.name}"  style="min-width: 450px"></h:inputText>
                                         <p:outputLabel value="Insurance Company "/>                                        
-                                        <p:selectOneMenu value="#{medicalPackageNameController.current.forInstitution}">
+                                        <p:selectOneMenu value="#{medicalPackageNameController.current.forInstitution}" style="min-width: 450px">
                                             <f:selectItem itemLabel="Select Insurance Company"/>
                                             <f:selectItems value="#{institutionController.creditCompanies}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}" />

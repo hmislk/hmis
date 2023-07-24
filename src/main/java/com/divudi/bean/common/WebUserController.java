@@ -115,6 +115,9 @@ public class WebUserController implements Serializable {
     private Dashboard dashboard;
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
+    private int manageDiscountIndex;
+    
+    private int manageUsersIndex;
     
     private List<Department> departmentsOfSelectedUsersInstitution;
 
@@ -146,27 +149,6 @@ public class WebUserController implements Serializable {
         webUsers = getFacade().findBySQL(sql);
     }
 
-     private String usersExists;
-
-    public void checkUsersExists() {
-        if (thereAreUsersInTheSystem()) {
-            usersExists = "Users Exists";
-        } else {
-            usersExists = "Users Do Not Exists";
-        }
-    }
-
-    private boolean thereAreUsersInTheSystem() {
-        String jpql = "select w from WebUser w";
-        WebUser u = getFacade().findFirstByJpql(jpql);
-        if (u == null) {
-            return false;
-        }
-        return true;
-    }
-    
-    
-    
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
         if (getInstitution() == null) {
@@ -225,7 +207,7 @@ public class WebUserController implements Serializable {
     public List<WebUser> completeUser(String qry) {
         List<WebUser> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from WebUser c where c.retired=false and  (upper(c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or upper(c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
+            a = getFacade().findBySQL("select c from WebUser c where c.retired=false and  ((c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -599,7 +581,7 @@ public class WebUserController implements Serializable {
         if (selectText.trim().equals("")) {
             items = getFacade().findBySQL("select c from WebUser c where c.retired=false order by c.webUserPerson.name");
         } else {
-            items = getFacade().findBySQL("select c from WebUser c where c.retired=false and upper(c.webUserPerson.name) like '%" + getSelectText().toUpperCase() + "%' order by c.webUserPerson.name");
+            items = getFacade().findBySQL("select c from WebUser c where c.retired=false and (c.webUserPerson.name) like '%" + getSelectText().toUpperCase() + "%' order by c.webUserPerson.name");
         }
         dycryptName();
     }
@@ -785,7 +767,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getStaffController().setCurrent(selected.getStaff());
-        return "/admin_staff_signature";
+        return "/admin/institutions/admin_staff_signature";
     }
 
     public String toManageDepartments() {
@@ -864,7 +846,7 @@ public class WebUserController implements Serializable {
     }
 
     public String backToViewUsers() {
-        return "/admin_view_user";
+        return "/admin/users/admin_view_user";
     }
 
     public String changeCurrentUserPassword() {
@@ -966,12 +948,20 @@ public class WebUserController implements Serializable {
         this.departmentsOfSelectedUsersInstitution = departmentsOfSelectedUsersInstitution;
     }
 
-    public String getUsersExists() {
-        return usersExists;
+    public int getManageUsersIndex() {
+        return manageUsersIndex;
     }
 
-    public void setUsersExists(String usersExists) {
-        this.usersExists = usersExists;
+    public void setManageUsersIndex(int manageUsersIndex) {
+        this.manageUsersIndex = manageUsersIndex;
+    }
+
+    public int getManageDiscountIndex() {
+        return manageDiscountIndex;
+    }
+
+    public void setManageDiscountIndex(int manageDiscountIndex) {
+        this.manageDiscountIndex = manageDiscountIndex;
     }
 
     @FacesConverter("webUs")

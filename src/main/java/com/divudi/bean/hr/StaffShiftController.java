@@ -71,8 +71,8 @@ public class StaffShiftController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "select c from StaffShift c "
                 + " where c.retired=false "
-                + " and (upper(c.shift.name) like :q "
-                + " or upper(c.staff.person.name) like :q)"
+                + " and ((c.shift.name) like :q "
+                + " or (c.staff.person.name) like :q)"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         lst = ejbFacade.findByJpql(sql, hm);
@@ -153,8 +153,8 @@ public class StaffShiftController implements Serializable {
                 + " and c.retired=false "
                 + " and c.shiftDate= :dt "
                 //                + " and c.staff.roster=:rs"
-                + " and (upper(c.shift.name) like :q "
-                + " or upper(c.staff.person.name) like :q)"
+                + " and ((c.shift.name) like :q "
+                + " or (c.staff.person.name) like :q)"
                 + " and s.retired=false "
                 + " and (s.fromDate >= c.shiftDate "
                 + " and s.toDate <= c.shiftDate)";

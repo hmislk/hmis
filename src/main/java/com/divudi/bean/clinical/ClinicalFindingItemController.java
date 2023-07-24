@@ -46,7 +46,7 @@ public class ClinicalFindingItemController implements Serializable {
 
     public List<ClinicalFindingItem> completeClinicalFindingItem(String qry) {
         List<ClinicalFindingItem> c;
-        c = getFacade().findBySQL("select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        c = getFacade().findBySQL("select c from ClinicalFindingItem c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
         }
@@ -54,7 +54,7 @@ public class ClinicalFindingItemController implements Serializable {
     }
 
     public List<ClinicalFindingItem> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from ClinicalFindingItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -187,7 +187,7 @@ public class ClinicalFindingItemController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItemController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItem.class.getName());
             }
         }
     }
@@ -230,7 +230,7 @@ public class ClinicalFindingItemController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItemController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItem.class.getName());
             }
         }
     }

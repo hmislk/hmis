@@ -46,14 +46,18 @@ public class ProcedureController implements Serializable {
     private ClinicalFindingItem current;
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
+    
+    public String navigateToManageProcedures(){
+        return "/emr/admin/index";
+    }
 
-    public List<ClinicalFindingItem> completeDiagnosis(String qry) {
+    public List<ClinicalFindingItem> completeProcedures(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Therapeutic_Procedure);
         m.put("n", "%" + qry.toUpperCase() + "%");
         String sql;
-        sql = "select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        sql = "select c from ClinicalFindingItem c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
         c = getFacade().findBySQL(sql, m, 10);
         if (c == null) {
             c = new ArrayList<>();
@@ -66,7 +70,7 @@ public class ProcedureController implements Serializable {
         m.put("t", SymanticType.Therapeutic_Procedure);
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
-        sql = "select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        sql = "select c from ClinicalFindingItem c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
         selectedItems = getFacade().findByJpql(sql, m);
         return selectedItems;
     }

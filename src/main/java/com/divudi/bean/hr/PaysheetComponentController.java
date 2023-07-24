@@ -46,7 +46,7 @@ public class PaysheetComponentController implements Serializable {
     String selectText = "";
 
     public List<PaysheetComponent> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PaysheetComponent c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from PaysheetComponent c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -56,7 +56,7 @@ public class PaysheetComponentController implements Serializable {
             a = getFacade().findBySQL("select c "
                     + " from PaysheetComponent"
                     + " c where c.retired=false "
-                    + " and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+                    + " and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<PaysheetComponent>();

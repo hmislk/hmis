@@ -587,8 +587,8 @@ public class PatientReportController implements Serializable {
         m.put("phone", getSessionController().getPhoneNo());
         m.put("billno", getSessionController().getBillNo().toUpperCase());
         sql = "select pr from PatientInvestigation pr where pr.retired=false and "
-                + "upper(pr.billItem.bill.patient.person.phone)=:phone and "
-                + " (upper(pr.billItem.bill.insId)=:billno or upper(pr.billItem.bill.deptId)=:billno)  "
+                + "(pr.billItem.bill.patient.person.phone)=:phone and "
+                + " ((pr.billItem.bill.insId)=:billno or (pr.billItem.bill.deptId)=:billno)  "
                 + "order by pr.id desc ";
         customerPis = getPiFacade().findBySQL(sql, m, 50);
         return "/reports_list";
@@ -713,6 +713,13 @@ public class PatientReportController implements Serializable {
         }
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+            if(priv.getInvestigationItem().getFormatString()!=null && !priv.getInvestigationItem().getFormatString().trim().equals("")){
+                if(priv.getInvestigationItem().getIxItemValueType()==InvestigationItemValueType.Varchar){
+                    double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
+                    priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
+                    priv.setDoubleValue(tmpDbl);
+                }
+            }
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
                 String sql = "select i "
                         + " from IxCal i "
@@ -796,13 +803,11 @@ public class PatientReportController implements Serializable {
             } else if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Flag) {
                 priv.setStrValue(findFlagValue(priv));
             }
-//            ////System.out.println("priv = " + priv.getStrValue());
-            getPirivFacade().edit(priv);
-//            ////System.out.println("priv = " + priv);
-        }
-//        getFacade().edit(currentPatientReport);
-        commonController.printReportDetails(null, null, startTime, "Calculate Lab Calculations");
 
+            getPirivFacade().edit(priv);
+
+        }
+        commonController.printReportDetails(null, null, startTime, "Calculate Lab Calculations");
     }
 
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {

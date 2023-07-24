@@ -64,10 +64,15 @@
                                             </div>
                                         </div>
                                     </div>
-
                                 </div>
-
-
+                            </div>
+                            <div class="card-footer d-flex align-items-center">
+                                <h:commandLink rendered="#{applicationController.hasAwebsiteAsFrontEnd}"
+                                    action="#{sessionController.redirectToLandingPage}" 
+                                               class="btn btn-secondary"
+                                               immediate="true">
+                                    <h:graphicImage style="height: 2em;" library="image" name="home.png" alt="Home" styleClass="img-fluid"/>
+                                </h:commandLink>
                             </div>
                         </div>
                     </div>

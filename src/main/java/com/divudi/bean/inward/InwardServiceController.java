@@ -117,7 +117,7 @@ public class InwardServiceController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from InwardService c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -128,7 +128,7 @@ public class InwardServiceController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -159,7 +159,7 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> completeItem(String qry) {
-        List<InwardService> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<InwardService> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -391,7 +391,7 @@ public class InwardServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from InwardService c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from InwardService c where c.retired=false and upper(c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
         items = getFacade().findBySQL(sql);

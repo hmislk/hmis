@@ -51,7 +51,9 @@ public class ClinicalFindingValue implements Serializable {
     String lobValue;
     String stringValue;
     long longValue;
-    Byte[] imageValue;
+    byte[] imageValue;
+    private String imageName;
+    private String imageType;
     @ManyToOne
     Item itemValue;
     @ManyToOne
@@ -124,11 +126,11 @@ public class ClinicalFindingValue implements Serializable {
         this.longValue = longValue;
     }
 
-    public Byte[] getImageValue() {
+    public byte[] getImageValue() {
         return imageValue;
     }
 
-    public void setImageValue(Byte[] imageValue) {
+    public void setImageValue(byte[] imageValue) {
         this.imageValue = imageValue;
     }
 
@@ -237,6 +239,22 @@ public class ClinicalFindingValue implements Serializable {
 
     public void setDocumentTemplate(DocumentTemplate documentTemplate) {
         this.documentTemplate = documentTemplate;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public String getImageType() {
+        return imageType;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
     }
 
 }

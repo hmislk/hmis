@@ -98,7 +98,7 @@ public class VmpController implements Serializable {
         if (query == null) {
             vmpList = new ArrayList<Vmp>();
         } else {
-            sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             vmpList = getFacade().findBySQL(sql);
         }
@@ -359,7 +359,7 @@ public class VmpController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Vmp>();
         } else {
-            sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -403,7 +403,7 @@ public class VmpController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Vmp c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from Vmp c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            String sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
             selectedItems = getFacade().findBySQL(sql);
         }
         return selectedItems;

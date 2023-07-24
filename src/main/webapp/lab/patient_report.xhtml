@@ -65,8 +65,13 @@
                                                      value="Save" 
                                                      action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" process="tblVals" update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  styleClass="nonPrintBlock"  value="Calculate" 
-                                                     action="#{patientReportController.calculate}" onclick="onSubmitButton();">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        process="tblVals" 
+                                        update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  
+                                        styleClass="nonPrintBlock"  
+                                        value="Calculate" 
+                                        action="#{patientReportController.calculate}">
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
@@ -81,13 +86,12 @@
                                                      disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
                                                      action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-
-                                    <!--                                    <p:commandButton styleClass="nonPrintBlock"  
-                                                                                         ajax="false" 
-                                                                                         value="Print" 
-                                                                                         rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                                                                         onclick="window.print();" 
-                                                                                         actionListener="#{patientReportController.printPatientReport()}"/>-->
+                                    <p:commandButton styleClass="nonPrintBlock"  
+                                                     ajax="false" 
+                                                     value="Print" 
+                                                     rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                                     onclick="window.print();" 
+                                                     actionListener="#{patientReportController.printPatientReport()}"/>
 
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >

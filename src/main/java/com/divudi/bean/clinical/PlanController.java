@@ -47,13 +47,19 @@ public class PlanController implements Serializable {
     private List<ClinicalFindingItem> items = null;
     String selectText = "";
 
+    
+    public String navigateToManagePlans(){
+        return "/emr/admin/plans";
+    }
+    
+    
     public List<ClinicalFindingItem> completeDiagnosis(String qry) {
         List<ClinicalFindingItem> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Preventive_Procedure);
         m.put("n", "%" + qry.toUpperCase() + "%");
         String sql;
-        sql="select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        sql="select c from ClinicalFindingItem c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
         c = getFacade().findBySQL(sql,m,10);
         if (c == null) {
             c = new ArrayList<>();
@@ -66,7 +72,7 @@ public class PlanController implements Serializable {
         m.put("t", SymanticType.Preventive_Procedure);
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
-        sql="select c from ClinicalFindingItem c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        sql="select c from ClinicalFindingItem c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
         selectedItems = getFacade().findByJpql(sql,m);
         return selectedItems;
     }

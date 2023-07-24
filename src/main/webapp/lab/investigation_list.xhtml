@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/lab/administration.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -9,7 +9,7 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form id="form"  >
@@ -17,34 +17,47 @@
                 <p:panel id="panIx"  >
 
                     <f:facet name="header" >
-                        <h:outputLabel value="List of All Investigations"></h:outputLabel>
-                        <p:commandButton ajax="false" value="Refresh" action="#{investigationController.listAllIxs}" styleClass="noPrintButton" onclick="onSubmitButton();"  />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
-                            <p:printer target="panIx" />
-                        </p:commandButton>
-                        <p:commandButton id="excel" ajax="false" value="Excel"  >
-                            <p:dataExporter target="tbl" type="csv" fileName="List of All Investigations"  />
-                        </p:commandButton>
-                        <p:commandButton value="Download as JSON" ajax="false"  icon="ui-icon-arrowthick-1-s">
-                            <p:fileDownload value="#{investigationItemController.ixToJsonFile}" />
-                        </p:commandButton>
+                        <h:outputLabel value="List of Investigations"></h:outputLabel>
                     </f:facet>
+                    <p:commandButton ajax="false" value="Process" action="#{investigationController.listAllIxs}" icon="pi pi-play" />
+
+                    <p:commandButton id="excel" ajax="false" value="Download as Excel" class="m-2" icon="pi pi-file-excel">
+                        <p:dataExporter target="tbl" type="csv" fileName="List of All Investigations" />
+                    </p:commandButton>
+
+                    <p:commandButton value="Download as JSON" ajax="false" icon="pi pi-arrow-down">
+                        <p:fileDownload value="#{investigationItemController.ixToJsonFile}" />
+                    </p:commandButton>
+
+
+
+
+
                     <p:dataTable id="tbl" 
                                  rowIndexVar="rowIndex" 
                                  value="#{investigationController.allIxs}" 
                                  var="ix" 
-                                 
+
                                  rows="20"
                                  paginator="true"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="20, 50, 100" 
-                                 
+
                                  >
                         <p:column headerText="No." width="30">
                             <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
                         </p:column>  
-                        <p:column headerText="Investigation" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains">
+                        <p:column headerText="Name" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains">
                             <h:outputLabel value="#{ix.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Printing Name" sortBy="#{ix.printName}" filterBy="#{ix.printName}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.printName}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Full Name" sortBy="#{ix.fullName}" filterBy="#{ix.fullName}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.fullName}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Code" sortBy="#{ix.code}" filterBy="#{ix.code}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.code}" ></h:outputLabel>
                         </p:column>
                         <p:column headerText="Category" >
                             <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>

@@ -41,10 +41,14 @@ public class VocabularyController implements Serializable {
     private Vocabulary current;
     private List<Vocabulary> items = null;
     String selectText = "";
+    
+    public String navigateToManageVocabularies(){
+        return "/emr/admin/vocabularies";
+    }
 
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;
-        c = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        c = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
         }
@@ -52,7 +56,7 @@ public class VocabularyController implements Serializable {
     }
 
     public List<Vocabulary> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -73,8 +77,7 @@ public class VocabularyController implements Serializable {
     }
 
     public void saveSelected() {
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
@@ -122,7 +125,6 @@ public class VocabularyController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());

@@ -143,6 +143,10 @@ public class InvestigationController implements Serializable {
     private UploadedFile file;
     private StreamedContent downloadingFile;
 
+    public String navigateToManageInvestigationForEmr() {
+        return "/emr/admin/investigations";
+    }
+
     public String toAddManyIx() {
         current = new Investigation();
         current.setInwardChargeType(InwardChargeType.Laboratory);
@@ -221,19 +225,19 @@ public class InvestigationController implements Serializable {
             if (i.getInvestigationCategory() != null) {
                 j.setCategory(i.getInvestigationCategory().getName());
             }
-            if(i.getSample()!=null){
+            if (i.getSample() != null) {
                 j.setSample(i.getSample().getName());
             }
-            if(i.getInvestigationTube()!=null){
+            if (i.getInvestigationTube() != null) {
                 j.setTube(i.getInvestigationTube().getName());
             }
-            if(i.getMachine()!=null){
+            if (i.getMachine() != null) {
                 j.setAnalyzer(i.getMachine().getName());
             }
-            if(i.getPriority()!=null){
+            if (i.getPriority() != null) {
                 j.setPrintingName(i.getPriority().toString());
             }
-            
+
             jixlist.getInvestigations().add(j);
         }
         String j = "";
@@ -658,9 +662,9 @@ public class InvestigationController implements Serializable {
         Map m = new HashMap();
         sql = "select c from Investigation c "
                 + " where c.retired=false  "
-                + " and (upper(c.name) like :n or "
-                + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
         sql += " and c.institution = :ins ";
         sql += " order by c.name";
         m.put("n", "%" + query.toUpperCase() + "%");
@@ -687,9 +691,9 @@ public class InvestigationController implements Serializable {
         if (institution != null) {
             sql = "select c from Investigation c "
                     + " where c.retired=false  "
-                    + " and (upper(c.name) like :n or "
-                    + " upper(c.fullName) like :n or "
-                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                    + " and ((c.name) like :n or "
+                    + " (c.fullName) like :n or "
+                    + " (c.code) like :n or (c.printName) like :n ) ";
             sql += " and c.institution = :ins ";
             sql += " order by c.name";
             m.put("n", "%" + query.toUpperCase() + "%");
@@ -697,9 +701,9 @@ public class InvestigationController implements Serializable {
         } else {
             sql = "select c from Investigation c "
                     + " where c.retired=false  "
-                    + " and (upper(c.name) like :n or "
-                    + " upper(c.fullName) like :n or "
-                    + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                    + " and ((c.name) like :n or "
+                    + " (c.fullName) like :n or "
+                    + " (c.code) like :n or (c.printName) like :n ) ";
             sql += " and c.institution is null ";
             sql += " order by c.name";
             m.put("n", "%" + query.toUpperCase() + "%");
@@ -720,9 +724,9 @@ public class InvestigationController implements Serializable {
         //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
-                + " and (upper(c.name) like :n or "
-                + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
         //////// // System.out.println(sql);
 
         m.put("n", "%" + query.toUpperCase() + "%");
@@ -743,6 +747,28 @@ public class InvestigationController implements Serializable {
         return suggestions;
     }
 
+    public List<Investigation> completeInvestigation(String query) {
+        if (query == null || query.trim().equals("")) {
+            return new ArrayList<>();
+        }
+        List<Investigation> suggestions;
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select c from Investigation c "
+                + " where c.retired=false "
+                + " and "
+                + " ( "
+                + " c.name like :n or "
+                + " c.fullName like :n or "
+                + " c.code like :n or c.printName like :n"
+                + " ) ";
+
+        m.put("n", "%" + query.toUpperCase() + "%");
+        jpql += " order by c.name";
+        suggestions = getFacade().findByJpql(jpql, m);
+        return suggestions;
+    }
+
     public List<InvestigationWithCount> completeInvestWithIiCount(String query) {
         if (query == null || query.trim().equals("")) {
             return new ArrayList<>();
@@ -754,9 +780,9 @@ public class InvestigationController implements Serializable {
         //m.put(m, m);
         sql = "select c from Investigation c "
                 + " where c.retired=false "
-                + " and (upper(c.name) like :n or "
-                + " upper(c.fullName) like :n or "
-                + " upper(c.code) like :n or upper(c.printName) like :n ) ";
+                + " and ((c.name) like :n or "
+                + " (c.fullName) like :n or "
+                + " (c.code) like :n or (c.printName) like :n ) ";
         //////// // System.out.println(sql);
 
         m.put("n", "%" + query.toUpperCase() + "%");
@@ -790,8 +816,8 @@ public class InvestigationController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            // sql = "select c from Investigation c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            // sql = "select c from Investigation c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
             suggestions = getFacade().findBySQL(sql);
         }
@@ -840,7 +866,6 @@ public class InvestigationController implements Serializable {
         this.listMasterItemsOnly = listMasterItemsOnly;
     }
 
-
     public String getBulkText() {
 
         return bulkText;
@@ -874,7 +899,7 @@ public class InvestigationController implements Serializable {
                 + " where c.retired=:r ";
         m.put("r", false);
         if (selectText != null && !selectText.trim().equals("")) {
-            sql += " and upper(c.name) like :st ";
+            sql += " and (c.name) like :st ";
             m.put("st", "%" + getSelectText().toUpperCase() + "%");
         }
         if (sessionController.getLoggedPreference().isInstitutionSpecificItems()) {
@@ -997,13 +1022,13 @@ public class InvestigationController implements Serializable {
         if (selectText.trim().equals("")) {
             selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
 
     public List<Investigation> completeItem(String qry) {
-        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -1020,7 +1045,7 @@ public class InvestigationController implements Serializable {
 //                    + " from Item c "
 //                    + " where (type(c) =:inv or type(c) = :ser or type(c) = :pak) "
 //                    + " and c.retired=false "
-//                    + " and upper(c.name) like :qry "
+//                    + " and (c.name) like :qry "
 //                    + " and c.institution=:ins ";
 //            sql += "order by c.name";
 //            List<Investigation> completeItems = getFacade().findByJpql(sql, m);
@@ -1039,7 +1064,7 @@ public class InvestigationController implements Serializable {
 //            m.put("pak", Investigation.class);
             m.put("ins", getSessionController().getInstitution());
             sql = "select c from Item c where ( type(c) = Investigation or type(c) = Packege ) "
-                    + "and c.retired=false and c.institution=:ins and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+                    + "and c.retired=false and c.institution=:ins and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
             List<Investigation> completeItems = getFacade().findByJpql(sql, m);
             return completeItems;
         } else {
@@ -1107,6 +1132,55 @@ public class InvestigationController implements Serializable {
             getFacade().edit(i);
         }
         UtilityController.addSuccessMessage("Updated");
+    }
+
+    public void saveSelectedForEhr() {
+        getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
+        if (getCurrent().getPrintName() == null || getCurrent().getPrintName().trim().equals("")) {
+            getCurrent().setPrintName(getCurrent().getName());
+        }
+        if (getCurrent().getFullName() == null || getCurrent().getFullName().trim().equals("")) {
+            getCurrent().setFullName(getCurrent().getName());
+        }
+         if (getCurrent().getCode() == null || getCurrent().getCode().trim().equals("")) {
+            getCurrent().setCode(getCurrent().getName());
+        }
+
+        if (getCurrent().getInwardChargeType() == null) {
+            getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
+        }
+        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+            if (billedAs == false) {
+                getCurrent().setBilledAs(getCurrent());
+            }
+            if (reportedAs == false) {
+                getCurrent().setReportedAs(getCurrent());
+            }
+            getFacade().edit(getCurrent());
+            UtilityController.addSuccessMessage("Updated Successfully.");
+        } else {
+            getCurrent().setCreatedAt(new Date());
+            getCurrent().setCreater(getSessionController().getLoggedUser());
+
+            getFacade().create(getCurrent());
+            if (billedAs == false) {
+                getCurrent().setBilledAs(getCurrent());
+            }
+            if (reportedAs == false) {
+                getCurrent().setReportedAs(getCurrent());
+            }
+            getFacade().edit(getCurrent());
+            Item sc = new Item();
+            sc.setCreatedAt(new Date());
+            sc.setCreater(sessionController.getLoggedUser());
+            sc.setItemType(ItemType.SampleComponent);
+            sc.setName(getCurrent().getName());
+            sc.setParentItem(getCurrent());
+            getItemFacade().create(sc);
+            UtilityController.addSuccessMessage("Saved Successfully");
+        }
+        recreateModel();
+        getItems();
     }
 
     public void saveSelected() {

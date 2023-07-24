@@ -115,7 +115,7 @@ public class SalaryCycleController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from SalaryCycle c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q ";
+                + " and (c.name) like :q ";
         sql += " order by c.id desc";
         hm.put("q", "%" + qry.toUpperCase() + "%");
         salaryCycles = getFacade().findByJpql(sql, hm);

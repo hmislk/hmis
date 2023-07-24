@@ -427,10 +427,13 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private String msgFromSysmex() {
+        System.out.println("msgFromSysmex");
         String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
+        System.out.println("sysMex.getBytes().size() = " + sysMex.getBytes().size());
+        
         if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
             SysMexAdf1 m1 = new SysMexAdf1();
             m1.setInputStringBytesSpaceSeperated(msg);
@@ -779,7 +782,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientInvestigation> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PatientInvestigation c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findBySQL("select c from PatientInvestigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -1065,7 +1068,7 @@ public class PatientInvestigationController implements Serializable {
                 temMap.put("fromDate", getFromDate());
                 lstToReceiveSearch = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
             } else {
-                temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where (upper(p.name) like '%" + selectText.toUpperCase() + "%' or upper(b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or upper(i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
+                temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where ((p.name) like '%" + selectText.toUpperCase() + "%' or (b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or (i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
                 temMap.put("toDate", getToDate());
                 temMap.put("fromDate", getFromDate());
 //                //////System.out.println("sql is " + temSql);
@@ -1136,13 +1139,15 @@ public class PatientInvestigationController implements Serializable {
 
         samplingRequestResponse += "Login=1";
         String zplTemplate = "^XA\r\n"
-                + "^LH150,10\r\n"
-                + "^F010,20,^ADN,18,10^FD#{header}^FS\r\n"
-                + "^LH150,30\r\n"
-                + "^F010,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n"
-                + "^LH150,155\r\n"
-                + "^F010,20,^ADN,18,10^FD#{footer}^FS\r\n"
+                + "^LH170,10\r\n" // was 150
+                + "^FO30,20,^ADN,18,10^FD#{header}^FS\r\n" // was 10
+                + "^LH170,30\r\n" // was 150
+                + "^FO30,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n" // was 10
+                + "^LH170,155\r\n" // was 150
+                + "^FO30,20,^ADN,18,10^FD#{footer}^FS\r\n" // was 10
                 + "^XZ\r\n";
+
+
         String ptLabel = "";
         Bill tb;
         tb = patientSamples.get(0).getBill();
@@ -1901,4 +1906,5 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
 }

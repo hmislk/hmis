@@ -45,13 +45,17 @@ public class DiagnosisController implements Serializable {
 
     String selectText = "";
 
+    public String navigateToManageDiagnoses() {
+        return "/emr/admin/diagnoses";
+    }
+
     public List<ClinicalEntity> completeDiagnosis(String qry) {
         List<ClinicalEntity> c;
         Map m = new HashMap();
         m.put("t", SymanticType.Disease_or_Syndrome);
         m.put("n", "%" + qry.toUpperCase() + "%");
         String sql;
-        sql = "select c from ClinicalEntity c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
         c = getFacade().findBySQL(sql, m, 10);
         if (c == null) {
             c = new ArrayList<>();
@@ -87,7 +91,7 @@ public class DiagnosisController implements Serializable {
         m.put("t", SymanticType.Disease_or_Syndrome);
         m.put("n", "%" + getSelectText().toUpperCase() + "%");
         String sql;
-        sql = "select c from ClinicalEntity c where c.retired=false and upper(c.name) like :n and c.symanticType=:t order by c.name";
+        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
         selectedItems = getFacade().findByJpql(sql, m);
         return selectedItems;
     }
@@ -180,6 +184,14 @@ public class DiagnosisController implements Serializable {
     }
 
     public List<ClinicalEntity> getItems() {
+        if (items == null) {
+            Map m = new HashMap();
+            m.put("t", SymanticType.Disease_or_Syndrome);
+            String sql;
+            sql = "select c from ClinicalFindingItem c where c.retired=false and c.symanticType=:t order by c.name";
+            items = getFacade().findByJpql(sql, m);
+        }
+
         return items;
     }
 

@@ -27,7 +27,7 @@
             <p:outputLabel value="#{cc.attrs.patient.phn}" rendered="#{not empty cc.attrs.patient.phn}" />
 
             <p:outputLabel value="Date of Birth:" rendered="#{not empty cc.attrs.patient.person.dob}" />
-            <p:outputLabel value="#{cc.attrs.patient.person.dob}">
+            <p:outputLabel value="#{cc.attrs.patient.person.dob}" rendered="#{not empty cc.attrs.patient.person.dob}">
                 <f:convertDateTime pattern="dd MMMM yyyy" />
             </p:outputLabel>
 

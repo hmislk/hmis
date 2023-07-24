@@ -44,23 +44,24 @@ public class ThemeController implements Serializable {
 
     public String getTheme() {
         if (getSessionController().getLoggedUser() != null) {
-           theme = getSessionController().getLoggedUser().getPrimeTheme();
+            theme = getSessionController().getLoggedUser().getPrimeTheme();
         }
         if (theme == null) {
-            theme = "nova-light";
+            theme = "cerulean";
             return theme;
         }
+        //"cerulean", "darkly", "litera", "simplex", "solar",
+//                "minty");
         switch (theme) {
-            case "nova-light":
-            case "nova-dark":
-            case "nova-colored":
-            case "luna-amber":
-            case "luna-blue":
-            case "luna-green":
-            case "luna-pink":
+            case "cerulean":
+            case "darkly":
+            case "litera":
+            case "simplex":
+            case "solar":
+            case "minty":
                 return theme;
             default:
-                theme = "nova-light";
+                theme = "cerulean";
         }
         return theme;
     }
@@ -92,12 +93,11 @@ public class ThemeController implements Serializable {
     @PostConstruct
     public void init() {
         themes = new TreeMap<String, String>();
-        themes.put("nova-light", "nova-light");
-        themes.put("nova-dark", "nova-dark");
-        themes.put("nova-colored", "nova-colored");
-        themes.put("luna-amber", "luna-amber");
-        themes.put("luna-blue", "luna-blue");
-        themes.put("luna-green", "luna-green");
-        themes.put("luna-pink", "luna-pink");
+        themes.put("cerulean", "cerulean");
+        themes.put("darkly", "darkly");
+        themes.put("litera", "litera");
+        themes.put("simplex", "simplex");
+        themes.put("solar", "solar");
+        themes.put("minty", "minty");
     }
 }

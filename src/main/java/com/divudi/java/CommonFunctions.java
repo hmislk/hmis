@@ -64,6 +64,18 @@ public class CommonFunctions {
         return calendar.getTime();
     }
     
+    public static long calculateAgeInDays(Date dob, Date toDate) {
+        if (dob == null || toDate == null) {
+            return 0l;
+        }
+        long ageInDays;
+        ageInDays = (toDate.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24);
+        if (ageInDays < 0) {
+            ageInDays = 0;
+        }
+        return ageInDays;
+    }
+    
     public static Date getEndOfMonth(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);

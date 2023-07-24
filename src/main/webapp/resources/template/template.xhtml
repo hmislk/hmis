@@ -21,67 +21,49 @@
                 </h:panelGroup>
             </title>
         </ui:insert>
-        <!--<h:outputStylesheet library="awesome" name="css/font-awesome.css" ></h:outputStylesheet>-->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"></link>
+
+        <link rel="stylesheet" 
+              href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <!--        <link 
+                    rel="stylesheet" 
+                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+                    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" 
+                    crossorigin="anonymous"/>-->
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
+
+        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
+        
+        <h:outputStylesheet library="css" name="ohmis.css"/>
+        
         <h:outputScript library="js" name="jsfcrud.js"/>
-        <h:outputScript library="css" name="ohmis.css"/>
-       
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"/>
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"></link>
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async="true" src="https://www.googletagmanager.com/gtag/js?id=UA-167559394-1"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag('js', new Date());
-
-            gtag('config', 'UA-167559394-1');
-        </script>
     </h:head>
-
-    <h:body style="height: 100vh;">
-        <div  id="panelFullSpread" class="fullSpread ui-widget-content " >
-            <p:growl id="publicGrowl" showDetail="true" sticky="false" />
-            <h:panelGroup rendered="#{!sessionController.firstLogin}" >
-                <h:panelGroup rendered ="#{not sessionController.logged}"  >
-                    <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
-                        <ez:web_header/>
-                        <ez:web_title/>
-                        <ui:insert name="web">
-                            <ez:webindex rendered="#{not sessionController.websiteUserGoingToLog}"/> 
-                            <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
-                        </ui:insert>
-                        <ez:login rendered="#{sessionController.websiteUserGoingToLog}"/>
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{not applicationController.hasAwebsiteAsFrontEnd}" >
-                        <ui:insert name="login">
-                            <ez:login/>
-                        </ui:insert>
-                    </h:panelGroup>
-                </h:panelGroup>
-                <h:panelGroup rendered ="#{sessionController.logged}"  >
-                    <h:panelGroup rendered="#{sessionController.department ne null}" styleClass="nonPrintBlock" >
-                        <ez:menu/>
-                        <ui:insert name="content">
-                        </ui:insert>
-                    </h:panelGroup>
-                    <h:panelGroup rendered="#{sessionController.department eq null}" styleClass="nonPrintBlock" >
-                        <ez:select_department/>
-                    </h:panelGroup>
-                    <ez:footer/>
-                </h:panelGroup>
+    <h:body style="height: 100vh;" class="bg-light">
+        <p:growl id="publicGrowl" showDetail="true" sticky="false" />
+        <h:panelGroup rendered="#{!sessionController.firstLogin}" >
+            <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                <ui:insert name="login">
+                    <ez:login/>
+                </ui:insert>
             </h:panelGroup>
-
-            <h:panelGroup rendered="#{sessionController.firstLogin}" >
-                <ez:first_login/>
+            <h:panelGroup rendered ="#{sessionController.logged}"  >
+                <h:panelGroup rendered="#{sessionController.department ne null}" >
+                    <ez:menu/>
+                    <ui:insert name="content">
+                    </ui:insert>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{sessionController.department eq null}" >
+                    <ez:select_department/>
+                </h:panelGroup>
+                <ez:footer/>
             </h:panelGroup>
-            
-            <p:messages showDetail="true" ></p:messages>
-
-        </div>
-
+        </h:panelGroup>
+        <h:panelGroup rendered="#{sessionController.firstLogin}" >
+            <ez:first_login/>
+        </h:panelGroup>
+        <p:messages showDetail="true" ></p:messages>
     </h:body>
 </html>
