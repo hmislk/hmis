@@ -164,6 +164,7 @@ public class DataAdministrationController {
     private DepartmentType departmentType;
     private SearchKeyword searchKeyword;
     CommonController commonController;
+    private int manageCheckEnteredDataIndex;
 
     Date fromDate;
     Date toDate;
@@ -1495,6 +1496,14 @@ public class DataAdministrationController {
 
     public void setSelectedPharmaceuticalItemCategorys(List<PharmaceuticalItemCategory> selectedPharmaceuticalItemCategorys) {
         this.selectedPharmaceuticalItemCategorys = selectedPharmaceuticalItemCategorys;
+    }
+
+    public int getManageCheckEnteredDataIndex() {
+        return manageCheckEnteredDataIndex;
+    }
+
+    public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
+        this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
     }
 
 }
