@@ -15,81 +15,144 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form >
-<!--            <p:tooltip for="smOpd" value="OPD" ></p:tooltip>
-            <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
-            <p:tooltip for="smInpatient" value="Inpatients" ></p:tooltip>
-            <p:tooltip for="smLab" value="Lab" ></p:tooltip>
-            <p:tooltip for="smPharmacy" value="Pharmacy" ></p:tooltip>
-            <p:tooltip for="smTheatre" value="Theatre" ></p:tooltip>
-            <p:tooltip for="smMembership" value="Membership" ></p:tooltip>
-            <p:tooltip for="smMembership" value="Membership" ></p:tooltip>-->
-
-
             <p:menubar  >
                 <p:menuitem  ajax="false"
                              action="/home" 
                              icon="pi pi-home"
                              title="Home"
                              ></p:menuitem>
+
+
                 <p:submenu 
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
                     rendered="#{webUserController.hasPrivilege('Opd')}">
 
-                    <p:menuitem ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
-
-                    <p:submenu  label="Collecting Centre Billing" rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') and false}">
+                    <p:submenu 
+                        id="smOpdBilling"
+                        label="Billing"
+                        rendered="#{webUserController.hasPrivilege('Opd')}">
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_bill"  
+                            actionListener="#{billController.prepareNewBill}" 
+                            value="OPD Billing" 
+                            rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_pre_bill"  
+                            actionListener="#{opdPreBillController.prepareNewBill}" 
+                            value="OPD Billing For Cashier" 
+                            rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/collecting_centre/bill"  
                                     actionListener="#{billController.prepareNewBill}" 
-                                    value="CC Billing" 
+                                    value="Billing for Collecting Centres" 
                                     rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
                         </p:menuitem>
+                        <p:menuitem ajax="false"
+                                    action="/opd_bill_package" 
+                                    actionListener="#{billPackageController.clearBillValues}" 
+                                    value="Billing Packages" 
+                                    rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/opd_bill_package_medical" 
+                                    actionListener="#{billPackageController.clearBillValues}" 
+                                    value="Billing Medical Packages" 
+                                    rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
 
+                    </p:submenu>
+                    <p:submenu 
+                        label="Cashier"
+                        id="smOpdCashier"
+                        rendered="#{webUserController.hasPrivilege('Opd')}">
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_search_pre_bill" 
+                            actionListener="#{searchController.makeListNull}"  
+                            value="Accept Payment for OPD Bills" 
+                            rendered="false" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_search_pre_batch_bill" 
+                            actionListener="#{searchController.makeListNull}"  
+                            value="Accept Payment for OPD Batch Bills" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_pre_bill" 
+                            actionListener="#{searchController.makeListNull}"  
+                            value="Accept Payments for Pharmacy Bills" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_search_bill_fee_payment" 
+                            value="Accept Payments for For Lab Tests" ></p:menuitem>
+                        <p:menuitem  
+                            ajax="false" 
+                            action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash" 
+                            actionListener="#{searchController.makeListNull}"   
+                            value="Refund Cash for Pharmacy Bills" ></p:menuitem>                                        
+                    </p:submenu>
+                    <p:submenu 
+                        id="smOpdSearch"
+                        label="Search"
+                        rendered="#{webUserController.hasPrivilege('Opd')}">
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_search_bill_own" 
+                            actionListener="#{searchController.makeListNull}"  
+                            value="OPD Bill Search" 
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
+                        <p:menuitem 
+                            ajax="false" 
+                            action="/opd_search_bill_change_payment" 
+                            actionListener="#{searchController.makeListNull}"  
+                            value="Change Payment Method" 
+                            rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/collecting_centre/collecting_centre_search_bill_own"
                                     actionListener="#{searchController.makeListNull}"
                                     value="CC Bill Search" 
                                     rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}" >
                         </p:menuitem>
-                    </p:submenu>
 
-
-                    <p:menuitem ajax="false" action="/opd_pre_bill"  actionListener="#{opdPreBillController.prepareNewBill}" value="Bills For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" ></p:menuitem>
-
-                    <p:submenu label="Packages">
-                        <p:menuitem ajax="false" action="/opd_bill_package" actionListener="#{billPackageController.clearBillValues}" value="Packages" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/opd_bill_package_medical" actionListener="#{billPackageController.clearBillValues}" value="Medical Packages" rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>
-                    </p:submenu>
-                    <p:submenu label="Pharmacy">
-                        <p:menuitem ajax="false" action="/pharmacy/pharmacy_search_pre_bill" actionListener="#{searchController.makeListNull}"  value="Accept Payment" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash" actionListener="#{searchController.makeListNull}"   value="Refund Cash" ></p:menuitem>                                        
-                    </p:submenu>
-                    <p:submenu label="OPD" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
-                        <p:menuitem ajax="false" action="/opd_search_pre_bill" actionListener="#{searchController.makeListNull}"  value="Accept Payment(OPD)" rendered="false" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/opd_search_pre_batch_bill" actionListener="#{searchController.makeListNull}"  value="Accept Payment(OPD Batch Bill)" ></p:menuitem>
-                        <p:menuitem ajax="false" action="/opd_search_bill_fee_payment" value="Payment BillFees Fot test" ></p:menuitem>
-
-                    </p:submenu>
-                    <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Bill Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/opd_search_bill_change_payment" actionListener="#{searchController.makeListNull}"  value="Change Payment Method" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
-
-                    <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" rendered="true" />
-                    <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration" rendered="false" />
-                    <p:submenu label="OPD Credit Bill" >
                         <p:menuitem ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  value="Bills To Pay Search" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                         <p:menuitem ajax="false" value="Credit paid Bills" action="/opd_search_bill_full_paid" actionListener="#{billController.clear()}" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"></p:menuitem>
                         <p:menuitem ajax="false" value="Credit paid Bills with OPD Bill" action="/opd_search_bill_full_paid_bills" actionListener="#{billController.clear()}" rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"></p:menuitem>
+
+                        <p:menuitem ajax="false" action="/opd_bill_awaiting_cancellation" value="Bill Awaiting For Cancel" rendered="#{webUserController.hasPrivilege('OpdCancel')}" ></p:menuitem>
+
+                        <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Billitem Search" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" ></p:menuitem>
+
                     </p:submenu>
-                    <p:menuitem ajax="false" action="/opd_bill_awaiting_cancellation" value="Bill Awaiting For Cancel" rendered="#{webUserController.hasPrivilege('OpdCancel')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/patient_registration.xhtml" value="Patients Registration" actionListener="#{membershipSchemeController.fillItems()}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" rendered="true" />
+                    <p:menuitem ajax="false" action="/patient_registration" value="Patient Registration" rendered="true" />
                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summery" ></p:menuitem>
+
+                    <p:submenu 
+                        id="smOpdSummeries"
+                        label="Summaries"
+                        rendered="#{webUserController.hasPrivilege('Opd')}">
+
+                    </p:submenu>
+                    <p:submenu 
+                        id="smOpdManager"
+                        label="Manager"
+                        rendered="#{webUserController.hasPrivilege('Opd')}">
+
+                    </p:submenu>
+                    <p:submenu 
+                        id="smOpdAdministrator"
+                        label="Administration"
+                        rendered="#{webUserController.hasPrivilege('Opd')}">
+
+                    </p:submenu>
                 </p:submenu>
+
                 <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                     <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/search_family" value="Search Family" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/reports" value="Family Membership Reports" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/membership/administration" value="Administration" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                 </p:submenu>
+
+
                 <p:submenu id="smInpatient"  icon="fa fa-fw fa-bed"  rendered="#{webUserController.hasPrivilege('Inward')}">
                     <p:submenu label="Admissions" rendered="#{webUserController.hasPrivilege('InwardAdmissions')}">                                    
                         <p:menuitem  ajax="false"  action="/inward/inward_admission" value="Admission" actionListener="#{admissionController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" ></p:menuitem>
