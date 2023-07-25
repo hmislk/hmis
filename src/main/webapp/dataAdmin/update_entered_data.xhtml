@@ -12,121 +12,136 @@
 
             <ui:define name="content">
 
-                <h:form>
-                    <p:panel header="Update Entered Data">
-                         <p:tabView orientation="left" > 
 
-                            <p:tab title=" OPD " >
-                                <h:panelGrid columns="1" >  
-                      
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Reset Item Session Number Type" 
-                                                     action="#{pharmacyItemExcelManager.resetSessionBillNumberType()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Reset Channel Session Number" 
-                                                     action="#{sheduleController.resetSessionNumbers()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Set Dept ID To Bills" 
-                                                     action="#{pharmacyItemExcelManager.updateBillDeptID()}" onclick="onSubmitButton();" />
-                                 </h:panelGrid>
-                            </p:tab>
-                             
+                <p:panel header="Update Entered Data">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel>
+                                    <p:tab title=" OPD " >
+                                        <div class="d-grid gap-2"> 
+
+                                            <p:commandButton class="w-100" ajax="false" value="Reset Item Session Number Type" 
+                                                             action="#{pharmacyItemExcelManager.resetSessionBillNumberType()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="Reset Channel Session Number" 
+                                                             action="#{sheduleController.resetSessionNumbers()}"  />
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="Set Dept ID To Bills" 
+                                                             action="#{pharmacyItemExcelManager.updateBillDeptID()}"  />
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title=" Pharmacy " >
-                                        <h:panelGrid columns="1">
-                         
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="1) Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="2) Reset Transfer Issue Value" action="#{pharmacyItemExcelManager.resetTransferIssueValue()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false"  value="3) Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="4) Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="5) Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="6) Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}" onclick="onSubmitButton();" />
-                                </h:panelGrid>
-                            </p:tab>
-                             
-                              <p:tab title=" Inward " >
-                                  <h:panelGrid columns="1">
-                         
-                                    <p:commandButton styleClass="linkButton" ajax="false" 
-                                                     rendered="false"
-                                                     value="Reset Inward Charge Type " 
-                                                     action="#{pharmacyItemExcelManager.resetInwardChargeType()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" 
-                                                     rendered="false"
-                                                     value="Reset Paid Amount " 
-                                                     action="#{pharmacyItemExcelManager.resetFinalBillPaidValue()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" 
-                                                     rendered="false"
-                                                     value="Set Credit Used Amount " 
-                                                     action="#{pharmacyItemExcelManager.restCreditUsedAmount()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" 
-                                                     rendered="false"
-                                                     value="Set Margin,Discount,NetTotal To Bill " 
-                                                     action="#{pharmacyItemExcelManager.resetMarginAndDiscountAndNetTotal()}" onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false" 
-                                                     value="View Paid Value " 
-                                                     rendered="false"
-                                                     action="#{pharmacyItemExcelManager.upadatePaidValueInBillFee()}" onclick="onSubmitButton();" />
-                         </h:panelGrid>
-                            </p:tab>  
-                             
-                              <p:tab title=" Store " >
-                                  <h:panelGrid columns="1">
-                           
-                                    <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Remove Store Item" 
-                                                     action="#{pharmacyItemExcelManager.removeStoreItem()}" onclick="onSubmitButton();" rendered="false" />
+                                        <div class="d-grid gap-2">
 
-                                    <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Update Cancel Grn Net Totals" 
-                                                     action="#{pharmacyItemExcelManager.updateCancelGRN()}" onclick="onSubmitButton();" />
-                         </h:panelGrid>
-                            </p:tab>
-                             
-                              <p:tab title=" HR" >
-                                  <h:panelGrid columns="1">
-                           
-                           
-                                    <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Set Roster To Staff Shift" 
-                                                     action="#{pharmacyItemExcelManager.updateStaffShiftWithRoster()}" 
-                                                     onclick="onSubmitButton();" />
+                                            <p:commandButton class="w-100" ajax="false" value="1) Reset Qty Value" action="#{pharmacyItemExcelManager.resetQtyValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="2) Reset Transfer Issue Value" action="#{pharmacyItemExcelManager.resetTransferIssueValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false"  value="3) Reset Transfer History Value" action="#{pharmacyItemExcelManager.resetTransferHistoryValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="4) Reset GRN Value" action="#{pharmacyItemExcelManager.resetGrnValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="5) Reset GRN Reference" action="#{pharmacyItemExcelManager.resetGrnReference()}"  />
+                                            <p:commandButton class="w-100" ajax="false" value="6) Reset Bill No" action="#{pharmacyItemExcelManager.resetBillNo()}"  />
+                                        </div>
+                                    </p:tab>
 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Staff Code to Integer"
-                                                     action="#{staffController.updateCodeToIntege}"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Staff Shift Start End Time"
-                                                     action="#{staffShiftController.updateStaffShiftStartTimeAndEndTime}"/>                            
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Over Time Value Per Sec Staff Shift"
-                                                     action="#{hrReportController.updateOverTimeValuePerSecond}" rendered="false"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Holiday Staff Shift"
-                                                     action="#{hrReportController.updateHoliday}" rendered="true"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Automatic Leave Date"
-                                                     action="#{hrReportController.updateAutomaticData}" rendered="false"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Late No Pay"
-                                                     action="#{hrReportController.updateLateLeaveData}" rendered="false"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Update Staff Paysheet Componet"
-                                                     action="#{hrReportController.updateStaffPaysheetComponent}"/>
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Reset Automated Leave"
-                                                     action="#{hrReportController.resetSystemLeave()}"/>
-                                 </h:panelGrid>
-                            </p:tab>
-                             
-                               <p:tab title=" Channel" >
-                                   <h:panelGrid columns="1">
-                           
-                          
-                                    <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Active Vat For All Channel Sessions" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
-                                                     action="#{dataAdministrationController.createAllSessionAsVatable()}" 
-                                                     onclick="onSubmitButton();" />
-                                    <p:commandButton styleClass="linkButton" ajax="false"
-                                                     value="Mark All Channel Sessions as Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
-                                                     action="#{dataAdministrationController.createAllSessionAsChannel()}" 
-                                                     onclick="onSubmitButton();" />
-                                </h:panelGrid>
-                            </p:tab>
-                         </p:tabView>
-                       
-                    </p:panel>
+                                    <p:tab title=" Inward " >
+                                        <div class="d-grid gap-2">
 
-                </h:form>
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             rendered="false"
+                                                             value="Reset Inward Charge Type " 
+                                                             action="#{pharmacyItemExcelManager.resetInwardChargeType()}"  />
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             rendered="false"
+                                                             value="Reset Paid Amount " 
+                                                             action="#{pharmacyItemExcelManager.resetFinalBillPaidValue()}"  />
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             rendered="false"
+                                                             value="Set Credit Used Amount " 
+                                                             action="#{pharmacyItemExcelManager.restCreditUsedAmount()}"  />
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             rendered="false"
+                                                             value="Set Margin,Discount,NetTotal To Bill " 
+                                                             action="#{pharmacyItemExcelManager.resetMarginAndDiscountAndNetTotal()}"  />
+                                            <p:commandButton class="w-100" ajax="false" 
+                                                             value="View Paid Value " 
+                                                             rendered="false"
+                                                             action="#{pharmacyItemExcelManager.upadatePaidValueInBillFee()}"  />
+                                        </div>
+                                    </p:tab>  
+
+                                    <p:tab title=" Store " >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="Remove Store Item" 
+                                                             action="#{pharmacyItemExcelManager.removeStoreItem()}"  rendered="false" />
+
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="Update Cancel Grn Net Totals" 
+                                                             action="#{pharmacyItemExcelManager.updateCancelGRN()}"  />
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title=" HR" >
+                                        <div class="d-grid gap-2">
+
+
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="Set Roster To Staff Shift" 
+                                                             action="#{pharmacyItemExcelManager.updateStaffShiftWithRoster()}" 
+                                                             />
+
+                                            <p:commandButton class="w-100" ajax="false" value="Update Staff Code to Integer"
+                                                             action="#{staffController.updateCodeToIntege}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Update Staff Shift Start End Time"
+                                                             action="#{staffShiftController.updateStaffShiftStartTimeAndEndTime}"/>                            
+                                            <p:commandButton class="w-100" ajax="false" value="Update Over Time Value Per Sec Staff Shift"
+                                                             action="#{hrReportController.updateOverTimeValuePerSecond}" rendered="false"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Update Holiday Staff Shift"
+                                                             action="#{hrReportController.updateHoliday}" rendered="true"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Update Automatic Leave Date"
+                                                             action="#{hrReportController.updateAutomaticData}" rendered="false"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Update Late No Pay"
+                                                             action="#{hrReportController.updateLateLeaveData}" rendered="false"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Update Staff Paysheet Componet"
+                                                             action="#{hrReportController.updateStaffPaysheetComponent}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="Reset Automated Leave"
+                                                             action="#{hrReportController.resetSystemLeave()}"/>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title=" Channel" >
+                                        <div class="d-grid gap-2">
+
+
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="Active Vat For All Channel Sessions" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
+                                                             action="#{dataAdministrationController.createAllSessionAsVatable()}" 
+                                                             />
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="Mark All Channel Sessions as Channel" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" 
+                                                             action="#{dataAdministrationController.createAllSessionAsChannel()}" 
+                                                             />
+                                        </div>
+
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div> 
+
+
+
+
+                </p:panel>
+
+
             </ui:define>
 
 

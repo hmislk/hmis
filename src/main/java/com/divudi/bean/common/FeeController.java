@@ -130,6 +130,14 @@ public  class FeeController implements Serializable {
         items = getFacade().findAll("name", true);
         return items;
     }
+    
+    public String navigateToAdminFee(){
+        return "/admin_fees";
+    }
+    
+    public String navigateToAdminDiscounts(){
+        return "/admin/discount/admin_discounts";
+    }
 
     /**
      *

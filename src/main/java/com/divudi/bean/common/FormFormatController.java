@@ -217,5 +217,7 @@ public class FormFormatController implements Serializable {
         return items;
     }
     
-    
+    public String navigateToManageForms(){
+        return "/forms/index";
+    }
 }

@@ -5,6 +5,7 @@
  * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
+ *
  */
 package com.divudi.bean.lab;
 
@@ -14,11 +15,18 @@ import com.divudi.entity.lab.InvestigationCategory;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.InvestigationCategoryFacade;
 import com.divudi.facade.MachineFacade;
+import com.divudi.facade.util.JsfUtil;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -27,6 +35,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.model.file.UploadedFile;
 
 /**
  *
@@ -37,18 +46,28 @@ import javax.inject.Named;
 @SessionScoped
 public class InvestigationCategoryController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
+    /*
+    * EJBs
+     */
     @EJB
     private InvestigationCategoryFacade ejbFacade;
     @EJB
     MachineFacade machineFacade;
+    /*
+    * Controllers
+     */
+    @Inject
+    SessionController sessionController;
+    /*
+    * Class Variable
+     */
     List<InvestigationCategory> selectedItems;
     private InvestigationCategory current;
     private List<InvestigationCategory> items = null;
     private List<Machine> machines;
+    private UploadedFile file;
     String selectText = "";
+    int manageItemIndex;
 
     public List<InvestigationCategory> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from InvestigationCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -156,6 +175,101 @@ public class InvestigationCategoryController implements Serializable {
         return machines;
     }
 
+    public int getManageItemIndex() {
+        return manageItemIndex;
+    }
+
+    public void setManageItemIndex(int manageItemIndex) {
+        this.manageItemIndex = manageItemIndex;
+    }
+
+    public String navigateToInvestigations() {
+        return "/admin/items/investigation.xhtml";
+    }
+
+    public String navigateToInvestigationFees() {
+        return "/admin/items/investigation_fee.xhtml";
+    }
+    
+    public String navigateToOpdServiceCategory() {
+        return "/admin/items/opd_service_category.xhtml";
+    }
+    
+    public String navigateToOpdServiceSubCategory() {
+        return "/admin/items/opd_service_subcategory.xhtml";
+    }
+    
+    public String navigateToOpdService() {
+        return "/admin/items/opd_service.xhtml";
+    }
+    
+    public String navigateToInwardService() {
+        return "/admin/items/inward_service.xhtml";
+    }
+    
+    public String navigateToTheatreService() {
+        return "/admin/items/theatre_service.xhtml";
+    }
+    
+    public String navigateToBillExpenses() {
+        return "/admin/items/bill_expenses.xhtml";
+    }
+    
+    public String navigateToRelationships() {
+        return "/admin/items/relationships.xhtml";
+    }
+    
+    public String navigateToReligion() {
+        return "/admin/items/religion.xhtml";
+    }
+    
+    public String navigateToNationality() {
+        return "/admin/items/nationality.xhtml";
+    }
+    
+    public String navigateToOpdListToRemove() {
+        return "/admin/items/opd_service_list_to_remove.xhtml";
+    }
+    
+    public String navigateToItemBulkDelete() {
+        return "/admin/items/item_bulk_un_delete.xhtml";
+    }
+    
+    public String navigateToFormFormat() {
+        return "/admin/items/form_format.xhtml";
+    }
+    
+    public String navigateToFormFormatCategory() {
+        return "/admin/items/form_format_category.xhtml";
+    }
+    
+    public String navigateToInvestigationListToRemove() {
+        return "/admin/items/investigation_list_to_remove.xhtml";
+    }
+    
+    public String navigateToInvestigationBulkUnDelete() {
+        return "/admin/items/investigation_bulk_un_delete.xhtml";
+    }
+    
+    public String navigateToMetaDataSuperCategory() {
+        return "/admin/items/metadata_super_category.xhtml";
+    }
+    public String navigateToInvestigationFormat() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream inputStream = file.getInputStream();
+            String text = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+
+        } catch (IOException ex) {
+        }
+        return "/admin/items/investigation_format.xhtml";
+    }
     /**
      *
      */

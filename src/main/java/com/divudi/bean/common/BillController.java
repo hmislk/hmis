@@ -222,7 +222,7 @@ public class BillController implements Serializable {
     SearchController searchController;
 
     public String toAddNewCollectingCentre() {
-        return "/lab/collecting_centre";
+        return "/admin/institutions/collecting_centre";
     }
 
     public List<Bill> validBillsOfBatchBill(Bill batchBill) {
@@ -2708,6 +2708,9 @@ public class BillController implements Serializable {
         this.collectingCentre = collectingCentre;
     }
 
+    public String navigateToBillContactNumbers(){
+        return "/admin/bill_contact_numbers.xhtml";
+    }
     /**
      *
      */

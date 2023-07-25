@@ -11,15 +11,28 @@
         <ui:composition template="/resources/template/template.xhtml">
 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
             <ui:define name="content">
-
-                <h:form>
-                    <p:panel header="Referral Reports">
-                        <h:panelGrid columns="1" >
+<p:panel header="Referral Reports">
+    <div class="row">
+        <div class="col-md-3">
+            <h:form>
+                <p:accordionPanel>
+                    <p:tab>
+                         <div class="d-grid gap-2">
                             <p:commandButton styleClass="linkButton" ajax="false" value="Instituion Referrals" action="report_referral_institution_detail"/>
                             <p:commandButton styleClass="linkButton" ajax="false" value="Instituion Referrals Bill Item Wise" action="report_referral_institution_detail_by_billItem"/>                             
-                        </h:panelGrid>                        
-                    </p:panel>                    
+                        </div>                        
+               </p:tab>
+                </p:accordionPanel>                        
                 </h:form>
+        </div>
+        <div class="col-md-9">
+             <ui:insert name="subcontent" >
+
+                                </ui:insert>
+        </div>
+    </div>
+                
+    </p:panel>
             </ui:define>
 
 

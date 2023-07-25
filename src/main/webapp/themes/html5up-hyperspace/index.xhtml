@@ -281,6 +281,7 @@
 
 
             <!-- portal -->
+            <h:form>
             <section id="portal" class="wrapper style3 fade-up">
                 <div class="inner">
                     <h2>#{webContentController.findSingleText('portals')}</h2>
@@ -302,8 +303,10 @@
                             </p>
                         </section>
                         <section>
-                            <span class="icon solid major fa-code"></span>
-                            <h3>#{webContentController.findSingleText('portal2')}</h3>
+                            <h:commandLink action="#{sessionController.navigateToLoginPage()}">
+                                <span class="icon solid major fa-code"></span>
+                                <h3>#{webContentController.findSingleText('portal2')}</h3>
+                            </h:commandLink>
                             <p>
                                 <h:outputText 
                                     escape="false"
@@ -317,7 +320,7 @@
                     </ul>
                 </div>
             </section>
-
+            </h:form>
             <!-- contact -->
             <section id="contact" class="wrapper style1 fade-up">
                 <div class="inner">

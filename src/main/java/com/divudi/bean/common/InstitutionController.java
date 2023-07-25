@@ -67,19 +67,20 @@ public class InstitutionController implements Serializable {
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
+    private int managaeInstitutionIndex;
 
     public String toAdminManageInstitutions() {
-        return "/admin/admin_institutions_index";
+        return "/admin/institutions/admin_institutions_index";
     }
 
     public String toListInstitutions() {
         fillItems();
-        return "/admin/institutions";
+        return "/admin/institutions/institutions";
     }
 
     public String toAddNewInstitution() {
         current = new Institution();
-        return "/admin/institution";
+        return "/admin/institutions/institution";
     }
 
     public String toEditInstitution() {
@@ -671,6 +672,14 @@ public class InstitutionController implements Serializable {
 
     public void setAgency(Institution agency) {
         this.agency = agency;
+    }
+
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
+    }
+
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
     }
 
     @FacesConverter("institutionConverter")

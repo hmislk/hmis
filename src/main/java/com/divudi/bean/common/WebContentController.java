@@ -336,6 +336,10 @@ public class WebContentController implements Serializable {
     public void setLanguage(WebLanguage language) {
         this.language = language;
     }
+    
+    public String navigateToManageWeb(){
+        return "/webcontent/index";
+    }
 
     /**
      *
