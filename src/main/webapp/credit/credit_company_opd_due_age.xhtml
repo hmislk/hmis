@@ -7,8 +7,8 @@
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/credit/index_opd_due_access.xhtml">
+            <ui:define name="subcontent">
                 <h:form>            
                     <p:commandButton id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createAgeTable()}" onclick="onSubmitButton();" />
                     <p:defaultCommand target="btnSearch"/>
