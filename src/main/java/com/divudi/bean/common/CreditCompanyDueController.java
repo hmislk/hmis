@@ -52,7 +52,7 @@ public class CreditCompanyDueController implements Serializable {
     boolean withOutDueUpdate;
     Institution creditCompany;
     private int manageInwardDueAndAccessIndex;
-
+    private int managePharmacyDueAndAccessIndex;
     ////////////
     private List<InstitutionBills> items;
     private List<InstitutionEncounters> institutionEncounters;
@@ -387,7 +387,6 @@ public class CreditCompanyDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
-
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
             } else if (dayCount < 60) {
@@ -411,7 +410,6 @@ public class CreditCompanyDueController implements Serializable {
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
 
-
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
             } else if (dayCount < 60) {
@@ -434,7 +432,6 @@ public class CreditCompanyDueController implements Serializable {
             Long dayCount = getCommonFunctions().getDayCountTillNow(b.getCreatedAt());
 
             double finalValue = (b.getNetTotal() + b.getPaidAmount());
-
 
             if (dayCount < 30) {
                 dataTable5Value.setValue1(dataTable5Value.getValue1() + finalValue);
@@ -824,11 +821,10 @@ public class CreditCompanyDueController implements Serializable {
                 b.setCreditPaidAmount(Math.abs(b.getCreditPaidAmount()));
                 b.setCreditPaidAmount(com.divudi.java.CommonFunctions.round(b.getCreditPaidAmount()));
                 b.getFinalBill().setPaidAmount(com.divudi.java.CommonFunctions.round(b.getFinalBill().getPaidAmount()));
-                b.setTransPaid(b.getFinalBill().getPaidAmount()+b.getCreditPaidAmount());
+                b.setTransPaid(b.getFinalBill().getPaidAmount() + b.getCreditPaidAmount());
                 //// // System.out.println("b.getTransPaid() = " + b.getTransPaid());
                 b.setTransPaid(com.divudi.java.CommonFunctions.round(b.getTransPaid()));
-                
-                
+
                 newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotal(newIns.getPaidTotal() + (Math.abs(b.getCreditPaidAmount()) + Math.abs(b.getFinalBill().getPaidAmount())));
                 newIns.setPaidTotal(newIns.getPaidTotal() + b.getTransPaid());
@@ -1077,6 +1073,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setManageInwardDueAndAccessIndex(int manageInwardDueAndAccessIndex) {
         this.manageInwardDueAndAccessIndex = manageInwardDueAndAccessIndex;
+    }
+
+    public int getManagePharmacyDueAndAccessIndex() {
+        return managePharmacyDueAndAccessIndex;
+    }
+
+    public void setManagePharmacyDueAndAccessIndex(int managePharmacyDueAndAccessIndex) {
+        this.managePharmacyDueAndAccessIndex = managePharmacyDueAndAccessIndex;
     }
 
 }
