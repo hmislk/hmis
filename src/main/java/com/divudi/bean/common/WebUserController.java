@@ -964,6 +964,9 @@ public class WebUserController implements Serializable {
         this.manageDiscountIndex = manageDiscountIndex;
     }
 
+    public String navigateToManageUsers(){
+        return "/admin/users/admin_manage_users";
+    }
     @FacesConverter("webUs")
     public static class WebUserControllerConverter implements Converter {
 
