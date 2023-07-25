@@ -1487,6 +1487,10 @@ public class StaffController implements Serializable {
             }
         }
     }
+    
+    public String navigateToManageStaff(){
+        return "/admin/staff/admin_manage_staff_index.xhtml";
+    }
 
     @FacesConverter("stfcon")
     public static class StaffConverter implements Converter {

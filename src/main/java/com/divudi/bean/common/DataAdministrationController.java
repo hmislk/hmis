@@ -1505,5 +1505,9 @@ public class DataAdministrationController {
     public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
         this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
     }
+    
+    public String navigateToAdminDataAdministration(){
+        return "/dataAdmin/admin_data_administration";
+    }
 
 }
