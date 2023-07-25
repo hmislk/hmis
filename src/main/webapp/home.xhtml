@@ -16,7 +16,8 @@
                         <p:inputText value="#{smsController.message}" ></p:inputText>
                         <p:outputLabel value="Number" ></p:outputLabel>
                         <p:inputText value="#{smsController.number}" ></p:inputText>
-                        <p:commandButton ajax="false" value="Sned SMS" action="#{smsController.sendSmsForPatientReport()}" >
+                        <p:commandButton ajax="false" value="Sned SMS" 
+                                         action="#{smsController.sendSmsForPatientReport()}" >
                         </p:commandButton>
                     </p:panelGrid>
                 </h:form>
