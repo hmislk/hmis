@@ -1307,7 +1307,7 @@ public class StaffController implements Serializable {
 
     public String admin_staff_view_signature() {
         fillStaffes();
-        return "/admin_staff_view_signature";
+        return "/admin/institutions/admin_staff_signature";
     }
 
     public String admin_edit_staff_balance() {
@@ -1486,6 +1486,10 @@ public class StaffController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + StaffController.class.getName());
             }
         }
+    }
+    
+    public String navigateToManageStaff(){
+        return "/admin/staff/admin_manage_staff_index.xhtml";
     }
 
     @FacesConverter("stfcon")

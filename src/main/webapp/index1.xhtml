@@ -16,6 +16,11 @@
     </h:head>
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
+            <ui:insert name="content" >
+                <h:form >
+                    <p:commandButton value="Button" ></p:commandButton>
+                </h:form>
+            </ui:insert>
         </ui:composition>
     </h:body>
 </html>

@@ -16,11 +16,11 @@
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Fees">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Item Fees"
                                                              actionListener="#{viewController.makeAdminFeesAsPreviousPage()}"
                                                              action="/common/manage_item_fees"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false"
                                                              value="Item Fees List"
                                                              action="/dataAdmin/manage_item_fees_bulk"/>
@@ -29,10 +29,10 @@
 
                                     <p:tab title="Manage Discount Schemes">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Discount Schemes"
                                                              action="/membership/payment_scheme"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Pharmacy Discounts"
                                                              action="/membership/payment_scheme_discount_pharmacy_by_category"/>
                                         </div>
@@ -40,10 +40,10 @@
 
                                     <p:tab title="Manage Membership Schemes">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Membership Schemes"
                                                              action="/membership/membership_scheme"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Membership Schemes Discounts"
                                                              action="/membership/membership_scheme_discount_inward"/>
                                         </div>
@@ -51,13 +51,13 @@
 
                                     <p:tab title="Manage Packages">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Package Names"
                                                              action="/lab/package_name"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Add Item to Package"
                                                              action="/lab/package_item"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Manage Package Prices"
                                                              action="/lab/package_item_prices"/>
                                         </div>
@@ -65,20 +65,20 @@
 
                                     <p:tab title="Manage Medical Packages">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Medical Package Names"
                                                              action="opd_medical_package_name"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Add Item to Package"
                                                              action="opd_medical_package_item"/>
-                                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                                            <p:commandButton class="w-100"
                                                              ajax="false" value="Manage Package Prices"
                                                              action="opd_medical_package_item_prices"/>
                                         </div>
                                     </p:tab>
                                 </p:accordionPanel>
                             </p:panel>
-                            <p:commandButton styleClass="btn btn-primary w-100 mb-3 linkButton"
+                            <p:commandButton class="w-100"
                                              ajax="false"
                                              value="Correct Item Fees"
                                              action="/dataAdmin/bulk_update_itemsFees"/>

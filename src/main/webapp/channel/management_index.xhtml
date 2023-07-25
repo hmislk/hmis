@@ -27,7 +27,7 @@
                             <p:commandButton value="Manage Specialities" ajax="false"
                                              action="/channel/maintanance/doctorSpeciality/List" ></p:commandButton>
                             <p:commandButton value="Manage Consultants" ajax="false"
-                                             action="/admin_doctor_consultant" ></p:commandButton>
+                                             action="#{navigationController.navigateToAdminDoctorConsultant()}" ></p:commandButton>
                         </p:panelGrid>
                     </p:panel>
                     
@@ -39,7 +39,7 @@
                     
                     <p:panel header="Consultants" >
                         <p:panelGrid columns="1" >
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Channelling Consultants to Institutions" action="/channel/person_institution"/>
+                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Channelling Consultants to Institutions" action="#{navigationController.navigateToPersonInstitution()}"/>
                         </p:panelGrid>
                     </p:panel>
                     <p:panel header="Shedule" >

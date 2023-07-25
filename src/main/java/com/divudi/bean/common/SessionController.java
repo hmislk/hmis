@@ -367,7 +367,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setWebUser(null);
         currentPreference.setDepartment(null);
         currentPreference.setInstitution(null);
-        return "/admin_mange_application_preferences";
+        return "/admin/institutions/admin_mange_application_preferences";
     }
 
     public String toPublicLogin() {
@@ -388,7 +388,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         currentPreference.setWebUser(null);
         currentPreference.setDepartment(null);
 
-        return "/admin_mange_institutions_preferences";
+        return "/admin/institutions/admin_mange_institutions_preferences";
     }
 
     public String toManageDepartmentPreferences() {
@@ -403,7 +403,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         currentPreference.setWebUser(null);
         currentPreference.setInstitution(null);
-        return "/admin_mange_department_preferences";
+        return "/admin/institutions/admin_mange_department_preferences";
     }
 
     public void updateUserPreferences() {
@@ -927,6 +927,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
+        System.out.println("checkUsersWithoutDepartment");
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
         Map m = new HashMap();
@@ -1384,7 +1385,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public String getPrimeTheme() {
         if (primeTheme == null || primeTheme.equals("")) {
-            primeTheme = "nova-light";
+            primeTheme = "cerulean";
         }
         if (getLoggedUser() != null) {
             if (getLoggedUser().getPrimeTheme() != null) {
