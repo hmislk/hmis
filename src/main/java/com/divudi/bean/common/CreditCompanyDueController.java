@@ -51,6 +51,7 @@ public class CreditCompanyDueController implements Serializable {
     Admission patientEncounter;
     boolean withOutDueUpdate;
     Institution creditCompany;
+    private int manageInwardDueAndAccessIndex;
 
     ////////////
     private List<InstitutionBills> items;
@@ -1068,6 +1069,14 @@ public class CreditCompanyDueController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public int getManageInwardDueAndAccessIndex() {
+        return manageInwardDueAndAccessIndex;
+    }
+
+    public void setManageInwardDueAndAccessIndex(int manageInwardDueAndAccessIndex) {
+        this.manageInwardDueAndAccessIndex = manageInwardDueAndAccessIndex;
     }
 
 }
