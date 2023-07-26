@@ -19,13 +19,15 @@
                             <p:ajax process="@this" ></p:ajax>
                             <p:tab title="Manage Investigations">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="Add Investigation" 
+                                                       action="#{investigationController.navigateToAddInvestigationForAdmin()}" />
+                                    <p:commandButton   class="w-100" ajax="false" value="List Investigation" 
+                                                       action="#{investigationController.navigateToListInvestigationsForAdmin()}" />
                                     <p:commandButton   class="w-100" ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" disabled="true" value="Service Categories" action="#{investigationCategoryController.navigateToOpdServiceCategory}" />
-                                    <p:commandButton   class="w-100"  ajax="false" disabled="true" value="Service Subcategories" action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="Add Investigation Category" action="#{investigationCategoryController.navigateToAddInvestigationCategoryForAdmin()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="List Investigation Categories" action="#{investigationCategoryController.navigateToListInvestigationCategoriesForAdmin()}" />
+                                    <p:commandButton   class="w-100"  ajax="false" value="Manage Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Upload Investigations" action="#{investigationCategoryController.navigateToInvestigationFormat()}" />
-       
-
                                 </div>
                             </p:tab>
                             <p:tab title="Manage Services">
