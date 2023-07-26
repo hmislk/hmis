@@ -117,6 +117,7 @@ public class PharmacyController implements Serializable {
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
     List<ItemTransactionSummeryRow> itemTransactionSummeryRows;
+    private int managePharamcyReportIndex;
     double persentage;
     Category category;
 
@@ -2010,6 +2011,14 @@ public class PharmacyController implements Serializable {
 
     public void setPharmacySummaryIndex(int pharmacySummaryIndex) {
         this.pharmacySummaryIndex = pharmacySummaryIndex;
+    }
+
+    public int getManagePharamcyReportIndex() {
+        return managePharamcyReportIndex;
+    }
+
+    public void setManagePharamcyReportIndex(int managePharamcyReportIndex) {
+        this.managePharamcyReportIndex = managePharamcyReportIndex;
     }
 
 }

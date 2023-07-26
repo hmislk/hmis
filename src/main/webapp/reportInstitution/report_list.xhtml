@@ -9,18 +9,19 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
+                
                     <p:panel header="Reports">
                         <div class="row" >
                             <div class="col-md-3" >
+                                <h:form>
                                 <p:accordionPanel >
                                     <p:tab title="Lists">
-                                        <div class="container-fluid my-3">
+                                        <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="All Bills" action="/reportInstitution/all_bills"
-                                                             styleClass="btn btn-primary w-100 my-2"></p:commandButton>
+                                                             class="w-100"></p:commandButton>
                                             <p:commandButton ajax="false" value="List of Bills of Other Institutions"
                                                              action="#{searchController.navigateToListOtherInstitutionBills()}"
-                                                             styleClass="btn btn-secondary w-100 my-2"></p:commandButton>
+                                                             class="w-100"></p:commandButton>
                                         </div>
                                     </p:tab>
 
@@ -42,6 +43,7 @@
                                         </h:panelGrid>
                                     </p:tab>
                                 </p:accordionPanel>
+                                </h:form>
                             </div>
                             <div class="col-md-9" >
                                 <ui:insert name="report">
@@ -49,7 +51,7 @@
                             </div>
                         </div>
                     </p:panel>
-                </h:form>
+                
             </ui:define>
 
 

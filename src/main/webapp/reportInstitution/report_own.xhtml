@@ -11,132 +11,126 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
+                <p:panel header="Institution Report" >
+                <div class="row">
+                    
+                        <div class="col-md-3">
+                            <h:form>
+                            <p:accordionPanel activeIndex="#{commonReport.manageInstitutionReportIndex}">
+                                <p:ajax process="@this"></p:ajax>
 
-                <h:form>
-                    <p:panel header="Institution Report" >
-                        
-                        <p:tabView orientation="left" >
-                            
-                       <p:tab title="Book Keeping Summary(With Professional)" >
-                                <h:panelGrid columns="1" >  
-                       
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>                             
-                                    </h:panelGrid>
-                                  </p:tab>
-                            
-                            <p:tab title=" Book Keeping Summary(Witout Professional" >
-                                <h:panelGrid columns="1" > 
-                            
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_without_pro_day"/> 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="By Category Month End" action="report_cash_category_without_pro_month"/>                             
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Category Vise Income" action="report_cash_catogory_summery"/>                             
-                                </h:panelGrid>
-                                  </p:tab>
-                            
-                                 <p:tab title="Day End" >
-                                <h:panelGrid columns="1" > 
-                         
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Day-end Detailed Report" action="report_institution_detailed_institution.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Day-end Detailed By Bill Type" action="report_institution_detailed_by_billType.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
-                               </h:panelGrid>
-                                  </p:tab>
-                            
-                            <p:tab title="Summary By Service Opd" >
-                                <h:panelGrid columns="1" >  
-                                                            
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service" action="report_opd_service_summery" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category" action="report_opd_service_summery_by_category" /> 
-                                    </h:panelGrid>
-                                  </p:tab>
-                            
-                                  <p:tab title="Summary By Service Inward" >
-                                <h:panelGrid columns="1" > 
-                                    
-                                                           
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service - Added Date" action="report_inward_service_detail_added" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service - Discharged Date" action="report_inward_service_detail_discharged" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category - Added Date" action="report_inward_service_summery_by_category_added" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Service Category - Discharge Date" action="report_inward_service_summery_by_category_discharged" /> 
-                                 </h:panelGrid>
-                                  </p:tab>
-                            
-                                       
-                            <p:tab title="Managing Director" >
-                                <h:panelGrid columns="1" > 
-                                                           
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill(Opd)" action="report_md_opd_bill" actionListener="#{mdReportController.makeNull}"/> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item(Opd)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
-                                </h:panelGrid>
-                                  </p:tab>
-                                
-                             <p:tab title="Credit Company" >
-                                <h:panelGrid columns="1" > 
-                                                         
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Item " action="report_opd_daily_summery_credit_department" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill" action="report_opd_daily_summery_credit_department_by_bill" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report By Bill(With Letter)" action="report_opd_credit_bill_by_credit_company_with_letter" />
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Credit Company Break Down" action="report_credit_category" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report Credit Bill(OPD/Pharmacy/Inward)" action="/credit/credit_bill_all" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Report Credit Bill Payment(OPD/Pharmacy/Inward)" action="/inward/inward_search_balance_payment_1" /> 
-                                       </h:panelGrid>
-                                  </p:tab>
-                            
-                                       <p:tab title="Staff Credit" >
-                                <h:panelGrid columns="1" > 
-                                                            
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Staff Welfare" action="report_opd_pharmacy_staff_welfare" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="OPD Cash Credit Bill Report" action="report_opd_cash_credit_by _institution" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Staff Welfare Balance" action="report_staff_welfare" />
-                                </h:panelGrid>
-                                  </p:tab>
-                            
-                              
-                                 <p:tab title="Summary By Investigation Opd" >
-                                <h:panelGrid columns="1" > 
-                                                             
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Investigation" action="report_investigation_service_summery" /> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Summary By Investigation Category" action="report_opd_investigation_summery_by_category" /> 
-                                </h:panelGrid>
-                                  </p:tab>
-                                
-                              <p:tab title="VAT Report" >
-                                <h:panelGrid columns="1" > 
-                                                        
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="OPD VAT 15%" action="/reportCashier/report_opd_bills_for_vat"/> 
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat"/>
-                                        <p:commandButton value="BHT VAT Report" action="/inward/inward_report_bht_inward_vat"  styleClass="linkButton" ajax="false" />
-                                    </h:panelGrid>
-                                  </p:tab>
-                             
-                            
-                            
-                               
-                            
-                            
-                            
-                            
-                                  <p:tab title="Quick Book Reports" >
-                                                               <h:panelGrid columns="1" > 
+                                    <p:tab title="Book Keeping Summary(With Professional)" >
+                                        <div class="d-grid gap-2">  
 
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="QB day income report " action="/qbReports/report_qb_day_income_with_out_professional" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
-                                    <p:commandButton styleClass="linkButton" ajax="false" value="Item To Export report " action="/qbReports/report_qb_item_list" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
-                                 </h:panelGrid>
-                                  </p:tab>
-                            
-                       
-                            
-                     
-                          
-                            
-                              
-                                
-                            
-                        
-                             
-                        </p:tabView>
+                                            <p:commandButton styleClass="linkButton" ajax="false" value="By Category Day End" action="report_cash_category_with_pro_day"/> 
+                                            <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_with_pro_month"/>                             
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title=" Book Keeping Summary(Witout Professional" >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" value="By Category Day End" action="report_cash_category_without_pro_day"/> 
+                                            <p:commandButton class="w-100" ajax="false" value="By Category Month End" action="report_cash_category_without_pro_month"/>                             
+                                            <p:commandButton class="w-100" ajax="false" value="Category Vise Income" action="report_cash_catogory_summery"/>                             
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Day End" >
+                                        <div class="d-grid gap-2"> 
+
+                                            <p:commandButton class="w-100" ajax="false" value="Day-end Detailed Report" action="report_institution_detailed_institution.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
+                                            <p:commandButton class="w-100" ajax="false" value="Day-end Detailed By Bill Type" action="report_institution_detailed_by_billType.xhtml" actionListener="#{commonReport.recreteModal}"/>                                
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Summary By Service Opd" >
+                                        <div class="d-grid gap-2"> 
+
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Service" action="report_opd_service_summery" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Service Category" action="report_opd_service_summery_by_category" /> 
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Summary By Service Inward" >
+                                        <div class="d-grid gap-2">
+
+
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Service - Added Date" action="report_inward_service_detail_added" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Service - Discharged Date" action="report_inward_service_detail_discharged" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Service Category - Added Date" action="report_inward_service_summery_by_category_added" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Service Category - Discharge Date" action="report_inward_service_summery_by_category_discharged" /> 
+                                        </div>
+                                    </p:tab>
+
+
+                                    <p:tab title="Managing Director" >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill(Opd)" action="report_md_opd_bill" actionListener="#{mdReportController.makeNull}"/> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Item(Opd)" action="report_md_opd_item" actionListener="#{mdReportController.makeNull}"/> 
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Credit Company" >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Item " action="report_opd_daily_summery_credit_department" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill" action="report_opd_daily_summery_credit_department_by_bill" />
+                                            <p:commandButton class="w-100" ajax="false" value="Report By Bill(With Letter)" action="report_opd_credit_bill_by_credit_company_with_letter" />
+                                            <p:commandButton class="w-100" ajax="false" value="Credit Company Break Down" action="report_credit_category" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report Credit Bill(OPD/Pharmacy/Inward)" action="/credit/credit_bill_all" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Report Credit Bill Payment(OPD/Pharmacy/Inward)" action="/inward/inward_search_balance_payment_1" /> 
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Staff Credit" >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare" action="report_opd_pharmacy_staff_welfare" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="OPD Cash Credit Bill Report" action="report_opd_cash_credit_by _institution" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Staff Welfare Balance" action="report_staff_welfare" />
+                                        </div>
+                                    </p:tab>
+
+
+                                    <p:tab title="Summary By Investigation Opd" >
+                                        <div class="d-grid gap-2"> 
+
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Investigation" action="report_investigation_service_summery" /> 
+                                            <p:commandButton class="w-100" ajax="false" value="Summary By Investigation Category" action="report_opd_investigation_summery_by_category" /> 
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="VAT Report" >
+                                        <div class="d-grid gap-2"> 
+
+                                            <p:commandButton class="w-100" ajax="false" value="OPD VAT 15%" action="/reportInstitution/report_opd_bills_for_vat"/> 
+                                            <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat"/>
+                                            <p:commandButton value="BHT VAT Report" action="/inward/inward_report_bht_inward_vat"  class="w-100" ajax="false" />
+                                        </div>
+                                    </p:tab>
+
+
+                                    <p:tab title="Quick Book Reports" >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" value="QB day income report " action="/qbReports/report_qb_day_income_with_out_professional" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
+                                            <p:commandButton class="w-100" ajax="false" value="Item To Export report " action="/qbReports/report_qb_item_list" actionListener="#{quickBookReportController.listnerReportNameChange}"/>                             
+                                        </div>
+                                    </p:tab>
+
+                            </p:accordionPanel>
+                                </h:form>
+                        </div>
+                    
+                    <div class="col-md-9">
+                        <ui:insert name="subcontent">
+                        </ui:insert>
+                    </div>
+                </div> 
                     </p:panel>
-                </h:form>
+                
             </ui:define>
 
 

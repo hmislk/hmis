@@ -2708,6 +2708,9 @@ public class BillController implements Serializable {
         this.collectingCentre = collectingCentre;
     }
 
+    public String navigateToBillContactNumbers(){
+        return "/admin/bill_contact_numbers.xhtml";
+    }
     /**
      *
      */

@@ -12,48 +12,52 @@
 
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="printing.css" />
+                <p:panel header="Income Report">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
 
-                <h:form>
-                    <p:panel header="Income Report">
-                         <p:tabView orientation="left" > 
-                        
-                               <p:tab title="1) With Credit" >
-                                <h:panelGrid columns="1" >  
-                                    
-                      
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Institution" action="report_income_with_credit_by_institution"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department (Reported)" action="report_income_with_credit_by_department"/>                                
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department (Billed)" action="report_income_with_credit_by_department_billed"/>                                
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department (Billed)(Bill Item)" action="report_income_with_credit_by_department_billed_bill_item"/>                                
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Institution Bill Count" action="report_income_with_credit_by_institution_for_build_bills"/>                                
-                                    </h:panelGrid>
-                                  </p:tab>
-                         
-                              <p:tab title="2) Without Credit" >
-                                <h:panelGrid columns="1" >  
-                         
-                              
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Institution" action="report_income_without_credit_by_institution"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
-                             </h:panelGrid>
-                                  </p:tab>
-                             
-                             
-                                  <p:tab title="3) Doctor Payments" >
-                                <h:panelGrid columns="1" > 
-                           
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="Doctor Payment Due Report Opd" action="/reportIncome/opd_professional_payment_due"/>
-                                        <p:commandButton styleClass="linkButton" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
-                                </h:panelGrid>
-                                  </p:tab>    
-                                
-                         </p:tabView>
+                                <p:accordionPanel>
+                                    <p:tab title="1) With Credit" >
+                                        <div class="d-grid gap-2"> 
+
+                                            <p:commandButton class="w-100" ajax="false" value="By Institution" action="report_income_with_credit_by_institution"/>
+                                            <p:commandButton class="w-100" ajax="false" value="By Department (Reported)" action="report_income_with_credit_by_department"/>                                
+                                            <p:commandButton class="w-100" ajax="false" value="By Department (Billed)" action="report_income_with_credit_by_department_billed"/>                                
+                                            <p:commandButton class="w-100" ajax="false" value="By Department (Billed)(Bill Item)" action="report_income_with_credit_by_department_billed_bill_item"/>                                
+                                            <p:commandButton class="w-100" ajax="false" value="By Institution Bill Count" action="report_income_with_credit_by_institution_for_build_bills"/>                                
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="2) Without Credit" >
+                                        <div class="d-grid gap-2"> 
 
 
+                                            <p:commandButton class="w-100" ajax="false" value="By Institution" action="report_income_without_credit_by_institution"/>
+                                            <p:commandButton class="w-100" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
+                                        </div>
+                                    </p:tab>
 
-                       
-                    </p:panel>
-                </h:form>
+
+                                    <p:tab title="3) Doctor Payments" >
+                                        <div class="d-grid gap-2">
+
+                                            <p:commandButton class="w-100" ajax="false" value="Doctor Payment Due Report Opd" action="/reportIncome/opd_professional_payment_due"/>
+                                            <p:commandButton class="w-100" ajax="false" value="By Department" action="report_income_without_credit_by_department"/>                                
+                                        </div>
+                                    </p:tab>    
+                                </p:accordionPanel>
+
+                            </h:form>
+                        </div>
+
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
             </ui:define>
 
 
