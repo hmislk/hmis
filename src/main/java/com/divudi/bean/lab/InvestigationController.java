@@ -147,6 +147,24 @@ public class InvestigationController implements Serializable {
         return "/emr/admin/investigations";
     }
 
+    public String navigateToAddInvestigationForAdmin() {
+        current = new Investigation();
+        return "/admin/items/investigation_single";
+    }
+    
+    public String navigateToViewInvestigationForAdmin() {
+        if(current==null){
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return "";
+        }
+        return "/admin/items/investigation_single";
+    }
+
+    public String navigateToListInvestigationsForAdmin() {
+        fillItems();
+        return "/admin/items/investigation_list";
+    }
+
     public String toAddManyIx() {
         current = new Investigation();
         current.setInwardChargeType(InwardChargeType.Laboratory);
@@ -1142,7 +1160,7 @@ public class InvestigationController implements Serializable {
         if (getCurrent().getFullName() == null || getCurrent().getFullName().trim().equals("")) {
             getCurrent().setFullName(getCurrent().getName());
         }
-         if (getCurrent().getCode() == null || getCurrent().getCode().trim().equals("")) {
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().equals("")) {
             getCurrent().setCode(getCurrent().getName());
         }
 
@@ -1456,7 +1474,6 @@ public class InvestigationController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
