@@ -105,7 +105,7 @@ public class AnalysisController implements Serializable {
         j = "select distinct(bi.item) from BillItem bi "
                 + " where bi.retired=:ret "
                 + " and bi.bill.retired=:ret "
-                + " and lower(bi.item.name) like :name "
+                + " and (bi.item.name) like :name "
                 + " order by bi.item.name";
         m.put("ret", false);
         m.put("name", "%" + qry.toLowerCase() + "%");

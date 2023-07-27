@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
+import javax.enterprise.context.Dependent;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -49,6 +50,7 @@ public class Person implements Serializable {
     private WebUser webUser;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
+    @Deprecated
     private List<ClinicalFindingValue> clinicalFindingValues;
 
     static final long serialVersionUID = 1L;

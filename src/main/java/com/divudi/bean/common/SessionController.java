@@ -856,7 +856,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String temSQL;
         loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
@@ -899,7 +899,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String temSQL;
         loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
@@ -929,7 +929,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsersWithoutDepartment() {
         System.out.println("checkUsersWithoutDepartment");
         String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findByJpql(temSQL, m);

@@ -542,7 +542,7 @@ public class Lims {
         }
         String temSQL;
 
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());

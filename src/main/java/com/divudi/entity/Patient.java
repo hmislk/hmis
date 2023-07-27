@@ -48,10 +48,10 @@ public class Patient implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-//    @ManyToOne
-//    WebUser editer;
-//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-//    Date editedAt;
+    @ManyToOne
+    WebUser editer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date editedAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
