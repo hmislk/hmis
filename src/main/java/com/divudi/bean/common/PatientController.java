@@ -468,22 +468,24 @@ public class PatientController implements Serializable {
             temP.setRetired(true);
         }
 
-        j = "select p from Patient p where p.retired=false and ";
+        j = "select p "
+                + " from Patient p "
+                + " where p.retired=false and ";
 
         if (searchName != null && !searchName.trim().equals("")) {
-            j += " lower(p.person.name) like :name ";
+            j += " (p.person.name) like :name ";
             m.put("name", "%" + searchName.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPatientCode != null && !searchPatientCode.trim().equals("")) {
-            j += " lower(p.code) like :name ";
+            j += " (p.code) like :name ";
             m.put("name", "%" + searchPatientCode.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhone != null && !searchPhone.trim().equals("")) {
-            j += " p.person.phone =:phone";
+            j += " (p.person.phone =:phone or p.person.mobile =:phone)";
             m.put("phone", searchPhone);
             atLeastOneCriteriaIsGiven = true;
         }

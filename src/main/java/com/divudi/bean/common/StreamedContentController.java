@@ -148,7 +148,7 @@ public class StreamedContentController {
 //            if (id == null) {
 //                return new DefaultStreamedContent();
 //            }
-//            String j = "select s from Upload s where lower(s.code)=:id";
+//            String j = "select s from Upload s where (s.code)=:id";
 //            Map m = new HashMap();
 //            m.put("id", id.trim().toLowerCase());
 //            Upload temImg = getUploadFacade().findFirstByJpql(j, m);
@@ -180,7 +180,7 @@ public class StreamedContentController {
             if (id == null) {
                 return new DefaultStreamedContent();
             }
-            String j = "select s from Upload s where lower(s.code)=:id";
+            String j = "select s from Upload s where (s.code)=:id";
             Map m = new HashMap();
             m.put("id", id.trim().toLowerCase());
             Upload temImg = getUploadFacade().findFirstByJpql(j, m);
@@ -292,7 +292,7 @@ public class StreamedContentController {
 //            if (id == null) {
 //                return new DefaultStreamedContent();
 //            }
-//            String j = "select s from Upload s where lower(s.code)=:id";
+//            String j = "select s from Upload s where (s.code)=:id";
 //            Map m = new HashMap();
 //            m.put("id", id.trim().toLowerCase());
 //            Upload temImg = getUploadFacade().findFirstByJpql(j, m);
@@ -358,7 +358,7 @@ public class StreamedContentController {
 //            if (id == null) {
 //                return new DefaultStreamedContent();
 //            }
-//            String j = "select s from Upload s where lower(s.code)=:id";
+//            String j = "select s from Upload s where (s.code)=:id";
 //            Map m = new HashMap();
 //            m.put("id", id.trim().toLowerCase());
 //            Upload temImg = getUploadFacade().findFirstByJpql(j, m);

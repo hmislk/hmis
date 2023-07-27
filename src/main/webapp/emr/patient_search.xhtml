@@ -15,7 +15,7 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                
+
                 <h:form>
                     <div class="card" >
                         <div class="card-header" >
@@ -35,6 +35,10 @@
                                         <p:inputText class="form-control" value="#{patientController.searchPhone}" />
                                     </div>
 
+                                    <div class="mb-3">
+                                        <h:outputLabel class="form form-label" value="NIC" ></h:outputLabel>
+                                        <p:inputText  class="form form-control"  autocomplete="off"  value="#{patientController.searchNic}"></p:inputText>
+                                    </div>
 
                                     <div class="mb-3">
                                         <h:outputLabel class="form form-label" value="PHN" ></h:outputLabel>
@@ -69,10 +73,13 @@
                                                          action="#{patientController.toAddNewPatient()}" />
                                         <h:commandButton value="Search" styleClass="btn btn-primary ms-2"
                                                          action="#{patientController.searchPatient()}" />
+                                        <h:commandButton value="Clear" styleClass="btn btn-danger ms-2"
+                                                         action="#{patientController.clearSearchDetails()}" />
                                     </div>
 
                                     <p:dataTable value="#{patientController.searchPatients}" var="p" 
                                                  class="w-100 table table-sm table-striped"
+                                                 paginatorAlwaysVisible="false"
                                                  paginator="true"
                                                  rows="10"
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -106,8 +113,8 @@
                                                                  action="#{patientController.navigateToNewOpdVisitFromSearch}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                
-                                                
+
+
                                                 <p:commandButton value="Data Entry" 
                                                                  action="#{patientController.navigateToNewDataEntryForm}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
@@ -115,10 +122,10 @@
                                                 <p:commandButton value="Billing" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
-                                                
-                                                
-                                                
-                                                
+
+
+
+
                                             </div>
                                         </p:column>
 
