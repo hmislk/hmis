@@ -214,7 +214,7 @@ public class InvestigationCategoryController implements Serializable {
 
     public String navigateToListInvestigationCategoriesForAdmin() {
         getItems();
-        return "/admin/items/investigation_category";
+        return "/admin/items/investigation_category_list";
     }
 
     public String navigateToOpdServiceSubCategory() {
