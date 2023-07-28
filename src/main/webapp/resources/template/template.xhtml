@@ -22,6 +22,7 @@
             </title>
         </ui:insert>
 
+        <h:outputStylesheet library="css" name="ohmis.css"/>
         <link rel="stylesheet" 
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
         <!--        <link 
@@ -33,11 +34,11 @@
             rel="stylesheet" 
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
 
-        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
+        <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
         
-        <h:outputStylesheet library="css" name="ohmis.css"/>
-        
+        <!--<h:outputStylesheet library="css" name="maincss.css"/>-->
+
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
