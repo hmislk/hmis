@@ -533,10 +533,8 @@ public abstract class AbstractFacade<T> {
             } else {
                 qry.setParameter(pPara, pVal);
             }
-//            //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
         qry.setMaxResults(maxRecords);
-//        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }
 
