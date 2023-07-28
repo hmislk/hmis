@@ -21,7 +21,7 @@
                         <p:focus id="focusIx" for="acIx" />
                         <div class="container-fluid" >
                             <div class="row" >
-                                <div class="col-md-7 text-center p-1" >
+                                <div class="col-md-12 text-center p-1" >
                                     <p:messages id="messages" ></p:messages>
                                 </div>
                             </div>
@@ -65,16 +65,16 @@
                                                 </div>
                                                 <div class="col-md-2">
                                                     <p:inputText autocomplete="off" id="month" placeholder="Months"
-                                                                 value="#{opdBillController.yearMonthDay.month}"
+                                                                 value="#{opdBillController.patient.person.ageMonthsComponent}"
                                                                  class="form-control">
-                                                        <f:ajax event="blur" execute="@this"  />
+                                                        <f:ajax event="blur" execute="@this"  render="calDob"  />
                                                     </p:inputText>
                                                 </div>
                                                 <div class="col-md-2">
                                                     <p:inputText autocomplete="off" id="day" placeholder="Days"
-                                                                 value="#{opdBillController.yearMonthDay.day}"
+                                                                 value="#{opdBillController.patient.person.ageDaysComponent}"
                                                                  class="form-control">
-                                                        <f:ajax event="blur" execute="@this"/>
+                                                        <f:ajax event="blur" execute="@this"  render="calDob" />
                                                     </p:inputText>
                                                 </div>
                                                 <div class="col-md-6">
@@ -384,7 +384,7 @@
                                                 </h:commandButton>
                                             </div>
                                             <div class="col-md-2" >
-                                                <h:commandButton value="New Bill" 
+                                                <h:commandButton value="Start New Bill" 
                                                                  class="btn-warning form-control"
                                                                  action="#{opdBillController.navigateToNewOpdBill()}" 
                                                                  >
