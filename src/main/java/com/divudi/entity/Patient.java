@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -152,6 +153,11 @@ public class Patient implements Serializable {
         this.code = code;
     }
 
+    @PostLoad
+    private void onLoad() {
+        calAgeFromDob();
+    }
+    
     public void calAgeFromDob() {
         age = "";
         ageInDays = 0l;
@@ -340,21 +346,21 @@ public class Patient implements Serializable {
         this.createdAt = createdAt;
     }
 
-//    public WebUser getEditer() {
-//        return editer;
-//    }
-//
-//    public void setEditer(WebUser editer) {
-//        this.editer = editer;
-//    }
-//
-//    public Date getEditedAt() {
-//        return editedAt;
-//    }
-//
-//    public void setEditedAt(Date editedAt) {
-//        this.editedAt = editedAt;
-//    }
+    public WebUser getEditer() {
+        return editer;
+    }
+
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
+    }
     public boolean isRetired() {
         return retired;
     }
