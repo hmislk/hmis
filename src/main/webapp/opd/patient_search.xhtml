@@ -70,9 +70,9 @@
                                 <div class="col-md-9">
                                     <div class="mb-3">
                                         <h:commandButton value="New" styleClass="btn btn-warning"
-                                                         action="#{patientController.toAddNewPatient()}" />
+                                                         action="#{patientController.navigateToAddNewPatientForOpd()}" />
                                         <h:commandButton value="Search" styleClass="btn btn-primary ms-2"
-                                                         action="#{patientController.searchPatient()}" />
+                                                         action="#{patientController.searchPatientForOpd()}" />
                                         <h:commandButton value="Clear" styleClass="btn btn-danger ms-2"
                                                          action="#{patientController.clearSearchDetails()}" />
                                     </div>
@@ -114,7 +114,7 @@
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                 </p:commandButton>
                                                 <p:commandButton value="OPD Bill" 
-                                                                 action="#{patientController.navigateToOpdBill()}" 
+                                                                 action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
                                                                  ajax="false" 
                                                                  styleClass="mx-2">
                                                     <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />

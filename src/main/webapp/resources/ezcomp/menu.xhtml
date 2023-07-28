@@ -27,6 +27,7 @@
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
                     rendered="#{webUserController.hasPrivilege('Opd')}">
+                    <p:menuitem ajax="false" action="#{opdBillController.navigateToSearchPatients()}" value="Patient Registration" icon="fa fa-user-plus" rendered="true" />
 
                     <p:submenu 
                         id="smOpdBilling"
@@ -180,7 +181,6 @@
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"></p:menuitem>
                     </p:submenu>
                     <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" icon="fa fa-file-medical" rendered="true" />
-                    <p:menuitem ajax="false" action="#{opdBillController.navigateToSearchPatients()}" value="Patient Registration" icon="fa fa-user-plus" rendered="true" />
                     <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summaries" icon="fa fa-list-alt"></p:menuitem>
                     <p:submenu 
                         id="smOpdManager"
