@@ -212,7 +212,6 @@ public class OpdBillController implements Serializable {
     boolean foreigner = false;
     Date sessionDate;
     String strTenderedValue;
-    private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
@@ -1100,22 +1099,18 @@ public class OpdBillController implements Serializable {
         ////// // System.out.println("Out Print");
     }
 
-    public void settleBill() {
+    public String settleBill() {
         Date startTime = new Date();
         if (errorCheck()) {
-            return;
+            return "";
         }
-
         savePatient();
-
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
-
             if (b == null) {
-                return;
+                return "";
             }
-
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
                 list.add(getBillBean().saveBillItem(b, billEntry, getSessionController().getLoggedUser()));
@@ -1151,7 +1146,7 @@ public class OpdBillController implements Serializable {
         } else {
             boolean result = putToBills();
             if (result == false) {
-                return;
+                return "";
             }
         }
 
@@ -1167,6 +1162,7 @@ public class OpdBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
+        return "/opd/opd_bill_print";
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1625,7 +1621,6 @@ public class OpdBillController implements Serializable {
         setSessionDate(null);
         setCreditCompany(null);
         setCollectingCentre(null);
-        setYearMonthDay(null);
         setBills(null);
         setPaymentScheme(null);
         paymentMethod = PaymentMethod.Cash;
@@ -1661,7 +1656,6 @@ public class OpdBillController implements Serializable {
         setSessionDate(null);
         setCreditCompany(null);
         setCollectingCentre(null);
-        setYearMonthDay(null);
         setBills(null);
         setPaymentScheme(null);
         paymentMethod = PaymentMethod.Cash;
@@ -2339,16 +2333,7 @@ public class OpdBillController implements Serializable {
         this.billSearch = billSearch;
     }
 
-    public YearMonthDay getYearMonthDay() {
-        if (yearMonthDay == null) {
-            yearMonthDay = new YearMonthDay();
-        }
-        return yearMonthDay;
-    }
-
-    public void setYearMonthDay(YearMonthDay yearMonthDay) {
-        this.yearMonthDay = yearMonthDay;
-    }
+    
 
     public EnumController getEnumController() {
         return enumController;
