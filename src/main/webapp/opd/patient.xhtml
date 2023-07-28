@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      template="/resources/template/template.xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:bi="http://java.sun.com/jsf/composite/bill"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
+                    <p:panelGrid columns="2" class="w-100 table table-striped" >
+                        <p:outputLabel value="Name:" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+                        <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
+
+                        <p:outputLabel value="Age:" rendered="#{not empty patientController.current.person.ageAsString}" />
+                        <p:outputLabel value="#{patientController.current.person.ageAsString}" rendered="#{not empty patientController.current.person.ageAsString}" />
+
+                        <p:outputLabel value="Sex:" rendered="#{not empty patientController.current.person.sex}" />
+                        <p:outputLabel value="#{patientController.current.person.sex}" rendered="#{not empty patientController.current.person.sex}" />
+
+                        <p:outputLabel value="Number:" rendered="#{not empty patientController.current.phn}" />
+                        <p:outputLabel value="#{patientController.current.phn}" rendered="#{not empty patientController.current.phn}" />
+
+                        <p:outputLabel value="Date of Birth:" rendered="#{not empty patientController.current.person.dob}" />
+                        <p:outputLabel value="#{patientController.current.person.dob}" rendered="#{not empty patientController.current.person.dob}">
+                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                        </p:outputLabel>
+
+                        <p:outputLabel value="Race:" rendered="#{not empty patientController.current.person.race.name}" />
+                        <p:outputLabel value="#{patientController.current.person.race.name}" rendered="#{not empty patientController.current.person.race.name}" />
+
+                        <p:outputLabel value="Religion:" rendered="#{not empty patientController.current.person.religion.name}" />
+                        <p:outputLabel value="#{patientController.current.person.religion.name}" rendered="#{not empty patientController.current.person.religion.name}" />
+
+                        <p:outputLabel value="Occupation:" rendered="#{not empty patientController.current.person.occupation.name}" />
+                        <p:outputLabel value="#{patientController.current.person.occupation.name}" rendered="#{not empty patientController.current.person.occupation.name}" />
+
+                        <p:outputLabel value="Civil Status:" rendered="#{not empty patientController.current.person.civilStatus.name}" />
+                        <p:outputLabel value="#{patientController.current.person.civilStatus.name}" rendered="#{not empty patientController.current.person.civilStatus.name}" />
+
+                        <p:outputLabel value="Phone:" rendered="#{not empty patientController.current.person.phone}" />
+                        <p:outputLabel value="#{patientController.current.person.phone}" rendered="#{not empty patientController.current.person.phone}" />
+
+                        <p:outputLabel value="Mobile:" rendered="#{not empty patientController.current.person.mobile}" />
+                        <p:outputLabel value="#{patientController.current.person.mobile}" rendered="#{not empty patientController.current.person.mobile}" />
+
+                        <p:outputLabel value="Email:" rendered="#{not empty patientController.current.person.email}" />
+                        <p:outputLabel value="#{patientController.current.person.email}" rendered="#{not empty patientController.current.person.email}" />
+
+                        <p:outputLabel value="ID:" rendered="#{not empty patientController.current.person.nic}" />
+                        <p:outputLabel value="#{patientController.current.person.nic}" rendered="#{not empty patientController.current.person.nic}" />
+
+                        <p:outputLabel value="Code:" rendered="#{not empty patientController.current.code}" />
+                        <p:outputLabel value="#{patientController.current.code}" rendered="#{not empty patientController.current.code}" />
+
+                        <p:outputLabel value="Address:" rendered="#{not empty patientController.current.person.address}" />
+                        <p:outputLabel value="#{patientController.current.person.address}" rendered="#{not empty patientController.current.person.address}" />
+
+                        <p:outputLabel value="Blood Group:" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
+                        <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
+
+
+
+                    </p:panelGrid>
+
+
+
+                </h:panelGroup>
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -126,6 +126,8 @@ public class OpdBillController implements Serializable {
     CollectingCentreBillController collectingCentreBillController;
     @Inject
     PriceMatrixController priceMatrixController;
+    @Inject
+    PatientController patientController;
 
     /**
      * Class Variables
@@ -176,6 +178,21 @@ public class OpdBillController implements Serializable {
     private List<BillEntry> lstBillEntriesPrint;
     BillType billType;
 
+    /**
+     *
+     * Navigation Methods
+     *
+     */
+    public String navigateToSearchPatients() {
+        patientController.setSearchedPatients(null);
+        return "/opd/patient_search";
+    }
+
+    /**
+     *
+     * Getters & Setters
+     *
+     */
     public BillType getBillType() {
         return billType;
     }
@@ -2332,8 +2349,6 @@ public class OpdBillController implements Serializable {
     public void setBillSearch(BillSearch billSearch) {
         this.billSearch = billSearch;
     }
-
-    
 
     public EnumController getEnumController() {
         return enumController;
