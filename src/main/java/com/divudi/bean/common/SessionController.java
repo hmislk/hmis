@@ -368,10 +368,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return "/admin/institutions/admin_mange_application_preferences";
     }
 
-    public String toPublicLogin() {
-        return "/public_login";
-    }
-
     public String toManageIntitutionPreferences() {
         String jpql;
         Map m = new HashMap();

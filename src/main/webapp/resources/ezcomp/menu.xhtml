@@ -36,7 +36,7 @@
 
                         <p:menuitem 
                             ajax="false" 
-                            action="/opd_bill"  
+                            action="/opd/opd_bill"  
                             actionListener="#{billController.prepareNewBill}" 
                             value="OPD Billing"
                             icon="fa fa-fw fa-notes-medical" 
@@ -259,7 +259,7 @@
                 </p:submenu>
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
                     <p:submenu label="Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}">
-                        <p:menuitem ajax="false" action="/opd_bill" actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
+                        <p:menuitem ajax="false" action="/opd/opd_bill" actionListener="#{billController.prepareNewBill}" value="OPD Billing" rendered="#{webUserController.hasPrivilege('LabBilling')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/opd_search_bill_own" actionListener="#{searchController.makeListNull}"  value="Search OPD Bills" rendered="#{webUserController.hasPrivilege('LabBillSearch')}" ></p:menuitem>
                         <p:menuitem ajax="false" action="/opd_search_billitem_own" value="Search OPD Bill Items" actionListener="#{searchController.makeListNull}" rendered="#{webUserController.hasPrivilege('LabBillItemSearch')}" ></p:menuitem>
                         <p:separator/>
