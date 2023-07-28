@@ -121,7 +121,7 @@
                                     </p:column>
                                     <p:column headerText="Billing">
 
-                                        <p:commandButton ajax="false" action="/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
+                                        <p:commandButton ajax="false" action="/opd/opd_bill"  actionListener="#{billController.prepareNewBillForMember()}" 
                                                          value="OPD" disabled="#{!webUserController.hasPrivilege('OpdBilling')}" >
                                             <f:setPropertyActionListener value="#{fm.patient}" target="#{billController.searchedPatient}" ></f:setPropertyActionListener>
                                         </p:commandButton>
