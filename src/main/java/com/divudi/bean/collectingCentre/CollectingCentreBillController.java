@@ -50,7 +50,6 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -134,8 +133,6 @@ public class CollectingCentreBillController implements Serializable {
     ChannelBillController channelBillController;
     @EJB
     StaffBean staffBean;
-    @EJB
-    private BatchBillFacade batchBillFacade;
     /**
      * Properties
      */
@@ -1735,14 +1732,6 @@ public class CollectingCentreBillController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
 
-    }
-
-    public BatchBillFacade getBatchBillFacade() {
-        return batchBillFacade;
-    }
-
-    public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
-        this.batchBillFacade = batchBillFacade;
     }
 
     public BillSearch getBillSearch() {
