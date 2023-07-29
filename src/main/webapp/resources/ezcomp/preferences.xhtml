@@ -160,6 +160,7 @@
                             <h:panelGroup >
                                 <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
                                 Available Fields
+                                {id}<br/>
                                 {ins_id}<br/>
                                 {dept_id}<br/>
                                 {from_institution}<br/>
@@ -172,25 +173,25 @@
                                 {patient_address}<br/>
                                 {patient_phone}<br/>
                                 {patient_phn_number}<br/>
-                                {admission_number}
-                                {admission_date}
-
-                                {payment_method}
-                                {gross_total}
-                                {discount}
-                                {net_total}
-
+                                {admission_number}<br/>
+                                {admission_date}<br/>
+                                <br/>
+                                {payment_method}<br/>
+                                {gross_total}<br/>
+                                {discount}<br/>
+                                {net_total}<br/>
+                                <br/>
                                 {table_class}<br/>
                                 {table_style}<br/>
                                 {serial_class}<br/>
                                 {serial_style}<br/>
-
-                                {cancelled}
-                                {returned}
-
-                                {cashier_username}
-                                {bill_date}
-                                {bill_time}
+                                <br/>
+                                {cancelled}<br/>
+                                {returned}<br/>
+                                <br/>
+                                {cashier_username}<br/>
+                                {bill_date}<br/>
+                                {bill_time}<br/>
                             </h:panelGroup>
                             <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" />
 

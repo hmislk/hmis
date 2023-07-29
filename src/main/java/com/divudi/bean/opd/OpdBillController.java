@@ -44,7 +44,6 @@ import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -1116,17 +1115,24 @@ public class OpdBillController implements Serializable {
         ////// // System.out.println("Out Print");
     }
 
-    public String settleBill() {
+    public String settleOpdBill() {
+        if (!executeSettleBillActions()) {
+            return "";
+        }
+        return "/opd/opd_bill_print?faces-redirect=true";
+    }
+
+    private boolean executeSettleBillActions() {
         Date startTime = new Date();
         if (errorCheck()) {
-            return "";
+            return false;
         }
         savePatient();
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);
             if (b == null) {
-                return "";
+                return false;
             }
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
@@ -1163,7 +1169,7 @@ public class OpdBillController implements Serializable {
         } else {
             boolean result = putToBills();
             if (result == false) {
-                return "";
+                return false;
             }
         }
 
@@ -1179,7 +1185,17 @@ public class OpdBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
-        return "/opd/opd_bill_print";
+        System.out.println("bills = " + bills);
+        if (bills != null) {
+            System.out.println("bills not null");
+            if (!bills.isEmpty()) {
+                for (Bill tb : bills) {
+                    tb.setBillTemplate(sessionController.getDepartmentPreference().getOpdBillTemplate());
+                }
+            }
+        }
+        return true;
+
     }
 
     public boolean checkBillValues(Bill b) {
@@ -1234,8 +1250,6 @@ public class OpdBillController implements Serializable {
             }
         }
     }
-    @EJB
-    private BatchBillFacade batchBillFacade;
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
@@ -2332,14 +2346,6 @@ public class OpdBillController implements Serializable {
     public void setBillItemFacade(BillItemFacade billItemFacade) {
         this.billItemFacade = billItemFacade;
 
-    }
-
-    public BatchBillFacade getBatchBillFacade() {
-        return batchBillFacade;
-    }
-
-    public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
-        this.batchBillFacade = batchBillFacade;
     }
 
     public BillSearch getBillSearch() {
