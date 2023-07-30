@@ -134,22 +134,7 @@
                     </div>
                 </p:panel>
 
-                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-                <script>
-                    $(document).ready(function () {
-                        $('#toggle').click(function () {
-                            $('#first-column').toggle(); // toggles the display of the first column
-                            $('#second-column').toggleClass('col-md-12 col-md-9'); // toggles the class of the second column between col-md-9 and col-md-12
-
-                            // Change the icon when toggled
-                            if ($("#second-column").hasClass("col-md-12")) {
-                                $("#toggle-icon").removeClass("bi-arrow-left-right").addClass("bi-arrow-right-left");
-                            } else {
-                                $("#toggle-icon").removeClass("bi-arrow-right-left").addClass("bi-arrow-left-right");
-                            }
-                        });
-                    });
-                </script>
+                
 
             </ui:define>
 
