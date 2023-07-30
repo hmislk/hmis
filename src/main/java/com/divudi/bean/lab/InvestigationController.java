@@ -323,6 +323,20 @@ public class InvestigationController implements Serializable {
         }
         return "/lab/investigation_format";
     }
+    
+    public String uploadExcelToCreateAnInvestigations() {
+        //file means private UploadedFile file;
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream inputStream = file.getInputStream();
+            
+        } catch (IOException ex) {
+        }
+        return "";
+    }
 
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
