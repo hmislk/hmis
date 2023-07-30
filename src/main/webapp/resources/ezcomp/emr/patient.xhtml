@@ -17,8 +17,8 @@
             <p:outputLabel value="Name:" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
             <p:outputLabel value="#{cc.attrs.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.patient.person.nameWithTitle}" />
 
-            <p:outputLabel value="Age:" rendered="#{not empty cc.attrs.patient.person.age}" />
-            <p:outputLabel value="#{cc.attrs.patient.person.age}" rendered="#{not empty cc.attrs.patient.person.age}" />
+            <p:outputLabel value="Age:" rendered="#{not empty cc.attrs.patient.person.ageAsString}" />
+            <p:outputLabel value="#{cc.attrs.patient.person.ageAsString}" rendered="#{not empty cc.attrs.patient.person.ageAsString}" />
 
             <p:outputLabel value="Sex:" rendered="#{not empty cc.attrs.patient.person.sex}" />
             <p:outputLabel value="#{cc.attrs.patient.person.sex}" rendered="#{not empty cc.attrs.patient.person.sex}" />

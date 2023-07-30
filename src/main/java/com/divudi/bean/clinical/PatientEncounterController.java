@@ -1061,7 +1061,7 @@ public class PatientEncounterController implements Serializable {
         String output = "";
 
         String name = e.getPatient().getPerson().getNameWithTitle();
-        String age = e.getPatient().getPerson().getAge() != null ? e.getPatient().getPerson().getAge() : "";
+        String age = e.getPatient().getPerson().getAgeAsString() != null ? e.getPatient().getPerson().getAgeAsString() : "";
         String sex = e.getPatient().getPerson().getSex().name() != null ? e.getPatient().getPerson().getSex().name() : "";
         String address = e.getPatient().getPerson().getAddress() != null ? e.getPatient().getPerson().getAddress() : "";
         String phone = e.getPatient().getPerson().getPhone() != null ? e.getPatient().getPerson().getPhone() : "";
@@ -1887,7 +1887,7 @@ public class PatientEncounterController implements Serializable {
         getBillController().setReferredBy(doctor);
         //        getPharmacySaleController().getBill().setPatientEncounter(current);
         //        getPharmacySaleController().getBill().setPatient(current.getPatient());
-        return "/opd_bill";
+        return "/opd/opd_bill";
     }
 
     public PatientEncounter getEncounterToDisplay() {

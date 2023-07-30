@@ -27,13 +27,13 @@
                             </p:outputLabel>
                         </h:panelGroup>
 
-                        <p:panelGrid columns="2" style="width: 100%; margin: auto;" styleClass="alignTop" >
+                        <div class="row" >
 
-
+                            
                             <p:panelGrid id="sale" columns="1" class="alignTop" style="width: 100%; margin: auto;" >
 
 
-                                <p:panelGrid columns="5" >
+                                <p:panelGrid columns="5" class="w-100">
 
                                     <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                     <p:outputLabel value="Quentity" ></p:outputLabel>
@@ -107,15 +107,15 @@
 
 
                                 <h:panelGroup id="tabI" >
-                                    <h:panelGrid columns="2" >
+                                    <h:panelGrid columns="2" class="w-100">
                                         <p:panel header="Not Available" >
-                                            <p:selectOneListbox id="lstSelectItems" style="width: 300px; height: 200px; max-width: 300px; max-height: 200px; min-width: 300px; min-height: 200px;" value="#{pharmacyIssueController.selectedAlternative}"  >
+                                            <p:selectOneListbox id="lstSelectItems" scrollHeight="400" style=" min-width: 300px; min-height: 200px;" value="#{pharmacyIssueController.selectedAlternative}"  >
                                                 <f:selectItems  value="#{pharmacyIssueController.itemsWithoutStocks}" var="si" itemLabel="#{si.name}" itemValue="#{si}" ></f:selectItems>
                                                 <p:ajax event="change" process="lstSelectItems" update="lstReplaceableBatch" listener="#{pharmacyIssueController.selectReplaceableStocks}" ></p:ajax>
                                             </p:selectOneListbox>
                                         </p:panel>
                                         <p:panel header="Available" >
-                                            <p:selectOneListbox id="lstReplaceableBatch" style="width: 300px; height: 200px; max-width: 300px; max-height: 200px; min-width: 300px; min-height: 200px;"  >
+                                            <p:selectOneListbox id="lstReplaceableBatch" scrollHeight="400" style="min-width: 300px; min-height: 200px;"  >
                                                 <f:selectItems  value="#{pharmacyIssueController.replaceableStocks}" var="rs" itemLabel="#{rs.itemBatch.item.name}" itemValue="#{rs}" ></f:selectItems>
                                             </p:selectOneListbox>
                                         </p:panel>
@@ -206,9 +206,9 @@
 
 
 
-                            <p:panelGrid columns="1">
-                                <f:facet name="header" >
-                                    <h:panelGrid columns="20"  >
+                            <p:panelGrid columns="1" class="alignTop" style="min-height: 600px" >
+                                <f:facet name="header" class="alignTop">
+                                    <h:panelGrid columns="2">
                                         <p:commandButton  accesskey="s" value="Issue" 
                                                           action="#{pharmacyIssueController.settleBill()}" 
                                                           onclick="onSubmitButton();"
@@ -225,7 +225,7 @@
                                     </h:panelGrid>
                                 </f:facet>
 
-                                <p:panelGrid columns="2" >
+                                <p:panelGrid columns="2" class="w-100">
                                     <h:outputLabel value="Issuing Department"/>
                                     <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                                     styleClass="noPrintButton"
@@ -279,7 +279,7 @@
 
 
 
-                        </p:panelGrid>
+                        </div>
 
 
 

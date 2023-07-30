@@ -43,8 +43,11 @@
 
                         </h:panelGrid>
                     </f:facet>
-                    <h:panelGrid columns="2" style="min-width: 100%;">
-                        <h:panelGrid columns="1">
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p:panel>
+                            <h:panelGrid columns="1">
                             <h:outputLabel value="Type GRN No or Dealor Name"/>                           
                             <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                             value="#{pharmacyDealorBill.institution}"
@@ -79,8 +82,11 @@
                             </p:panel>
 
                         </h:panelGrid>
-
-                        <p:dataTable  value="#{pharmacyDealorBill.billItems}"
+                                </p:panel>
+                        </div>
+                        <div class="col-md-8">
+                            <p:panel>
+                               <p:dataTable  value="#{pharmacyDealorBill.billItems}"
                                       selection="#{pharmacyDealorBill.selectedBillItems}" 
                                       var="b" id="itms" rowKey="#{b.searialNo}" 
                                       selectionMode="multiple"
@@ -89,6 +95,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Paying Institution : "/>
                                 <h:outputLabel value="#{pharmacyDealorBill.current.toInstitution.name}"/>
+                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;"/>
                                 <p:commandButton ajax="false" action="#{pharmacyDealorBill.removeAll()}" value="Remove Selected"/>
                             </f:facet>
 
@@ -137,8 +144,15 @@
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
+                                </p:panel>
+                        </div>
+                    </div>
+                    
+                        
 
-                    </h:panelGrid>
+                       
+
+                 
 
                 </p:panel>
                

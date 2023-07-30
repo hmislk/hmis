@@ -3,6 +3,22 @@
     font-size: xx-large ;
 }
 
+
+
+.standedicon{
+    width: 2em;
+    height: 2em;
+    border: 1px #888888 solid;
+    margin: 0.1em;
+    -webkit-border-radius: 0.1em;
+    -moz-border-radius: 0.1em;
+    border-radius: 0.1em;
+    -moz-box-shadow: 1px 1px 1px 1px #888888;
+    -webkit-box-shadow: 1px 1px 1px 1px #888888;
+    box-shadow: 1px 1px 1px 1px #888888;
+}
+
+
 .auto-width-datatable{
     table-layout: auto !important;
     width: 100% !important;

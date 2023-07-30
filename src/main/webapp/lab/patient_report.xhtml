@@ -86,13 +86,13 @@
                                                      disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
                                                      action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
                                     </p:commandButton>
-                                    <p:commandButton styleClass="nonPrintBlock"  
+<!--                                    <p:commandButton styleClass="nonPrintBlock"  
                                                      ajax="false" 
                                                      value="Print" 
                                                      rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                                     onclick="window.print();" 
-                                                     actionListener="#{patientReportController.printPatientReport()}"/>
-
+                                                     actionListener="#{patientReportController.printPatientReport()}">
+                                        <p:printer target="divPrint" />
+                                    </p:commandButton>-->
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
@@ -378,10 +378,12 @@
 
                         <div class="nonPrintBlock" >
                             <h:panelGroup rendered="false" >
-                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" actionListener="#{patientReportController.printPatientReport()}" 
-                                                  rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }" />
-
-
+                                <p:commandButton value="Print" 
+                                                 icon="ui-icon-print" 
+                                                 actionListener="#{patientReportController.printPatientReport()}" 
+                                                 rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission }">
+                                    <p:printer target="divPrint" />
+                                </p:commandButton>
                             </h:panelGroup>
                             <h:panelGrid columns="3" >
                                 <p:commandButton value="Print" ajax="false" actionListener="#{patientReportController.printPatientReport()}"
@@ -389,13 +391,30 @@
                                     <p:printer target="divPrint" ></p:printer>
                                 </p:commandButton>
 
+                                <p:commandButton value="Print Panel" icon="ui-icon-print">
+                                    <p:printer target="divPrint" />
+                                </p:commandButton>
 
-                                <p:commandButton  styleClass="nonPrintBlock"  ajax="false" value="PDF" action="#{patientReportController.createPDFAndSaveAsaFile()}" 
+                                <p:commandButton  ajax="false" 
+                                                  value="PDF" 
+                                                  action="#{patientReportController.createPDFAndSaveAsaFile()}" 
                                                   rendered="#{(patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission)}" />
                             </h:panelGrid>
 
                         </div>
 
+                        <style>
+                            @media print {
+                                .labReport {
+                                    position: static !important;
+                                }
+                                #divReportM {
+                                    position: static !important;
+                                }
+                                /* Repeat for other elements as needed */
+                            }
+
+                        </style>
 
 
                         <h:panelGroup  id="divPrint" >
