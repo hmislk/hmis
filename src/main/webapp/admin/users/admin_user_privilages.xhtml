@@ -9,10 +9,10 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/admin/users/admin_view_user.xhtml">
 
 
-            <ui:define name="content">
+            <ui:define name="users">
                 <h:form  >
                     <h:panelGroup  rendered="#{!webUserController.hasPrivilege('AdminManagingUsers')}"  >
                         <p:outputLabel value="YOU ARE NOT AUTHERIZED." ></p:outputLabel>

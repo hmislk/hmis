@@ -19,17 +19,15 @@
                                         <p:commandButton  
                                             ajax="false" 
                                             value="Add New User" 
-                                            action="admin_add_new_user" 
-                                            actionListener="#{webUserController.navigateToAddNewUser}"/>
+                                            action="#{webUserController.navigateToAddNewUser}"/>
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Users" 
-                                            action="admin_view_user" />
+                                            action="#{webUserController.navigateToListUsers()}" />
                                         <p:commandButton   
                                             ajax="false" 
-                                            value="View User Login Details" 
-                                            action="admin_logins_all" />
-
+                                            value="View User Logins" 
+                                            action="#{loginController.navigateToViewLogins()}" />
                                     </div>
                                 </p:tab>
 

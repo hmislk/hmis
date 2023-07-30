@@ -434,7 +434,6 @@ public class PatientInvestigationController implements Serializable {
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
-        System.out.println("sysMex.getBytes().size() = " + sysMex.getBytes().size());
         
         if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
             SysMexAdf1 m1 = new SysMexAdf1();

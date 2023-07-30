@@ -89,7 +89,6 @@ public class SysMexAdf2 {
         if (thb < 2 || thb > 20) {
             return false;
         }
-        System.out.println("Hb  checks ok");
 
         Double tpcv = findValue(hctStart, hctEnd, 2);
         if (tpcv < 5 || tpcv > 60) {
@@ -176,7 +175,6 @@ public class SysMexAdf2 {
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
         System.out.println("from = " + from);
-        System.out.println("to = " + to);
 
         String display = "";
         for (int i = from; i < to + 1; i++) {
@@ -498,7 +496,6 @@ public class SysMexAdf2 {
     public long getSampleId() {
         try {
             sampleId = (findValue(sampleIdStart, sampleIdEnd, 0)).longValue();
-            System.out.println("sampleId = " + sampleId);
         } catch (Exception e) {
             sampleId = 0;
         }
