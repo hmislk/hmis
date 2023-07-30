@@ -367,7 +367,7 @@ public class WebUserController implements Serializable {
         current = new WebUser();
     }
 
-    public void prepairAddNewUser() {
+    public String navigateToAddNewUser() {
         setCurrent(new WebUser());
         Person p = new Person();
         getCurrent().setWebUserPerson(p);
@@ -378,7 +378,7 @@ public class WebUserController implements Serializable {
         staff = null;
         department = null;
         institution = null;
-
+        return "/admin/users/admin_add_new_user";
     }
 
     public SecurityController getSecurityController() {
@@ -497,7 +497,7 @@ public class WebUserController implements Serializable {
         }
 
         recreateModel();
-        prepairAddNewUser();
+        navigateToAddNewUser();
         selectText = "";
         return BackToAdminManageUsers();
     }
