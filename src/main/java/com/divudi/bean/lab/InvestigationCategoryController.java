@@ -159,15 +159,19 @@ public class InvestigationCategoryController implements Serializable {
 
     public List<InvestigationCategory> getItems() {
         if (items == null) {
-            String jpql = "select c "
-                    + " from InvestigationCategory c "
-                    + " where c.retired=:ret "
-                    + " order by c.name";
-            Map m = new HashMap();
-            m.put("ret", false);
-            items = getFacade().findByJpql(jpql, m);
+            items = fillItems();
         }
         return items;
+    }
+
+    public List<InvestigationCategory> fillItems() {
+        String jpql = "select c "
+                + " from InvestigationCategory c "
+                + " where c.retired=:ret "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
     }
 
     public List<Machine> getMachines() {
@@ -190,70 +194,89 @@ public class InvestigationCategoryController implements Serializable {
     public String navigateToInvestigationFees() {
         return "/admin/items/investigation_fee.xhtml";
     }
-    
+
     public String navigateToOpdServiceCategory() {
         return "/admin/items/opd_service_category.xhtml";
     }
-    
+
+    public String navigateToAddInvestigationCategoryForAdmin() {
+        prepareAdd();
+        return "/admin/items/investigation_category";
+    }
+
+    public String navigateToEditInvestigationCategoryForAdmin() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/items/investigation_category";
+    }
+
+    public String navigateToListInvestigationCategoriesForAdmin() {
+        getItems();
+        return "/admin/items/investigation_category_list";
+    }
+
     public String navigateToOpdServiceSubCategory() {
         return "/admin/items/opd_service_subcategory.xhtml";
     }
-    
+
     public String navigateToOpdService() {
         return "/admin/items/opd_service.xhtml";
     }
-    
+
     public String navigateToInwardService() {
         return "/admin/items/inward_service.xhtml";
     }
-    
+
     public String navigateToTheatreService() {
         return "/admin/items/theatre_service.xhtml";
     }
-    
+
     public String navigateToBillExpenses() {
         return "/admin/items/bill_expenses.xhtml";
     }
-    
+
     public String navigateToRelationships() {
         return "/admin/items/relationships.xhtml";
     }
-    
+
     public String navigateToReligion() {
         return "/admin/items/religion.xhtml";
     }
-    
+
     public String navigateToNationality() {
         return "/admin/items/nationality.xhtml";
     }
-    
+
     public String navigateToOpdListToRemove() {
         return "/admin/items/opd_service_list_to_remove.xhtml";
     }
-    
+
     public String navigateToItemBulkDelete() {
         return "/admin/items/item_bulk_un_delete.xhtml";
     }
-    
+
     public String navigateToFormFormat() {
         return "/admin/items/form_format.xhtml";
     }
-    
+
     public String navigateToFormFormatCategory() {
         return "/admin/items/form_format_category.xhtml";
     }
-    
+
     public String navigateToInvestigationListToRemove() {
         return "/admin/items/investigation_list_to_remove.xhtml";
     }
-    
+
     public String navigateToInvestigationBulkUnDelete() {
         return "/admin/items/investigation_bulk_un_delete.xhtml";
     }
-    
+
     public String navigateToMetaDataSuperCategory() {
         return "/admin/items/metadata_super_category.xhtml";
     }
+
     public String navigateToInvestigationFormat() {
         if (file == null) {
             JsfUtil.addErrorMessage("No file");
@@ -270,6 +293,7 @@ public class InvestigationCategoryController implements Serializable {
         }
         return "/admin/items/investigation_format.xhtml";
     }
+
     /**
      *
      */

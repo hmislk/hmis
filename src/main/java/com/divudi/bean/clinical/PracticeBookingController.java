@@ -289,7 +289,7 @@ public class PracticeBookingController implements Serializable {
         getBillController().setPatientSearchTab(1);
         getBillController().setPatientTabId("tabSearchPt");
         getBillController().setReferredBy(doctor);
-        return "/opd_bill";
+        return "/opd/opd_bill";
     }
 
     public String issuePharmacyBill() {

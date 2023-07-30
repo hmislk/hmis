@@ -14,9 +14,13 @@ import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.entity.pharmacy.StockVarientBillItem;
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -43,10 +47,6 @@ import javax.persistence.Transient;
  */
 @Entity
 @Inheritance
-@NamedQueries({
-    @NamedQuery(name = "Bill.findAll", query = "SELECT b FROM Bill b")
-    ,
-    @NamedQuery(name = "Bill.findById", query = "SELECT b FROM Bill b WHERE b.id = :id")})
 public class Bill implements Serializable {
 
     @ManyToOne
@@ -74,9 +74,6 @@ public class Bill implements Serializable {
 
     @Enumerated(EnumType.STRING)
     BillClassType billClassType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    BatchBill batchBill;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
@@ -143,7 +140,7 @@ public class Bill implements Serializable {
     double discount;
     double vat;
     double vatPlusNetTotal;
-    
+
     @Transient
     private double absoluteNetTotal;
 
@@ -254,7 +251,7 @@ public class Bill implements Serializable {
     @Transient
     String billClass;
     @ManyToOne(fetch = FetchType.LAZY)
-    Item billPackege;//BILLPACKEGE_ID
+    Item billPackege;//BILLPACKEGE\\_ID
     @ManyToOne(fetch = FetchType.LAZY)
     Person person;
     @ManyToOne(fetch = FetchType.LAZY)
@@ -338,6 +335,277 @@ public class Bill implements Serializable {
     @Transient
     private IdentifiableWithNameOrCode referredInstituteOrDoctor;
 
+    @Transient
+    private String billPrint;
+
+    @Transient
+    private String billTemplate;
+
+    private void generateBillPrintFromBillTemplate() {
+        billPrint = "";
+        if (billTemplate == null) {
+            return;
+        }
+        if (billTemplate.trim().equals("")) {
+            return;
+        }
+        billPrint = billTemplate;
+
+        if (this.getPatient() != null) {
+            Patient tmpPt = this.getPatient();
+            if (tmpPt.getPerson() != null) {
+                Person tmpPerson = tmpPt.getPerson();
+                billPrint = billPrint.replaceAll("\\{patient\\_name\\}", tmpPerson.getNameWithTitle() != null ? tmpPerson.getNameWithTitle() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_age\\}", tmpPerson.getAgeAsString() != null ? tmpPerson.getAgeAsString() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_sex\\}", tmpPerson.getSex() != null ? tmpPerson.getSex().name() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_address\\}", tmpPerson.getAddress() != null ? tmpPerson.getAddress() : "");
+                billPrint = billPrint.replaceAll("\\{patient\\_phone\\}", tmpPerson.getPhone() != null ? tmpPerson.getPhone() : "");
+
+                billPrint = billPrint.replaceAll("\\{name\\}", tmpPerson.getNameWithTitle() != null ? tmpPerson.getNameWithTitle() : "");
+                billPrint = billPrint.replaceAll("\\{age\\}", tmpPerson.getAgeAsString() != null ? tmpPerson.getAgeAsString() : "");
+                billPrint = billPrint.replaceAll("\\{gender\\}", tmpPerson.getSex() != null ? tmpPerson.getSex().name() : "");
+                billPrint = billPrint.replaceAll("\\{phone\\_number\\}", tmpPerson.getPhone() != null ? tmpPerson.getPhone() : "");
+                billPrint = billPrint.replaceAll("\\{address\\}", tmpPerson.getAddress() != null ? tmpPerson.getAddress() : "");
+            }
+            billPrint = billPrint.replaceAll("\\{patient\\_phn\\_number\\}", tmpPt.getPhn() != null ? tmpPt.getPhn() : "");
+            billPrint = billPrint.replaceAll("\\{patient\\_id\\}", String.valueOf(tmpPt.getId()));
+            billPrint = billPrint.replaceAll("\\{patient\\_code\\}", tmpPt.getCode() != null ? tmpPt.getCode() : "");
+            billPrint = billPrint.replaceAll("\\{patient\\_mrn\\}", tmpPt.getPhn() != null ? tmpPt.getPhn() : "");
+        }
+
+        if (this.getPatientEncounter() != null) {
+            PatientEncounter encounter = this.getPatientEncounter();
+            billPrint = billPrint.replaceAll("\\{admission\\_number\\}", encounter.getBhtNo() != null ? encounter.getBhtNo() : "");
+            billPrint = billPrint.replaceAll("\\{admission\\_date\\}", encounter.getDateOfAdmission() != null ? encounter.getDateOfAdmission().toString() : "");
+        }
+
+        if (this.getPaymentMethod() != null) {
+            billPrint = billPrint.replaceAll("\\{payment\\_method\\}", this.getPaymentMethod().getLabel() != null ? this.getPaymentMethod().getLabel() : "");
+        }
+
+        billPrint = billPrint.replaceAll("\\{id\\}", this.getIdStr());
+        billPrint = billPrint.replaceAll("\\{ins\\_id\\}", this.getInsId());
+        billPrint = billPrint.replaceAll("\\{dept\\_id\\}", this.getDeptId());
+
+        String doubleFormat = "#,##0.00";
+
+        String shortDateFormat = "d M yy";
+        String shortTimeFormat = "d M yy hh:mm a";
+        String longDateFormat = "dd MMMM yyyy";
+        String longTimeFormat = "hh:mm:ss a";
+        String shortDateTimeFormat = "d M yy hh:mm a";
+
+        DecimalFormat df = new DecimalFormat(doubleFormat);
+
+        if (this.getBillItems() != null) {
+            String itemCount = Integer.toString(this.getBillItems().size());
+
+            billPrint = billPrint.replaceAll("\\{gross\\_total\\}", df.format(this.getTotal()));
+            billPrint = billPrint.replaceAll("\\{discount\\}", df.format(this.getDiscount()));
+            billPrint = billPrint.replaceAll("\\{net\\_total\\}", df.format(this.getNetTotal()));
+
+            billPrint = billPrint.replaceAll("\\{discount\\_percent\\}", df.format(this.getDiscountPercent()));
+            billPrint = billPrint.replaceAll("\\{cash\\_tendered\\}", df.format(this.getCashPaid()));
+            billPrint = billPrint.replaceAll("\\{cash\\_balance\\}", df.format(this.getCashBalance()));
+            billPrint = billPrint.replaceAll("\\{outstanding\\_balance\\}", df.format(this.getBalance()));
+            billPrint = billPrint.replaceAll("\\{number\\_of\\_item\\_types\\}", itemCount);
+            billPrint = billPrint.replaceAll("\\{count\\_of\\_items\\}", itemCount);
+
+        }
+
+        billPrint = billPrint.replaceAll("\\{institution\\_id\\}", Objects.toString(this.getInsId(), ""));
+        billPrint = billPrint.replaceAll("\\{department\\_id\\}", Objects.toString(this.getDeptId(), ""));
+        billPrint = billPrint.replaceAll("\\{id\\}", Objects.toString(this.getIdStr(), ""));
+        billPrint = billPrint.replaceAll("\\{id\\_barcode\\}", Objects.toString(this.getIdStr(), ""));
+        billPrint = billPrint.replaceAll("\\{Bill Payment Completed Details\\}", Objects.toString(this.getIdStr(), ""));
+
+        if (this.getPaidAt() != null) {
+            Date tmpPaidAt = this.getPaidAt();
+
+            DateFormat shortDateFormatter = new SimpleDateFormat(shortDateFormat);
+            DateFormat shortTimeFormatter = new SimpleDateFormat(shortTimeFormat);
+            DateFormat longDateFormatter = new SimpleDateFormat(longDateFormat);
+            DateFormat longTimeFormatter = new SimpleDateFormat(longTimeFormat);
+            DateFormat shortDateTimeFormatter = new SimpleDateFormat(shortDateTimeFormat);
+
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\}", shortDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\}", shortTimeFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\}", shortDateTimeFormatter.format(tmpPaidAt));
+
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_short\\}", shortDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\_short\\}", shortTimeFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\_short\\}", shortDateTimeFormatter.format(tmpPaidAt));
+
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_long\\}", longDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\_long\\}", longTimeFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\_long\\}", longDateFormatter.format(tmpPaidAt) + " " + longTimeFormatter.format(tmpPaidAt));
+        }
+
+        if (this.getCreatedAt() != null) {
+            Date createdDateTimeTmp = this.getCreatedAt();
+
+            DateFormat shortDateFormatter = new SimpleDateFormat(shortDateFormat);
+            DateFormat shortTimeFormatter = new SimpleDateFormat(shortTimeFormat);
+            DateFormat longDateFormatter = new SimpleDateFormat(longDateFormat);
+            DateFormat longTimeFormatter = new SimpleDateFormat(longTimeFormat);
+            DateFormat shortDateTimeFormatter = new SimpleDateFormat(shortDateTimeFormat);
+
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\}", shortDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\}", shortTimeFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\}", shortDateTimeFormatter.format(createdDateTimeTmp));
+
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_short\\}", shortDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\_short\\}", shortTimeFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\_short\\}", shortDateTimeFormatter.format(createdDateTimeTmp));
+
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_long\\}", longDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\_long\\}", longTimeFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\_long\\}", longDateFormatter.format(createdDateTimeTmp) + " " + longTimeFormatter.format(createdDateTimeTmp));
+        }
+
+        if (this.getInstitution() != null) {
+            billPrint = billPrint.replaceAll("\\{institution\\_name\\}", this.getInstitution().getName());
+            billPrint = billPrint.replaceAll("\\{institution\\_address\\}", this.getInstitution().getAddress());
+            billPrint = billPrint.replaceAll("\\{institution\\_phone\\}", this.getInstitution().getPhone());
+            billPrint = billPrint.replaceAll("\\{institution\\_email\\}", this.getInstitution().getEmail());
+            billPrint = billPrint.replaceAll("\\{institution\\_website\\}", this.getInstitution().getWeb());
+        }
+
+        if (this.getDepartment() != null) {
+            billPrint = billPrint.replaceAll("\\{department\\_name\\}", this.getDepartment().getName());
+            billPrint = billPrint.replaceAll("\\{department\\_address\\}", this.getDepartment().getAddress());
+            billPrint = billPrint.replaceAll("\\{department\\_phone\\}", this.getDepartment().getTelephone1());
+            billPrint = billPrint.replaceAll("\\{department\\_email\\}", this.getDepartment().getEmail());
+        }
+
+        if (this.getFromInstitution() != null) {
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_name\\}", this.getFromInstitution().getName());
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_address\\}", this.getFromInstitution().getAddress());
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_phone\\}", this.getFromInstitution().getPhone());
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_email\\}", this.getFromInstitution().getEmail());
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\}", this.getFromInstitution().getName());
+        }
+
+        if (this.getFromDepartment() != null) {
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_name\\}", this.getFromDepartment().getName());
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_address\\}", this.getFromDepartment().getAddress());
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_phone\\}", this.getFromDepartment().getTelephone1());
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_email\\}", this.getFromDepartment().getEmail());
+            billPrint = billPrint.replaceAll("\\{from\\_department\\}", this.getDepartment().getName());
+        }
+
+        if (this.getToInstitution() != null) {
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_name\\}", this.getToInstitution().getName());
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_address\\}", this.getToInstitution().getAddress());
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_phone\\}", this.getToInstitution().getPhone());
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_email\\}", this.getToInstitution().getEmail());
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\}", this.getToInstitution().getName());
+        }
+
+        if (this.getToDepartment() != null) {
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_name\\}", this.getToDepartment().getName());
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_address\\}", this.getToDepartment().getAddress());
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_phone\\}", this.getToDepartment().getTelephone1());
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_email\\}", this.getToDepartment().getEmail());
+            billPrint = billPrint.replaceAll("\\{to\\_department\\}", this.getToDepartment().getName());
+        }
+
+        if (this.getCreater() != null) {
+            billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_username\\}", this.getCreater().getName());
+
+            if (this.getCreater().getWebUserPerson() != null) {
+                billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_name\\}", this.getCreater().getWebUserPerson().getName());
+                billPrint = billPrint.replaceAll("\\{Bill Raised Details\\}", this.getCreater().getWebUserPerson().getName());
+            }
+
+            billPrint = billPrint.replaceAll("\\{cashier\\_user\\_name\\}", this.getCreater().getName());
+
+            if (this.getCreater().getWebUserPerson() != null) {
+                billPrint = billPrint.replaceAll("\\{cashier\\_name\\}", this.getCreater().getWebUserPerson().getName());
+            }
+
+            billPrint = billPrint.replaceAll("\\{cashier\\_code\\}", this.getCreater().getCode());
+        }
+
+        billPrint = billPrint.replaceAll("\\{item\\_qty\\_rate\\_value\\_table\\}", convertBillItemsToItemQtyRateValueTable(billItems));
+        billPrint = billPrint.replaceAll("\\{item\\_value\\_table\\}", convertBillItemsToItemValueTable(billItems));
+        billPrint = billPrint.replaceAll("\\{item\\_rate\\_qty\\_newline\\_value\\_table\\}", this.getIdStr());
+
+    }
+
+    private String convertBillItemsToItemQtyRateValueTable(List<BillItem> bis) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        StringBuilder str = new StringBuilder();
+
+        // Add the table start, thead and headers
+        str.append("<table class='table table-borderless'>")
+                .append("<thead>")
+                .append("<tr>")
+                .append("<th>Item</th>")
+                .append("<th>Quantity</th>")
+                .append("<th>Rate</th>")
+                .append("<th>Value</th>")
+                .append("</tr>")
+                .append("</thead>")
+                .append("<tbody>");
+
+        // Add the table data
+        for (BillItem bi : bis) {
+            String tmpItem = bi.getItem().getName();
+            Double qty = bi.getQty();
+            Double rate = bi.getNetRate();
+            Double value = bi.getNetValue();
+
+            str.append("<tr>")
+                    .append("<td>").append(tmpItem).append("</td>")
+                    .append("<td>").append(df.format(qty)).append("</td>")
+                    .append("<td>").append(df.format(rate)).append("</td>")
+                    .append("<td>").append(df.format(value)).append("</td>")
+                    .append("</tr>");
+        }
+
+        // Add the table end
+        str.append("</tbody>")
+                .append("</table>");
+
+        return str.toString();
+    }
+    
+    
+    private String convertBillItemsToItemValueTable(List<BillItem> bis) {
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        StringBuilder str = new StringBuilder();
+
+        // Add the table start, thead and headers
+        str.append("<table class='table table-bordered table-striped'>")
+                .append("<thead>")
+                .append("<tr>")
+                .append("<th>Item</th>")
+                .append("<th>Value</th>")
+                .append("</tr>")
+                .append("</thead>")
+                .append("<tbody>");
+
+        // Add the table data
+        for (BillItem bi : bis) {
+            String tmpItem = bi.getItem().getName();
+            Double qty = bi.getQty();
+            Double rate = bi.getNetRate();
+            Double value = bi.getNetValue();
+
+            str.append("<tr>")
+                    .append("<td>").append(tmpItem).append("</td>")
+                    .append("<td>").append(df.format(value)).append("</td>")
+                    .append("</tr>");
+        }
+
+        // Add the table end
+        str.append("</tbody>")
+                .append("</table>");
+
+        return str.toString();
+    }
+
     public double getTransTotalSaleValue() {
         return transTotalSaleValue;
     }
@@ -412,8 +680,6 @@ public class Bill implements Serializable {
         return claimableTotal;
     }
 
-    
-    
     public void setAdjustedTotal(double dbl) {
         claimableTotal = dbl;
     }
@@ -641,7 +907,6 @@ public class Bill implements Serializable {
 //    public void setBalance(double balance) {
 //        this.balance = balance;
 //    }
-
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
             listOfBill = new ArrayList<>();
@@ -1284,14 +1549,6 @@ public class Bill implements Serializable {
         this.bookingId = bookingId;
     }
 
-    public BatchBill getBatchBill() {
-        return batchBill;
-    }
-
-    public void setBatchBill(BatchBill batchBill) {
-        this.batchBill = batchBill;
-    }
-
     @Transient
     private Bill tmpRefBill;
 
@@ -1804,6 +2061,19 @@ public class Bill implements Serializable {
     public double getAbsoluteNetTotal() {
         absoluteNetTotal = Math.abs(netTotal);
         return absoluteNetTotal;
+    }
+
+    public String getBillPrint() {
+        generateBillPrintFromBillTemplate();
+        return billPrint;
+    }
+
+    public String getBillTemplate() {
+        return billTemplate;
+    }
+
+    public void setBillTemplate(String billTemplate) {
+        this.billTemplate = billTemplate;
     }
 
 }

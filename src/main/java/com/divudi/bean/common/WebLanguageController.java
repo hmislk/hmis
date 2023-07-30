@@ -39,9 +39,13 @@ public class WebLanguageController implements Serializable {
     @EJB
     private WebLanguageFacade ejbFacade;
     private WebLanguage selected;
+    private WebLanguage displayLanguage;
     private List<WebLanguage> items = null;
     String page;
 
+    
+    
+    
     public String toHome() {
         page = "/index";
         return page;
@@ -246,6 +250,8 @@ public class WebLanguageController implements Serializable {
 
     }
 
+    
+    
     public void listItems() {
         String j;
         j = "select a "

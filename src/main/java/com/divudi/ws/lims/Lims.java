@@ -241,7 +241,7 @@ public class Lims {
     private JSONObject constructPatientSampleJson(PatientSample ps) {
         JSONObject jSONObject = new JSONObject();
         jSONObject.put("name", ps.getPatient().getPerson().getName());
-        jSONObject.put("age", ps.getPatient().getPerson().getAge());
+        jSONObject.put("age", ps.getPatient().getPerson().getAgeAsString());
         jSONObject.put("sex", ps.getPatient().getPerson().getSex().toString());
         jSONObject.put("barcode", ps.getIdStr());
         jSONObject.put("insid", ps.getBill().getInsId());
@@ -542,7 +542,7 @@ public class Lims {
         }
         String temSQL;
 
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());

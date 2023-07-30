@@ -9,15 +9,15 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
                 <f:view>
 
                     <h:form>
 
-                        <h:panelGrid columns="2" styleClass="alignTop" >
+                        <h:panelGrid columns="1" styleClass="alignTop" >
                             <h:panelGrid columns="2" >
                                 <p:outputLabel value="From Date" ></p:outputLabel>
                                 <p:calendar id="calFromDate" value="#{stockHistoryController.fromDate}" pattern="dd MMMM yyyy" >
@@ -47,7 +47,7 @@
 
                             </h:panelGrid>
 
-                            <h:panelGrid columns="4" >
+                            <h:panelGrid columns="2" >
 
                                 <p:dataTable id="tblDates" rowIndexVar="i"
                                              value="#{stockHistoryController.pharmacyStockHistoryDays}" 
@@ -55,6 +55,7 @@
                                              rowKey="#{d}" selectionMode="single" 
                                              paginator="true" paginatorAlwaysVisible="false"
                                              rows="5"
+                                             class="w-100"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                              >
                                     <p:column headerText="History Availabe Days" >
@@ -64,7 +65,7 @@
                                     </p:column>
                                 </p:dataTable>
 
-                                <p:selectOneMenu value="#{stockHistoryController.departmentType}" >
+                                <p:selectOneMenu value="#{stockHistoryController.departmentType}" class="w-100" style="min-width: 300px">
                                     <f:selectItem itemLabel="Select Type" />
                                     <f:selectItems value="#{enumController.departmentType}" var="i" itemLabel="#{i.label}" itemValue="#{i}"  />
                                 </p:selectOneMenu>
@@ -72,7 +73,7 @@
                                 <p:commandButton id="btnHx" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithZero()}" 
                                                  value="Display History" process="@this :#{p:resolveFirstComponentWithId('tblDates',view).clientId}" update=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></p:commandButton>
                                                  
-                                <p:commandButton id="btnHx2" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithOutZero()}" 
+                                <p:commandButton id="btnHx2" ajax="false" action="#{stockHistoryController.fillStockHistoriesWithOutZero()}" class="w-100"
                                                  value="Display History(Stock With Out Zero)" process="@this :#{p:resolveFirstComponentWithId('tblDates',view).clientId}" update=":#{p:resolveFirstComponentWithId('tblHistories',view).clientId}" ></p:commandButton>
 
 

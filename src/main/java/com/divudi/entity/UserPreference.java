@@ -58,6 +58,8 @@ public class UserPreference implements Serializable {
     @ManyToOne
     Institution institution;
     boolean institutionSpecificItems=false;
+    @Lob
+    private String opdBillTemplate;
     private boolean institutionRestrictedBilling=false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
@@ -723,6 +725,14 @@ public class UserPreference implements Serializable {
 
     public void setThemeName(String themeName) {
         this.themeName = themeName;
+    }
+
+    public String getOpdBillTemplate() {
+        return opdBillTemplate;
+    }
+
+    public void setOpdBillTemplate(String opdBillTemplate) {
+        this.opdBillTemplate = opdBillTemplate;
     }
 
     

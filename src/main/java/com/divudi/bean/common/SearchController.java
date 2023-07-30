@@ -177,7 +177,7 @@ public class SearchController implements Serializable {
         bills = null;
         return "/reportInstitution/other_institution_bills";
     }
-    
+
     public String navigateToAnalytics() {
         bills = null;
         return "/reportInstitution/report_list";
@@ -232,15 +232,15 @@ public class SearchController implements Serializable {
                 + " and bs.bill.billType in :bt"
                 + " and type(bs.bill)=:class "
                 + " and ("
-                + "    lower(bs.bill.insId) like :txt "
-                + " or lower(bs.bill.deptId) like :txt "
-                + " or lower(bs.bill.referralNumber) like :txt "
-                + " or lower(bs.referenceBillSession.bill.insId) like :txt "
-                + " or lower(bs.referenceBillSession.bill.deptId) like :txt "
-                + " or lower(bs.referenceBillSession.bill.referralNumber) like :txt "
-                + " or lower(bs.bill.referenceBill.insId) like :txt "
-                + " or lower(bs.bill.referenceBill.deptId) like :txt "
-                + " or lower(bs.bill.referenceBill.referralNumber) like :txt "
+                + "    (bs.bill.insId) like :txt "
+                + " or (bs.bill.deptId) like :txt "
+                + " or (bs.bill.referralNumber) like :txt "
+                + " or (bs.referenceBillSession.bill.insId) like :txt "
+                + " or (bs.referenceBillSession.bill.deptId) like :txt "
+                + " or (bs.referenceBillSession.bill.referralNumber) like :txt "
+                + " or (bs.bill.referenceBill.insId) like :txt "
+                + " or (bs.bill.referenceBill.deptId) like :txt "
+                + " or (bs.bill.referenceBill.referralNumber) like :txt "
                 + " )"
                 + " order by bs.sessionDate, bs.serialNo ";
         HashMap hh = new HashMap();
@@ -269,6 +269,21 @@ public class SearchController implements Serializable {
         staff = null;
         item = null;
         makeListNull();
+    }
+
+    public void createPatientInvestigationsTableAllTest() {
+        Date startTime = new Date();
+
+        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
+                + " i join pi.billItem.bill b join b.patient.person p";
+
+        Map temMap = new HashMap();
+
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql,10);
+        checkRefundBillItems(patientInvestigations);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
+
     }
 
     public void createPatientInvestigationsTableLogin() {
@@ -313,7 +328,8 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("dep", getSessionController().getLoggedUser().getDepartment());
 
-        //System.err.println("Sql " + sql);
+        System.err.println("Sql " + sql);
+        System.out.println("temMap = " + temMap);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
@@ -4151,22 +4167,18 @@ public class SearchController implements Serializable {
     public void createPatientInvestigationsTable() {
         Date startTime = new Date();
 
-        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
-                + " i join pi.billItem.bill b join b.patient.person p where "
+        String sql = "select pi "
+                + " from PatientInvestigation pi "
+                + " join pi.investigation  i "
+                + " join pi.billItem.bill b "
+                + " join b.patient.person p "
+                + " where "
                 + " b.createdAt between :fromDate and :toDate  ";
 
-//        String sql = "select pi from PatientInvestigation pi where "
-//                + " pi.billItem.bill.createdAt between :fromDate and :toDate  ";
         Map temMap = new HashMap();
 
-//        if(webUserController.hasPrivilege("LabSearchBillLoggedInstitution")){
-//            //System.out.println("inside ins");
-//            sql+="and b.institution =:ins ";
-//            temMap.put("ins", getSessionController().getInstitution());
-//        }
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((p.name) like :patientName )";
-//            sql += " and  ((pi.billItem.bill.patient.person.name) like :patientName )";
+            sql += " and  (p.name like :patientName )";
             temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
         }
 
@@ -4176,12 +4188,12 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((p.phone) like :patientPhone )";
+            sql += " and  (p.phone like :patientPhone )";
             temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((i.name) like :itm )";
+            sql += " and  (i.name like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
@@ -4469,8 +4481,8 @@ public class SearchController implements Serializable {
                 + " join pi.billItem.bill b "
                 + " where "
                 + " b.createdAt between :fromDate and :toDate "
-                + " and b.cancelled=:c "
-                + " and pr.approved=:a "
+                //                + " and b.cancelled=:c "
+                //                + " and pr.approved=:a "
                 + " order by b.id";
 
         Map temMap = new HashMap();

@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/lab/administration.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+    <ui:define name="subcontent">
+        <h:form id="form"  >
+            <p:growl  />
+            <p:panel id="panIx"  >
+
+                <f:facet name="header" >
+                    <h:outputLabel value="List of Investigations"></h:outputLabel>
+                </f:facet>
+                <p:commandButton id="excelExport" ajax="false" value="Download for Export" class="m-2" icon="pi pi-file-excel">
+                    <p:dataExporter target="tbl" type="csv" fileName="List of All Investigations" />
+                </p:commandButton>
+
+                <p:dataTable id="tbl" 
+                             rowIndexVar="rowIndex" 
+                             value="#{investigationController.allIxs}" 
+                             var="ix" 
+                             rows="20"
+                             paginator="true"
+                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="20, 50, 100" 
+                             >
+                    <p:column headerText="Name" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Printing Name" sortBy="#{ix.printName}" filterBy="#{ix.printName}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.printName}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Full Name" sortBy="#{ix.fullName}" filterBy="#{ix.fullName}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.fullName}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Code" sortBy="#{ix.code}" filterBy="#{ix.code}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.code}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Category" sortBy="#{ix.category.name}" filterBy="#{ix.category.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Sample" sortBy="#{ix.sample.name}" filterBy="#{ix.sample.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.sample.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Container" sortBy="#{ix.investigationTube.name}" filterBy="#{ix.investigationTube.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.investigationTube.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Analyzer" sortBy="#{ix.machine.name}" filterBy="#{ix.machine.name}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.machine.name}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Priority" sortBy="#{ix.priority}" filterBy="#{ix.priority}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.priority}" ></h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Report Template Type" sortBy="#{ix.reportType}" filterBy="#{ix.reportType}" filterMatchMode="contains">
+                        <h:outputLabel value="#{ix.reportType}" ></h:outputLabel>
+                    </p:column>
+                     <p:column headerText="Report Template" sortBy="#{ix.reportFormat.name}" filterBy="#{ix.reportFormat.name}" filterMatchMode="contains">
+                         <h:outputLabel value="#{ix.reportFormat.name}" ></h:outputLabel>
+                    </p:column>
+                    
+                    <p:column headerText="Price" sortBy="#{ix.total}" style="text-align: right; padding-right: 20px;">
+                        <h:outputLabel value="#{ix.total}" >
+                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                        </h:outputLabel>
+                    </p:column>
+                    <p:column headerText="Actions">
+                        <p:commandButton 
+                            class="btn btn-primary m-1" 
+                            ajax="false" 
+                            icon="bi bi-gear-fill" 
+                            action="#{investigationController.toManageInvestigationDetails()}"
+                            title="Manage">
+                            <f:setPropertyActionListener value="#{ix}" target="#{investigationController.current}"></f:setPropertyActionListener>
+                        </p:commandButton>
+                        <p:commandButton 
+                            id="btnDelete" 
+                            ajax="false" 
+                            class="btn btn-primary m-1"
+                            onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                        return false;" 
+                            action="#{investigationController.delete()}" 
+                            icon="bi bi-trash-fill" 
+                            title="Delete">
+                            <f:setPropertyActionListener value="#{ix}" target="#{investigationController.current}"></f:setPropertyActionListener>
+                        </p:commandButton>
+                    </p:column>
+
+
+                </p:dataTable>
+                
+                
+                
+            </p:panel>
+        </h:form>
+
+
+
+
+    </ui:define>
+
+</ui:composition>

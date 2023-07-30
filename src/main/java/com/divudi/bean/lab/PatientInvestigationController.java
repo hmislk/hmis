@@ -125,6 +125,7 @@ public class PatientInvestigationController implements Serializable {
     private ItemForItemController itemForItemController;
     @Inject
     private SmsController smsController;
+    
 
     /**
      * Class Variables
@@ -145,6 +146,7 @@ public class PatientInvestigationController implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     Date toDate;
+    private int activeIndexOfManageInvestigation;
 
     boolean showSamplingPagination;
     List<Investigation> investSummery;
@@ -413,7 +415,7 @@ public class PatientInvestigationController implements Serializable {
         String j = "select ps from PatientSample ps "
                 + "where ps.readyTosentToAnalyzer=true "
                 + " and ps.sentToAnalyzer=false "
-                + " and lower(ps.machine.name) like :ma ";
+                + " and (ps.machine.name) like :ma ";
 
         Map m = new HashMap();
         m.put("ma", "%dimension%");
@@ -1702,6 +1704,8 @@ public class PatientInvestigationController implements Serializable {
         }
         return patientSamples;
     }
+    
+    
 
     public void setPatientSamples(List<PatientSample> patientSamples) {
         this.patientSamples = patientSamples;
@@ -1845,6 +1849,14 @@ public class PatientInvestigationController implements Serializable {
 
     public PatientReportItemValueFacade getPatientReportItemValueFacade() {
         return patientReportItemValueFacade;
+    }
+
+    public int getActiveIndexOfManageInvestigation() {
+        return activeIndexOfManageInvestigation;
+    }
+
+    public void setActiveIndexOfManageInvestigation(int activeIndexOfManageInvestigation) {
+        this.activeIndexOfManageInvestigation = activeIndexOfManageInvestigation;
     }
 
     /**
