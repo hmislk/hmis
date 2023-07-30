@@ -216,6 +216,10 @@ public class Person implements Serializable {
     }
 
     public String getAgeAsString() {
+        calAgeFromDob();
+        if(ageAsString==null||ageAsString.trim().equals("")){
+            ageAsString="Not Recorded";
+        }
         return ageAsString;
     }
 
