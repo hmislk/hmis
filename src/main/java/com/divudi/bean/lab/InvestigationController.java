@@ -142,17 +142,23 @@ public class InvestigationController implements Serializable {
     private Category categoryForFormat;
     private UploadedFile file;
     private StreamedContent downloadingFile;
+    private int adminTabIndex;
 
     public String navigateToManageInvestigationForEmr() {
         return "/emr/admin/investigations";
     }
 
-    public String navigateToAddInvestigationForAdmin() {
+    public String navigateToAddInvestigationForLab() {
         current = new Investigation();
-        return "/admin/items/investigation_single";
+        return "/lab/manage_investigation";
+    }
+    
+    public String navigateToAddInvestigationForLabForExport() {
+        current = new Investigation();
+        return "/lab/investigation_list_for_export";
     }
 
-    public String navigateToManageInvestigationForAdmin() {
+    public String navigateToManageInvestigationForLab() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
             return "";
@@ -160,6 +166,8 @@ public class InvestigationController implements Serializable {
         return "/lab/manage_investigation";
     }
 
+    
+    
     public String navigateToManageValueSetsForAdmin() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -405,7 +413,7 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return investigationItemController.toEditInvestigationFormat();
+        return investigationItemController.toEditInvestigationFormatMultiple();
     }
 
     public String navigateToEditPathologyFormat() {
@@ -1384,6 +1392,8 @@ public class InvestigationController implements Serializable {
         return investigationWithSelectedFormat;
     }
 
+    
+    
     public void setInvestigationWithSelectedFormat(List<Investigation> investigationWithSelectedFormat) {
         this.investigationWithSelectedFormat = investigationWithSelectedFormat;
     }
@@ -1411,6 +1421,14 @@ public class InvestigationController implements Serializable {
 
     public void setDownloadingFile(StreamedContent downloadingFile) {
         this.downloadingFile = downloadingFile;
+    }
+
+    public int getAdminTabIndex() {
+        return adminTabIndex;
+    }
+
+    public void setAdminTabIndex(int adminTabIndex) {
+        this.adminTabIndex = adminTabIndex;
     }
 
     public class InvestigationWithInvestigationItems {

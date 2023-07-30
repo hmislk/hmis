@@ -335,7 +335,7 @@
                                                                          oncomplete="PF('dlgContents').hide()" 
                                                                          ></p:commandButton>
                                                         <p:textEditor   height="600" id="lblIiText"  secure='false' 
-                                                                   value="#{investigationItemController.current.htmltext}" >
+                                                                        value="#{investigationItemController.current.htmltext}" >
 
                                                         </p:textEditor >
 
@@ -556,45 +556,33 @@
 
 
                         <p:panel id="pPreview"   >
-                            <f:facet name="header" >
-                                <p:panelGrid columns="5" >
-                                    <p:commandLink ajax="false" value="Print" >
-                                        <p:printer target="divPrint" />
-                                    </p:commandLink>
-                                    <p:spacer height="1" width="30" ></p:spacer>
-                                    <p:commandLink ajax="false" action="/lab/administration" value="Back to Ix Administration" ></p:commandLink>
-                                    <p:commandLink ajax="false" action="#{investigationController.toManageInvestigationDetails()}" value="Back to Ix Details" ></p:commandLink>
-                                    <p:commandLink ajax="false" action="/lab/investigation_format_move_all" value="Edit All Items" ></p:commandLink>
-                                </p:panelGrid>
 
-
-                                <p:tooltip for="btnModes" >
-                                    <p>
-                                        <b>
-                                            Press Following Keys for Making Changes
-                                        </b>
-                                        <br/>
-                                        Up Arrow &#09;	-&#09;	Move Up <br/>
-                                        Down Arrow&#09;	-&#09;	Move Down<br/>
-                                        Left Arrow&#09;	-&#09;	Move Left<br/>
-                                        Right Arrow&#09;	-&#09;	Move Right<br/>
-                                        d&#09;&#09;		-&#09;       delete<br/>
-                                        b&#09;&#09;		-&#09;	bold<br/>
-                                        i&#09;&#09;		-&#09;	italic<br/>
-                                        n&#09;&#09;		-&#09;	remove bold and italic<br/>
-                                        r&#09;&#09;		-&#09;	align right<br/>
-                                        l&#09;&#09;		-&#09;	align left<br/>
-                                        c&#09;&#09;               -&#09;	align centre<br/>
-                                        j&#09;&#09;		-&#09;	justified<br/>
-                                        g&#09;&#09;		-&#09;	grow font<br/>
-                                        s&#09;&#09;		-&#09;	shrink font<br/>
-                                        w&#09;&#09;		-&#09;	widen<br/>
-                                        o&#09;&#09;		-&#09;	narrower<br/>
-                                        t&#09;&#09;		-&#09;	taller<br/>
-                                        h&#09;&#09;		-&#09;	shorter<br/>
-                                    </p>
-                                </p:tooltip>
-                            </f:facet>
+                            <p:tooltip for="btnModes" >
+                                <p>
+                                    <b>
+                                        Press Following Keys for Making Changes
+                                    </b>
+                                    <br/>
+                                    Up Arrow &#09;	-&#09;	Move Up <br/>
+                                    Down Arrow&#09;	-&#09;	Move Down<br/>
+                                    Left Arrow&#09;	-&#09;	Move Left<br/>
+                                    Right Arrow&#09;	-&#09;	Move Right<br/>
+                                    d&#09;&#09;		-&#09;       delete<br/>
+                                    b&#09;&#09;		-&#09;	bold<br/>
+                                    i&#09;&#09;		-&#09;	italic<br/>
+                                    n&#09;&#09;		-&#09;	remove bold and italic<br/>
+                                    r&#09;&#09;		-&#09;	align right<br/>
+                                    l&#09;&#09;		-&#09;	align left<br/>
+                                    c&#09;&#09;               -&#09;	align centre<br/>
+                                    j&#09;&#09;		-&#09;	justified<br/>
+                                    g&#09;&#09;		-&#09;	grow font<br/>
+                                    s&#09;&#09;		-&#09;	shrink font<br/>
+                                    w&#09;&#09;		-&#09;	widen<br/>
+                                    o&#09;&#09;		-&#09;	narrower<br/>
+                                    t&#09;&#09;		-&#09;	taller<br/>
+                                    h&#09;&#09;		-&#09;	shorter<br/>
+                                </p>
+                            </p:tooltip>
 
                             <p:selectOneButton id="btnModes" value="#{investigationItemController.editMode}" >
                                 <f:selectItem itemLabel="View Mode" itemValue="View_Mode" ></f:selectItem>
@@ -613,7 +601,7 @@
 
                                     <ui:repeat value="#{investigationItemController.items}" var="myIi" >
                                         <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
-                                            
+
                                             <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'}; border: 1px solid lightblue; " >
                                                 <h:outputLabel id="lblViewModeIi" 
                                                                rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
