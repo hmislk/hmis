@@ -161,7 +161,7 @@ public class InvestigationItemController implements Serializable {
         }
     }
 
-     public List<InvestigationItem> completeIxValues(String qry) {
+    public List<InvestigationItem> completeIxValues(String qry) {
         List<InvestigationItem> iivs;
         String sql;
         Map m = new HashMap();
@@ -171,13 +171,13 @@ public class InvestigationItemController implements Serializable {
                 + " and (i.name) like :qry";
         m.put("vt", InvestigationItemType.Value);
         m.put("qry", "%" + qry.toUpperCase() + "%");
-        iivs = getFacade().findByJpql(sql,m);
+        iivs = getFacade().findByJpql(sql, m);
         if (iivs == null) {
             iivs = new ArrayList<>();
         }
         return iivs;
     }
-     
+
     public void previousInvestigation() {
         Investigation thisOne = getCurrentInvestigation();
         for (int i = 0; i < investigationController.getItems().size(); i++) {
@@ -896,6 +896,25 @@ public class InvestigationItemController implements Serializable {
         }
         return "/lab/investigation_format";
     }
+    
+    public String uploadExcelToCreateInvestigations() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream inputStream = file.getInputStream();
+            String text = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
+
+            convertJsonToIx(text);
+
+        } catch (IOException ex) {
+        }
+        return "/lab/uploaded_investigations";
+    }
 
     private void convertJsonToIx(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
@@ -1575,6 +1594,14 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    public String navigateBackToManageInvestigation() {
+        if (currentInvestigation == null) {
+            return "";
+        }
+        investigationController.setCurrent(currentInvestigation);
+        return investigationController.navigateToManageInvestigationForLab();
+    }
+
     public void addNewFlag() {
         if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
@@ -1727,6 +1754,15 @@ public class InvestigationItemController implements Serializable {
         }
         listInvestigationItem();
         return "/lab/investigation_format";
+    }
+    
+    public String toEditInvestigationFormatMultiple() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        listInvestigationItem();
+        return "/lab/investigation_format_multiple";
     }
 
     public ReportItemFacade getRiFacade() {
