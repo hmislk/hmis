@@ -20,14 +20,15 @@
 
 
                         <p:panel header="Add New User" >
-
-
-                            <p:panelGrid columns="3" style="text-align: center;" >
-                                <p:commandButton id="btnCreateUser" value="Create User" action="#{webUserController.saveNewUser()}" ajax="false" >
+                            <f:facet name="header" >
+                                <h:outputText value="Add New User" ></h:outputText>
+                                <p:commandButton
+                                    style="float: right;"
+                                    id="btnCreateUser" 
+                                    value="Save User" 
+                                    action="#{webUserController.saveNewUser()}" ajax="false" >
                                 </p:commandButton>
-                                <p:commandButton  value="Back to Manage User" action="#{webUserController.backToAdminManageUsers()}" ajax="false" ></p:commandButton>
-                            </p:panelGrid>
-
+                            </f:facet>
 
                             <p:tabView >
                                 <p:tab title="Basic" >
@@ -49,11 +50,11 @@
                                             <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
                                         </p:selectOneMenu>
                                         <p:outputLabel for="txtAddress" value="Address"
-                                                       
+
                                                        rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <p:inputText autocomplete="off" 
                                                      id="txtAddress"
-                                                      style="min-width: 700px"
+                                                     style="min-width: 700px"
                                                      required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                      value="#{webUserController.current.webUserPerson.address}"
                                                      requiredMessage="Please enter an address."></p:inputText>

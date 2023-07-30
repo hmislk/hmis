@@ -115,7 +115,9 @@
                     <div class="content">
                         <div class="inner">
                             <h2>#{webContentController.findSingleText('about')}</h2>
-                            <p>#{webContentController.findSingleText('about_details')}</p>
+                            <p>
+                                <h:outputLabel value="#{webContentController.findSingleText('about_details')}" escape="false" ></h:outputLabel>
+                            </p>
                         </div>
                     </div>
                 </section>
