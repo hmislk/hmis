@@ -88,7 +88,7 @@ public class InstitutionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/institution";
+        return "/admin/institutions/institution";
     }
 
     public String deleteInstitution() {
