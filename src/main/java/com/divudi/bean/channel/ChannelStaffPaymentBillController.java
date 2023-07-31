@@ -451,7 +451,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public void calculateTotalPay() {
         totalPaying = 0;
         for (BillFee f : payingBillFees) {
-            System.out.println("totalPaying before " + totalPaying);
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
         }
     }
@@ -645,7 +644,6 @@ public class ChannelStaffPaymentBillController implements Serializable {
 
     public void settleBill() {
         System.out.println("settleBill");
-        System.out.println("dueBillFees = " + dueBillFees);
         if (errorCheck()) {
             return;
         }

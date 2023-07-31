@@ -1185,9 +1185,7 @@ public class OpdBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
-        System.out.println("bills = " + bills);
         if (bills != null) {
-            System.out.println("bills not null");
             if (!bills.isEmpty()) {
                 for (Bill tb : bills) {
                     tb.setBillTemplate(sessionController.getDepartmentPreference().getOpdBillTemplate());

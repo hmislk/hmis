@@ -162,7 +162,6 @@ public class WebContentController implements Serializable {
             return ;
         }
         setLanguage(selectedlanguage);
-        System.out.println("getLanguage() = " + getLanguage());
     }
     
     public WebContent findSingleWebContent(String word) {

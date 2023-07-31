@@ -185,7 +185,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                 landingPage += "themes/";
                 landingPage += getApplicationPreference().getThemeName() + "/index.xhtml";
             }
-            System.out.println("3 landingPage = " + landingPage);
 
         }
         return landingPage;
@@ -260,7 +259,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         try {
             context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
         } catch (IOException e) {
-            System.out.println("e = " + e);
         }
     }
 

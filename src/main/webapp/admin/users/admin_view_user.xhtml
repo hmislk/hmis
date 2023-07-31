@@ -1,103 +1,136 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
-      template="/resources/template/template.xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui">
-
     <h:body >
-
-        <ui:composition template="admin_manage_users.xhtml">
-
+        <ui:composition template="/admin/users/admin_manage_users.xhtml">
             <ui:define name="subcontent">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>
-
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                     <h:form  >
-                        <p:panelGrid columns="5" >
-                            <p:outputLabel value="Search Users" ></p:outputLabel>
-                            <p:inputText autocomplete="off" id="txtSearch" value="#{webUserController.selectText}" >
-                                <f:ajax execute="txtSearch" render="lstSelect" event="keyup" listener="#{webUserController.createTable()}" />
-                            </p:inputText>
-                            <p:commandButton ajax="false" value="List All Users" action="#{webUserController.createTable()}"/>
-                            <p:commandButton ajax="false" value="Remove Selected" 
-                                             action="#{webUserController.removeSelectedItems()}"
-                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                         return false;"
-                                             />
-                        </p:panelGrid>
+                        <div class="container-fluid p-2" >
+                            <div class="row" >
+                                <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
+                                    <p:commandButton   
+                                        ajax="false" 
+                                        value="Remove" 
+                                        class="m-1"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;" 
+                                        action="#{webUserController.removeUser}">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        rendered="false"
+                                        class="m-1"
+                                        value="Remove Selected" 
+                                        action="#{webUserController.removeMultipleUsers()}"
+                                        onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                    return false;"
+                                        />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"  
+                                        value="Manage User" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToEditUser()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"  
+                                        value="Manage Password" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToEditPasswordByAdmin()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Staff" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToManageStaff()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Privileges" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToManagePrivileges()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage User Departments" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToManageDepartments()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"  
+                                        class="m-1"
+                                        value="Manage User Payment Schemes" 
+                                        action="#{webUserController.navigateToManagePaymentSchemes()}"
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Signature" 
+                                        class="m-1"
+                                        action="#{webUserController.toManageSignature()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Dashboards" 
+                                        action="#{webUserController.toManageDashboards()}" 
+                                        ajax="false"
+                                        class="m-1"/>
 
-                        <p:panelGrid columns="2" styleClass="alignTop" >
-                            <p:panelGrid id="actions" columns="1"  >
-                                <p:commandButton styleClass="linkButton"  ajax="false" value="Remove" onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                            return false;" action="#{webUserController.removeUser}">
-                                </p:commandButton>
-                                <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage User" action="#{webUserController.toManageUser()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}" styleClass="linkButton" value="Manage Password" action="#{webUserController.toManagePassword()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Staff" action="#{webUserController.toManageStaff()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Privileges" action="#{webUserController.toManagePrivileges()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Loggable Departments" action="#{webUserController.toManageDepartments()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Payment Schemes" action="#{webUserController.toManagePaymentSchemes()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Signature" action="#{webUserController.toManageSignature()}" ajax="false" />
-                                <p:commandButton disabled="#{webUserController.selected == null}"  styleClass="linkButton"  value="Manage Dashboards" action="#{webUserController.toManageDashboards()}" ajax="false" />
+                                </h:panelGroup>
+                                <div class="col-md-9" >
 
-                            </p:panelGrid>
+                                    <ui:insert name="users" >
+                                        <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" 
+                                                     var="u"
+                                                     rowKey="#{u.id}"
+                                                     selection="#{webUserController.selected}" 
+                                                     rows="100" 
+                                                     selectionMode="single"
+                                                     paginator="#{commonController.renderPaginator(webUserController.selectedItems, 10)}"
+                                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     rowsPerPageTemplate="10,50,100,500"
+                                                     >
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                            <p:column headerText="Institution" sortBy="#{u.institution.name}" filterBy="#{u.institution.name}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.institution.name}"/>
+                                            </p:column>
 
-                            <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" var="u"
-                                         rowKey="#{u.id}"
-                                         selection="#{webUserController.selected}" 
-                                         rows="100" selectionMode="single"
-                                         paginator="#{commonController.renderPaginator(webUserController.selectedItems, 10)}"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="10,50,100,500"
-                                         >
-                                <f:facet name="header" >
-                                    <h:outputLabel value="List of All Users" />
-                                </f:facet>
-                                <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
-                                <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
-                                <p:column headerText="Institution" sortBy="#{u.institution.name}" filterBy="#{u.institution.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.institution.name}"/>
-                                </p:column>
+                                            <p:column headerText="Department"  sortBy="#{u.department.name}" filterBy="#{u.department.name}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.department.name}"/>
+                                            </p:column>
 
-                                <p:column headerText="Department"  sortBy="#{u.department.name}" filterBy="#{u.department.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.department.name}"/>
-                                </p:column>
+                                            <p:column headerText="Users Full Name" sortBy="#{u.webUserPerson.name}" filterBy="#{u.webUserPerson.name}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.webUserPerson.name}"/>
+                                            </p:column>
 
-                                <p:column headerText="Users Full Name" sortBy="#{u.webUserPerson.name}" filterBy="#{u.webUserPerson.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.webUserPerson.name}"/>
-                                </p:column>
-
-                                <p:column headerText="User Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.name}"/>
-                                </p:column>
-                                <p:column headerText="Staff Name" sortBy="#{u.staff.person.name}" filterBy="#{u.staff.person.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.staff.person.name}"/>
-                                </p:column>
-                                <p:column headerText="Staff Code" sortBy="#{u.staff.code}" filterBy="#{u.staff.code}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
-                                </p:column>
-                                <p:column headerText="Staff Specility" sortBy="#{u.staff.speciality.name}" filterBy="#{u.staff.speciality.name}" filterMatchMode="contains">
-                                    <h:outputLabel value="#{u.staff.speciality.name}" rendered="#{u.staff.speciality ne null}"/>
-                                </p:column>
-                            </p:dataTable>
-
-                        </p:panelGrid>
+                                            <p:column headerText="User Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Staff Name" sortBy="#{u.staff.person.name}" filterBy="#{u.staff.person.name}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.staff.person.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Staff Code" sortBy="#{u.staff.code}" filterBy="#{u.staff.code}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
+                                            </p:column>
+                                            <p:column headerText="Staff Specility" sortBy="#{u.staff.speciality.name}" filterBy="#{u.staff.speciality.name}" filterMatchMode="contains">
+                                                <h:outputLabel value="#{u.staff.speciality.name}" rendered="#{u.staff.speciality ne null}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </ui:insert>
 
 
-
-
+                                </div>
+                            </div>
+                        </div>
                     </h:form>
-
                 </h:panelGroup>
-
             </ui:define>
-
         </ui:composition>
-
     </h:body>
 </html>
