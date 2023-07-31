@@ -61,7 +61,6 @@ public class DesignComponentController implements Serializable {
     }
     
     public String navigateToAddDesignComponent(){
-        System.out.println("Hello");
         current= new DesignComponent();
         return "/webcontent/design_component";
     }

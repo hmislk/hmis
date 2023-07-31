@@ -16,32 +16,22 @@
                                 <p:ajax process="@this"></p:ajax>
                                 <p:tab title="Manage" >
                                     <div class="d-grid gap-2">
-
                                         <p:commandButton class="btn btn-primary"
                                                          action="#{institutionController.toAddNewInstitution()}" 
                                                          icon="bi bi-building-fill-add" value="Add New Institution">
-
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{institutionController.toListInstitutions()}" 
                                                          icon="bi bi-building-fill-add" value="List Institutions">
-
                                         </p:commandButton>
-
-
                                         <p:commandButton styleClass="linkButton"  
                                                          action="#{departmentController.toAddNewDepartment()}" 
                                                          icon="bi bi-building-fill-add" value="Add New Department">
-
-
                                         </p:commandButton>
                                         <p:commandButton styleClass="linkButton" 
                                                          action="#{departmentController.toListDepartments()}" 
                                                          icon="bi bi-building-fill-add" value="List Departments">
-
                                         </p:commandButton>
-
-
                                         <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}" />

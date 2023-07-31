@@ -1747,7 +1747,6 @@ public class HrReportController implements Serializable {
                 getSalaryCycle().getSalaryToDate(),
                 getReportKeyWord().getStaff(),
                 Arrays.asList(new DayType[]{DayType.MurchantileHoliday, DayType.Poya}));
-        System.err.println("Sh Holiday " + staffShiftsHoliday);
         staffShiftsDayOff = humanResourceBean.fetchStaffShiftAllowance(getSalaryCycle().getSalaryFromDate(),
                 getSalaryCycle().getSalaryToDate(),
                 getReportKeyWord().getStaff(),

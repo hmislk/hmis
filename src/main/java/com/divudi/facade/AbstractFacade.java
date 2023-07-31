@@ -35,12 +35,11 @@ public abstract class AbstractFacade<T> {
     }
     
     public T findFirstByJpql(String jpql) {
-        System.out.println("findFirstByJpql");
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(1);
         try {
             T result = qry.getSingleResult();
-            System.out.println("result = " + result);            ;
+ ;
             return result;
         } catch (Exception e) {
             return null;
@@ -533,10 +532,8 @@ public abstract class AbstractFacade<T> {
             } else {
                 qry.setParameter(pPara, pVal);
             }
-//            //////// // System.out.println("Parameter " + pPara + "\tVal" + pVal);
         }
         qry.setMaxResults(maxRecords);
-//        qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
         return qry.getResultList();
     }
 

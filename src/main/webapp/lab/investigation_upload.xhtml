@@ -42,8 +42,8 @@
 
 
                     <p:panel header="Upload Format" >
-                        <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
-                        <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.uploadJsonToCreateAnInvestigation}"  />
+                        <p:fileUpload value="#{investigationController.file}" mode="simple"  />
+                        <p:commandButton value="Submit" ajax="false" action="#{investigationController.uploadExcelToCreateAnInvestigations()}"  />
                     </p:panel>
                 </h:form>
 

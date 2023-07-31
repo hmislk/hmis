@@ -42,7 +42,6 @@ import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -1236,8 +1235,7 @@ public class BillController implements Serializable {
             }
         }
     }
-    @EJB
-    private BatchBillFacade batchBillFacade;
+
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
@@ -1969,7 +1967,7 @@ public class BillController implements Serializable {
     }
     
     public String toOpdBilling(){
-        return "/opd_bill";
+        return "/opd/opd_bill";
     }
 
     public void prepareNewBillForMember() {
@@ -2453,13 +2451,6 @@ public class BillController implements Serializable {
 
     }
 
-    public BatchBillFacade getBatchBillFacade() {
-        return batchBillFacade;
-    }
-
-    public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
-        this.batchBillFacade = batchBillFacade;
-    }
 
     public BillSearch getBillSearch() {
         return billSearch;

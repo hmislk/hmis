@@ -418,7 +418,6 @@ public class BillSearch implements Serializable {
     
     public String listBillsFromBillTransactionTypeSummery() {
         System.out.println("listBillsFromBillTransactionTypeSummery");
-        System.out.println("billSummery = " + billSummery);
         if (billSummery == null) {
             JsfUtil.addErrorMessage("No Summary Selected");
             return "";
@@ -2513,31 +2512,32 @@ public class BillSearch implements Serializable {
         this.creditCompany = creditCompany;
     }
 
-//    public void setBillSearch(Bill bill) {
-//
-//        recreateModel();
-//        this.bill = bill;
-//        paymentMethod = bill.getPaymentMethod();
-//        createBillItemsForRetire();
-//        createBillFees();
-//        createBillItemsAll();
-//        if (getBill().getBillType() == BillType.CollectingCentreBill) {
-//            createCollectingCenterfees(getBill());
-//
-//        }
-//        if (getBill().getRefundedBill() != null) {
-//            bills = new ArrayList<>();
-//            String sql;
-//            Map m = new HashMap();
-//            sql = "Select b from Bill b where "
-//                    + " b.billedBill.id=:bid";
-//            m.put("bid", getBill().getId());
-//            bills = getBillFacade().findByJpql(sql, m);
-//            for (Bill b : bills) {
-//                createCollectingCenterfees(b);
-//            }
-//        }
-//    }
+    public void setBillSearch(Bill bill) {
+        recreateModel();
+        this.bill = bill;
+        paymentMethod = bill.getPaymentMethod();
+        createBillItemsForRetire();
+        createBillFees();
+        createBillItemsAll();
+        if (getBill().getBillType() == BillType.CollectingCentreBill) {
+            createCollectingCenterfees(getBill());
+
+        }
+        if (getBill().getRefundedBill() != null) {
+            bills = new ArrayList<>();
+            String sql;
+            Map m = new HashMap();
+            sql = "Select b from Bill b where "
+                    + " b.billedBill.id=:bid";
+            m.put("bid", getBill().getId());
+            bills = getBillFacade().findByJpql(sql, m);
+            for (Bill b : bills) {
+                createCollectingCenterfees(b);
+            }
+        }
+    }
+    
+    
     public void createCollectingCenterfees(Bill b) {
         AgentHistory ah = new AgentHistory();
         if (b.getCancelledBill() != null) {

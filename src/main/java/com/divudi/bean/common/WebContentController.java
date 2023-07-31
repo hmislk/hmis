@@ -46,6 +46,7 @@ public class WebContentController implements Serializable {
     private WebContent selected;
     private List<WebContent> items = null;
     private WebLanguage language;
+    private WebLanguage selectedlanguage;
     String page;
 
     public String toHome() {
@@ -106,6 +107,8 @@ public class WebContentController implements Serializable {
         selected.setType(WebContentType.Image);
         return toEditWebContent();
     }
+    
+    
 
     public String toEditWebContent() {
         if (selected == null) {
@@ -151,6 +154,16 @@ public class WebContentController implements Serializable {
         return "/webcontent/web_contents";
     }
 
+    public void makeSelectedLanguageAsDisplayLanguage(){
+        System.out.println("makeSelectedLanguageAsDisplayLanguage");
+        System.out.println("selectedlanguage = " + selectedlanguage);
+        if(selectedlanguage==null){
+            JsfUtil.addErrorMessage("No Language Selected");
+            return ;
+        }
+        setLanguage(selectedlanguage);
+    }
+    
     public WebContent findSingleWebContent(String word) {
         return findSingleWebContent(word, getLanguage());
     }
@@ -161,15 +174,17 @@ public class WebContentController implements Serializable {
         HashMap hm = new HashMap();
         sql = "select c from WebContent c "
                 + " where c.retired=:ret "
+                + " and c.webLanguage=:wl "
                 + " and c.name=:q ";
         hm.put("q", word);
+        hm.put("wl", lang);
         hm.put("ret", false);
         list = getFacade().findFirstByJpql(sql, hm);
         return list;
     }
 
     public String findSingleText(String word) {
-        WebContent wc = findSingleWebContent(word, language);
+        WebContent wc = findSingleWebContent(word, getLanguage());
         if (wc == null || getLanguage() == null) {
             return word;
         }
@@ -340,6 +355,16 @@ public class WebContentController implements Serializable {
     public String navigateToManageWeb(){
         return "/webcontent/index";
     }
+
+    public WebLanguage getSelectedlanguage() {
+        return selectedlanguage;
+    }
+
+    public void setSelectedlanguage(WebLanguage selectedlanguage) {
+        this.selectedlanguage = selectedlanguage;
+    }
+    
+    
 
     /**
      *

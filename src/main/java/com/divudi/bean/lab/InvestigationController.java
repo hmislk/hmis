@@ -142,9 +142,61 @@ public class InvestigationController implements Serializable {
     private Category categoryForFormat;
     private UploadedFile file;
     private StreamedContent downloadingFile;
+    private int adminTabIndex;
 
     public String navigateToManageInvestigationForEmr() {
         return "/emr/admin/investigations";
+    }
+
+    public String navigateToAddInvestigationForLab() {
+        current = new Investigation();
+        return "/lab/manage_investigation";
+    }
+    
+    public String navigateToAddInvestigationForLabForExport() {
+        current = new Investigation();
+        return "/lab/investigation_list_for_export";
+    }
+
+    public String navigateToManageInvestigationForLab() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        return "/lab/manage_investigation";
+    }
+
+    
+    
+    public String navigateToManageValueSetsForAdmin() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        return "/lab/value_sets";
+    }
+    
+    public String navigateToManageFlagsForLab() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        return "/lab/flags";
+    }
+    
+    
+
+    public String navigateToViewInvestigationForAdmin() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return "";
+        }
+        return "/admin/items/investigation_single";
+    }
+
+    public String navigateToListInvestigationsForAdmin() {
+        fillItems();
+        return "/admin/items/investigation_list";
     }
 
     public String toAddManyIx() {
@@ -271,6 +323,20 @@ public class InvestigationController implements Serializable {
         }
         return "/lab/investigation_format";
     }
+    
+    public String uploadExcelToCreateAnInvestigations() {
+        //file means private UploadedFile file;
+        if (file == null) {
+            JsfUtil.addErrorMessage("No file");
+            return "";
+        }
+        try {
+            InputStream inputStream = file.getInputStream();
+            
+        } catch (IOException ex) {
+        }
+        return "";
+    }
 
     public void changeIxInstitutionAccordingToDept() {
         List<Investigation> ixs = getFacade().findAll(true);
@@ -299,7 +365,7 @@ public class InvestigationController implements Serializable {
         }
     }
 
-    public String toEditReportFormat() {
+    public String navigateToEditFormatSingle() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
@@ -312,11 +378,10 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
-
         return investigationItemController.toEditInvestigationFormat();
     }
 
-    public String toListReportItems() {
+    public String navigateToManageReportComponents() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
@@ -345,10 +410,10 @@ public class InvestigationController implements Serializable {
         if (current.getReportedAs() != null) {
             current = (Investigation) current.getReportedAs();
         }
-        return "";
+        return toManageInvestigationDetails();
     }
 
-    public String toEditReportFormatMoveAll() {
+    public String navigateToEditFormatMultiple() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
@@ -362,10 +427,18 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return investigationItemController.toEditInvestigationFormat();
+        return investigationItemController.toEditInvestigationFormatMultiple();
     }
 
-    public String toEditReportCalculations() {
+    public String navigateToEditPathologyFormat() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Please select investigation");
+            return "";
+        }
+        return "/lab/pathology_format";
+    }
+
+    public String navigateToManageCalculations() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
@@ -381,7 +454,7 @@ public class InvestigationController implements Serializable {
         return "/lab/calculation";
     }
 
-    public String toReplaceableIxs() {
+    public String navigateToReplaceableInvestigations() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
@@ -397,7 +470,7 @@ public class InvestigationController implements Serializable {
         return "/lab/replaceable_ix";
     }
 
-    public String toEditFees() {
+    public String navigateToManageFees() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
@@ -408,7 +481,7 @@ public class InvestigationController implements Serializable {
         }
         itemFeeManager.setItem(current);
         itemFeeManager.fillFees();
-        return "/common/manage_item_fees";
+        return "/lab/manage_fees";
     }
 
     public void listDeletedIxs() {
@@ -472,12 +545,11 @@ public class InvestigationController implements Serializable {
         items = null;
     }
 
-    public String listAllIxs() {
+    public void listAllIxs() {
         String sql;
         sql = "Select i from Investigation i where i.retired=false ";
         sql += " order by i.name";
         allIxs = getFacade().findBySQL(sql);
-        return "";
     }
 
     public String listFilteredIxs() {
@@ -1079,6 +1151,11 @@ public class InvestigationController implements Serializable {
         return "/lab/investigation";
     }
 
+    public String navigateToListInvestigation() {
+        listAllIxs();
+        return "/lab/investigation_list";
+    }
+
     public void prepareAdd() {
         current = new Investigation();
         current.setInwardChargeType(InwardChargeType.Laboratory);
@@ -1142,7 +1219,7 @@ public class InvestigationController implements Serializable {
         if (getCurrent().getFullName() == null || getCurrent().getFullName().trim().equals("")) {
             getCurrent().setFullName(getCurrent().getName());
         }
-         if (getCurrent().getCode() == null || getCurrent().getCode().trim().equals("")) {
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().equals("")) {
             getCurrent().setCode(getCurrent().getName());
         }
 
@@ -1329,6 +1406,8 @@ public class InvestigationController implements Serializable {
         return investigationWithSelectedFormat;
     }
 
+    
+    
     public void setInvestigationWithSelectedFormat(List<Investigation> investigationWithSelectedFormat) {
         this.investigationWithSelectedFormat = investigationWithSelectedFormat;
     }
@@ -1356,6 +1435,14 @@ public class InvestigationController implements Serializable {
 
     public void setDownloadingFile(StreamedContent downloadingFile) {
         this.downloadingFile = downloadingFile;
+    }
+
+    public int getAdminTabIndex() {
+        return adminTabIndex;
+    }
+
+    public void setAdminTabIndex(int adminTabIndex) {
+        this.adminTabIndex = adminTabIndex;
     }
 
     public class InvestigationWithInvestigationItems {
@@ -1456,7 +1543,6 @@ public class InvestigationController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());

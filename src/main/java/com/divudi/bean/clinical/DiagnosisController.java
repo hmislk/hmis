@@ -196,7 +196,6 @@ public class DiagnosisController implements Serializable {
     }
 
     public String navigateToListDiagnoses() {
-        System.out.println("navigateToListDiagnoses");
         Map m = new HashMap();
         m.put("t", SymanticType.Disease_or_Syndrome);
         m.put("ret", false);

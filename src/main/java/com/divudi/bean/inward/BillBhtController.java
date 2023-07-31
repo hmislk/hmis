@@ -38,7 +38,7 @@ import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.PriceMatrix;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.BatchBillFacade;
+
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -188,8 +188,6 @@ public class BillBhtController implements Serializable {
         this.commonFunctions = commonFunctions;
     }
 
-    @EJB
-    private BatchBillFacade batchBillFacade;
     @Inject
     private BillSearch billSearch;
 
@@ -1059,15 +1057,6 @@ public class BillBhtController implements Serializable {
         this.bills = bills;
     }
 
-    public BatchBillFacade getBatchBillFacade() {
-        return batchBillFacade;
-    }
-    
-    
-
-    public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
-        this.batchBillFacade = batchBillFacade;
-    }
 
     public BillSearch getBillSearch() {
         return billSearch;

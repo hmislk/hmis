@@ -152,7 +152,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String landingPage;
 
     public String navigateToLoginPage() {
-        
+
         return "/index1.xhtml";
     }
 
@@ -185,7 +185,6 @@ public class SessionController implements Serializable, HttpSessionListener {
                 landingPage += "themes/";
                 landingPage += getApplicationPreference().getThemeName() + "/index.xhtml";
             }
-            System.out.println("3 landingPage = " + landingPage);
 
         }
         return landingPage;
@@ -244,7 +243,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            System.out.println("e = " + e);
 //        }
 //    }
-
     public void redirectToLandingPage() {
         FacesContext context = FacesContext.getCurrentInstance();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -261,7 +259,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         try {
             context.getExternalContext().redirect(context.getExternalContext().getRequestContextPath() + redirectPath);
         } catch (IOException e) {
-            System.out.println("e = " + e);
         }
     }
 
@@ -286,7 +283,6 @@ public class SessionController implements Serializable, HttpSessionListener {
 //            System.out.println("e = " + e);
 //        }
 //    }
-
     public Date currentTime() {
         return new Date();
     }
@@ -370,10 +366,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         return "/admin/institutions/admin_mange_application_preferences";
     }
 
-    public String toPublicLogin() {
-        return "/public_login";
-    }
-
     public String toManageIntitutionPreferences() {
         String jpql;
         Map m = new HashMap();
@@ -418,6 +410,50 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
 
         }
+    }
+
+    public void generateOpdBillTemplate() {
+        if (currentPreference == null) {
+            return;
+        }
+        String opdBillTemplate;
+        opdBillTemplate = " <div class=\"container text-center mb-4\">\n"
+                + "        <h1>{institution_name}</h1>\n"
+                + "        <p>{institution_address}</p>\n"
+                + "        <p>{institution_phone}</p>\n"
+                + "        <p>{institution_email}</p>\n"
+                + "        <p>{institution_website}</p>\n"
+                + "    </div>\n"
+                + "    <hr />\n"
+                + "    <div class=\"container\">\n"
+                + "        <div class=\"row\">\n"
+                + "            <div class=\"col-6\">\n"
+                + "                <p>Name: {name}</p>\n"
+                + "                <p>Age: {age}</p>\n"
+                + "                <p>Gender: {gender}</p>\n"
+                + "            </div>\n"
+                + "\n"
+                + "            <div class=\"col-6\">\n"
+                + "                <p>Bill Number: {id}</p>\n"
+                + "                <p>Bill Date: {bill_date}</p>\n"
+                + "                <p>Bill Time: {bill_time}</p>\n"
+                + "            </div>\n"
+                + "        </div>\n"
+                + "    </div>\n"
+                + "    <hr />\n"
+                + "    <div class=\"container mt-4\">\n"
+                + "            {item_value_table}\n"
+                + "    </div>\n"
+                + "    <hr />\n"
+                + "    <div class=\"container mt-4\">\n"
+                + "        <p>Gross Total: {gross_total}</p>\n"
+                + "        <p>Discount: {discount}</p>\n"
+                + "        <p>Net Total: {net_total}</p>\n"
+                + "        <p>Items Count: {count_of_items}</p>\n"
+                + "        <p>Cashier Name: {cashier_name}</p>\n"
+                + "    </div>";
+        currentPreference.setOpdBillTemplate(opdBillTemplate);
+        saveUserPreferences();
     }
 
     public void saveUserPreferences() {
@@ -856,7 +892,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String temSQL;
         loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
@@ -899,7 +935,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         }
         String temSQL;
         loginRequestResponse = "#{";
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:n order by u.id desc";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:n order by u.id desc";
         Map m = new HashMap();
 
         m.put("n", temUserName.trim().toLowerCase());
@@ -927,9 +963,9 @@ public class SessionController implements Serializable, HttpSessionListener {
     }
 
     private boolean checkUsersWithoutDepartment() {
-        System.out.println("checkUsersWithoutDepartment");
+//        System.out.println("checkUsersWithoutDepartment");
         String temSQL;
-        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and lower(u.name)=:un";
+        temSQL = "SELECT u FROM WebUser u WHERE u.retired = false and (u.name)=:un";
         Map m = new HashMap();
         m.put("un", userName.toLowerCase());
         List<WebUser> allUsers = getFacede().findByJpql(temSQL, m);

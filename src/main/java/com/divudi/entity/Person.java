@@ -29,7 +29,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
-import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
@@ -41,14 +40,14 @@ import org.joda.time.PeriodType;
  * Consultant (Health Informatics)
  */
 @Entity
-@XmlRootElement
 public class Person implements Serializable {
 
     @OneToOne(mappedBy = "webUserPerson", cascade = CascadeType.ALL)
-    @JsonIgnore
+
     private WebUser webUser;
 
     @OneToMany(mappedBy = "person", fetch = FetchType.LAZY)
+    @Deprecated
     private List<ClinicalFindingValue> clinicalFindingValues;
 
     static final long serialVersionUID = 1L;
@@ -78,34 +77,30 @@ public class Person implements Serializable {
 
     //Created Properties
     @ManyToOne
-    @JsonIgnore
     WebUser creater;
-    @JsonIgnore
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-//    @ManyToOne
-//    WebUser editer;
-//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-//    Date editedAt;
-    //Retairing properties
-    @JsonIgnore
+    @ManyToOne
+    WebUser editer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date editedAt;
+
+    //    Retairing properties
     boolean retired;
     @ManyToOne
-    @JsonIgnore
     WebUser retirer;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-    @JsonIgnore
     Date retiredAt;
-    @JsonIgnore
     String retireComments;
     @ManyToOne
-    @JsonIgnore
+
     Area area;
     @ManyToOne
-    @JsonIgnore
+
     Institution institution;
     @ManyToOne
-    @JsonIgnore
+
     Department department;
     @Enumerated(EnumType.STRING)
     Title title;
@@ -127,17 +122,17 @@ public class Person implements Serializable {
     private Item religion;
 
     @ManyToOne
-    @JsonIgnore
+    @Deprecated
     private MembershipScheme membershipScheme;
 
     @Transient
-    int ageMonths;
+    int ageMonthsComponent;
     @Transient
-    int ageDays;
+    int ageDaysComponent;
     @Transient
-    int ageYears;
+    int ageYearsComponent;
     @Transient
-    String age;
+    String ageAsString;
     @Transient
     long ageInDays;
     @Transient
@@ -174,8 +169,6 @@ public class Person implements Serializable {
     public void setOccupation(Item occupation) {
         this.occupation = occupation;
     }
-    
-    
 
     public boolean isForeigner() {
         return foreigner;
@@ -186,57 +179,82 @@ public class Person implements Serializable {
     }
 
     public void calAgeFromDob() {
-        age = "";
+        ageAsString = "";
         ageInDays = 0l;
-        ageMonths = 0;
-        ageDays = 0;
-        ageYears = 0;
         if (getDob() == null) {
             return;
         }
 
-        LocalDate dob = new LocalDate(getDob());
-        LocalDate date = new LocalDate(new Date());
+        LocalDate ldDob = new LocalDate(getDob());
+        LocalDate currentDate = LocalDate.now();
 
-        Period period = new Period(dob, date, PeriodType.yearMonthDay());
-        ageYears = period.getYears();
-        ageMonths = period.getMonths();
-        ageDays = period.getDays();
-        if (ageYears > 12) {
-            age = period.getYears() + " years.";
-        } else if (ageYears > 0) {
-            age = period.getYears() + " years and " + period.getMonths() + " months.";
+        Period period = new Period(ldDob, currentDate, PeriodType.yearMonthDay());
+
+        int years = period.getYears();
+        int months = period.getMonths();
+        int days = period.getDays();
+
+        if (years > 12) {
+            ageAsString = years + " years.";
+        } else if (years > 0) {
+            ageAsString = years + " years and " + months + " months.";
         } else {
-            age = period.getMonths() + " months and " + period.getDays() + " days.";
+            ageAsString = months + " months and " + days + " days.";
         }
-        period = new Period(dob, date, PeriodType.days());
+
+        period = new Period(ldDob, currentDate, PeriodType.days());
         ageInDays = (long) period.getDays();
+        ageDaysComponent = days;
+        ageMonthsComponent=months;
+        ageYearsComponent=years;
     }
 
-    public String getAge() {
+    public void calDobFromAge() {
+        LocalDate currentDate = new LocalDate();
+        LocalDate ldDob = currentDate.minusYears(ageYearsComponent).minusMonths(ageMonthsComponent).minusDays(ageDaysComponent);
+        this.dob = ldDob.toDate();
+    }
+
+    public String getAgeAsString() {
         calAgeFromDob();
-        return age;
+        if(ageAsString==null||ageAsString.trim().equals("")){
+            ageAsString="Not Recorded";
+        }
+        return ageAsString;
     }
 
     public Long getAgeInDays() {
-        calAgeFromDob();
         return ageInDays;
     }
 
-    public int getAgeMonths() {
-        calAgeFromDob();
-        return ageMonths;
+    public int getAgeMonthsComponent() {
+        return ageMonthsComponent;
     }
 
-    public int getAgeDays() {
-        calAgeFromDob();
-        return ageDays;
+    public int getAgeDaysComponent() {
+        return ageDaysComponent;
     }
 
-    public int getAgeYears() {
-        calAgeFromDob();
-        return ageYears;
+    public int getAgeYearsComponent() {
+        return ageYearsComponent;
     }
+
+    public void setAgeMonthsComponent(int ageMonthsComponent) {
+        this.ageMonthsComponent = ageMonthsComponent;
+        calDobFromAge();
+    }
+
+    public void setAgeDaysComponent(int ageDaysComponent) {
+        this.ageDaysComponent = ageDaysComponent;
+        calDobFromAge();
+    }
+
+    public void setAgeYearsComponent(int ageYearsComponent) {
+        this.ageYearsComponent = ageYearsComponent;
+        calDobFromAge();
+    }
+    
+    
 
     public String getNameWithTitle() {
         String temT;
@@ -475,6 +493,7 @@ public class Person implements Serializable {
 
     public void setDob(Date dob) {
         this.dob = dob;
+        calAgeFromDob();
     }
 
     public String getFullName() {
@@ -561,6 +580,5 @@ public class Person implements Serializable {
     public void setReligion(Item religion) {
         this.religion = religion;
     }
-    
-    
+
 }

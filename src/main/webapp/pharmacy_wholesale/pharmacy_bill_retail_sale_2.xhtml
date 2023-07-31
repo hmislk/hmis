@@ -38,8 +38,10 @@
                                 <p:outputLabel value="#{pharmacyWholeSaleController2.errorMessage}" ></p:outputLabel>
                             </h:panelGroup>
                         </h:panelGroup>
-                        <h:panelGrid id="sale" columns="2" class="alignTop" >
-                            <p:panel >
+                        
+                             <div class="row">
+                            <div class="col-md-7">
+                                <p:panel >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Pharmacy Wholesale Bill" />
                                 </f:facet>
@@ -281,11 +283,10 @@
                                 </p:panel> 
 
                             </p:panel>
-
-
-
-
-                            <p:panel>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <p:panel>
 
 
                                 <f:facet name="header" >
@@ -494,8 +495,16 @@
 
 
                             </p:panel>
+                            </div>
+                        </div>
+                            
 
-                        </h:panelGrid>
+
+
+
+                            
+
+                       
                     </p:panel>
 
 

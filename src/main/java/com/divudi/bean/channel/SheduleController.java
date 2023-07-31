@@ -741,7 +741,6 @@ public class SheduleController implements Serializable {
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-            System.err.println("Time stage 3.2 = " + new Date());
             if (tmp.isEmpty()) {
                 return;
             }
