@@ -74,7 +74,7 @@ public class DepartmentController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/department";
+        return "/admin/institutions/department";
     }
 
     public String deleteDepartment() {
