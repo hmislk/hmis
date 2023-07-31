@@ -2699,7 +2699,6 @@ public class HumanResourceBean {
             if (ss.getShift() == null) {
                 continue;
             }
-            System.err.println("Name = " + ss.getShift().getName());
             //System.out.println("ss.getWorkedWithinTimeFrameVarified() = " + ss.getWorkedWithinTimeFrameVarified() / (60 * 60));
             //System.out.println("ss.getShift()" + ss.getShift().getName());
             //System.out.println("shift date" + ss.getShiftDate());

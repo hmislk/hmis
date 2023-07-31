@@ -226,11 +226,9 @@ public class SysMex {
                 Byte b = Byte.parseByte(s);
                 bytes.add(b);
             } catch (Exception e) {
-                System.out.println("e = " + e);
                 bytes.add(null);
             }
         }
-        System.out.println("bytes = " + bytes.size());
     }
 
     private void textToByteArrayByCharactors() {
@@ -679,7 +677,6 @@ public class SysMex {
     public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
         System.out.println("inputStringBytesSpaceSeperated = " + inputStringBytesSpaceSeperated);
         String tmpString = stringToAsciiBytesSpaceSeparated(inputStringBytesSpaceSeperated);
-        System.out.println("tmpString = " + tmpString);
         this.inputStringBytesSpaceSeperated = tmpString;
         textToByteArraySeperatedBySpace();
     }

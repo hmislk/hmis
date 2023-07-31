@@ -28,7 +28,7 @@ import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.PatientEncounter;
 import com.divudi.entity.Person;
-import com.divudi.entity.clinical.ClinicalFindingItem;
+import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.entity.clinical.ClinicalFindingValue;
 import com.divudi.entity.clinical.DocumentTemplate;
 import com.divudi.entity.clinical.ItemUsage;
@@ -41,7 +41,7 @@ import com.divudi.entity.lab.PatientReportItemValue;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Vmp;
 import com.divudi.facade.BillFacade;
-import com.divudi.facade.ClinicalFindingItemFacade;
+import com.divudi.facade.ClinicalEntityFacade;
 import com.divudi.facade.ClinicalFindingValueFacade;
 import com.divudi.facade.ItemUsageFacade;
 import com.divudi.facade.PatientEncounterFacade;
@@ -91,7 +91,7 @@ public class PatientEncounterController implements Serializable {
     @EJB
     private PatientEncounterFacade ejbFacade;
     @EJB
-    ClinicalFindingItemFacade clinicalFindingItemFacade;
+    ClinicalEntityFacade clinicalFindingItemFacade;
     @EJB
     private ClinicalFindingValueFacade clinicalFindingValueFacade;
     @EJB
@@ -226,7 +226,6 @@ public class PatientEncounterController implements Serializable {
             String id = context.getExternalContext().getRequestParameterMap().get("id");
             System.out.println("id = " + id);
             ClinicalFindingValue image = clinicalFindingValueFacade.find(Long.valueOf(id)); // Assuming 'service' is your EJB session bean.
-            System.out.println("image = " + image);
             String imageType = image.getImageType();
             if (imageType == null || imageType.trim().equals("")) {
                 imageType = "image/png";
@@ -239,11 +238,9 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void updateEncounterImages() {
-        System.out.println("encounterImages = " + encounterImages.size());
     }
 
     public void listInstitutionEncounters() {
-        System.out.println("listInstitutionEncounters = ");
         String jpql = "select e "
                 + " from PatientEncounter e "
                 + " where e.retired=:ret "
@@ -413,7 +410,7 @@ public class PatientEncounterController implements Serializable {
                 + "(c.name) like :q "
                 + "order by c.name";
         Map tmpMap = new HashMap();
-        tmpMap.put("cls", ClinicalFindingItem.class);
+        tmpMap.put("cls", ClinicalEntity.class);
         tmpMap.put("st", SymanticType.Symptom);
         tmpMap.put("q", qry.toUpperCase() + "%");
         completeStrings = getFacade().findString(sql, tmpMap, TemporalType.TIMESTAMP);
@@ -432,7 +429,7 @@ public class PatientEncounterController implements Serializable {
                 + "(c.name) like :q "
                 + "order by c.name";
         Map tmpMap = new HashMap();
-        tmpMap.put("cls", ClinicalFindingItem.class);
+        tmpMap.put("cls", ClinicalEntity.class);
         tmpMap.put("st", SymanticType.Sign);
         tmpMap.put("q", qry.toUpperCase() + "%");
         completeStrings = getFacade().findString(sql, tmpMap, TemporalType.TIMESTAMP);
@@ -470,7 +467,7 @@ public class PatientEncounterController implements Serializable {
         tmpMap.put("amp", Amp.class);
         tmpMap.put("vmp", Vmp.class);
         tmpMap.put("vtm", Vmp.class);
-        tmpMap.put("ce", ClinicalFindingItem.class);
+        tmpMap.put("ce", ClinicalEntity.class);
         tmpMap.put("st", SymanticType.Pharmacologic_Substance);
         tmpMap.put("q", qry.toUpperCase() + "%");
         completeStrings = getFacade().findString(sql, tmpMap);
@@ -558,7 +555,6 @@ public class PatientEncounterController implements Serializable {
             clinicalFindingValueFacade.edit(encounterProcedure);
         }
 
-        System.out.println("current.getClinicalFindingValues() = " + current.getClinicalFindingValues());
         current.getClinicalFindingValues().add(encounterProcedure);
         getFacade().edit(current);
 
@@ -612,7 +608,7 @@ public class PatientEncounterController implements Serializable {
         }
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
-//        dx.setClinicalFindingItem(diagnosis);
+//        dx.setClinicalEntity(diagnosis);
         dx.setClinicalFindingValueType(ClinicalFindingValueType.VisitDiagnosis);
         dx.setEncounter(current);
         dx.setPerson(current.getPatient().getPerson());
@@ -640,7 +636,7 @@ public class PatientEncounterController implements Serializable {
         }
         ClinicalFindingValue dx = new ClinicalFindingValue();
         dx.setItemValue(diagnosis);
-//        dx.setClinicalFindingItem(diagnosis);
+//        dx.setClinicalEntity(diagnosis);
         dx.setEncounter(current);
         dx.setPerson(current.getPatient().getPerson());
         dx.setStringValue(diagnosis.getName());
@@ -684,7 +680,6 @@ public class PatientEncounterController implements Serializable {
                 continue;
             }
 
-            System.out.println("availableFavouriteMedicines.isEmpty() = " + availableFavouriteMedicines.isEmpty());
             if (availableFavouriteMedicines.isEmpty()) {
                 continue;
             }
@@ -952,7 +947,6 @@ public class PatientEncounterController implements Serializable {
     }
 
     public List<ClinicalFindingValue> loadCurrentEncounterFindingValues(PatientEncounter encounter, List<ClinicalFindingValueType> clinicalFindingValueTypes) {
-        System.out.println("loadCurrentEncounterFindingValues");
         List<ClinicalFindingValue> vs = new ArrayList<>();
         if (encounterFindingValues == null) {
             encounterFindingValues = fillEncounterFindingValues(current);
@@ -961,7 +955,6 @@ public class PatientEncounterController implements Serializable {
             encounterFindingValues = new ArrayList<>();
         }
         for (ClinicalFindingValue v : encounterFindingValues) {
-            System.out.println("v = " + v);
             if (v == null) {
                 continue;
             }
@@ -1171,7 +1164,6 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void removePatientAllergy() {
-        System.out.println("removePatientAllergy");
         if (getRemovingClinicalFindingValue() == null) {
             JsfUtil.addErrorMessage("Select Allergy");
             return;
@@ -1253,7 +1245,6 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void addPatientMedicine() {
-        System.out.println("addPatientMedicine");
         if (getPatientMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
@@ -2054,7 +2045,7 @@ public class PatientEncounterController implements Serializable {
         this.doctor = doctor;
     }
 
-    public ClinicalFindingItemFacade getClinicalFindingItemFacade() {
+    public ClinicalEntityFacade getClinicalEntityFacade() {
         return clinicalFindingItemFacade;
     }
 
@@ -2687,7 +2678,6 @@ public class PatientEncounterController implements Serializable {
         getEncounterImage().setImageName("encounter_image_" + getEncounterImage().getId() + ".png");
         clinicalFindingValueFacade.edit(getEncounterImage());
         getEncounterImages().add(getEncounterImage());
-        System.out.println("getEncounterImages() = " + getEncounterImages().size());
         getEncounterFindingValues().add(getEncounterImage());
         setEncounterImages(fillEncounterImages(getCurrent()));
         fillEncounterImages(getCurrent());
@@ -2716,7 +2706,6 @@ public class PatientEncounterController implements Serializable {
         getEncounterImage().setImageName("encounter_image_" + getEncounterImage().getId() + ".png");
         clinicalFindingValueFacade.edit(getEncounterImage());
         getEncounterImages().add(getEncounterImage());
-        System.out.println("getEncounterImages() = " + getEncounterImages().size());
         getEncounterFindingValues().add(getEncounterImage());
         setEncounterImages(fillEncounterImages(getCurrent()));
         setEncounterImage(null);

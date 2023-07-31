@@ -111,7 +111,6 @@ public class PhotoCamBean implements Serializable {
         getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + getPatientEncounterController().getEncounterImage().getId() + ".png");
         clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
         getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
-        System.out.println("getPatientEncounterController().getEncounterImages() = " + getPatientEncounterController().getEncounterImages().size());
         getPatientEncounterController().setEncounterImage(null);
         getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
         getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
@@ -140,7 +139,6 @@ public class PhotoCamBean implements Serializable {
         getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + getPatientEncounterController().getEncounterImage().getId() + ".png");
         clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
         getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
-        System.out.println("getPatientEncounterController().getEncounterImages() = " + getPatientEncounterController().getEncounterImages().size());
         getPatientEncounterController().setEncounterImage(null);
 
         getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());

@@ -10,8 +10,8 @@ package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.entity.clinical.ClinicalFindingItem;
-import com.divudi.facade.ClinicalFindingItemFacade;
+import com.divudi.entity.clinical.ClinicalEntity;
+import com.divudi.facade.ClinicalEntityFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,31 +38,31 @@ public class ClinicalFindingItemController implements Serializable {
     @Inject
     SessionController sessionController;
     @EJB
-    private ClinicalFindingItemFacade ejbFacade;
-    List<ClinicalFindingItem> selectedItems;
-    private ClinicalFindingItem current;
-    private List<ClinicalFindingItem> items = null;
+    private ClinicalEntityFacade ejbFacade;
+    List<ClinicalEntity> selectedItems;
+    private ClinicalEntity current;
+    private List<ClinicalEntity> items = null;
     String selectText = "";
 
-    public List<ClinicalFindingItem> completeClinicalFindingItem(String qry) {
-        List<ClinicalFindingItem> c;
-        c = getFacade().findBySQL("select c from ClinicalFindingItem c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+    public List<ClinicalEntity> completeClinicalEntity(String qry) {
+        List<ClinicalEntity> c;
+        c = getFacade().findBySQL("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
         }
         return c;
     }
 
-    public List<ClinicalFindingItem> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ClinicalFindingItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+    public List<ClinicalEntity> getSelectedItems() {
+        selectedItems = getFacade().findBySQL("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public void prepareAdd() {
-        current = new ClinicalFindingItem();
+        current = new ClinicalEntity();
     }
 
-    public void setSelectedItems(List<ClinicalFindingItem> selectedItems) {
+    public void setSelectedItems(List<ClinicalEntity> selectedItems) {
         this.selectedItems = selectedItems;
     }
 
@@ -93,11 +93,11 @@ public class ClinicalFindingItemController implements Serializable {
         this.selectText = selectText;
     }
 
-    public ClinicalFindingItemFacade getEjbFacade() {
+    public ClinicalEntityFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(ClinicalFindingItemFacade ejbFacade) {
+    public void setEjbFacade(ClinicalEntityFacade ejbFacade) {
         this.ejbFacade = ejbFacade;
     }
 
@@ -109,17 +109,16 @@ public class ClinicalFindingItemController implements Serializable {
         this.sessionController = sessionController;
     }
 
-    public ClinicalFindingItemController() {
-    }
+   
 
-    public ClinicalFindingItem getCurrent() {
+    public ClinicalEntity getCurrent() {
         if (current == null) {
-            current = new ClinicalFindingItem();
+            current = new ClinicalEntity();
         }
         return current;
     }
 
-    public void setCurrent(ClinicalFindingItem current) {
+    public void setCurrent(ClinicalEntity current) {
         this.current = current;
     }
 
@@ -140,11 +139,11 @@ public class ClinicalFindingItemController implements Serializable {
         getCurrent();
     }
 
-    private ClinicalFindingItemFacade getFacade() {
+    private ClinicalEntityFacade getFacade() {
         return ejbFacade;
     }
 
-    public List<ClinicalFindingItem> getItems() {
+    public List<ClinicalEntity> getItems() {
         items = getFacade().findAll("name", true);
         return items;
     }
@@ -152,8 +151,8 @@ public class ClinicalFindingItemController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = ClinicalFindingItem.class)
-    public static class ClinicalFindingItemControllerConverter implements Converter {
+    @FacesConverter(forClass = ClinicalEntity.class)
+    public static class ClinicalEntityControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -182,56 +181,15 @@ public class ClinicalFindingItemController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof ClinicalFindingItem) {
-                ClinicalFindingItem o = (ClinicalFindingItem) object;
+            if (object instanceof ClinicalEntity) {
+                ClinicalEntity o = (ClinicalEntity) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItem.class.getName());
+                        + object.getClass().getName() + "; expected type: " + ClinicalEntity.class.getName());
             }
         }
     }
 
-    /**
-     *
-     */
-    @FacesConverter("clinicalFindingItemConverter")
-    public static class ClinicalFindingItemConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ClinicalFindingItemController controller = (ClinicalFindingItemController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "clinicalFindingItemController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof ClinicalFindingItem) {
-                ClinicalFindingItem o = (ClinicalFindingItem) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ClinicalFindingItem.class.getName());
-            }
-        }
-    }
+   
 }

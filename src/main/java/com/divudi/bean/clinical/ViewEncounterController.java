@@ -30,7 +30,6 @@ public class ViewEncounterController implements Serializable {
             return "";
         }
         String page = "/emr/opd_visit_view";
-        System.out.println("page = " + page);
         return page;
     }
 

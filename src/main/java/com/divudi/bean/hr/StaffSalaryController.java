@@ -1192,9 +1192,7 @@ public class StaffSalaryController implements Serializable {
             //Set Holiday Allowance
             //Set Holiday Allowance
             //Set Holiday Allowance
-
             //Set Holiday Allowance
-            System.err.println("Salary OT");
             Double count = setHoliDayAllowance(PaysheetComponentType.MerchantileAllowance, DayType.MurchantileHoliday);
             getCurrent().setMerchantileCount(count);
 

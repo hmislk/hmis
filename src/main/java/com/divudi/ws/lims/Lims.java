@@ -95,7 +95,6 @@ public class Lims {
     @Path("/login/mw")
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginRequest request) {
-        System.out.println("login");
         String username = request.getUsername();
         String password = request.getPassword();
 

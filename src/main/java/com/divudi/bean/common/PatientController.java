@@ -309,7 +309,6 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        System.out.println("1");
         pharmacySaleController.prepareForNewPharmacyRetailBill();
         pharmacySaleController.setSearchedPatient(current);
         pharmacySaleController.setPatientSearchTab(1);
