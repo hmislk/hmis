@@ -39,11 +39,8 @@
                                 </h:panelGrid>
                                 
                                     <h:panelGrid id="gpSelectText" >
-                                        <h:inputText autocomplete="off" id="txtSearch" value="#{doctorSpecialityController.selectText}" style="min-width: 400px">
-                                            <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
-                                        </h:inputText>
-
-                                        <p:selectOneListbox  id="lstSelect" class="w-100" scrollHeight="500" value="#{doctorSpecialityController.current}" style="min-width: 400px">
+                                        
+                                        <p:selectOneListbox  id="lstSelect" filterMatchMode="contains" scrollHeight="500" class="w-100" filter="true" value="#{doctorSpecialityController.current}" style="min-width: 400px">
                                             <f:selectItems  value="#{doctorSpecialityController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                             <f:ajax render="gpDetail" execute="lstSelect" >
                                             </f:ajax>
