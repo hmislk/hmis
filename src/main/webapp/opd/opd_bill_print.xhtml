@@ -55,11 +55,10 @@
                                          ajax="false"
                                          action="#{opdBillController.navigateToNewOpdBill()}">
                         </p:commandButton>
-                         <p:commandButton value="Patient Registration" 
+                        <p:commandButton value="Patient Registration" 
                                          ajax="false"
                                          action="#{opdBillController.navigateToSearchPatients()}">
                         </p:commandButton>
-                        
                         <div class="w-100">
                             <div class="d-flex justify-content-between">
                                 <div class="flex-grow-1">
@@ -67,17 +66,33 @@
                                         <ui:repeat value="#{opdBillController.bills}" var="b">
                                             <div class="bill-item page">
                                                 <h:outputText value="#{b.billPrint}" escape="false"></h:outputText>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        JsBarcode("#barcode#{b.id}", "#{b.id}", {
+                                                            format: "CODE128",
+                                                            lineColor: "#000",
+                                                            width: 2,
+                                                            height: 100,
+                                                            displayValue: true
+                                                        });
+                                                    });
+                                                </script>
                                             </div>
                                         </ui:repeat>
                                     </h:panelGroup>
+
+                                    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.3/dist/JsBarcode.all.min.js"></script>
+                                    <h:outputScript library="primefaces" name="jquery/jquery.js" target="head"/>
+
                                 </div>
-                                <div class="flex-grow-1">
-                                    <p:dataTable value="#{opdBillController.bills}" var="b" >
-                                        <p:column headerText="Bill No" >
-                                            <h:outputText value="#{b.id}" ></h:outputText>
-                                        </p:column>
-                                    </p:dataTable>
-                                </div>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <p:dataTable value="#{opdBillController.bills}" var="b" >
+                                    <p:column headerText="Bill No" >
+                                        <h:outputText value="#{b.id}" ></h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                             </div>
                         </div>
                     </h:form>

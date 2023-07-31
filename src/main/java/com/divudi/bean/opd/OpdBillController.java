@@ -1908,6 +1908,13 @@ public class OpdBillController implements Serializable {
         return "/opd/opd_bill";
     }
 
+    public String navigateToNewOpdBill(Patient pt) {
+        navigateToNewOpdBill();
+        patient=pt;
+        return "/opd/opd_bill";
+    }
+
+    
     public String toOpdBilling() {
         return "/opd/opd_bill";
     }

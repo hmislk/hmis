@@ -347,7 +347,7 @@ public class PatientController implements Serializable {
             return "";
         }
         opdBillController.setPatient(current);
-        return "/opd/opd_bill";
+        return opdBillController.navigateToNewOpdBill();
     }
     
     public String navigateToOpdBillForCashier() {
