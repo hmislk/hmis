@@ -54,6 +54,10 @@ public class NavigationController implements Serializable {
         return "/admin/staff/admin_doctor_speciality";
     }
     
+    public String navigateToViewStaffSignatures(){
+        return "/admin/staff/admin_staff_signature.xhtml";
+    }
+    
      public String navigateToAdminDoctor(){
         return "/admin/staff/admin_doctor";
     }

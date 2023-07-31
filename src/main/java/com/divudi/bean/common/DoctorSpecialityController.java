@@ -199,7 +199,7 @@ public class DoctorSpecialityController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"vocabulary_data.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"doctor_speciality_data.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
