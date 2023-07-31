@@ -29,38 +29,71 @@ public class UserPreference implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    String abbreviationForHistory;
-    String abbreviationForExamination;
-    String abbreviationForInvestigations;
-    String abbreviationForTreatments;
-    String abbreviationForManagement;
-    @Lob
-    String pharmacyBillHeader;
-    @Lob
-    String pharmacyBillFooter;
-    @Lob
-    private String inwardDepositBillTemplate;
-    @Lob
-    private String inwardDepositCancelBillTemplate;
-    @Lob
-    String opdBillHeader;
-    @Lob
-    String opdBillFooter;
-    @Lob
-    String channellingBillHeader;
-    @Lob
-    String channellingBillFooter;
     
+    /*
+    Owner
+    */
     @ManyToOne
     WebUser webUser;
     @ManyToOne
     Department department;
     @ManyToOne
     Institution institution;
-    boolean institutionSpecificItems=false;
+    
+    /*
+    EHR
+    */
+    String abbreviationForHistory;
+    String abbreviationForExamination;
+    String abbreviationForInvestigations;
+    String abbreviationForTreatments;
+    String abbreviationForManagement;
+    
+    
+    /*
+    Pharmacy
+    */
+    @Lob
+    String pharmacyRetailBillTemplate;
+    @Lob
+    String pharmacyWholesaleBillTemplate;
+    
+    
+    /*
+    Inpatients
+    */
+    @Lob
+    private String inwardDepositBillTemplate;
+    @Lob
+    private String inwardDepositCancelBillTemplate;
+    
+    /*
+    Channelling
+    */
+    
+    @Lob
+    String channellingBillTemplate;
+    
+    
+   
+    
+    @Lob
+    String channellingCancellationBillTemplate;
+    @Lob
+    String channelingDoctorPaymentBillTemplate;
+    
+    
+    /*
+    OPD
+    */
+    @Lob
+    String opdBillForCashierTemplate;
+
+    
+    boolean institutionSpecificItems = false;
     @Lob
     private String opdBillTemplate;
-    private boolean institutionRestrictedBilling=false;
+    private boolean institutionRestrictedBilling = false;
     boolean printLabelForOPdBill;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean partialPaymentOfOpdPreBillsAllowed;
@@ -80,13 +113,13 @@ public class UserPreference implements Serializable {
     boolean inwardChangeAdmissionFee;
     boolean pharmacyBillWithOutItem;
     boolean fiveFivePaperWithHeadings;
-    boolean showOnlyMarkedDoctors=false;
-    boolean channelSettleWithoutPatientPhoneNumber=false;
-    boolean opdSettleWithoutPatientPhoneNumber=false;
-    boolean channelBillDouble=false;
+    boolean showOnlyMarkedDoctors = false;
+    boolean channelSettleWithoutPatientPhoneNumber = false;
+    boolean opdSettleWithoutPatientPhoneNumber = false;
+    boolean channelBillDouble = false;
     private boolean hasAwebsiteAsFrontEnd = false;
     private String themeName;
-    private boolean channelDoctorArivalMsgSend=false;
+    private boolean channelDoctorArivalMsgSend = false;
     String microBiologyFont;
     String logoName;
     @Enumerated(EnumType.STRING)
@@ -105,25 +138,21 @@ public class UserPreference implements Serializable {
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
-    
+
     private boolean familyMembership;
     private boolean membershipExpires;
-    
+
     private boolean needAreaForPatientRegistration;
     private boolean needNicForPatientRegistration;
     private boolean needPhoneNumberForPatientRegistration;
-    
-    
+
     private boolean channellingSendSmsOnBooking;
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
-    
-    
-    
-    
+
     public ApplicationInstitution getApplicationInstitution() {
-        if(applicationInstitution==null){
+        if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
         }
         return applicationInstitution;
@@ -148,7 +177,7 @@ public class UserPreference implements Serializable {
     public void setChannelBillDouble(boolean channelBillDouble) {
         this.channelBillDouble = channelBillDouble;
     }
-    
+
     public boolean isPartialPaymentOfOpdBillsAllowed() {
         return partialPaymentOfOpdBillsAllowed;
     }
@@ -172,10 +201,9 @@ public class UserPreference implements Serializable {
     public void setPharmayPurchaseWithLastRate(boolean pharmayPurchaseWithLastRate) {
         this.pharmayPurchaseWithLastRate = pharmayPurchaseWithLastRate;
     }
-    
-    
+
     public PaperType getOpdBillPaperType() {
-        if(opdBillPaperType==null){
+        if (opdBillPaperType == null) {
             opdBillPaperType = PaperType.FiveFivePaper;
         }
         return opdBillPaperType;
@@ -190,7 +218,7 @@ public class UserPreference implements Serializable {
     }
 
     public void setChannelBillPaperType(PaperType channelBillPaperType) {
-        if(opdBillPaperType==null){
+        if (opdBillPaperType == null) {
             opdBillPaperType = PaperType.Paper24_2x9_3;
         }
         this.channelBillPaperType = channelBillPaperType;
@@ -234,8 +262,7 @@ public class UserPreference implements Serializable {
 
     public void setOpdPosBillWithoutLogo(boolean opdPosBillWithoutLogo) {
         this.opdPosBillWithoutLogo = opdPosBillWithoutLogo;
-    }   
-    
+    }
 
     public String getAbbreviationForHistory() {
         if (abbreviationForHistory == null || "".equals(abbreviationForHistory)) {
@@ -278,7 +305,7 @@ public class UserPreference implements Serializable {
     }
 
     public void setAbbreviationForTreatments(String abbreviationForTreatments) {
-        
+
         this.abbreviationForTreatments = abbreviationForTreatments;
     }
 
@@ -317,7 +344,6 @@ public class UserPreference implements Serializable {
         this.institution = institution;
     }
 
-    
     public Long getId() {
         return id;
     }
@@ -333,8 +359,6 @@ public class UserPreference implements Serializable {
     public void setInstitutionSpecificItems(boolean institutionSpecificItems) {
         this.institutionSpecificItems = institutionSpecificItems;
     }
-    
-    
 
     public boolean isPrintLabelForOPdBill() {
         return printLabelForOPdBill;
@@ -360,16 +384,12 @@ public class UserPreference implements Serializable {
         this.microBiologyFont = microBiologyFont;
     }
 
-    
-    
-    
-
-    public String getPharmacyBillFooter() {
-        return pharmacyBillFooter;
+    public String getPharmacyWholesaleBillTemplate() {
+        return pharmacyWholesaleBillTemplate;
     }
 
-    public void setPharmacyBillFooter(String pharmacyBillFooter) {
-        this.pharmacyBillFooter = pharmacyBillFooter;
+    public void setPharmacyWholesaleBillTemplate(String pharmacyWholesaleBillTemplate) {
+        this.pharmacyWholesaleBillTemplate = pharmacyWholesaleBillTemplate;
     }
 
     public boolean isDepNumGenFromToDepartment() {
@@ -414,7 +434,7 @@ public class UserPreference implements Serializable {
     public void setInwardAddServiceBillTimeCheck(boolean inwardAddServiceBillTimeCheck) {
         this.inwardAddServiceBillTimeCheck = inwardAddServiceBillTimeCheck;
     }
-    
+
     public boolean isInwardMoChargeCalculateInitialTime() {
         return inwardMoChargeCalculateInitialTime;
     }
@@ -463,48 +483,48 @@ public class UserPreference implements Serializable {
         this.showOnlyMarkedDoctors = showOnlyMarkedDoctors;
     }
 
-    public String getPharmacyBillHeader() {
-        return pharmacyBillHeader;
+    public String getPharmacyRetailBillTemplate() {
+        return pharmacyRetailBillTemplate;
     }
 
-    public void setPharmacyBillHeader(String pharmacyBillHeader) {
-        this.pharmacyBillHeader = pharmacyBillHeader;
+    public void setPharmacyRetailBillTemplate(String pharmacyRetailBillTemplate) {
+        this.pharmacyRetailBillTemplate = pharmacyRetailBillTemplate;
     }
 
-    public String getOpdBillHeader() {
-        return opdBillHeader;
+    public String getChannellingBillTemplate() {
+        return channellingBillTemplate;
     }
 
-    public void setOpdBillHeader(String opdBillHeader) {
-        this.opdBillHeader = opdBillHeader;
+    public void setChannellingBillTemplate(String channellingBillTemplate) {
+        this.channellingBillTemplate = channellingBillTemplate;
     }
 
-    public String getOpdBillFooter() {
-        return opdBillFooter;
+    public String getOpdBillForCashierTemplate() {
+        return opdBillForCashierTemplate;
     }
 
-    public void setOpdBillFooter(String opdBillFooter) {
-        this.opdBillFooter = opdBillFooter;
+    public void setOpdBillForCashierTemplate(String opdBillForCashierTemplate) {
+        this.opdBillForCashierTemplate = opdBillForCashierTemplate;
     }
 
-    public String getChannellingBillHeader() {
-        return channellingBillHeader;
+    public String getChannellingCancellationBillTemplate() {
+        return channellingCancellationBillTemplate;
     }
 
-    public void setChannellingBillHeader(String channellingBillHeader) {
-        this.channellingBillHeader = channellingBillHeader;
+    public void setChannellingCancellationBillTemplate(String channellingCancellationBillTemplate) {
+        this.channellingCancellationBillTemplate = channellingCancellationBillTemplate;
     }
 
-    public String getChannellingBillFooter() {
-        return channellingBillFooter;
+    public String getChannelingDoctorPaymentBillTemplate() {
+        return channelingDoctorPaymentBillTemplate;
     }
 
-    public void setChannellingBillFooter(String channellingBillFooter) {
-        this.channellingBillFooter = channellingBillFooter;
+    public void setChannelingDoctorPaymentBillTemplate(String channelingDoctorPaymentBillTemplate) {
+        this.channelingDoctorPaymentBillTemplate = channelingDoctorPaymentBillTemplate;
     }
 
     public PaymentMethod getChannellingPaymentMethod() {
-        if(channellingPaymentMethod==null){
+        if (channellingPaymentMethod == null) {
             channellingPaymentMethod = PaymentMethod.OnCall;
         }
         return channellingPaymentMethod;
@@ -529,7 +549,7 @@ public class UserPreference implements Serializable {
     public void setOpdSettleWithoutPatientPhoneNumber(boolean opdSettleWithoutPatientPhoneNumber) {
         this.opdSettleWithoutPatientPhoneNumber = opdSettleWithoutPatientPhoneNumber;
     }
-    
+
     public boolean isChannelDoctorArivalMsgSend() {
         return channelDoctorArivalMsgSend;
     }
@@ -537,7 +557,7 @@ public class UserPreference implements Serializable {
     public void setChannelDoctorArivalMsgSend(boolean channelDoctorArivalMsgSend) {
         this.channelDoctorArivalMsgSend = channelDoctorArivalMsgSend;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -572,8 +592,8 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentEmailWithInvestigationReportApproval() {
-        if(sentEmailWithInvestigationReportApproval==null){
-            sentEmailWithInvestigationReportApproval=true;
+        if (sentEmailWithInvestigationReportApproval == null) {
+            sentEmailWithInvestigationReportApproval = true;
         }
         return sentEmailWithInvestigationReportApproval;
     }
@@ -583,8 +603,8 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentSmsWithInvestigationRequestApproval() {
-        if(sentSmsWithInvestigationRequestApproval==null){
-            sentSmsWithInvestigationRequestApproval=true;
+        if (sentSmsWithInvestigationRequestApproval == null) {
+            sentSmsWithInvestigationRequestApproval = true;
         }
         return sentSmsWithInvestigationRequestApproval;
     }
@@ -594,8 +614,8 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentDailySmsSummeryForReferringDoctors() {
-        if(sentDailySmsSummeryForReferringDoctors==null){
-            sentDailySmsSummeryForReferringDoctors=true;
+        if (sentDailySmsSummeryForReferringDoctors == null) {
+            sentDailySmsSummeryForReferringDoctors = true;
         }
         return sentDailySmsSummeryForReferringDoctors;
     }
@@ -605,7 +625,7 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getCanSettleOpdBillWithoutReferringDoctor() {
-        if(canSettleOpdBillWithoutReferringDoctor==null){
+        if (canSettleOpdBillWithoutReferringDoctor == null) {
             canSettleOpdBillWithoutReferringDoctor = true;
         }
         return canSettleOpdBillWithoutReferringDoctor;
@@ -735,8 +755,4 @@ public class UserPreference implements Serializable {
         this.opdBillTemplate = opdBillTemplate;
     }
 
-    
-    
-    
-    
 }
