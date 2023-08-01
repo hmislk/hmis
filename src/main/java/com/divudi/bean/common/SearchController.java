@@ -328,7 +328,6 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("dep", getSessionController().getLoggedUser().getDepartment());
 
-        System.out.println("temMap = " + temMap);
         patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 

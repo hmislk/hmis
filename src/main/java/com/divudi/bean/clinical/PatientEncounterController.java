@@ -224,7 +224,6 @@ public class PatientEncounterController implements Serializable {
         } else {
             // So, browser is requesting the image. Get ID value from actual request param.
             String id = context.getExternalContext().getRequestParameterMap().get("id");
-            System.out.println("id = " + id);
             ClinicalFindingValue image = clinicalFindingValueFacade.find(Long.valueOf(id)); // Assuming 'service' is your EJB session bean.
             String imageType = image.getImageType();
             if (imageType == null || imageType.trim().equals("")) {
@@ -548,7 +547,6 @@ public class PatientEncounterController implements Serializable {
             UtilityController.addErrorMessage("Please select a procedure");
             return;
         }
-        System.out.println("encounterProcedure.getId() = " + encounterProcedure.getId());
         if (encounterProcedure.getId() == null) {
             clinicalFindingValueFacade.create(encounterProcedure);
         } else {
@@ -675,7 +673,6 @@ public class PatientEncounterController implements Serializable {
 //                availableFavouriteMedicines = favouriteController.listFavouriteItems(iu.getItem(), PrescriptionTemplate.FavouriteMedicine, null, ageInDays);
             }
 
-            System.out.println("availableFavouriteMedicines = " + availableFavouriteMedicines);
             if (availableFavouriteMedicines == null) {
                 continue;
             }
@@ -2647,7 +2644,6 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void uploadPhoto(FileUploadEvent event) {
-        System.out.println("uploadPhoto");
         if (getCurrent() == null || getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;
@@ -2685,7 +2681,6 @@ public class PatientEncounterController implements Serializable {
     }
 
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
-        System.out.println("oncaptureVisitPhoto");
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;

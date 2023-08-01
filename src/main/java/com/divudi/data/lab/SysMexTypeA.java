@@ -73,7 +73,6 @@ public class SysMexTypeA {
             
             String webStr = inputString.substring(wbcStart, wbcEnd);
             wbc = Double.parseDouble(webStr) / wbcDiv;
-            System.out.println("webStr = " + webStr);
 
             String rbcStr = inputString.substring(rbcStart, rbcEnd);
             rbc = Double.parseDouble(rbcStr) / rbcDiv;

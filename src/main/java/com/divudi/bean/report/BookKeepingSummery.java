@@ -1075,7 +1075,6 @@ public class BookKeepingSummery implements Serializable {
                 count = 0l;
             }
 
-            System.err.println("********************************");
             if (!item.equals(itemOuter)) {
                 itemOuter = item;
                 if (bct == BillClassType.BilledBill) {
