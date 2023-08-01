@@ -48,53 +48,68 @@
                 <h:panelGroup
                     rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}">
                     <h:form>
-                        <p:commandButton value="Print" icon="ui-icon-print" >
-                            <p:printer target="gpPosBill1" />
-                        </p:commandButton>
-                        <p:commandButton value="New OPD Bill" 
-                                         ajax="false"
-                                         action="#{opdBillController.navigateToNewOpdBill()}">
-                        </p:commandButton>
-                        <p:commandButton value="Patient Registration" 
-                                         ajax="false"
-                                         action="#{opdBillController.navigateToSearchPatients()}">
-                        </p:commandButton>
-                        <div class="w-100">
-                            <div class="d-flex justify-content-between">
-                                <div class="flex-grow-1">
-                                    <h:panelGroup id="gpPosBill1" >
-                                        <ui:repeat value="#{opdBillController.bills}" var="b">
-                                            <div class="bill-item page">
-                                                <h:outputText value="#{b.billPrint}" escape="false"></h:outputText>
-                                                <script>
-                                                    $(document).ready(function () {
-                                                        JsBarcode("#barcode#{b.id}", "#{b.id}", {
-                                                            format: "CODE128",
-                                                            lineColor: "#000",
-                                                            width: 2,
-                                                            height: 100,
-                                                            displayValue: true
-                                                        });
-                                                    });
-                                                </script>
-                                            </div>
-                                        </ui:repeat>
-                                    </h:panelGroup>
 
-                                    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.3/dist/JsBarcode.all.min.js"></script>
-                                    <h:outputScript library="primefaces" name="jquery/jquery.js" target="head"/>
 
+                        <div class="container-fluid" >
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <p:commandButton value="Print" icon="ui-icon-print" >
+                                        <p:printer target="gpPosBill1" />
+                                    </p:commandButton>
+                                    <p:commandButton value="New OPD Bill" 
+                                                     ajax="false"
+                                                     action="#{opdBillController.navigateToNewOpdBill()}">
+                                    </p:commandButton>
+                                    <p:commandButton value="Patient Registration" 
+                                                     ajax="false"
+                                                     action="#{opdBillController.navigateToSearchPatients()}">
+                                    </p:commandButton>
                                 </div>
                             </div>
+                            <div class="row" >
+                                <div class="col-6" >
+                                    <div class="d-flex justify-content-between">
+                                        <div class="flex-grow-1">
+                                            <h:panelGroup id="gpPosBill1" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="b">
+                                                    <div class="bill-item page">
+                                                        <h:outputText value="#{b.billPrint}" escape="false"></h:outputText>
+                                                        <script>
+                                                            $(document).ready(function () {
+                                                                JsBarcode("#barcode#{b.id}", "#{b.id}", {
+                                                                    format: "CODE128",
+                                                                    lineColor: "#000",
+                                                                    width: 2,
+                                                                    height: 100,
+                                                                    displayValue: true
+                                                                });
+                                                            });
+                                                        </script>
+                                                    </div>
+                                                </ui:repeat>
+                                            </h:panelGroup>
 
-                            <div class="flex-grow-1">
-                                <p:dataTable value="#{opdBillController.bills}" var="b" >
-                                    <p:column headerText="Bill No" >
-                                        <h:outputText value="#{b.id}" ></h:outputText>
-                                    </p:column>
-                                </p:dataTable>
+                                            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.3/dist/JsBarcode.all.min.js"></script>
+                                            <h:outputScript library="primefaces" name="jquery/jquery.js" target="head"/>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="w-100">
+                                        <div class="flex-grow-1">
+                                            <p:dataTable value="#{opdBillController.bills}" var="b" >
+                                                <p:column headerText="Bill No" >
+                                                    <h:outputText value="#{b.id}" ></h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+
                     </h:form>
                 </h:panelGroup>
             </ui:define>

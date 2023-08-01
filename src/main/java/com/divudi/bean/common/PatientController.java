@@ -304,7 +304,6 @@ public class PatientController implements Serializable {
     }
 
     public String toPharmacyBilling() {
-        System.out.println("toPharmacyBilling");
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
@@ -346,8 +345,7 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        opdBillController.setPatient(current);
-        return opdBillController.navigateToNewOpdBill();
+        return opdBillController.navigateToNewOpdBill(current);
     }
     
     public String navigateToOpdBillForCashier() {

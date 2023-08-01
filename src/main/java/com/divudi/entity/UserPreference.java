@@ -94,7 +94,7 @@ public class UserPreference implements Serializable {
     @Lob
     private String opdBillTemplate;
     private boolean institutionRestrictedBilling = false;
-    boolean printLabelForOPdBill;
+    boolean opdSettleWithoutReferralDetails;
     boolean partialPaymentOfOpdBillsAllowed;
     boolean partialPaymentOfOpdPreBillsAllowed;
     boolean paymentMethodAllowedInInwardMatrix;
@@ -105,7 +105,7 @@ public class UserPreference implements Serializable {
     boolean depNumGenFromToDepartment;
     boolean tranferNetTotalbyRetailRate;
     boolean allowtoChangePaymentMethodDuringPayment;
-    boolean opdPosBillWithoutLogo;
+    boolean opdSettleWithoutCashTendered;
     boolean channelWithOutReferenceNumber;
     boolean pharmayPurchaseWithLastRate;
     boolean inwardAddServiceBillTimeCheck;
@@ -133,7 +133,7 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaymentMethod channellingPaymentMethod;
 
-    private Boolean canSettleOpdBillWithoutReferringDoctor;
+    private Boolean canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     private Boolean printBarcodeInOpdBill;
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
@@ -256,12 +256,12 @@ public class UserPreference implements Serializable {
         this.allowtoChangePaymentMethodDuringPayment = allowtoChangePaymentMethodDuringPayment;
     }
 
-    public boolean isOpdPosBillWithoutLogo() {
-        return opdPosBillWithoutLogo;
+    public boolean isOpdSettleWithoutCashTendered() {
+        return opdSettleWithoutCashTendered;
     }
 
-    public void setOpdPosBillWithoutLogo(boolean opdPosBillWithoutLogo) {
-        this.opdPosBillWithoutLogo = opdPosBillWithoutLogo;
+    public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
+        this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
     }
 
     public String getAbbreviationForHistory() {
@@ -360,12 +360,12 @@ public class UserPreference implements Serializable {
         this.institutionSpecificItems = institutionSpecificItems;
     }
 
-    public boolean isPrintLabelForOPdBill() {
-        return printLabelForOPdBill;
+    public boolean isOpdSettleWithoutReferralDetails() {
+        return opdSettleWithoutReferralDetails;
     }
 
-    public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
-        this.printLabelForOPdBill = printLabelForOPdBill;
+    public void setOpdSettleWithoutReferralDetails(boolean opdSettleWithoutReferralDetails) {
+        this.opdSettleWithoutReferralDetails = opdSettleWithoutReferralDetails;
     }
 
     public boolean isGrnBillDetailed() {
@@ -624,15 +624,15 @@ public class UserPreference implements Serializable {
         this.sentDailySmsSummeryForReferringDoctors = sentDailySmsSummeryForReferringDoctors;
     }
 
-    public Boolean getCanSettleOpdBillWithoutReferringDoctor() {
-        if (canSettleOpdBillWithoutReferringDoctor == null) {
-            canSettleOpdBillWithoutReferringDoctor = true;
+    public Boolean getCanSettleOpdBillWithInvestigationsWithoutReferringDoctor() {
+        if (canSettleOpdBillWithInvestigationsWithoutReferringDoctor == null) {
+            canSettleOpdBillWithInvestigationsWithoutReferringDoctor = true;
         }
-        return canSettleOpdBillWithoutReferringDoctor;
+        return canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     }
 
-    public void setCanSettleOpdBillWithoutReferringDoctor(Boolean canSettleOpdBillWithoutReferringDoctor) {
-        this.canSettleOpdBillWithoutReferringDoctor = canSettleOpdBillWithoutReferringDoctor;
+    public void setCanSettleOpdBillWithInvestigationsWithoutReferringDoctor(Boolean canSettleOpdBillWithInvestigationsWithoutReferringDoctor) {
+        this.canSettleOpdBillWithInvestigationsWithoutReferringDoctor = canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     }
 
     public Boolean getPrintBarcodeInOpdBill() {

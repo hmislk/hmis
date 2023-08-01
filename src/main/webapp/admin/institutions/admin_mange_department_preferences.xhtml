@@ -48,20 +48,45 @@
                             <p:tab title="OPD" >
 
                                 <h:panelGrid columns="2"  class="w-100">
-                                    <h:panelGroup>
-                                        <h:outputLabel 
-                                            value="OPD Bill Template" 
-                                            class="form-label" ></h:outputLabel>
-                                        <h:commandButton value="Generate Default" 
-                                                         action="#{sessionController.generateOpdBillTemplate()}" 
-                                                         class="btn-secondary float-left"></h:commandButton>
-                                    </h:panelGroup>
 
-                                    <h:inputTextarea 
-                                        value="#{sessionController.currentPreference.opdBillTemplate}"
-                                        class="form-control w-100"
-                                        style="min-height: 20em; min-width: 40em;"
-                                        ></h:inputTextarea>
+                                    <h:outputLabel 
+                                        class="form-label"
+                                        value="Can settle without a phone number"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        class="form-control" 
+                                        offIcon="fas fa-check" 
+                                        onIcon="fas fa-times"
+                                        value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
+
+                                    <h:outputLabel 
+                                        value="Can settle without referral details"
+                                        class="form-label"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        offIcon="fas fa-check" 
+                                        onIcon="fas fa-times"
+                                        class="form-control"
+                                        value="#{sessionController.currentPreference.opdSettleWithoutReferralDetails}" ></p:selectBooleanButton>
+
+
+                                    <h:outputLabel 
+                                        value="Can settle Lab Bills without referral details"
+                                        class="form-label"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        offIcon="fas fa-check" 
+                                        onIcon="fas fa-times"
+                                        class="form-control"
+                                        value="#{sessionController.currentPreference.canSettleOpdBillWithInvestigationsWithoutReferringDoctor}" ></p:selectBooleanButton>
+
+
+
+                                    <h:outputLabel value="Can settle without Cash Tendered amount"></h:outputLabel>
+                                    <p:selectBooleanButton 
+                                        class="form-control"
+                                        offIcon="fas fa-check"
+                                        onIcon="fas fa-times"
+                                        value="#{sessionController.currentPreference.opdSettleWithoutCashTendered}"/>
+
+                                    #{sessionController.currentPreference.opdSettleWithoutCashTendered}
 
                                     <h:outputLabel 
                                         class="form-label"
@@ -80,15 +105,6 @@
                                         onIcon="fas fa-times"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.institutionRestrictedBilling}" ></p:selectBooleanButton>
-
-                                    <h:outputLabel 
-                                        value="Print Labels for OPD Bills"
-                                        class="form-label"></h:outputLabel>
-                                    <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
-                                        class="form-control"
-                                        value="#{sessionController.currentPreference.printLabelForOPdBill}" ></p:selectBooleanButton>
 
                                     <h:outputLabel 
                                         value="OPD Bill Paper" 
@@ -127,13 +143,6 @@
                                         onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
 
-                                    <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
-                                    <p:selectBooleanButton 
-                                        class="form-control"
-                                        offIcon="fas fa-check"
-                                        onIcon="fas fa-times"
-                                        value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
-
                                     <h:outputLabel 
                                         value="Five Five Bill With Labels and Headings"
                                         class="form-label"></h:outputLabel>
@@ -142,15 +151,6 @@
                                         offIcon="fas fa-check" 
                                         onIcon="fas fa-times"
                                         value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
-
-                                    <h:outputLabel 
-                                        class="form-label"
-                                        value="OPD Settle Without Patient Phone Number"></h:outputLabel>
-                                    <p:selectBooleanButton 
-                                        class="form-control" 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
-                                        value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
 
                                     <h:outputLabel
                                         class="form-label w-100"
@@ -345,6 +345,24 @@
 
                                     </h:panelGrid>
                                 </p:panel>
+                            </p:tab>
+
+                            <p:tab title="Bill Templates" >
+                                <h:panelGroup>
+                                    <h:outputLabel 
+                                        value="OPD Bill Template" 
+                                        class="form-label" ></h:outputLabel>
+                                    <h:commandButton value="Generate Default" 
+                                                     action="#{sessionController.generateOpdBillTemplate()}" 
+                                                     class="btn-secondary float-left"></h:commandButton>
+                                </h:panelGroup>
+
+                                <h:inputTextarea 
+                                    value="#{sessionController.currentPreference.opdBillTemplate}"
+                                    class="form-control w-100"
+                                    style="min-height: 20em; min-width: 40em;"
+                                    ></h:inputTextarea>
+
                             </p:tab>
 
                             <p:tab title="Miscellaneous" >

@@ -921,7 +921,6 @@ public class InvestigationItemController implements Serializable {
         try {
             JsonNode actualObj = mapper.readTree(jsonString);
             String color = actualObj.get("reportFormat").asText();
-            System.out.println("color = " + color);
 
         } catch (JsonProcessingException ex) {
             Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);

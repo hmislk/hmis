@@ -125,7 +125,7 @@
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionRestrictedBilling}" ></h:selectBooleanCheckbox>
 
                             <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutReferralDetails}" ></h:selectBooleanCheckbox>
                             <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.currentPreference.opdBillPaperType}" >
                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -139,7 +139,7 @@
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
 
                             <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutCashTendered}"/>
 
                             <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
