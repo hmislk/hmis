@@ -30,6 +30,7 @@
                             <p:column>
                                 <h:outputLabel value="#{myItem.patient.person.name}"/>
                             </p:column>
+                            <p:ajax process="@this"></p:ajax>
                         </p:autoComplete> 
                         <p:commandButton ajax="false" value="Display Details" />
                             

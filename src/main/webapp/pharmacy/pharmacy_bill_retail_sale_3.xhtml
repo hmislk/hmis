@@ -51,7 +51,7 @@
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                                 <style>
                                                     .ui-autocomplete-input {
-                                                        width:350px!important;
+                                                        width:300px!important;
                                                         display: block;
                                                     }
                                                     .ui-autocomplete{
@@ -107,22 +107,25 @@
                                                 </p:inputText>
                                             </h:panelGrid>
 
+                                            <h:panelGrid columns="1">
+                                                <p:outputLabel/>
                                             <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                               action="#{pharmacySaleController3.addBillItemNew()}" 
                                                               process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
                                                               update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:commandButton>
 
+                                            </h:panelGrid>
                                             <h:panelGrid columns="1" >
                                                 <p:outputLabel value="Rate" ></p:outputLabel>
-                                                <p:outputLabel id="txtRate" value="#{pharmacySaleController3.billItem.netRate}" >
+                                                <p:inputText  id="txtRate" value="#{pharmacySaleController3.billItem.netRate}" >
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
+                                                </p:inputText >
                                             </h:panelGrid>
                                             <h:panelGrid columns="1" >
                                                 <p:outputLabel value="Value" ></p:outputLabel>
-                                                <p:outputLabel id="txtVal" value="#{pharmacySaleController3.billItem.netValue}" >
+                                                <p:inputText  id="txtVal" value="#{pharmacySaleController3.billItem.netValue}" >
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
+                                                </p:inputText >
                                             </h:panelGrid>
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
                                             <p:focus id="focusItem" for="acStock" ></p:focus>
