@@ -612,7 +612,6 @@ public class SheduleController implements Serializable {
             System.err.println("Time stage 2.2 = " + new Date());
 
             System.err.println("Fetch Original Sessions = " + tmp.size());
-            System.err.println("Time stage 3.1 = " + new Date());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
@@ -741,7 +740,6 @@ public class SheduleController implements Serializable {
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-            System.err.println("Time stage 3.2 = " + new Date());
             if (tmp.isEmpty()) {
                 return;
             }

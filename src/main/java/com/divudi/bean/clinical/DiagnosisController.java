@@ -22,8 +22,14 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -47,6 +53,44 @@ public class DiagnosisController implements Serializable {
 
     public String navigateToManageDiagnoses() {
         return "/emr/admin/diagnoses";
+    }
+    
+    // Method to generate the Excel file and initiate the download
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Diagnoses");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("No");
+            headerRow.createCell(1).setCellValue("Name");
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (ClinicalEntity diag : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(rowNum);
+                row.createCell(1).setCellValue(diag.getName());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"diagnoses.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 
     public List<ClinicalEntity> completeDiagnosis(String qry) {
@@ -188,7 +232,7 @@ public class DiagnosisController implements Serializable {
             Map m = new HashMap();
             m.put("t", SymanticType.Disease_or_Syndrome);
             String sql;
-            sql = "select c from ClinicalFindingItem c where c.retired=false and c.symanticType=:t order by c.name";
+            sql = "select c from ClinicalEntity c where c.retired=false and c.symanticType=:t order by c.name";
             items = getFacade().findByJpql(sql, m);
         }
 
@@ -196,7 +240,6 @@ public class DiagnosisController implements Serializable {
     }
 
     public String navigateToListDiagnoses() {
-        System.out.println("navigateToListDiagnoses");
         Map m = new HashMap();
         m.put("t", SymanticType.Disease_or_Syndrome);
         m.put("ret", false);

@@ -8,8 +8,8 @@
       xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/admin/users/admin_view_user.xhtml">
+            <ui:define name="users">
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                     <h:outputLabel value="You are NOT authorized"/>
                 </h:panelGroup>

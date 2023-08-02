@@ -1761,7 +1761,6 @@ public class Qb {
     }
 
     private JSONObject inwardFinalBilltoJSONObject(Bill b) {
-        System.out.println("inwardFinalBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
@@ -1817,7 +1816,6 @@ public class Qb {
         headerJo.put("payMethod", payMethod);
         headerJo.put("invoiceDate", CommonFunctions.formatDate(b.getCreatedAt(), "yyyy-MM-dd"));
         String invNo = b.getInsId() + "/" + b.getDeptId() + "/" + b.getIdStr();
-        System.out.println("invNo = " + invNo);
         headerJo.put("invoiceNo", invNo);
         headerJo.put("bankAcc", bankAccount);
         headerJo.put("rep_name", "");
@@ -2371,13 +2369,11 @@ public class Qb {
     }
 
     private JSONArray invoiceBillsToJSONArray(List<Bill> bills) {
-        System.out.println("invoiceBillsToJSONArray");
         JSONArray array = new JSONArray();
         for (Bill bill : bills) {
             if (bill.getBillType() == null) {
                 continue;
             }
-            System.out.println("bill.getBillType() = " + bill.getBillType());
             JSONObject jSONObject = new JSONObject();
             switch (bill.getBillType()) {
                 case PharmacySale:
@@ -2793,28 +2789,22 @@ public class Qb {
 
     private boolean isValidKey(String key) {
         if (key == null || key.trim().equals("")) {
-            System.err.println("No key given");
             return false;
         }
         ApiKey k = apiKeyController.findApiKey(key);
         if (k == null) {
-            System.err.println("No key found");
             return false;
         }
         if (k.getWebUser() == null) {
-            System.err.println("No user for the key");
             return false;
         }
         if (k.getWebUser().isRetired()) {
-            System.err.println("User Retired");
             return false;
         }
         if (!k.getWebUser().isActivated()) {
-            System.err.println("User Inactive");
             return false;
         }
         if (k.getDateOfExpiary().before(new Date())) {
-            System.err.println("Key Expired");
             return false;
         }
         return true;
@@ -2933,7 +2923,8 @@ public class Qb {
          *
          */
         int maxNo = 2500;
-        System.out.println("cInvList 5" + new Date());
+//        List<Bill> billsInpatient = billList(maxNo, billTypesInpatient, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, true);
+//        List<Bill> billsInpatient = null;
 //        List<Bill> billsInpatient = billList(maxNo, billTypesInpatient, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, true);
 //        List<Bill> billsInpatient = null;
 
@@ -2947,7 +2938,6 @@ public class Qb {
 //        }
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, false);
 
-        System.out.println("cInvList 6 " + new Date());
 
         if (bills != null && !bills.isEmpty()) {
             Bill lastOtherBill = bills.get(bills.size() - 1);
@@ -3235,7 +3225,6 @@ public class Qb {
         int maxNo = 500;
 
         System.out.println("lastIdInRequest = " + lastIdInRequest);
-        System.out.println("lastDate = " + lastDate);
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, false);
         Long lastIdOfCurrentdata = null;
@@ -3246,7 +3235,6 @@ public class Qb {
             }
         }
 
-        System.out.println("lastIdOfCurrentdata = " + lastIdOfCurrentdata);
 
         array = invoiceBillsToJSONArray(bills);
         jSONObjectOut.put("grnList", array);
@@ -3947,9 +3935,7 @@ public class Qb {
         m.put("c", strInstitutionCode);
         m.put("ret", false);
         System.out.println("m = " + m);
-        System.out.println("j = " + j);
         Institution ins = institutionFacade.findFirstByJpql(j, m);
-        System.out.println("ins = " + ins);
         return ins;
     }
 

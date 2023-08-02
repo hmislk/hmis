@@ -116,12 +116,12 @@ public class WebUserController implements Serializable {
     private WebUserDashboard webUserDashboard;
     private List<WebUserDashboard> webUserDashboards;
     private int manageDiscountIndex;
-    
+
     private int manageUsersIndex;
-    
+
     private List<Department> departmentsOfSelectedUsersInstitution;
 
-    public void removeSelectedItems() {
+    public void removeMultipleUsers() {
         for (WebUser s : itemsToRemove) {
             s.setRetired(true);
             s.setRetireComments("Bulk Remove");
@@ -181,11 +181,8 @@ public class WebUserController implements Serializable {
             UtilityController.addSuccessMessage("Updated");
         }
     }
-    
-    
 
     public void removeUser() {
-
         if (selected == null) {
             UtilityController.addErrorMessage("Select a user to remove");
             return;
@@ -194,12 +191,10 @@ public class WebUserController implements Serializable {
         selected.getWebUserPerson().setRetirer(getSessionController().getLoggedUser());
         selected.getWebUserPerson().setRetiredAt(Calendar.getInstance().getTime());
         getPersonFacade().edit(selected.getWebUserPerson());
-
         selected.setName(selected.getId().toString());
         selected.setRetired(true);
         selected.setRetirer(getSessionController().getLoggedUser());
         selected.setRetiredAt(Calendar.getInstance().getTime());
-        //getFacade().edit(removingUser);
         getFacade().edit(selected);
         UtilityController.addErrorMessage("User Removed");
     }
@@ -367,7 +362,7 @@ public class WebUserController implements Serializable {
         current = new WebUser();
     }
 
-    public void prepairAddNewUser() {
+    public String navigateToAddNewUser() {
         setCurrent(new WebUser());
         Person p = new Person();
         getCurrent().setWebUserPerson(p);
@@ -378,7 +373,7 @@ public class WebUserController implements Serializable {
         staff = null;
         department = null;
         institution = null;
-
+        return "/admin/users/admin_add_new_user";
     }
 
     public SecurityController getSecurityController() {
@@ -497,7 +492,7 @@ public class WebUserController implements Serializable {
         }
 
         recreateModel();
-        prepairAddNewUser();
+        navigateToAddNewUser();
         selectText = "";
         return BackToAdminManageUsers();
     }
@@ -576,14 +571,10 @@ public class WebUserController implements Serializable {
         current = null;
     }
 
-    public void createTable() {
-
-        if (selectText.trim().equals("")) {
-            items = getFacade().findBySQL("select c from WebUser c where c.retired=false order by c.webUserPerson.name");
-        } else {
-            items = getFacade().findBySQL("select c from WebUser c where c.retired=false and (c.webUserPerson.name) like '%" + getSelectText().toUpperCase() + "%' order by c.webUserPerson.name");
-        }
-        dycryptName();
+    public String navigateToListUsers() {
+        items = getFacade().findBySQL("select c from WebUser c where c.retired=false order by c.webUserPerson.name");
+//        dycryptName();
+        return "/admin/users/admin_view_user";
     }
 
     public List<WebUser> getSelectedItems() {
@@ -715,16 +706,16 @@ public class WebUserController implements Serializable {
         this.selected = selected;
     }
 
-    public String toManageUser() {
+    public String navigateToEditUser() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
         current = selected;
-        return "/admin_user";
+        return "/admin/users/admin_user";
     }
 
-    public String toManageStaff() {
+    public String navigateToManageStaff() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
@@ -733,32 +724,32 @@ public class WebUserController implements Serializable {
         return "/hr/hr_staff_admin";
     }
 
-    public String toManagePassword() {
+    public String navigateToEditPasswordByAdmin() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
         current = selected;
-        return "/admin_change_password";
+        return "/admin/users/admin_change_password";
     }
 
-    public String toManagePrivileges() {
+    public String navigateToManagePrivileges() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
         getUserPrivilageController().setCurrentWebUser(selected);
         getUserPrivilageController().createSelectedPrivilegesForUser();
-        return "/admin_user_privilages";
+        return "/admin/users/admin_user_privilages";
     }
 
-    public String toManagePaymentSchemes() {
+    public String navigateToManagePaymentSchemes() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
         getUserPaymentSchemeController().setSelectedUser(selected);
-        return "/admin_user_paymentScheme";
+        return "/admin/users/admin_user_paymentScheme";
     }
 
     public String toManageSignature() {
@@ -770,13 +761,13 @@ public class WebUserController implements Serializable {
         return "/admin/institutions/admin_staff_signature";
     }
 
-    public String toManageDepartments() {
+    public String navigateToManageDepartments() {
         if (selected == null) {
             JsfUtil.addErrorMessage("Please select a user");
             return "";
         }
         getUserDepartmentController().setSelectedUser(selected);
-        return "/admin_user_department";
+        return "/admin/users/admin_user_department";
     }
 
     public String toManageDashboards() {
@@ -927,10 +918,10 @@ public class WebUserController implements Serializable {
 
     public List<Department> getDepartmentsOfSelectedUsersInstitution() {
         departmentsOfSelectedUsersInstitution = new ArrayList<>();
-        if(getCurrent()==null){
+        if (getCurrent() == null) {
             return departmentsOfSelectedUsersInstitution;
         }
-        if(getCurrent().getInstitution()==null){
+        if (getCurrent().getInstitution() == null) {
             return departmentsOfSelectedUsersInstitution;
         }
         String jpql = "select d "
@@ -964,9 +955,10 @@ public class WebUserController implements Serializable {
         this.manageDiscountIndex = manageDiscountIndex;
     }
 
-    public String navigateToManageUsers(){
+    public String navigateToManageUsers() {
         return "/admin/users/admin_manage_users";
     }
+
     @FacesConverter("webUs")
     public static class WebUserControllerConverter implements Converter {
 
