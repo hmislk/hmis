@@ -37,8 +37,7 @@
 
                         <p:menuitem 
                             ajax="false" 
-                            action="/opd/opd_bill"  
-                            actionListener="#{billController.prepareNewBill}" 
+                            action="#{opdBillController.navigateToNewOpdBill()}" 
                             value="OPD Billing"
                             icon="fa fa-fw fa-notes-medical" 
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" ></p:menuitem>

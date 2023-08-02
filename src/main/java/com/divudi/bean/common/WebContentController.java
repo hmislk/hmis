@@ -156,7 +156,6 @@ public class WebContentController implements Serializable {
 
     public void makeSelectedLanguageAsDisplayLanguage(){
         System.out.println("makeSelectedLanguageAsDisplayLanguage");
-        System.out.println("selectedlanguage = " + selectedlanguage);
         if(selectedlanguage==null){
             JsfUtil.addErrorMessage("No Language Selected");
             return ;

@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <div class="row" >
+                    <div class="col-md-3" >
+                        <h:form>
+                            <p:accordionPanel  activeIndex="#{institutionController.managaeInstitutionIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="Manage" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton class="btn btn-primary"
+                                                         action="#{institutionController.toAddNewInstitution()}" 
+                                                         icon="bi bi-building-fill-add" value="Add New Institution">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton"  
+                                                         action="#{institutionController.toListInstitutions()}" 
+                                                         icon="bi bi-building-fill-add" value="List Institutions">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton"  
+                                                         action="#{departmentController.toAddNewDepartment()}" 
+                                                         icon="bi bi-building-fill-add" value="Add New Department">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" 
+                                                         action="#{departmentController.toListDepartments()}" 
+                                                         icon="bi bi-building-fill-add" value="List Departments">
+                                        </p:commandButton>
+                                        <p:commandButton styleClass="linkButton" icon="bi bi-building-fill" ajax="false" value="Institution Branch" action="#{navigationController.navigateToInstitutionBranch()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Manage Departments" action="#{navigationController.navigateToManageDepartment()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Collecting Centres" action="#{navigationController.navigateToCollectingCenter()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Credit Companies" action="#{navigationController.navigateToCreditCompany()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Area" action="#{navigationController.navigateToArea()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToStaffSignature()}" />
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Preferences" >
+                                    <div class="d-grid gap-2">
+
+
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Program Preferences" action="#{sessionController.toManageApplicationPreferences}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Institution Preferences" action="#{sessionController.toManageIntitutionPreferences()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Department Preferences" action="#{sessionController.toManageDepartmentPreferences()}" />
+
+
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Developer" >
+                                    <div class="d-grid gap-2">
+
+
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  />
+
+
+                                    </div>
+                                </p:tab>
+                            </p:accordionPanel>
+                        </h:form>
+                    </div>
+                    <div class="col-md-9" >
+                        <ui:insert name="admin" >
+
+                        </ui:insert>
+
+                    </div>
+                </div>
+
+
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

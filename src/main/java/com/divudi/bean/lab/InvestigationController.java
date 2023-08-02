@@ -159,6 +159,11 @@ public class InvestigationController implements Serializable {
         return "/lab/manage_investigation";
     }
     
+    public String navigateToAddInvestigationForAdmin() {
+        current = new Investigation();
+        return "/admin/items/investigation";
+    }
+    
     public String navigateToAddInvestigationForLabForExport() {
         current = new Investigation();
         return "/lab/investigation_list_for_export";

@@ -57,12 +57,13 @@ public class PharmaceuticalItemCategoryController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("category");
+            Sheet sheet = workbook.createSheet("Dosage Forms");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
             headerRow.createCell(0).setCellValue("No");
             headerRow.createCell(1).setCellValue("Name");
+            headerRow.createCell(1).setCellValue("Description");
             // Add more columns as needed
 
             // Populate the data rows
@@ -71,13 +72,14 @@ public class PharmaceuticalItemCategoryController implements Serializable {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(rowNum);
                 row.createCell(1).setCellValue(diag.getName());
+                 row.createCell(2).setCellValue(diag.getDescription());
             }
 
             // Set the response headers to initiate the download
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"diagnoses.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"dosage_forms.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
