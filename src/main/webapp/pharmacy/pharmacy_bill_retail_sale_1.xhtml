@@ -40,8 +40,8 @@
                         </p:panel>
 
                         <div class="row">
-                            <div class="col-md-7">
-                                <p:panel style="height: 1050px">
+                            <div class="col-md-7" >
+                                <p:panel style="height: 1050px" class="w-100">
                                     <f:facet name="header" >
                                         <h:outputLabel value="Pharmacy Retail Bill(Sale 2)" />
                                     </f:facet>
@@ -52,7 +52,7 @@
                                                 <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                                 <style>
                                                     .ui-autocomplete-input {
-                                                        width:350px!important;
+                                                        width:300px!important;
                                                         display: block;
                                                     }
                                                     .ui-autocomplete{
@@ -100,30 +100,32 @@
                                                 </p:autoComplete>
                                             </h:panelGrid>
 
-                                            <h:panelGrid columns="1" >
+                                            <h:panelGrid columns="1" class="w-100">
                                                 <p:outputLabel value="Quentity" ></p:outputLabel>
-                                                <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacySaleController1.intQty}" style="width: 50px!important;">
+                                                <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacySaleController1.intQty}" style="width: 60px!important;">
                                                     <p:ajax event="keyup"  listener="#{pharmacySaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                     <p:ajax event="blur"  listener="#{pharmacySaleController1.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" update="txtRate txtVal" ></p:ajax>
                                                 </p:inputText>
                                             </h:panelGrid>
 
-                                            <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                              action="#{pharmacySaleController1.addBillItemNew()}" 
-                                                              process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
-                                                              update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} " ></p:commandButton>
-
-                                            <h:panelGrid columns="1" >
-                                                <p:outputLabel value="Rate" ></p:outputLabel>
-                                                <p:outputLabel id="txtRate" value="#{pharmacySaleController1.billItem.netRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel></p:outputLabel>
+                                                <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
+                                                                  action="#{pharmacySaleController1.addBillItemNew()}" 
+                                                                  process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
+                                                                  update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} " ></p:commandButton>
                                             </h:panelGrid>
-                                            <h:panelGrid columns="1" >
-                                                <p:outputLabel value="Value" ></p:outputLabel>
-                                                <p:outputLabel id="txtVal" value="#{pharmacySaleController1.billItem.netValue}" >
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel value="Rate" ></p:outputLabel>
+                                                <p:inputText  id="txtRate" value="#{pharmacySaleController1.billItem.netRate}" >
                                                     <f:convertNumber pattern="#,##0.00" />
-                                                </p:outputLabel>
+                                                </p:inputText >
+                                            </h:panelGrid>
+                                            <h:panelGrid columns="1" class="w-100">
+                                                <p:outputLabel value="Value" ></p:outputLabel>
+                                                <p:inputText  id="txtVal" value="#{pharmacySaleController1.billItem.netValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </p:inputText >
                                             </h:panelGrid>
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
                                             <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -131,18 +133,18 @@
                                         </h:panelGrid>
 
 
-                                        <p:panel header="Bill Items" id="pBis">
+                                        <p:panel header="Bill Items" id="pBis" class="w-100">
                                             <p:dataTable id="tblBillItem" value="#{pharmacySaleController1.preBill.billItems}"
-                                                         var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
+                                                         var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" class="w-100">
 
                                                 <p:ajax event="rowEdit" listener="#{pharmacySaleController1.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
                                                 <p:ajax event="rowEditCancel" listener="#{pharmacySaleController1.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
 
 
-                                                <p:column headerText="Item">
+                                                <p:column headerText="Item" class="w-100">
                                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Quentity">
+                                                <p:column headerText="Quentity" class="w-100">
                                                     <p:cellEditor>  
                                                         <f:facet name="output">  
                                                             <h:outputText value="#{bi.qty}" >
@@ -155,28 +157,28 @@
                                                     </p:cellEditor> 
                                                 </p:column>
 
-                                                <p:column style="width:6%">  
+                                                <p:column class="w-100">  
                                                     <p:rowEditor />  
                                                 </p:column>  
 
 
-                                                <p:column headerText="Rate">
+                                                <p:column headerText="Rate" class="w-100">
                                                     <h:outputLabel id="rate" value="#{bi.rate}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Value">
+                                                <p:column headerText="Value" class="w-100">
                                                     <h:outputLabel value="#{bi.grossValue}" id="gros">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </p:column>
-                                                <p:column headerText="Expiry">
+                                                <p:column headerText="Expiry" class="w-100">
                                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
                                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                                                     </h:outputLabel>
 
                                                 </p:column>
-                                                <p:column headerText="Remove">
+                                                <p:column headerText="Remove" class="w-100">
                                                     <p:commandButton value="Remove" action="#{pharmacySaleController1.removeBillItem(bi)}" ajax="false" >
 
                                                     </p:commandButton>
@@ -291,7 +293,7 @@
                                     <f:facet name="header" >
                                         <h:panelGrid columns="20"  >
 
-<h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
                                             <p:selectOneMenu   id="pay" value="#{pharmacySaleController1.paymentMethod}">    
                                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                                                 <p:ajax process="@this cmbPs " 
