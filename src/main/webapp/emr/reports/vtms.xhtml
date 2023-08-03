@@ -22,9 +22,23 @@
                                     <p:dataExporter type="xls" target="vtmTable" fileName="vtmData" />
                                 </p:commandButton>
                             </div>
+                            
                         </div>
 
+                        
+                        
                         <div class="card-body">
+                            
+                            <p:inputTextarea value="#{vtmController.bulkText}" class="w-100" rows="10"></p:inputTextarea>
+                            <div>
+                                <p:commandButton value="Cleance"
+                                                 ajax="false" 
+                                                 icon="pi pi-file-excel" 
+                                                 title="Cleance"
+                                                 action="#{vtmController.cleanceVTMs()}">
+                                </p:commandButton>
+                            </div>
+                            
                             <p:dataTable id="vtmTable" var="item" value="#{vtmController.items}" paginator="true" rows="10"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15" styleClass="table table-striped table-bordered">
