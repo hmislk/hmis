@@ -32,14 +32,15 @@
                             </p:column>
                             <p:ajax process="@this"></p:ajax>
                         </p:autoComplete> 
-                        <p:commandButton ajax="false" value="Display Details" />
+                        <p:commandButton ajax="false" value="Display Details" action="#{bhtEditController.displayDetails}" class="m-1"/>
+                        
                             
-                        <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();">
+                        <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();" class="m-1">
 
                         </p:commandButton>
 
 
-                        <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false" onclick="onSubmitButton();">
+                        <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false" onclick="onSubmitButton();" class="m-1" >
                         </p:commandButton>
 
 
@@ -81,7 +82,7 @@
                                     
                                 </p:panel>
 
-                                <p:panel header="Patient Detail">  
+                                <p:panel header="Detail">  
 
                                     <in:inputPatientDetail_1 patient="#{bhtEditController.current.patient}"/>
 
