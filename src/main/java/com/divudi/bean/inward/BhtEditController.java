@@ -78,6 +78,7 @@ public class BhtEditController implements Serializable {
     @EJB
     private BillFacade billFacade;
     String comment;
+   
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
@@ -383,6 +384,24 @@ public class BhtEditController implements Serializable {
     public void setPatientFacade(PatientFacade patientFacade) {
         this.patientFacade = patientFacade;
     }
+    
+    public void displayDetails() {
+    if (getCurrent() == null || getCurrent().getId() == null) {
+        UtilityController.addErrorMessage("Please select an admission to display details.");
+        return;
+    }
+
+
+    current = getFacade().find(getCurrent().getId());
+
+    if (current != null) {
+        UtilityController.addSuccessMessage("Details displayed successfully.");
+    } else {
+        UtilityController.addErrorMessage("Failed to fetch admission details.");
+    }
+}
+
+
 
     public List<Patient> getPatientList() {
         if (patientList == null) {
