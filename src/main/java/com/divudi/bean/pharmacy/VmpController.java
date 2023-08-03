@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -74,10 +75,9 @@ public class VmpController implements Serializable {
     @EJB
     VtmsVmpsFacade vivFacade;
     List<VirtualProductIngredient> vivs;
-    
+
     @EJB
     VmpFacade vmpFacade;
-
 
     List<Vmp> vmpList;
 
@@ -92,6 +92,71 @@ public class VmpController implements Serializable {
         return "/emr/reports/vmps?faces-redirect=true";
     }
 
+    public void cleanceVTMs() {
+        items = ejbFacade.findAll();
+        for (Vmp v : getItems()) {
+            if (v.getName() == null) {
+                return;
+            }
+            String strVmp = v.getName();
+            strVmp = removeDuplicateWordsIgnoreCase(strVmp);
+            strVmp = cleanVTMName(strVmp);
+            strVmp = removeSpecificWords(strVmp, convertInputToArray(bulkText));
+            v.setName(strVmp);
+            getFacade().edit(v);
+        }
+    }
+
+    public String removeDuplicateWordsIgnoreCase(String input) {
+        String[] words = input.split("\\s+");
+
+        LinkedHashSet<String> uniqueWords = new LinkedHashSet<>();
+        for (String word : words) {
+            uniqueWords.add(word.toLowerCase());
+        }
+
+        StringBuilder output = new StringBuilder();
+        for (String word : words) {
+            if (uniqueWords.contains(word.toLowerCase())) {
+                output.append(word);
+                output.append(" ");
+                uniqueWords.remove(word.toLowerCase());
+            }
+        }
+
+        return output.toString().trim();
+    }
+
+    public String cleanVTMName(String input) {
+        String output;
+        // Remove extra spaces
+        output = input.replaceAll(" +", " ");
+        return output;
+    }
+
+    public String removeSpecificWords(String input, String[] wordsToRemove) {
+        String output = input;
+
+        for (String word : wordsToRemove) {
+            output = output.replaceAll("\\b" + word + "\\b", "").trim();
+        }
+
+        // Remove extra spaces
+        output = output.replaceAll(" +", " ");
+
+        return output;
+    }
+
+    public String removeDuplicateWords(String input) {
+        String[] words = input.split("\\s+");
+        String output = String.join(" ", new LinkedHashSet<String>(Arrays.asList(words)));
+        return output;
+    }
+
+    public String[] convertInputToArray(String bulkText) {
+        return bulkText.split("\n");
+    }
+
     public List<Vmp> completeVmp(String query) {
 
         String sql;
@@ -104,7 +169,7 @@ public class VmpController implements Serializable {
         }
         return vmpList;
     }
-    
+
     public List<Amp> ampsOfVmp(Item vmp) {
         List<Amp> suggestions = new ArrayList<>();
         if (!(vmp instanceof Vmp)) {
@@ -137,13 +202,13 @@ public class VmpController implements Serializable {
         m.put("ret", false);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public List<PharmaceuticalItem> ampsAndVmpsContainingVtm(Item item) {
         List<PharmaceuticalItem> vmpsAndAmps = new ArrayList<>();
-        if(!(item instanceof Vtm)){
+        if (!(item instanceof Vtm)) {
             return vmpsAndAmps;
         }
-        
+
         Vtm vtm = (Vtm) item;
         List<Vmp> vmps = vmpsContainingVtm(vtm);
         if (vmps == null || vmps.isEmpty()) {
@@ -155,10 +220,10 @@ public class VmpController implements Serializable {
         }
         return vmpsAndAmps;
     }
-    
+
     public List<Vmp> vmpsContainingVtm(Item item) {
         List<Vmp> vmps = new ArrayList<>();
-        if(!(item instanceof Vtm)){
+        if (!(item instanceof Vtm)) {
             return vmps;
         }
         Vtm vtm = (Vtm) item;
@@ -174,11 +239,11 @@ public class VmpController implements Serializable {
         return vmpFacade.findByJpql(j, m);
     }
 
-    public Vmp createVmp(String vmpName, 
+    public Vmp createVmp(String vmpName,
             Vtm vtm,
             Category dosageForm,
-            Double strengthOfAnIssueUnit, 
-            MeasurementUnit strengthUnit, 
+            Double strengthOfAnIssueUnit,
+            MeasurementUnit strengthUnit,
             Double issueUnitsPerPack,
             MeasurementUnit packUnit,
             Double minimumIssueQuantity,
@@ -205,8 +270,7 @@ public class VmpController implements Serializable {
         v.setIssueMultipliesUnit(issueMultipliesQuantityUnit);
         getFacade().create(v);
         return v;
-}
-
+    }
 
     public List<VirtualProductIngredient> getVivs() {
         if (getCurrent().getId() == null) {

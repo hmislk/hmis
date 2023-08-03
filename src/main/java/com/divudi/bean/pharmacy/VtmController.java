@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -58,26 +59,72 @@ public class VtmController implements Serializable {
     boolean reportedAs;
     List<Vtm> vtmList;
 
-public String navigateToListAllVtms() {
-    String jpql = "Select vtm "
-            + " from Vtm vtm "
-            + " where vtm.retired=:ret "
-            + " order by vtm.name";
+    public String navigateToListAllVtms() {
+        String jpql = "Select vtm "
+                + " from Vtm vtm "
+                + " where vtm.retired=:ret "
+                + " order by vtm.name";
 
-    Map<String, Object> m = new HashMap<>();
-    m.put("ret", false);
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
 
-    items = getFacade().findByJpql(jpql, m);
-    
-    if (items == null) {
-    } else {
-        for (Vtm item : items) {
+        items = getFacade().findByJpql(jpql, m);
+
+        if (items == null) {
+        } else {
+            for (Vtm item : items) {
+            }
+        }
+
+        return "/emr/reports/vtms?faces-redirect=true";
+    }
+
+    public void cleanceVTMs() {
+        items = ejbFacade.findAll();
+        for (Vtm v : getItems()) {
+            if (v.getName() == null) {
+                return;
+            }
+            String strVtm = v.getName();
+            strVtm = cleanVTMName(strVtm);
+            strVtm = removeSpecificWords(strVtm, convertInputToArray(bulkText));
+            v.setName(strVtm);
+            getFacade().edit(v);
         }
     }
 
-    return "/emr/reports/vtms?faces-redirect=true";
-}
+    public String cleanVTMName(String input) {
+        // Remove all words that contain numbers and special characters
+        String output = input.replaceAll("\\b\\w*[0-9#%\\W]\\w*\\b", "").trim();
 
+        // Remove extra spaces
+        output = output.replaceAll(" +", " ");
+
+        return output;
+    }
+
+    public String removeSpecificWords(String input, String[] wordsToRemove) {
+        String output = input;
+
+        for (String word : wordsToRemove) {
+            output = output.replaceAll("\\b" + word + "\\b", "").trim();
+        }
+
+        // Remove extra spaces
+        output = output.replaceAll(" +", " ");
+
+        return output;
+    }
+
+    public String removeDuplicateWords(String input) {
+        String[] words = input.split("\\s+");
+        String output = String.join(" ", new LinkedHashSet<String>(Arrays.asList(words)));
+        return output;
+    }
+
+    public String[] convertInputToArray(String bulkText) {
+        return bulkText.split("\n");
+    }
 
     public List<Vtm> completeVtm(String query) {
 
@@ -95,7 +142,7 @@ public String navigateToListAllVtms() {
     public Vtm findAndSaveVtmByNameAndCode(Vtm vtm) {
         String jpql;
         Map m = new HashMap();
-        Vtm nvtm=null;
+        Vtm nvtm = null;
         if (vtm == null) {
             return null;
         } else {

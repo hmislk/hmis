@@ -7,7 +7,7 @@
 
     <body>
 
-         <ui:composition template="/emr/reports/index.xhtml">
+        <ui:composition template="/emr/reports/index.xhtml">
 
 
             <ui:define name="subcontent">
@@ -25,6 +25,16 @@
 
                         <div class="card-body">
 
+                            <p:inputTextarea value="#{vmpController.bulkText}" class="w-100" rows="10"></p:inputTextarea>
+                            <div>
+                                <p:commandButton value="Cleance"
+                                                 ajax="false" 
+                                                 icon="pi pi-file-excel" 
+                                                 title="Cleance"
+                                                 action="#{vmpController.cleanceVTMs()}">
+                                </p:commandButton>
+                            </div>
+
                             <p:dataTable id="vmpsDataTable" value="#{vmpController.items}" var="vmp" 
                                          paginator="true" rows="10" 
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -32,42 +42,42 @@
                                          emptyMessage="No VMP records found">
 
                                 <p:column headerText="ID" filterBy="#{vmp.itemId}" filterMatchMode="contains">
-                                    #{vmp.itemId}
+                                    <h:outputText value="#{vmp.itemId}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="VMP Name" filterBy="#{vmp.name}" filterMatchMode="contains">
-                                    #{vmp.name}
+                                    <h:outputText value="#{vmp.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="VTM Name" filterBy="#{vmp.vtm.name}" filterMatchMode="contains">
-                                    #{vmp.vtm.name}
+                                    <h:outputText value="#{vmp.vtm.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Dosage Form" filterBy="#{vmp.dosageForm.name}" filterMatchMode="contains">
-                                    #{vmp.dosageForm.name}
+                                    <h:outputText value=" #{vmp.dosageForm.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Strength Units per Issue Unit" filterBy="#{vmp.strengthOfAnIssueUnit}" filterMatchMode="contains">
-                                    #{vmp.strengthOfAnIssueUnit}
+                                    <h:outputText value="#{vmp.strengthOfAnIssueUnit}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Strength Unit" filterBy="#{vmp.strengthUnit.name}" filterMatchMode="contains">
-                                    #{vmp.strengthUnit.name}
+                                    <h:outputText value="#{vmp.strengthUnit.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Issue Units per Pack" filterBy="#{vmp.issueUnitsPerPackUnit}" filterMatchMode="contains">
-                                    #{vmp.issueUnitsPerPackUnit}
+                                    <h:outputText value=" #{vmp.issueUnitsPerPackUnit}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Pack Unit" filterBy="#{vmp.packUnit.name}" filterMatchMode="contains">
-                                    #{vmp.packUnit.name}
+                                    <h:outputText value="#{vmp.packUnit.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Minimum Issue Quantity" filterBy="#{vmp.minimumIssueQuantity}" filterMatchMode="contains">
-                                    #{vmp.minimumIssueQuantity}
+                                    <h:outputText value="#{vmp.minimumIssueQuantity}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Minimum Issue Unit" 
                                           filterBy="#{vmp.minimumIssueQuantityUnit.name}" 
                                           filterMatchMode="contains">
-                                    #{vmp.minimumIssueQuantityUnit.name}
+                                    <h:outputText value="#{vmp.minimumIssueQuantityUnit.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Issue Multiplies Quantity" filterBy="#{vmp.issueMultipliesQuantity}" filterMatchMode="contains">
-                                    #{vmp.issueMultipliesQuantity}
+                                    <h:outputText value="#{vmp.issueMultipliesQuantity}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Issue Multiplies Unit" filterBy="#{vmp.issueMultipliesUnit.name}" filterMatchMode="contains">
-                                    #{vmp.issueMultipliesUnit.name}
+                                    <h:outputText value="#{vmp.issueMultipliesUnit.name}"></h:outputText>
                                 </p:column>
 
                             </p:dataTable>
