@@ -31,7 +31,7 @@
                                                  ajax="false" 
                                                  icon="pi pi-file-excel" 
                                                  title="Cleance"
-                                                 action="#{vmpController.cleanceVTMs()}">
+                                                 action="#{vmpController.cleanceVMPs()}">
                                 </p:commandButton>
                             </div>
 
@@ -41,19 +41,17 @@
                                          rowsPerPageTemplate="5,10,20,50"
                                          emptyMessage="No VMP records found">
 
-                                <p:column headerText="ID" filterBy="#{vmp.itemId}" filterMatchMode="contains">
-                                    <h:outputText value="#{vmp.itemId}"></h:outputText>
-                                </p:column>
-                                <p:column headerText="VMP Name" filterBy="#{vmp.name}" filterMatchMode="contains">
+                                
+                                <p:column headerText="VMP Name" filterBy="#{vmp.name}" filterMatchMode="contains" width="500">
                                     <h:outputText value="#{vmp.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="VTM Name" filterBy="#{vmp.vtm.name}" filterMatchMode="contains">
                                     <h:outputText value="#{vmp.vtm.name}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Dosage Form" filterBy="#{vmp.dosageForm.name}" filterMatchMode="contains">
-                                    <h:outputText value=" #{vmp.dosageForm.name}"></h:outputText>
+                                    <h:outputText value=" #{vmp.category.name}"></h:outputText>
                                 </p:column>
-                                <p:column headerText="Strength Units per Issue Unit" filterBy="#{vmp.strengthOfAnIssueUnit}" filterMatchMode="contains">
+<!--                                <p:column headerText="Strength Units per Issue Unit" filterBy="#{vmp.strengthOfAnIssueUnit}" filterMatchMode="contains">
                                     <h:outputText value="#{vmp.strengthOfAnIssueUnit}"></h:outputText>
                                 </p:column>
                                 <p:column headerText="Strength Unit" filterBy="#{vmp.strengthUnit.name}" filterMatchMode="contains">
@@ -78,7 +76,7 @@
                                 </p:column>
                                 <p:column headerText="Issue Multiplies Unit" filterBy="#{vmp.issueMultipliesUnit.name}" filterMatchMode="contains">
                                     <h:outputText value="#{vmp.issueMultipliesUnit.name}"></h:outputText>
-                                </p:column>
+                                </p:column>-->
 
                             </p:dataTable>
 

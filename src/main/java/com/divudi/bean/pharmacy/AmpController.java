@@ -8,13 +8,16 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.CategoryController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.ItemSupplierPrices;
+import com.divudi.data.SymanticType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
@@ -26,6 +29,7 @@ import com.divudi.facade.StockFacade;
 import com.divudi.facade.VmpFacade;
 import com.divudi.facade.VtmsVmpsFacade;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -41,6 +45,10 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.model.file.UploadedFile;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.util.Iterator;
 
 /**
  *
@@ -77,6 +85,79 @@ public class AmpController implements Serializable {
     List<ItemSupplierPrices> itemSupplierPrices;
     @Inject
     ItemsDistributorsController itemDistributorsController;
+    @Inject
+    CategoryController categoryController;
+    @Inject
+    VmpController vmpController;
+    private UploadedFile file;
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
+    public void uploadAmps() {
+        try {
+            Workbook workbook = new XSSFWorkbook(file.getInputStream());
+            Sheet datatypeSheet = workbook.getSheetAt(0);
+            Iterator<Row> iterator = datatypeSheet.iterator();
+
+            while (iterator.hasNext()) {
+                Row currentRow = iterator.next();
+                Cell categoryNameCell = currentRow.getCell(0); // adjust the index as per your Excel file structure
+                Cell vmpNameCell = currentRow.getCell(1); // adjust the index as per your Excel file structure
+                Cell ampNameCell = currentRow.getCell(2); // adjust the index as per your Excel file structure
+                Cell ampCodeCell = currentRow.getCell(3);
+                Cell ampBarCodeCell = currentRow.getCell(4);
+
+                String categoryName = categoryNameCell.getStringCellValue();
+                String vmpName = vmpNameCell.getStringCellValue();
+                String ampName = ampNameCell.getStringCellValue();
+                String ampCode = null;
+                if (ampCodeCell.getCellType() == CellType.STRING) {
+                    ampCode = ampCodeCell.getStringCellValue();
+                } else if (ampCodeCell.getCellType() == CellType.NUMERIC) {
+                    double numericCellValue = ampCodeCell.getNumericCellValue();
+                    ampCode = BigDecimal.valueOf(numericCellValue).toPlainString();
+                }
+                String ampBarcode ="";
+                if (ampBarCodeCell.getCellType() == CellType.STRING) {
+                    ampBarcode = ampBarCodeCell.getStringCellValue();
+                } else if (ampBarCodeCell.getCellType() == CellType.NUMERIC) {
+                    double numericCellValue = ampBarCodeCell.getNumericCellValue();
+                    ampBarcode = BigDecimal.valueOf(numericCellValue).toPlainString();
+                }
+
+                Category cat = categoryController.findAndCreateCategoryByName(categoryName);
+                Vmp vmp = vmpController.findOrCreateVmpByName(vmpName);
+
+                Amp amp;
+
+                amp = findAmpByName(ampName);
+                if (amp == null) {
+                    amp = new Amp();
+                }
+                amp.setCategory(cat);
+                amp.setVmp(vmp);
+                amp.setName(ampName);
+                amp.setCode(ampCode);
+                amp.setBarcode(ampBarcode);
+                amp.setSymanticType(SymanticType.Pharmacologic_Substance);
+                if (amp.getId() == null) {
+                    getFacade().create(amp);
+                } else {
+                    getFacade().edit(amp);
+                }
+            }
+
+            workbook.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public String navigateToListAllAmps() {
         String jpql = "Select amp "
