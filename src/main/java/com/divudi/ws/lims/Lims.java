@@ -95,7 +95,6 @@ public class Lims {
     @Path("/login/mw")
     @Produces(MediaType.APPLICATION_JSON)
     public Response login(LoginRequest request) {
-        System.out.println("login");
         String username = request.getUsername();
         String password = request.getPassword();
 
@@ -185,16 +184,21 @@ public class Lims {
             @PathParam("password") String password) {
 
         // Validation
+        System.out.println("generateSamplesFromBill");
+        System.out.println("billId = " + billId);
         String validationError = validateInput(billId, username, password);
+        System.out.println("validationError = " + validationError);
         if (validationError != null) {
             return constructErrorJson(1, validationError, billId);
         }
 
         // Fetch necessary data
         WebUser requestSendingUser = findRequestSendingUser(username, password);
+        System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
+        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
-
+        System.out.println("ptSamples = " + ptSamples);
         // Check if necessary data is present
         if (requestSendingUser == null) {
             return constructErrorJson(1, "Username / password mismatch.", billId);
@@ -209,11 +213,15 @@ public class Lims {
         // Generate JSON response
         JSONArray array = new JSONArray();
         for (PatientSample ps : ptSamples) {
-            array.put(constructPatientSampleJson(ps));
+            JSONObject j = constructPatientSampleJson(ps);
+            System.out.println("j = " + j);
+            array.put(j);
         }
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("Barcodes", array);
-        return jSONObjectOut.toString();
+        String js = jSONObjectOut.toString();
+        System.out.println("js = " + js);
+        return js;
     }
 
     private String validateInput(String billId, String username, String password) {

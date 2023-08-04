@@ -1191,6 +1191,9 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public String getTransCodeFromName() {
+        if(name==null){
+            name = "";
+        }
         transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
         return transCodeFromName;
     }

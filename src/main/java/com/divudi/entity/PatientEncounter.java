@@ -290,6 +290,7 @@ public class PatientEncounter implements Serializable {
         if (diagnosis == null) {
             diagnosis = new ArrayList<>();
             for (ClinicalFindingValue v : clinicalFindingValues) {
+                
                 if (v.getClinicalFindingItem().getSymanticType() == SymanticType.Disease_or_Syndrome) {
                     diagnosis.add(v);
                 }

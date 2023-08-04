@@ -417,8 +417,6 @@ public class BillSearch implements Serializable {
     }
     
     public String listBillsFromBillTransactionTypeSummery() {
-        System.out.println("listBillsFromBillTransactionTypeSummery");
-        System.out.println("billSummery = " + billSummery);
         if (billSummery == null) {
             JsfUtil.addErrorMessage("No Summary Selected");
             return "";

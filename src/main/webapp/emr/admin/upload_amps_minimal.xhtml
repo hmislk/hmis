@@ -16,14 +16,14 @@
                         </div>
                         <div class="card-body" >
                             <h:form enctype="multipart/form-data">
-                                <p:fileUpload value="#{dataUploadBean.file}"
+                                <p:fileUpload value="#{ampController.file}"
                                               mode="simple"
-                                              label="Choose File"/>
+                                              label="Choose Excel File"
+                                              accept=".xls,.xlsx"/>
                                 <p:commandButton value="Upload"
-                                                 action="#{dataUploadBean.uploadAmps()}"
+                                                 action="#{ampController.uploadAmps()}"
                                                  ajax="false"/>
                             </h:form>
-
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -35,38 +35,28 @@
                                 <tbody>
                                     <tr>
                                         <td>1</td>
-                                        <td>ID</td>
-                                        <td>Unique identifier. Optional.</td>
+                                        <td>Category</td>
+                                        <td>Category name. Required.</td>
                                     </tr>
                                     <tr>
                                         <td>2</td>
-                                        <td>AMP</td>
-                                        <td>AMP name. (Trade Name) Required.</td>
+                                        <td>VMP</td>
+                                        <td>VMP name. Required.</td>
                                     </tr>
                                     <tr>
                                         <td>3</td>
-                                        <td>Code</td>
-                                        <td>Code</td>
+                                        <td>AMP</td>
+                                        <td>AMP name. Required.</td>
                                     </tr>
                                     <tr>
                                         <td>4</td>
-                                        <td>ATM</td>
-                                        <td>ATM name. (Generic Name) Required.</td>
+                                        <td>Code</td>
+                                        <td>Code. Optional.</td>
                                     </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>VMP</td>
-                                        <td>VMP name. (Generic Name) Required.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>Manufacturer</td>
-                                        <td>Manufacturer. Optional.</td>
-                                    </tr>
-                                    <tr>
-                                        <td>3</td>
-                                        <td>Importer</td>
-                                        <td>Importer. Optional.</td>
+                                     <tr>
+                                        <td>5</td>
+                                        <td>Bar code</td>
+                                        <td>Bar code. Optional.</td>
                                     </tr>
                                 </tbody>
                             </table>

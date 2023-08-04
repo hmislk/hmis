@@ -21,7 +21,7 @@
                     <div class="col-md-5" >
                         <h:panelGrid id="gpSelect" columns="1"  class="w-100" >
                             <h:panelGrid id="gpSelectButtons" 
-                                         columns="2" 
+                                         columns="3" 
                                          class="w-100"  >
                                 <p:commandButton id="btnAdd" 
                                                  value="Add"
@@ -39,6 +39,12 @@
                                     value="Delete"  
                                     class="w-100">
                                 </p:commandButton>
+                                <p:commandButton 
+                                    value="Download as Excel" 
+                                    class="w-100"
+                                    ajax="false"
+                                    action="#{symptomController.downloadAsExcel}" />
+
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectText" class="w-100" >
                                 <p:selectOneListbox  

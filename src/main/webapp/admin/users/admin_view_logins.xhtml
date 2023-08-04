@@ -8,7 +8,7 @@
 
     <h:body>
 
-        <ui:composition template="admin_manage_users.xhtml">
+        <ui:composition template="/admin/users/admin_manage_users.xhtml">
 
             <ui:define name="subcontent">
                 <h:form>
@@ -19,18 +19,16 @@
                             </p:calendar>
                             <p:calendar styleClass="noPrintButton" value="#{loginController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
                             </p:calendar>
-
-                            <p:commandButton id="btnRefresh" actionListener="#{loginController.fillLogins()}"
-                                             styleClass="noPrintButton" value="Process"
-                                             ajax="false" 
-                                             onclick="onSubmitButton();">                               
+                            <p:commandButton id="btnRefresh" 
+                                             action="#{loginController.fillLogins()}"
+                                             styleClass="noPrintButton" 
+                                             value="Process"
+                                             ajax="false">                               
                             </p:commandButton>
                             <p:defaultCommand target="btnRefresh"/>
-                            
                             <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
                                 <p:printer target="panelReport" />
                             </p:commandButton>
-                            
                         </f:facet>
 
 

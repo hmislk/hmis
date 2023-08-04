@@ -7,7 +7,8 @@
 
     <body>
 
-        <ui:composition template="/emr/reports_index.xhtml">
+        <ui:composition template="/emr/reports/index.xhtml">
+
 
             <ui:define name="subcontent">
                 <h:form >
@@ -29,16 +30,32 @@
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15" styleClass="table table-striped table-bordered">
 
+                                <p:column rendered="true" 
+                                          headerText="Category" 
+                                          filterBy="#{item.category.name}"
+                                          filterMatchMode="contains" 
+                                          sortBy="#{item.category.name}">
+                                    <h:outputText value="#{item.category.name}" />
+                                </p:column>
+
+                                <p:column headerText="Vmp" filterBy="#{item.vmp.name}" filterMatchMode="contains" sortBy="#{item.vmp.name}">
+                                    <h:outputText value="#{item.vmp.name}" />
+                                </p:column>
+
                                 <p:column headerText="Name" filterBy="#{item.name}" filterMatchMode="contains" sortBy="#{item.name}">
                                     <h:outputText value="#{item.name}" />
                                 </p:column>
 
-                                <p:column rendered="false" headerText="Code" filterBy="#{item.code}" filterMatchMode="contains" sortBy="#{item.code}">
+
+
+
+
+                                <p:column headerText="Code" filterBy="#{item.code}" filterMatchMode="contains" sortBy="#{item.code}">
                                     <h:outputText value="#{item.code}" />
                                 </p:column>
-                                
-                                 <p:column headerText="Vmp" filterBy="#{item.code}" filterMatchMode="contains" sortBy="#{item.code}">
-                                     <h:outputText value="#{item.vmp.name}" />
+
+                                <p:column headerText="BarCode" filterBy="#{item.barcode}" filterMatchMode="contains" sortBy="#{item.barcode}">
+                                    <h:outputText value="#{item.barcode}" />
                                 </p:column>
 
                             </p:dataTable>

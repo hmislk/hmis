@@ -46,10 +46,8 @@ public class HL7Utils {
 
     public static String findMessageType(String hl7Message) {
         String[] segments = hl7Message.split("\r");
-        System.out.println("segments = " + segments);
         String messageType = null;
         for (String segment : segments) {
-            System.out.println("segment = " + segment);
             if (segment.startsWith("MSH|")) {
                 String[] fields = segment.split("\\|");
                 messageType = fields[8];
@@ -87,7 +85,6 @@ public class HL7Utils {
                 for (OUL_R22_SPECIMEN sp : specimens) {
                     SPM spm = sp.getSPM();
                     String specimenId = spm.getSpecimenID().toString();
-                    System.out.println("specimenId = " + specimenId);
                 }
                 
                 List<OUL_R22_RESULT> rs=  oulR22Order.getRESULTAll();
@@ -116,7 +113,6 @@ public class HL7Utils {
                 throw new HL7Exception("Unsupported message type");
             }
         } catch (HL7Exception e) {
-            System.err.println("Error parsing HL7 message: " + e.getMessage());
         }
     }
 }

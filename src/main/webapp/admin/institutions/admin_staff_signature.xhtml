@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="admin_institutions_index.xhtml">
+        <ui:composition template="/admin/institutions/admin_institutions_index.xhtml">
 
-            <ui:define name="subcontent">
+            <ui:define name="admin">
 
                 <p:panel  >
 
@@ -26,9 +26,9 @@
 
 
 
-                    <h:panelGrid columns="2" styleClass="alignTop" >
-
-                        <p:panel header="Add New Signature" >
+                    <div class="row">
+                        <div class="col-md-7">
+                             <p:panel header="Add New Signature" >
 
                             <h:form enctype="multipart/form-data" >
                                 <h:panelGrid columns="2" >
@@ -47,7 +47,9 @@
 
                         </p:panel>
 
-                        <h:form >
+                        </div>
+                        <div class="col-md-5">
+                            <h:form >
                             <p:panel >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Current Signature" ></p:outputLabel>
@@ -62,8 +64,13 @@
                             </p:panel>
 
                         </h:form>
+                        </div>
+                    </div>
 
-                    </h:panelGrid>
+                       
+                        
+
+                  
 
 
 

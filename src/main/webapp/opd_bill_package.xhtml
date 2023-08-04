@@ -61,8 +61,8 @@
                                     <p:tabView id="tvPt" style="min-height: 250px;"  >
                                         <p:ajax event="tabChange"  process="@this" listener="#{billPackageController.onTabChange}" />
 
-                                        <p:tab id="tabNewPt" title="New Patient"  >
-                                            <ez:patientDetail />
+                                        <p:tab id="tabNewPt" title="New Patient" class="w-100" >
+                                            <ez:patientDetail class="w-100"/>
                                         </p:tab>
                                         <p:tab id="tabSearchPt" title="Search Patient">
 
@@ -111,9 +111,9 @@
                                             </p:column>
 
                                         </p:autoComplete>
-                                        <h:commandButton id="btnAddIx" value="Add" action="#{billPackageController.addToBill()}" >
+                                        <p:commandButton id="btnAddIx" value="Add" action="#{billPackageController.addToBill()}" >
                                             <f:ajax execute="acIx btnAddIx" render="focusIx tblBillItem  pBillDetails pIxAdd" />
-                                        </h:commandButton>
+                                        </p:commandButton>
 
 
                                     </p:panel>

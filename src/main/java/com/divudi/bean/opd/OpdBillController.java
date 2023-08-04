@@ -1185,9 +1185,7 @@ public class OpdBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
-        System.out.println("bills = " + bills);
         if (bills != null) {
-            System.out.println("bills not null");
             if (!bills.isEmpty()) {
                 for (Bill tb : bills) {
                     tb.setBillTemplate(sessionController.getDepartmentPreference().getOpdBillTemplate());
@@ -1427,7 +1425,7 @@ public class OpdBillController implements Serializable {
             return true;
         }
 
-        if (!sessionController.getApplicationPreference().isOpdSettleWithoutPatientPhoneNumber()) {
+        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutPatientPhoneNumber()) {
             if (getPatient().getPerson().getPhone() == null) {
                 UtilityController.addErrorMessage("Please Enter a Phone Number");
                 return true;
@@ -1438,7 +1436,14 @@ public class OpdBillController implements Serializable {
             }
         }
 
-        if (!sessionController.getDepartmentPreference().getCanSettleOpdBillWithoutReferringDoctor()) {
+        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutReferralDetails()) {
+            if (referredBy == null && referredByInstitution == null) {
+                UtilityController.addErrorMessage("Please Select a Refering Doctor or a Referring Institute. It is Requierd for Investigations.");
+                return true;
+            }
+        }
+
+        if (!sessionController.getDepartmentPreference().getCanSettleOpdBillWithInvestigationsWithoutReferringDoctor()) {
             for (BillEntry be : getLstBillEntries()) {
                 if (be.getBillItem().getItem() instanceof Investigation) {
                     if (referredBy == null && referredByInstitution == null) {
@@ -1448,13 +1453,20 @@ public class OpdBillController implements Serializable {
                 }
             }
         }
-        if (getStrTenderedValue() == null) {
-            UtilityController.addErrorMessage("Please Enter Tenderd Amount");
-            return true;
-        }
-        if (cashPaid < (vat + netTotal)) {
-            UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
-            return true;
+//        System.out.println("sessionController.getDepartmentPreference().isOpdSettleWithoutCashTendered() = " + sessionController.getDepartmentPreference().isOpdSettleWithoutCashTendered());
+//        System.out.println("getStrTenderedValue() = " + getStrTenderedValue());
+        if (!sessionController.getDepartmentPreference().isOpdSettleWithoutCashTendered()) {
+            if (getPaymentMethod() == PaymentMethod.Cash) {
+                if (getStrTenderedValue() == null) {
+                    UtilityController.addErrorMessage("Please Enter Tenderd Amount");
+                    return true;
+                }
+                if (cashPaid < (vat + netTotal)) {
+                    UtilityController.addErrorMessage("Please Enter Correct Tenderd Amount");
+                    return true;
+                }
+            }
+
         }
 
         boolean checkAge = false;
@@ -1907,6 +1919,12 @@ public class OpdBillController implements Serializable {
         paymentScheme = null;
         paymentMethod = PaymentMethod.Cash;
         collectingCentreBillController.setCollectingCentre(null);
+        return "/opd/opd_bill";
+    }
+
+    public String navigateToNewOpdBill(Patient pt) {
+        navigateToNewOpdBill();
+        patient = pt;
         return "/opd/opd_bill";
     }
 
