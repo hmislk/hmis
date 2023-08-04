@@ -44,7 +44,7 @@ public class ClinicalFindingValue implements Serializable {
     @ManyToOne(cascade = CascadeType.REFRESH)
     PatientEncounter encounter;
     @ManyToOne
-    ClinicalFindingItem clinicalFindingItem;
+    ClinicalEntity clinicalFindingItem;
 
     double doubleValue;
     @Lob
@@ -86,11 +86,11 @@ public class ClinicalFindingValue implements Serializable {
         this.encounter = encounter;
     }
 
-    public ClinicalFindingItem getClinicalFindingItem() {
+    public ClinicalEntity getClinicalFindingItem() {
         return clinicalFindingItem;
     }
 
-    public void setClinicalFindingItem(ClinicalFindingItem clinicalFindingItem) {
+    public void setClinicalFindingItem(ClinicalEntity clinicalFindingItem) {
         this.clinicalFindingItem = clinicalFindingItem;
     }
 

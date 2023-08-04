@@ -177,7 +177,6 @@ public class SessionController implements Serializable, HttpSessionListener {
             }
 
             landingPage += facesServletMapping;
-            System.out.println("2 landingPage = " + landingPage);
 
             if (getApplicationPreference().getThemeName() == null || getApplicationPreference().getThemeName().trim().equals("")) {
                 landingPage += "index.xhtml";

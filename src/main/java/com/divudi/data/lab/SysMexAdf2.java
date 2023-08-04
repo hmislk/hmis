@@ -85,7 +85,6 @@ public class SysMexAdf2 {
         System.out.println("id1 = " + id1);
 
         Double thb = findValue(hgbStart, hgbEnd, 2);
-        System.out.println("Hb Check = " + thb);
         if (thb < 2 || thb > 20) {
             return false;
         }
@@ -174,7 +173,6 @@ public class SysMexAdf2 {
 
     private Double findValue(int from, int to, int decimals) {
         Double val = null;
-        System.out.println("from = " + from);
 
         String display = "";
         for (int i = from; i < to + 1; i++) {

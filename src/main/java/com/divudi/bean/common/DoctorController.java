@@ -11,6 +11,7 @@ import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
+import com.divudi.entity.Vocabulary;
 import com.divudi.facade.DoctorFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
@@ -26,6 +27,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -110,6 +116,62 @@ public class DoctorController implements Serializable {
     public void prepareAdd() {
         current = new Doctor();
         specialityController.recreateModel();
+    }
+    
+    // Method to generate the Excel file and initiate the download
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Doctor Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Name");
+            headerRow.createCell(1).setCellValue("Phone");
+            headerRow.createCell(2).setCellValue("Fax");
+            headerRow.createCell(3).setCellValue("Mobile");
+            headerRow.createCell(4).setCellValue("Address");
+            headerRow.createCell(5).setCellValue("Code");
+            headerRow.createCell(6).setCellValue("Speciality");
+            headerRow.createCell(7).setCellValue("Registration");
+            headerRow.createCell(8).setCellValue("Qualification");
+            headerRow.createCell(9).setCellValue("Refering Charge");
+            
+            
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (Doctor doctor : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(doctor.getName());
+                row.createCell(1).setCellValue(doctor.getPerson().getPhone());
+                row.createCell(2).setCellValue(doctor.getPerson().getFax());
+                row.createCell(3).setCellValue(doctor.getPerson().getMobile());
+                row.createCell(4).setCellValue(doctor.getPerson().getAddress());
+                row.createCell(5).setCellValue(doctor.getCode());
+                row.createCell(6).setCellValue(doctor.getSpeciality().getDescription());
+                row.createCell(7).setCellValue(doctor.getRegistration());
+                row.createCell(8).setCellValue(doctor.getQualification());
+                row.createCell(9).setCellValue(doctor.getCharge());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"doctor_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 
     public void delete() {

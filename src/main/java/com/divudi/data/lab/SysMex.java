@@ -217,7 +217,6 @@ public class SysMex {
     }
 
     private void textToByteArraySeperatedBySpace() {
-        System.out.println("textToByteArraySeperatedBySpace");
         bytes = new ArrayList<>();
         String strInput = inputStringBytesSpaceSeperated;
         String[] strByte = strInput.split("\\s+");
@@ -675,7 +674,6 @@ public class SysMex {
     }
 
     public void setInputStringBytesSpaceSeperated(String inputStringBytesSpaceSeperated) {
-        System.out.println("inputStringBytesSpaceSeperated = " + inputStringBytesSpaceSeperated);
         String tmpString = stringToAsciiBytesSpaceSeparated(inputStringBytesSpaceSeperated);
         this.inputStringBytesSpaceSeperated = tmpString;
         textToByteArraySeperatedBySpace();

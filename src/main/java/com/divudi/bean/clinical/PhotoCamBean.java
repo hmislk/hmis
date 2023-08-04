@@ -80,7 +80,6 @@ public class PhotoCamBean implements Serializable {
     }
 
     public void uploadPhoto(FileUploadEvent event) {
-        System.out.println("uploadPhoto");
         if (getPatientEncounterController().getCurrent() == null || getPatientEncounterController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;
@@ -118,7 +117,6 @@ public class PhotoCamBean implements Serializable {
     }
 
     public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
-        System.out.println("oncaptureVisitPhoto");
         if (getPatientEncounterController().getCurrent() == null) {
             JsfUtil.addErrorMessage("Select Encounter");
             return;

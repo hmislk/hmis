@@ -1761,7 +1761,6 @@ public class Qb {
     }
 
     private JSONObject inwardFinalBilltoJSONObject(Bill b) {
-        System.out.println("inwardFinalBilltoJSONObject");
         JSONObject jSONObject = new JSONObject();
         JSONObject headerJo = new JSONObject();
 
@@ -2926,7 +2925,6 @@ public class Qb {
         int maxNo = 2500;
 //        List<Bill> billsInpatient = billList(maxNo, billTypesInpatient, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, true);
 //        List<Bill> billsInpatient = null;
-        System.out.println("cInvList 5" + new Date());
 //        List<Bill> billsInpatient = billList(maxNo, billTypesInpatient, billClassTypes, lastIdInRequest, null, ins, getCashPaymentMethods(), lastDate, true);
 //        List<Bill> billsInpatient = null;
 
@@ -3227,7 +3225,6 @@ public class Qb {
         int maxNo = 500;
 
         System.out.println("lastIdInRequest = " + lastIdInRequest);
-        System.out.println("lastDate = " + lastDate);
 
         List<Bill> bills = billList(maxNo, billTypes, billClassTypes, lastIdInRequest, null, ins, null, lastDate, false);
         Long lastIdOfCurrentdata = null;
@@ -3938,7 +3935,6 @@ public class Qb {
         m.put("c", strInstitutionCode);
         m.put("ret", false);
         System.out.println("m = " + m);
-        System.out.println("j = " + j);
         Institution ins = institutionFacade.findFirstByJpql(j, m);
         return ins;
     }

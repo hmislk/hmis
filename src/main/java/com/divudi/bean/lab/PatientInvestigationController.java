@@ -429,7 +429,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     private String msgFromSysmex() {
-        System.out.println("msgFromSysmex");
         String temMsgs = "";
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);

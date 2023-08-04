@@ -384,6 +384,10 @@ public class Bill implements Serializable {
         }
 
         billPrint = billPrint.replaceAll("\\{id\\}", this.getIdStr());
+        
+        String tmpBarcode = "<img id=\"barcode" + this.getId() + "\"/>";
+        billPrint = billPrint.replaceAll("\\{barcode\\}", tmpBarcode);
+    
         billPrint = billPrint.replaceAll("\\{ins\\_id\\}", this.getInsId());
         billPrint = billPrint.replaceAll("\\{dept\\_id\\}", this.getDeptId());
 

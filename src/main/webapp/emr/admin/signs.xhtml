@@ -20,7 +20,7 @@
                 <div class="row" >
                     <div class="col-md-5" >
                         <h:panelGrid id="gpSelect" columns="1"   class="w-100">
-                            <h:panelGrid id="gpSelectButtons" columns="2"   class="w-100">
+                            <h:panelGrid id="gpSelectButtons" columns="3"   class="w-100">
                                 <p:commandButton id="btnAdd" 
                                                  value="Add" 
                                                  action="#{signController.prepareAdd()}"  
@@ -36,6 +36,11 @@
                                     value="Delete" 
                                     class="w-100">
                                 </p:commandButton>
+                                <p:commandButton 
+                                    value="Download as Excel" 
+                                    class="w-100"
+                                    ajax="false"
+                                    action="#{signController.downloadAsExcel}" />
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectText" class="w-100" >
                                 <p:selectOneListbox  id="lstSelect"   
