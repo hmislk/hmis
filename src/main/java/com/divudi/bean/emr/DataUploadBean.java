@@ -123,6 +123,10 @@ public class DataUploadBean {
     public String toUploadAmps() {
         return "/emr/admin/upload_amps";
     }
+    
+    public String toUploadAmpsMin() {
+        return "/emr/admin/upload_amps_minimal";
+    }
 
     public String toUploadVmps() {
         return "/emr/admin/upload_vmps";

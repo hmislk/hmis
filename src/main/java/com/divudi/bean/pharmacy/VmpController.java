@@ -12,6 +12,7 @@ import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
+import com.divudi.data.SymanticType;
 import com.divudi.entity.Category;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -92,7 +94,27 @@ public class VmpController implements Serializable {
         return "/emr/reports/vmps?faces-redirect=true";
     }
 
-    public void cleanceVTMs() {
+    public Vmp findOrCreateVmpByName(String vmpName) {
+        String jpql = "Select vmp "
+                + " from Vmp vmp "
+                + " where vmp.retired=:ret "
+                + " and vmp.name=:vmpName "
+                + " order by vmp.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("vmpName", vmpName);
+        Vmp vmp = getFacade().findFirstByJpql(jpql, m);
+        if(vmp==null){
+            vmp = new Vmp();
+            vmp.setName(vmpName);
+            String vmpCode = CommonController.nameToCode("vmp_" + vmpName);
+            vmp.setSymanticType(SymanticType.Pharmacologic_Substance);
+            getFacade().create(vmp);
+        }
+        return vmp;
+    }
+
+    public void cleanceVMPs() {
         items = ejbFacade.findAll();
         for (Vmp v : getItems()) {
             if (v.getName() == null) {
@@ -102,6 +124,7 @@ public class VmpController implements Serializable {
             strVmp = removeDuplicateWordsIgnoreCase(strVmp);
             strVmp = cleanVTMName(strVmp);
             strVmp = removeSpecificWords(strVmp, convertInputToArray(bulkText));
+            strVmp = removeExactWords(strVmp, convertInputToArray(bulkText));
             v.setName(strVmp);
             getFacade().edit(v);
         }
@@ -139,6 +162,19 @@ public class VmpController implements Serializable {
 
         for (String word : wordsToRemove) {
             output = output.replaceAll("\\b" + word + "\\b", "").trim();
+        }
+
+        // Remove extra spaces
+        output = output.replaceAll(" +", " ");
+
+        return output;
+    }
+
+    public String removeExactWords(String input, String[] phrasesToRemove) {
+        String output = input;
+
+        for (String phrase : phrasesToRemove) {
+            output = output.replaceAll("\\s*" + Pattern.quote(phrase) + "\\s*", " ").trim();
         }
 
         // Remove extra spaces
