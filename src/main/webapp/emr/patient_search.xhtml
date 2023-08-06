@@ -85,13 +85,13 @@
                                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                                  rowsPerPageTemplate="5,10,20"
                                                  >
-                                        <p:column headerText="Name" >
+                                        <p:column headerText="Name, Age &amp; Sex" >
                                             <p:outputLabel value="#{p.person.name}" ></p:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Age &amp; Sex" >
+                                            <p:outputLabel value="&nbsp;,&nbsp;" ></p:outputLabel>
                                             <p:outputLabel rendered="#{p.person.sex == 'Male'}">
                                                 <i class="fas fa-mars" style="color: blue;  font-size: 24px;"></i>
                                             </p:outputLabel>
+                                            <p:outputLabel value="&nbsp;,&nbsp;" ></p:outputLabel>
                                             <p:outputLabel rendered="#{p.person.sex == 'Female'}">
                                                 <i class="fas fa-venus" style="color: pink; font-size: 24px;"></i>
                                             </p:outputLabel>
