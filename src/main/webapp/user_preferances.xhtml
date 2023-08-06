@@ -5,41 +5,41 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core">
-
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
 
-
-
-                <div  >
-                    <h:form>
-                        <p:panel header="User Preferences" styleClass="verticalAndHorizontalCentering" >
-                            <f:facet name="header" >
-                                <h:outputText value="User Preferences" ></h:outputText>
-                                <p:spacer height="1" width="30" ></p:spacer>
-                                <p:commandButton ajax="false" value="Set" 
-                                                 action="#{themeController.saveTheme}"
-                                                 onclick="PrimeFaces.changeTheme($('#{themeController.theme}'));"></p:commandButton>
-                            </f:facet>
-
-                            <h:panelGrid columns="3" >
-                                <h:outputText value="Theme" ></h:outputText>
-                                <p:spacer height="1" width="30" ></p:spacer>
-                                <p:selectOneMenu id="themeSelectMenu" value="#{themeController.theme}">
-                                    <f:selectItems  value="#{themeController.themes}"/>
-                                </p:selectOneMenu>
-                            </h:panelGrid>
-
-                            <h1>#{sessionController.primeTheme}</h1>
-
-
-
-                        </p:panel>
-                    </h:form>
+                <div class="row d-flex justify-content-center align-items-center" style="height: 60vh;">
+                    <div class="col-md-8 col-lg-4 col-sm-10">
+                        <h:form>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h:outputText value="User Preferences"></h:outputText>
+                                </div>
+                                <div class="card-body">
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputText value="Theme"></h:outputText>
+                                        <p:spacer height="1" width="30"></p:spacer>
+                                        <p:selectOneMenu 
+                                            class="w-75"
+                                            id="themeSelectMenu" 
+                                                         value="#{themeController.theme}">
+                                            <f:selectItems value="#{themeController.themes}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="card-footer">
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Save" 
+                                        action="#{themeController.saveTheme}"
+                                        onclick="PrimeFaces.changeTheme($('#{themeController.theme}'));"></p:commandButton>
+                                </div>
+                            </div>
+                        </h:form>
+                    </div>
                 </div>
+
 
 
 
