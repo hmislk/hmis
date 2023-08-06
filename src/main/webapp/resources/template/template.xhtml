@@ -36,35 +36,47 @@
 
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
-        
+
         <!--<h:outputStylesheet library="css" name="maincss.css"/>-->
 
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
     <h:body style="height: 100vh;" class="bg-light">
-        <p:growl id="publicGrowl" showDetail="true" sticky="false" />
-        <h:panelGroup rendered="#{!sessionController.firstLogin}" >
-            <h:panelGroup rendered ="#{not sessionController.logged}"  >
-                <ui:insert name="login">
-                    <ez:login/>
-                </ui:insert>
-            </h:panelGroup>
-            <h:panelGroup rendered ="#{sessionController.logged}"  >
-                <h:panelGroup rendered="#{sessionController.department ne null}" >
-                    <ez:menu/>
-                    <ui:insert name="content">
-                    </ui:insert>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{sessionController.department eq null}" >
-                    <ez:select_department/>
-                </h:panelGroup>
-                <ez:footer/>
-            </h:panelGroup>
-        </h:panelGroup>
-        <h:panelGroup rendered="#{sessionController.firstLogin}" >
-            <ez:first_login/>
-        </h:panelGroup>
-        <p:messages showDetail="true" ></p:messages>
+        <div class="container-fluid" >
+            <div class="row" >
+                <div class="col-12 p-1" >
+                    <h:panelGroup rendered="#{!sessionController.firstLogin}" >
+                        <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                            <ui:insert name="login">
+                                <ez:login/>
+                            </ui:insert>
+                        </h:panelGroup>
+                        <h:panelGroup rendered ="#{sessionController.logged}"  >
+                            <h:panelGroup rendered="#{sessionController.department ne null}" >
+                                <ez:menu/>
+                                <ui:insert name="content">
+                                </ui:insert>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{sessionController.department eq null}" >
+                                <ez:select_department/>
+                            </h:panelGroup>
+                            <ez:footer/>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{sessionController.firstLogin}" >
+                        <ez:first_login/>
+                    </h:panelGroup>
+                </div>
+            </div>
+            <div class="row" >
+                <div class="col-12" >
+                    <p:messages id="publicGrowl" showDetail="true" ></p:messages>
+                </div>
+            </div>
+        </div>
+
+
+
     </h:body>
 </html>
