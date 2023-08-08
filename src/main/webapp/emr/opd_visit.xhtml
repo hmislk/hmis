@@ -13,24 +13,14 @@
                 <div class="container-fluid p-1" >
                     <div class="row" >
                         <div class="col-4 p-1" >
-                            <h:form >
+                            <h:form id="formVisitDetails">
                                 <div class="card m-1 p-1">
                                     <div class="card-header">
                                         Visit Details
                                     </div>
                                     <div class="card-body position-relative">
                                         <div class="position-absolute top-0 end-0">
-                                            <p:commandButton action="#{patientEncounterController.saveSelected()}"
-                                                             ajax="false"
-                                                             icon="pi pi-save"
-                                                             class="me-2" 
-                                                             title="Save"/>
-                                            <p:commandButton ajax="false"
-                                                             icon="pi pi-print"
-                                                             class="me-2"
-                                                             title="Print">
-                                                <p:printer target="txtComments"/>
-                                            </p:commandButton>
+
                                         </div>
                                         <p:inputTextarea id="txtComments" 
                                                          queryDelay="0" 
@@ -40,7 +30,7 @@
                                                          value="#{patientEncounterController.current.comments}" 
                                                          completeMethod="#{patientEncounterController.completeClinicalComments}" 
                                                          minQueryLength="1">
-                                            <f:ajax event="keyup" execute="txtComments" ></f:ajax>
+                                            <f:ajax event="keyup" execute="@this" ></f:ajax>
                                         </p:inputTextarea>
                                         <div class="row my-1" ></div>
                                         <div class="row" >
@@ -196,98 +186,151 @@
                             </h:form>
                         </div>
                         <div class="col-4 p-1" >
+                            <h:form >
+                                <div class="card m-1 p-1" >
+                                    <div class="card-header" >
+                                        <p:outputLabel value="Actions" ></p:outputLabel>
+                                    </div>
+                                    <div class="card-body" >
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <p:commandButton 
+                                                    action="#{patientEncounterController.saveSelected()}"
+                                                    ajax="false"
+                                                    icon="pi pi-save"
+                                                    class="p-0 m-1" 
+                                                    title="Save"/>
+                                                <p:commandButton 
+                                                    id="btnCommentPrint"
+                                                    ajax="false"
+                                                    icon="pi pi-print"
+                                                    class="p-0 m-1" 
+                                                    title="Print">
+                                                    <p:printer target=":formVisitDetails:txtComments"/>
+                                                </p:commandButton>
+                                                <p:commandButton 
+                                                    class="p-0 m-1" 
+                                                    action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
+                                                <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
+                                                <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
+                                                    <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
+                                                </p:commandButton>
+                                                <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
+                                                <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:form>
 
-                        </div>
-                        <div class="col-4 p-1" >
 
-                        </div>
-                    </div>
-                </div>
+                            <h:form >
+                                <div class="card m-1 p-1" >
+
+                                    <div class="card-header" >
+                                        <p:outputLabel value="Patient Details" ></p:outputLabel>
+                                    </div>
+                                    <div class="card-body" >
+
+
+
+                                        <h:outputText value="Name" class="form-label" ></h:outputText>
+                                        <h:outputText id="txtPersonName" 
+                                                     class="form-control"
+                                                     value="#{patientEncounterController.current.patient.person.name}">
+                                        </h:outputText>
+                                        <h:outputText value="Address"  class="form-label"></h:outputLabel>
+                                        <h:outputText >
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </h:outputText>
+
+                                        <h:outputText value="Age"  class="form-label"></h:outputLabel>
+                                        <h:outputText 
+                                            class="form-control"
+                                            value="#{patientEncounterController.current.patient.age}" >
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Sex"  class="form-label"></h:outputLabel>
+                                        <h:outputLabel 
+                                            class="form-control"
+                                            value="#{patientEncounterController.current.patient.person.sex}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Personal Hx"  class="form-label"></h:outputLabel>
+                                        <p:inputTextarea rows="7" class="form-control"
+                                                         value="#{patientEncounterController.current.patient.comments}" >
+                                            <p:ajax process="@this" ></p:ajax>
+                                        </p:inputTextarea>
+
+
+                                        <p:commandButton ajax="false" value="Update Patient" action="#{patientEncounterController.updatePerson()}"
+                                                         process="panelPt" update="panelPt" ></p:commandButton>
 
 
 
 
-                <div class="container-fluid" >
-                    <div class="row"   >
-                        <div class="col-md-8 m-0 p-1" >
-                            <div class="row p-1 m-0" >
-
-                                <div class="col-md-6 p-0 m-0 text-justify" >
+                                    </div>
 
                                 </div>
+                            </h:form>
 
 
+                            <h:form id="formImage" enctype="multipart/form-data" rendered="true">
 
-                                <div class="col-md-6"  >
+                                <div class="card  m-1 p-1">
+                                    <div class="card-header">Images</div>
+                                    <div class="card-body">
+                                        <p:dataTable id="imageSwitcher" 
+                                                     styleClass="noHeader" 
+                                                     widgetVar="imageSwitcherTable" value="#{patientEncounterController.encounterImages}" var="photo"
+                                                     paginator="true" 
+                                                     paginatorAlwaysVisible="false"
+                                                     rows="1" 
+                                                     paginatorPosition="top"
+                                                     paginatorTemplate="{FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
+                                                     emptyMessage="No visit photos">
+                                            <p:column>
+                                                <div class="position-relative">
+                                                    <p:commandButton id="btnRemoveImage" action="#{patientEncounterController.removeEncounterImage()}"
+                                                                     process="@this" update=":formImage:imageSwitcher" icon="pi pi-trash"
+                                                                     style="position: absolute; top: 5px; left: 5px;" >
+                                                        <f:setPropertyActionListener value="#{photo}" target="#{patientEncounterController.removingClinicalFindingValue}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
 
-
-
-
-
-
-
-
-                                    <div class="card  m-1 p-1">
-                                        <div class="card-header">Images</div>
-                                        <div class="card-body">
-                                            <h:form id="formImage" enctype="multipart/form-data" rendered="true">
-                                                <p:dataTable id="imageSwitcher" 
-                                                             styleClass="noHeader" 
-                                                             widgetVar="imageSwitcherTable" value="#{patientEncounterController.encounterImages}" var="photo"
-                                                             paginator="true" 
-                                                             paginatorAlwaysVisible="false"
-                                                             rows="1" 
-                                                             paginatorPosition="top"
-                                                             paginatorTemplate="{FirstPageLink} {PreviousPageLink} {NextPageLink} {LastPageLink}"
-                                                             emptyMessage="No visit photos">
-                                                    <p:column>
-                                                        <div class="position-relative">
-                                                            <p:commandButton id="btnRemoveImage" action="#{patientEncounterController.removeEncounterImage()}"
-                                                                             process="@this" update=":formImage:imageSwitcher" icon="pi pi-trash"
-                                                                             style="position: absolute; top: 5px; left: 5px;" >
-                                                                <f:setPropertyActionListener value="#{photo}" target="#{patientEncounterController.removingClinicalFindingValue}" ></f:setPropertyActionListener>
-                                                            </p:commandButton>
-
-                                                            <p:graphicImage value="#{patientEncounterController.image}" cache="false" style="width: 100%; height: 100%; object-fit: cover;">
-                                                                <f:param name="id" value="#{photo.id}" />
-                                                            </p:graphicImage>
-                                                        </div>
-                                                    </p:column>
-                                                </p:dataTable>
-
-                                                <h:outputScript library="photocam" name="webcam.js" />
-
-                                                <div style="display:none;">
-                                                    <p:photoCam listener="#{patientEncounterController.oncaptureVisitPhoto}" 
-                                                                widgetVar="pc" width="400" height="300"
-                                                                photoWidth="800" photoHeight="600" />
+                                                    <p:graphicImage value="#{patientEncounterController.image}" cache="false" style="width: 100%; height: 100%; object-fit: cover;">
+                                                        <f:param name="id" value="#{photo.id}" />
+                                                    </p:graphicImage>
                                                 </div>
+                                            </p:column>
+                                        </p:dataTable>
 
-                                                <div class="row align-items-center"> <!-- Use Bootstrap row class -->
-                                                    <div class="col"> <!-- Use Bootstrap col class -->
-                                                        <p:commandButton id="btnCaptureImage" 
-                                                                         onclick="PF('pc').capture();" 
-                                                                         icon="pi pi-camera"
-                                                                         action="#{patientEncounterController.updateEncounterImages}" 
-                                                                         update="imageSwitcher" 
-                                                                         class="btn btn-primary h-50"/> <!-- Adjust height -->
-                                                    </div>
-                                                    <div class="col d-flex align-items-center">
-                                                        <p:fileUpload value="#{patientEncounterController.uploadedFile}" 
-                                                                      auto="true"
-                                                                      mode="advanced" 
-                                                                      dragDropSupport="true"
-                                                                      multiple="false" update="imageSwitcher" accept="image/*" 
-                                                                      class="m-2" title="Upload Image"
-                                                                      listener="#{patientEncounterController.uploadPhoto}" />
-                                                    </div>
+                                        <h:outputScript library="photocam" name="webcam.js" />
 
-                                                </div>
-                                            </h:form>
+                                        <div style="display:none;">
+                                            <p:photoCam listener="#{patientEncounterController.oncaptureVisitPhoto}" 
+                                                        widgetVar="pc" width="400" height="300"
+                                                        photoWidth="800" photoHeight="600" />
                                         </div>
 
+                                        <div class="row align-items-center"> <!-- Use Bootstrap row class -->
+                                            <div class="col"> <!-- Use Bootstrap col class -->
+                                                <p:commandButton id="btnCaptureImage" 
+                                                                 onclick="PF('pc').capture();" 
+                                                                 icon="pi pi-camera"
+                                                                 action="#{patientEncounterController.updateEncounterImages}" 
+                                                                 update="imageSwitcher" 
+                                                                 class="btn btn-primary h-50"/> <!-- Adjust height -->
+                                            </div>
+                                            <div class="col d-flex align-items-center">
+                                                <p:fileUpload value="#{patientEncounterController.uploadedFile}" 
+                                                              auto="true"
+                                                              mode="advanced" 
+                                                              dragDropSupport="true"
+                                                              multiple="false" update="imageSwitcher" accept="image/*" 
+                                                              class="m-2" title="Upload Image"
+                                                              listener="#{patientEncounterController.uploadPhoto}" />
+                                            </div>
 
-
+                                        </div>
 
                                     </div>
 
@@ -327,23 +370,14 @@
                                         }
                                     </style>
 
+
+
                                 </div>
-
-
-
-
-
-
-                            </div>
-
-
-
+                            </h:form>
 
 
                         </div>
-                        <div class="col-md-4 m-0 p-1" >
-
-
+                        <div class="col-4 p-1" >
                             <div class="card m-1 p-1">
                                 <div class="card card-header">
                                     <p:outputLabel value="Tests"></p:outputLabel>
@@ -411,8 +445,6 @@
                                 </div>
                             </div>
 
-
-
                             <div class="card  m-1 p-1">
                                 <div class="card card-header">
                                     <p:outputLabel value="Diagnosis"></p:outputLabel>
@@ -473,7 +505,6 @@
                                     </h:panelGroup>
                                 </div>
                             </div>
-
 
                             <div class="card  m-1 p-1">
                                 <div class="card card-header">
@@ -543,77 +574,64 @@
 
                                 </div>
                             </div>
-
-
-                            <h:form >
-                                <div class="card m-1 p-1" >
-
-                                    <div class="card-header" >
-                                        <p:outputLabel value="Patient Details" ></p:outputLabel>
-                                    </div>
-                                    <div class="card-body" >
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueItems()}" icon="fas fa-medkit" title="Pharmacy"></p:commandButton>
-                                                <p:commandButton class="p-0 m-1" action="#{patientEncounterController.issueServices()}" icon="pi pi-shopping-cart" title="Order"></p:commandButton>
-                                                <p:commandButton class="p-0 m-1" action="clinical_letter_index" icon="pi pi-envelope" title="Letters">
-                                                    <f:setPropertyActionListener target="#{letterController.patientEncounter}" value="${patientEncounterController.current}" />
-                                                </p:commandButton>
-                                                <p:commandButton class="p-0 m-1" action="clinical_patient_for_receptionist" icon="pi pi-search" title="Search"></p:commandButton>
-                                                <p:commandButton class="p-0 m-1" action="clinical_queue" icon="pi pi-list" title="Queue"></p:commandButton>
-                                            </div>
-                                        </div>
-
-
-                                        <h:outputLabel value="Name" class="form-label" ></h:outputLabel>
-                                        <p:inputText autocomplete="off" id="txtPersonName" 
-                                                     class="form-control"
-                                                     value="#{patientEncounterController.current.patient.person.name}"
-                                                     readonly="#{!webUserController.hasPrivilege('ClinicalPatientNameChange')}">
-                                            <p:ajax process="@this" event="blur" ></p:ajax>
-                                        </p:inputText>
-                                        <h:outputLabel value="Date of Birth"  class="form-label"></h:outputLabel>
-                                        <p:calendar id="calPersonDob" 
-                                                    value="#{patientEncounterController.current.patient.person.dob}" 
-                                                    inputStyleClass="form-control"
-                                                    pattern="dd MMMM yyyy" navigator="true" >
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:calendar>
-                                        <h:outputLabel value="Address"  class="form-label"></h:outputLabel>
-                                        <p:inputTextarea id="txtPatientAddress"  value="#{patientEncounterController.current.patient.person.address}" 
-                                                         class="form-control"
-                                                         rows="4">
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:inputTextarea>
-
-                                        <h:outputLabel value="Age"  class="form-label"></h:outputLabel>
-                                        <h:outputLabel 
-                                            class="form-control"
-                                            value="#{patientEncounterController.current.patient.age}" >
-                                        </h:outputLabel>
-
-                                        <h:outputLabel value="Sex"  class="form-label"></h:outputLabel>
-                                        <h:outputLabel 
-                                            class="form-control"
-                                            value="#{patientEncounterController.current.patient.person.sex}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Personal Hx"  class="form-label"></h:outputLabel>
-                                        <p:inputTextarea rows="7" class="form-control"
-                                                         value="#{patientEncounterController.current.patient.comments}" >
-                                            <p:ajax process="@this" ></p:ajax>
-                                        </p:inputTextarea>
-
-
-                                        <p:commandButton ajax="false" value="Update Patient" action="#{patientEncounterController.updatePerson()}"
-                                                         process="panelPt" update="panelPt" ></p:commandButton>
+                        </div>
+                    </div>
+                </div>
 
 
 
 
-                                    </div>
+                <div class="container-fluid" >
+                    <div class="row"   >
+                        <div class="col-md-8 m-0 p-1" >
+                            <div class="row p-1 m-0" >
+
+                                <div class="col-md-6 p-0 m-0 text-justify" >
 
                                 </div>
-                            </h:form>
+
+
+
+                                <div class="col-md-6"  >
+
+
+
+
+
+
+
+
+
+
+
+                                </div>
+
+
+
+
+
+
+                            </div>
+
+
+
+
+
+                        </div>
+                        <div class="col-md-4 m-0 p-1" >
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                             <h:form >
                                 <div class="card m-1 p-1" >
