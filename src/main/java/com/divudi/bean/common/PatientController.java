@@ -1725,84 +1725,8 @@ public class PatientController implements Serializable {
     public void setAgeDateComponant(Integer ageDateComponant) {
         this.ageDateComponant = ageDateComponant;
     }
-
-    /**
-     *
-     * Set all Patients to null
-     *
-     */
-    /**
-     *
-     */
-    /**
-     *
-     * Delete the current Patient
-     *
-     */
-    /**
-     *
-     */
-    @FacesConverter(forClass = Patient.class)
-    public static class PatientControllerConverter implements Converter {
-
-        /**
-         *
-         * @param facesContext
-         * @param component
-         * @param value
-         * @return
-         */
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            PatientController controller = (PatientController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "patientController");
-            //////System.out.println("value at converter getAsObject is " + value);
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            //////System.out.println(value);
-            if (value == null || value.equals("null") || value.trim().equals("")) {
-                key = 0l;
-            } else {
-                key = Long.valueOf(value);
-            }
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        /**
-         *
-         * @param facesContext
-         * @param component
-         * @param object
-         * @return
-         */
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Patient) {
-                Patient o = (Patient) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName());
-            }
-        }
-    }
-
-    public PracticeBookingController getPracticeBookingController() {
+    
+     public PracticeBookingController getPracticeBookingController() {
         return practiceBookingController;
     }
 
@@ -1870,8 +1794,24 @@ public class PatientController implements Serializable {
         this.currentRelation = currentRelation;
     }
 
-    @FacesConverter("patientConverter")
-    public static class PatientConverter implements Converter {
+    /**
+     *
+     * Set all Patients to null
+     *
+     */
+    /**
+     *
+     */
+    /**
+     *
+     * Delete the current Patient
+     *
+     */
+    /**
+     *
+     */
+    @FacesConverter(forClass = Patient.class)
+    public static class PatientControllerConverter implements Converter {
 
         /**
          *
@@ -1898,8 +1838,6 @@ public class PatientController implements Serializable {
                 key = 0l;
             } else {
                 key = Long.valueOf(value);
-                //////System.out.println(key);
-                //////System.out.println(value);
             }
             return key;
         }
