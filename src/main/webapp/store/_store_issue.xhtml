@@ -65,7 +65,6 @@
                                             <style>.ui-autocomplete-input {width:300px!important;}</style>
                                             <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                             value="#{storeIssueController.stock}" 
-                                                            converter="stockCon" 
                                                             completeMethod="#{storeIssueController.completeAvailableStocks}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             style="width: 50px!important;">

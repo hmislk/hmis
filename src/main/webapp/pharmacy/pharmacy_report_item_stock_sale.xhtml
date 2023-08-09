@@ -34,7 +34,7 @@
                         <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                         forceSelection="true" value="#{report3DController.reportKeyWord.department}" 
-                                        converter="departmentConverter"/>
+                                        />
 
                         <h:outputLabel value="Category" ></h:outputLabel>
                         <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 

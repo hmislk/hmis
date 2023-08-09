@@ -29,7 +29,7 @@
                                         completeMethod="#{staffController.completeConsultant}" var="mys" 
                                         itemLabel="#{mys.person.nameWithTitle}" 
                                         itemValue="#{mys}"
-                                        converter="stfcon">
+                                        >
                             
                             <p:ajax event="itemSelect" update="lstSelect" process="scStaff"  
                                     listener="#{channelReportController.fillSessions}"></p:ajax>

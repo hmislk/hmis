@@ -19,7 +19,7 @@
                         <h:panelGrid columns="2">
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="Item" ></h:outputLabel>
-                                <p:autoComplete  forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.stock}" converter="stockCon" completeMethod="#{pharmacyAdjustmentController.completeAvailableStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                                <p:autoComplete  forceSelection="true"  id="acStock" value="#{pharmacyAdjustmentController.stock}" completeMethod="#{pharmacyAdjustmentController.completeAvailableStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
                                     <p:column headerText="Item">
                                         <h:outputLabel value="#{i.itemBatch.item.name}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
                                                                             commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>

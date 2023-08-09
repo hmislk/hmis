@@ -151,7 +151,7 @@
                                     <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
                                 </p:column>      
                                 <p:column headerText="Printing Room">
-                                    <p:autoComplete converter="fac" forceSelection="true"
+                                    <p:autoComplete forceSelection="true"
                                                     value="#{b.printRoomFacilityCharge}" 
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                     var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" >

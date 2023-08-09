@@ -21,7 +21,7 @@
                     <h:panelGrid columns="2" style="min-width: 100%;" styleClass="alignTop">
                         <p:panel header="BHT Details">
                             <p:watermark value="Start typing BHT Number or Patient Name" for="acPt" ></p:watermark>
-                            <p:autoComplete  converter="admis"
+                            <p:autoComplete  
                                              widgetVar="aPt" id="acPt" forceSelection="true" 
                                              value="#{inwardTimedItemController.current.patientEncounter}"
                                              completeMethod="#{admissionController.completePatient}" 
@@ -80,7 +80,7 @@
                         <p:panel header="Timed Service">
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Service"/>
-                                <p:autoComplete converter="timedIt" id="it" forceSelection="false" 
+                                <p:autoComplete id="it" forceSelection="false" 
                                                 value="#{inwardTimedItemController.current.item}"
                                                 completeMethod="#{timedItemController.completeTimedService}" var="ix" 
                                                 itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">

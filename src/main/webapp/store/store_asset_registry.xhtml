@@ -24,7 +24,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                                            forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Item"/>                             
                             <p:autoComplete   value="#{storeReportsStock.item}" 

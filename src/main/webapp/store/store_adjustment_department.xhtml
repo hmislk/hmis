@@ -23,7 +23,7 @@
                             <h:panelGrid columns="2">
                                 <h:outputLabel value="Item" ></h:outputLabel>
                                 <p:autoComplete   forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" 
-                                                  converter="stockCon" 
+                                                  
                                                   completeMethod="#{storeController.completeAllStocksWithZero}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
                                     <p:column headerText="Item">
                                         <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>

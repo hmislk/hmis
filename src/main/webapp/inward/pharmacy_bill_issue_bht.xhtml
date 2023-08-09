@@ -67,7 +67,7 @@
 
                                     <p:panel header="Patient Detail">                                        
                                         <h:outputLabel value="Type Patinet Name or BHT : "/>
-                                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                                         value="#{pharmacySaleBhtController.patientEncounter}" 
                                                         completeMethod="#{admissionController.completePatient}"
                                                         var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -106,7 +106,6 @@
                                             </style>
                                             <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                             value="#{pharmacySaleBhtController.stock}" 
-                                                            converter="stockCon" 
                                                             completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >

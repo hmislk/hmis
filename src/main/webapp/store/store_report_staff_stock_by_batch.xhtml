@@ -19,7 +19,7 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Staff" >
                             </h:outputLabel>
-                            <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{storeReportsStock.staff}" converter="stfcon" >
+                            <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{storeReportsStock.staff}"  >
                             </p:autoComplete>
                             </h:panelGrid>
                         <h:panelGrid columns="4" ><p:spacer width="30" height="1"/>

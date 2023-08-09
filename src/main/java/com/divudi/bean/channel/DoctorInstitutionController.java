@@ -182,43 +182,5 @@ public class DoctorInstitutionController implements Serializable {
         }
     }
 
-    @FacesConverter("doctorInstitutionConverter")
-    public static class DoctorInstitutionControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DoctorInstitutionController controller = (DoctorInstitutionController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "doctorInstitutionController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof DoctorInstitution) {
-                DoctorInstitution o = (DoctorInstitution) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorInstitutionController.class.getName());
-            }
-        }
-    }
+    
 }

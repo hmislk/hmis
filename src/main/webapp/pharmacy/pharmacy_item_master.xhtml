@@ -95,7 +95,7 @@
 
                                         <h:outputLabel value="Category"/>
                                         <p:autoComplete  value="#{ampController.current.category}" 
-                                                         forceSelection="true" converter="categoryConverter"
+                                                         forceSelection="true" 
                                                          completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                             <!--<f:ajax event="itemSelect" render="code" execute="@this"  listener="#{ampController.listnerCategorySelect()}"/>-->

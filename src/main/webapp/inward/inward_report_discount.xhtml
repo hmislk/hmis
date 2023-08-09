@@ -39,7 +39,7 @@
                                                 itemValue="#{ccc}" itemLabel="#{ccc.name}"></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="BHT No : " ></h:outputLabel>
-                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{inwardReportController1.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientAll}" 
                                             var="myItem" itemValue="#{myItem}" 

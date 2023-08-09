@@ -27,7 +27,7 @@
                                                 <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                             </h:inputText>
 
-                                            <p:selectOneListbox converter="serv" scrollHeight="500" class="w-100"  id="lstSelect"   value="#{serviceController.current}" style="min-width: 320px; ">
+                                            <p:selectOneListbox  scrollHeight="500" class="w-100"  id="lstSelect"   value="#{serviceController.current}" style="min-width: 320px; ">
                                                 <f:selectItems  value="#{serviceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                                 </f:selectItems>
                                                 <p:ajax event="change"   update="gpDetail btnDelete" process="lstSelect" >
@@ -56,7 +56,7 @@
                                                 <f:ajax execute="txtSearchAct" render="lstSelectAct" event="keyup" />
                                             </h:inputText>
 
-                                            <p:selectOneListbox converter="serv"   id="lstSelectAct" scrollHeight="500" class="w-100"  value="#{serviceController.currentInactiveService}" style="min-width: 320px;">
+                                            <p:selectOneListbox    id="lstSelectAct" scrollHeight="500" class="w-100"  value="#{serviceController.currentInactiveService}" style="min-width: 320px;">
                                                 <f:selectItems  value="#{serviceController.retiredSelectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                                 </f:selectItems>
                                                 <p:ajax event="change"   update="gpDetail" process="lstSelectAct" >
@@ -111,7 +111,7 @@
                                             <p:selectBooleanCheckbox  value="#{serviceController.current.vatable}" >
                                             </p:selectBooleanCheckbox>
                                             <h:outputText value="Service Category/Sub Category" ></h:outputText>
-                                            <p:autoComplete converter="categoryConverter" 
+                                            <p:autoComplete 
                                                             completeMethod="#{categoryController.completeServiceCategory}" 
                                                             var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" 
                                                             forceSelection="true" value="#{serviceController.current.category}" >                                    
@@ -122,7 +122,7 @@
                                             <p:selectBooleanCheckbox   id="chkBilledAs" value="#{serviceController.billedAs}" itemLabel="Billed as a seperate investigation"  >
                                                 <p:ajax event="change" process="@this" update="billedAsIx" />
                                             </p:selectBooleanCheckbox>
-                                            <p:autoComplete converter="serv"  disabled="#{!serviceController.billedAs}" 
+                                            <p:autoComplete   disabled="#{!serviceController.billedAs}" 
                                                             widgetVar="aIx1" id="billedAsIx" forceSelection="true"
                                                             value="#{serviceController.current.billedAs}" completeMethod="#{serviceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  >
                                             </p:autoComplete>
@@ -130,7 +130,7 @@
                                             <p:selectBooleanCheckbox  id="chkReportedAs" value="#{serviceController.reportedAs}" itemLabel="Reported as a seperate investigation" >
                                                 <p:ajax event="change" process="@this" update="reportedAsIx" />
                                             </p:selectBooleanCheckbox>
-                                            <p:autoComplete converter="serv" disabled="#{!serviceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{serviceController.current.reportedAs}" completeMethod="#{serviceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
+                                            <p:autoComplete  disabled="#{!serviceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{serviceController.current.reportedAs}" completeMethod="#{serviceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
                                             </p:autoComplete>
 
                                             <h:outputText value="Institution" ></h:outputText>

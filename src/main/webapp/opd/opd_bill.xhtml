@@ -117,7 +117,7 @@
                                                          class="form-control"/>
                                         </div>
                                         <div class="col-md-4 p-1">
-                                            <p:autoComplete id="acNewPtArea" converter="areaCon"
+                                            <p:autoComplete id="acNewPtArea" 
                                                             placeholder="Search &amp; Select Area"
                                                             completeMethod="#{areaController.completeArea}"
                                                             var="pta" itemLabel="#{pta.name}"
@@ -574,7 +574,7 @@
                                                                      inputStyleClass="form-control"
                                                                      itemLabel="#{mys.person.nameWithTitle}" 
                                                                      itemValue="#{mys}"
-                                                                     converter="stfcon"
+                                                                     
                                                                      size="10">
                                                         <p:column headerText="Name" >
                                                             <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>

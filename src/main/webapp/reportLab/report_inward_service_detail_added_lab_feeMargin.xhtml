@@ -29,7 +29,7 @@
                     </p:calendar>
 
                     <h:outputLabel value="Department" ></h:outputLabel>
-                    <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{serviceSummery.department}" converter="departmentConverter" >
+                    <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{serviceSummery.department}"  >
                     </p:autoComplete>
 
                     <h:outputLabel value="Instituion"/>

@@ -130,7 +130,7 @@
                                                             </p:inputText>
                                                         </td>
                                                         <td>
-                                                            <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Select Area"
+                                                            <p:autoComplete id="acNewPtArea" placeholder="Select Area"
                                                                             completeMethod="#{areaController.completeArea}" 
                                                                             var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
                                                                             itemValue="#{pta}" forceSelection="true" 
@@ -334,7 +334,7 @@
                                             <p:autoComplete forceSelection="true" id="cmdIns" 
                                                             value="#{collectingCentreBillController.referredByInstitution}" 
                                                             completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                            itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
+                                                            itemLabel="#{refi.name}" itemValue="#{refi}" >
                                                 <p:column headerText="Name">
                                                     #{refi.name}
                                                 </p:column>

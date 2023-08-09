@@ -11,7 +11,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  id="service" converter="itemcon"
+        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  id="service" 
                          completeMethod="#{itemController.completeOpdItemsByNamesAndCode}" var="ix"
                          itemLabel="#{ix.name}" itemValue="#{ix}" >            
         </p:autoComplete> 
