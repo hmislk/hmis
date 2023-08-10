@@ -1,7 +1,7 @@
 /*
  * Open Hospital Management Information System
  * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
+ * buddhika.ari@gmail.comcontroller class which are not used. 
  */
 package com.divudi.bean.cashTransaction;
 
