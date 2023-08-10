@@ -105,14 +105,14 @@ public class ChannellingFeeController implements Serializable {
         }
     }
 
-    public SessionNumberGenerator saveSessionNumber() {
-        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
-        sessionNumberGenerator.setSpeciality(speciality);
-        sessionNumberGenerator.setStaff(doctor);
-        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
-        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
-        return sessionNumberGenerator;
-    }
+//    public SessionNumberGenerator saveSessionNumber() {
+//        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+//        sessionNumberGenerator.setSpeciality(speciality);
+//        sessionNumberGenerator.setStaff(doctor);
+//        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
+//        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+//        return sessionNumberGenerator;
+//    }
 
     public void createAllFeesForServiceSession() {
         createAllFeesForServiceSessionWithoutScanning();
@@ -237,11 +237,11 @@ public class ChannellingFeeController implements Serializable {
         return doctors;
     }
 
-    public void prepareAdd() {
-        ////// // System.out.println("prepairing to add");
-        fee = new ItemFee();
-        ////// // System.out.println("fee = " + fee);
-    }
+//    public void prepareAdd() {
+//        ////// // System.out.println("prepairing to add");
+//        fee = new ItemFee();
+//        ////// // System.out.println("fee = " + fee);
+//    }
 
     public void fillSessions() {
         String sql;
