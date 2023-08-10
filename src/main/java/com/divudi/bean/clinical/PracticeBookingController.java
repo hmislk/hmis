@@ -371,61 +371,61 @@ public class PracticeBookingController implements Serializable {
 
     }
 
-    public void addAndClear() {
-        addToQueue();
-        getPatientController().setCurrent(null);
-    }
+//    public void addAndClear() {
+//        addToQueue();
+//        getPatientController().setCurrent(null);
+//    }
 
-    public void addToQueue() {
-        if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
-            UtilityController.addErrorMessage("Please select a patient");
-            return;
-        }
-        if (doctor == null) {
-            UtilityController.addErrorMessage("Please select a doctor");
-            return;
-        }
-        if (getSelectedServiceSession() == null) {
-            UtilityController.addErrorMessage("Please select session");
-            return;
-        }
+//    public void addToQueue() {
+//        if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
+//            UtilityController.addErrorMessage("Please select a patient");
+//            return;
+//        }
+//        if (doctor == null) {
+//            UtilityController.addErrorMessage("Please select a doctor");
+//            return;
+//        }
+//        if (getSelectedServiceSession() == null) {
+//            UtilityController.addErrorMessage("Please select session");
+//            return;
+//        }
+//
+//        addToSession(addToBilledItem(addToBill()));
+//        listBillSessions();
+//        UtilityController.addSuccessMessage("Added to the queue");
+//    }
 
-        addToSession(addToBilledItem(addToBill()));
-        listBillSessions();
-        UtilityController.addSuccessMessage("Added to the queue");
-    }
+//    private BillItem addToBilledItem(Bill b) {
+//        BillItem bi = new BillItem();
+//        bi.setCreatedAt(new Date());
+//        bi.setCreater(getSessionController().getLoggedUser());
+//        bi.setBill(b);
+//        bi.setNetValue(b.getTotal());
+//        bi.setSessionDate(getSelectedServiceSession().getSessionDate());
+//        getBillItemFacade().create(bi);
+//        return bi;
+//    }
 
-    private BillItem addToBilledItem(Bill b) {
-        BillItem bi = new BillItem();
-        bi.setCreatedAt(new Date());
-        bi.setCreater(getSessionController().getLoggedUser());
-        bi.setBill(b);
-        bi.setNetValue(b.getTotal());
-        bi.setSessionDate(getSelectedServiceSession().getSessionDate());
-        getBillItemFacade().create(bi);
-        return bi;
-    }
-
-    private void addToSession(BillItem bi) {
-        ////// // System.out.println("adding to session");
-        Bill b = bi.getBill();
-        BillSession bs = new BillSession();
-
-        bs.setBill(b);
-        bs.setBillItem(bi);
-        bs.setCreatedAt(Calendar.getInstance().getTime());
-        bs.setCreater(getSessionController().getLoggedUser());
-        bs.setServiceSession(getSelectedServiceSession());
-        ////// // System.out.println("getSelectedServiceSession() = " + getSelectedServiceSession());
-        bs.setSessionDate(getSelectedServiceSession().getSessionDate());
-        ////// // System.out.println("getSelectedServiceSession().getSessionDate() = " + getSelectedServiceSession().getSessionDate());
-        int count = getServiceSessionBean().getSessionNumber(getSelectedServiceSession(), Calendar.getInstance().getTime());
-        bs.setSerialNo(count);
-        bs.setStaff(getSelectedServiceSession().getStaff());
-
-        getBillSessionFacade().create(bs);
-
-    }
+//    private void addToSession(BillItem bi) {
+//        ////// // System.out.println("adding to session");
+//        Bill b = bi.getBill();
+//        BillSession bs = new BillSession();
+//
+//        bs.setBill(b);
+//        bs.setBillItem(bi);
+//        bs.setCreatedAt(Calendar.getInstance().getTime());
+//        bs.setCreater(getSessionController().getLoggedUser());
+//        bs.setServiceSession(getSelectedServiceSession());
+//        ////// // System.out.println("getSelectedServiceSession() = " + getSelectedServiceSession());
+//        bs.setSessionDate(getSelectedServiceSession().getSessionDate());
+//        ////// // System.out.println("getSelectedServiceSession().getSessionDate() = " + getSelectedServiceSession().getSessionDate());
+//        int count = getServiceSessionBean().getSessionNumber(getSelectedServiceSession(), Calendar.getInstance().getTime());
+//        bs.setSerialNo(count);
+//        bs.setStaff(getSelectedServiceSession().getStaff());
+//
+//        getBillSessionFacade().create(bs);
+//
+//    }
 
     private Bill addToBill() {
         Bill bi = new BilledBill();
@@ -609,16 +609,16 @@ public class PracticeBookingController implements Serializable {
         this.encounters = encounters;
     }
 
-    public void opdVisitFromServiceSessionOld() {
-        //   ////// // System.out.println("opd visit from service session ");
-
-        Map m = new HashMap();
-        m.put("bs", getBillSession());
-        String sql;
-        sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
-        opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
-
-    }
+//    public void opdVisitFromServiceSessionOld() {
+//        //   ////// // System.out.println("opd visit from service session ");
+//
+//        Map m = new HashMap();
+//        m.put("bs", getBillSession());
+//        String sql;
+//        sql = "select pe from PatientEncounter pe where pe.billSession=:bs";
+//        opdVisit = getPatientEncounterFacade().findFirstByJpql(sql, m);
+//
+//    }
 
     public void listCompletedBillSessions() {
         String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession=:ss "
