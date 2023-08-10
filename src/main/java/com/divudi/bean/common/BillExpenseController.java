@@ -52,18 +52,18 @@ public class BillExpenseController implements Serializable {
         return itemsToRemove;
     }
 
-    public List<BillExpense> completeBillExpense(String query) {
-        List<BillExpense> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
-        }
-        return suggestions;
-    }
+//    public List<BillExpense> completeBillExpense(String query) {
+//        List<BillExpense> suggestions;
+//        String sql;
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+//            //////// // System.out.println(sql);
+//            suggestions = getFacade().findBySQL(sql);
+//        }
+//        return suggestions;
+//    }
 
     public List<BillExpense> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -74,13 +74,13 @@ public class BillExpenseController implements Serializable {
         return selectedItems;
     }
 
-    public List<BillExpense> completeItem(String qry) {
-        List<BillExpense> completeItems = getFacade().findBySQL("select c from Item c "
-                + " where ( type(c) = BillExpense or type(c) = Packege ) "
-                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
-                + "  order by c.name");
-        return completeItems;
-    }
+//    public List<BillExpense> completeItem(String qry) {
+//        List<BillExpense> completeItems = getFacade().findBySQL("select c from Item c "
+//                + " where ( type(c) = BillExpense or type(c) = Packege ) "
+//                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
+//                + "  order by c.name");
+//        return completeItems;
+//    }
 
     public void prepareAdd() {
         current = new BillExpense();
