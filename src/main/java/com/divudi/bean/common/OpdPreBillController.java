@@ -210,107 +210,107 @@ public class OpdPreBillController implements Serializable {
         searchController.createTablePharmacyCreditToPayBills();
     }
 
-    public void saveBillOPDCredit() {
-
-        BilledBill temp = new BilledBill();
-
-        if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
-            return;
-        }
-        if (opdPaymentCredit > opdBill.getBalance()) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
-            return;
-        }
-
-        temp.setReferenceBill(opdBill);
-        temp.setTotal(opdPaymentCredit);
-        temp.setPaidAmount(opdPaymentCredit);
-        temp.setNetTotal(opdPaymentCredit);
-
-        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
-        getBillFacade().edit(opdBill);
-
-        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        temp.setBillType(BillType.CashRecieveBill);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        temp.setComments(comment);
-
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
-
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
-
-        JsfUtil.addSuccessMessage("Paid");
-        opdBill = temp;
-        printPreview = true;
-
-    }
+//    public void saveBillOPDCredit() {
+//
+//        BilledBill temp = new BilledBill();
+//
+//        if (opdPaymentCredit == 0) {
+//            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+//            return;
+//        }
+//        if (opdPaymentCredit > opdBill.getBalance()) {
+//            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+//            return;
+//        }
+//
+//        temp.setReferenceBill(opdBill);
+//        temp.setTotal(opdPaymentCredit);
+//        temp.setPaidAmount(opdPaymentCredit);
+//        temp.setNetTotal(opdPaymentCredit);
+//
+//        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
+//        getBillFacade().edit(opdBill);
+//
+//        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
+//        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
+//        temp.setBillType(BillType.CashRecieveBill);
+//
+//        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
+//
+//        temp.setComments(comment);
+//
+//        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//
+//        temp.setBillDate(new Date());
+//        temp.setBillTime(new Date());
+//        temp.setPaymentMethod(paymentMethod);
+//        temp.setCreatedAt(new Date());
+//        temp.setCreater(getSessionController().getLoggedUser());
+//        getFacade().create(temp);
+//
+//        JsfUtil.addSuccessMessage("Paid");
+//        opdBill = temp;
+//        printPreview = true;
+//
+//    }
     
-    public void saveBillPharmacyCredit() {
-
-        BilledBill temp = new BilledBill();
-
-        if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
-            return;
-        }
-        if (opdPaymentCredit > (opdBill.getNetTotal()-opdBill.getPaidAmount())) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
-            return;
-        }
-
-        temp.setReferenceBill(opdBill);
-        temp.setTotal(opdPaymentCredit);
-        temp.setPaidAmount(opdPaymentCredit);
-        temp.setNetTotal(opdPaymentCredit);
-        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
-        ////// // System.out.println("opdPaymentCredit = " + opdPaymentCredit);
-        opdBill.setPaidAmount(opdPaymentCredit+opdBill.getPaidAmount());
-        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
-        getBillFacade().edit(opdBill);
-
-        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        temp.setBillType(BillType.CashRecieveBill);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        temp.setComments(comment);
-
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
-
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
-
-        JsfUtil.addSuccessMessage("Paid");
-        opdBill = temp;
-        printPreview = true;
-
-    }
+//    public void saveBillPharmacyCredit() {
+//
+//        BilledBill temp = new BilledBill();
+//
+//        if (opdPaymentCredit == 0) {
+//            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+//            return;
+//        }
+//        if (opdPaymentCredit > (opdBill.getNetTotal()-opdBill.getPaidAmount())) {
+//            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+//            return;
+//        }
+//
+//        temp.setReferenceBill(opdBill);
+//        temp.setTotal(opdPaymentCredit);
+//        temp.setPaidAmount(opdPaymentCredit);
+//        temp.setNetTotal(opdPaymentCredit);
+//        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+//        ////// // System.out.println("opdPaymentCredit = " + opdPaymentCredit);
+//        opdBill.setPaidAmount(opdPaymentCredit+opdBill.getPaidAmount());
+//        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+//        getBillFacade().edit(opdBill);
+//
+//        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
+//        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
+//        temp.setBillType(BillType.CashRecieveBill);
+//
+//        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
+//
+//        temp.setComments(comment);
+//
+//        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//
+//        temp.setBillDate(new Date());
+//        temp.setBillTime(new Date());
+//        temp.setPaymentMethod(paymentMethod);
+//        temp.setCreatedAt(new Date());
+//        temp.setCreater(getSessionController().getLoggedUser());
+//        getFacade().create(temp);
+//
+//        JsfUtil.addSuccessMessage("Paid");
+//        opdBill = temp;
+//        printPreview = true;
+//
+//    }
     
     public void createBillFeePayments(){
         Date startTime = new Date();
