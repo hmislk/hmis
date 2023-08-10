@@ -201,150 +201,150 @@ public class FavouriteController implements Serializable {
 
     }
 
-    public void removeFavourite() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing current");
-            return;
-        }
-        current.setRetired(true);
-        favouriteItemFacade.edit(current);
-        PrescriptionTemplateType tt = current.getType();
-        current = null;
-        fillFavouriteItems(item, tt);
-        JsfUtil.addSuccessMessage("Removed");
-    }
+//    public void removeFavourite() {
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("Nothing current");
+//            return;
+//        }
+//        current.setRetired(true);
+//        favouriteItemFacade.edit(current);
+//        PrescriptionTemplateType tt = current.getType();
+//        current = null;
+//        fillFavouriteItems(item, tt);
+//        JsfUtil.addSuccessMessage("Removed");
+//    }
 
-    public void addToFavouriteMedicine() {
-        if (item == null) {
-            JsfUtil.addErrorMessage("Please select an item");
-            return;
-        }
-        if (current == null) {
-            JsfUtil.addErrorMessage("Favourite Item is not create by getter. Please contact vendor.");
-            return;
-        }
-        if (current.getType() == null) {
-            JsfUtil.addErrorMessage("Favourite Type NOT current.");
-            return;
-        }
-        if (current.getTemplateFrom() == null) {
-            JsfUtil.addErrorMessage("From NOT current.");
-            return;
-        }
-        if (current.getTemplateTo() == null) {
-            JsfUtil.addErrorMessage("To NOT current.");
-            return;
-        }
-        if (current.getTemplateFrom().equals(current.getTemplateTo())) {
-            JsfUtil.addErrorMessage("From is equal not To. So not added.");
-            return;
-        }
-        switch (current.getFavouriteType()) {
-            case kg:
-                current.setFromDays(null);
-                current.setToDays(null);
-                current.setFromKg(current.getTemplateFrom());
-                current.setToKg(current.getTemplateTo());
-                break;
-            case days:
-                current.setFromDays(current.getTemplateFrom());
-                current.setToDays(current.getTemplateTo());
-                current.setFromKg(null);
-                current.setToKg(null);
-                break;
-            case months:
-                current.setFromDays(current.getTemplateFrom() * 30.4167);
-                current.setToDays(current.getTemplateTo() * 30.4167);
-                current.setFromKg(null);
-                current.setToKg(null);
-                break;
-            case years:
-                current.setFromDays(current.getTemplateFrom() * 365);
-                current.setToDays(current.getTemplateTo() * 365);
-                current.setFromKg(null);
-                current.setToKg(null);
-                break;
-            default:
-                JsfUtil.addErrorMessage("Favourite Type NOT current.");
-                return;
-        }
+//    public void addToFavouriteMedicine() {
+//        if (item == null) {
+//            JsfUtil.addErrorMessage("Please select an item");
+//            return;
+//        }
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("Favourite Item is not create by getter. Please contact vendor.");
+//            return;
+//        }
+//        if (current.getType() == null) {
+//            JsfUtil.addErrorMessage("Favourite Type NOT current.");
+//            return;
+//        }
+//        if (current.getTemplateFrom() == null) {
+//            JsfUtil.addErrorMessage("From NOT current.");
+//            return;
+//        }
+//        if (current.getTemplateTo() == null) {
+//            JsfUtil.addErrorMessage("To NOT current.");
+//            return;
+//        }
+//        if (current.getTemplateFrom().equals(current.getTemplateTo())) {
+//            JsfUtil.addErrorMessage("From is equal not To. So not added.");
+//            return;
+//        }
+//        switch (current.getFavouriteType()) {
+//            case kg:
+//                current.setFromDays(null);
+//                current.setToDays(null);
+//                current.setFromKg(current.getTemplateFrom());
+//                current.setToKg(current.getTemplateTo());
+//                break;
+//            case days:
+//                current.setFromDays(current.getTemplateFrom());
+//                current.setToDays(current.getTemplateTo());
+//                current.setFromKg(null);
+//                current.setToKg(null);
+//                break;
+//            case months:
+//                current.setFromDays(current.getTemplateFrom() * 30.4167);
+//                current.setToDays(current.getTemplateTo() * 30.4167);
+//                current.setFromKg(null);
+//                current.setToKg(null);
+//                break;
+//            case years:
+//                current.setFromDays(current.getTemplateFrom() * 365);
+//                current.setToDays(current.getTemplateTo() * 365);
+//                current.setFromKg(null);
+//                current.setToKg(null);
+//                break;
+//            default:
+//                JsfUtil.addErrorMessage("Favourite Type NOT current.");
+//                return;
+//        }
+//
+//        current.setType(PrescriptionTemplateType.FavouriteMedicine);
+//        current.setForItem(item);
+//        current.setForWebUser(sessionController.getLoggedUser());
+//        current.setOrderNo(getItems().size() + 1.0);
+//        favouriteItemFacade.create(current);
+//        current = null;
+//        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+//        JsfUtil.addSuccessMessage("Saved");
+//
+//    }
 
-        current.setType(PrescriptionTemplateType.FavouriteMedicine);
-        current.setForItem(item);
-        current.setForWebUser(sessionController.getLoggedUser());
-        current.setOrderNo(getItems().size() + 1.0);
-        favouriteItemFacade.create(current);
-        current = null;
-        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
-        JsfUtil.addSuccessMessage("Saved");
-
-    }
-
-    public void addToFavouriteDiagnosis() {
-        if (item == null) {
-            JsfUtil.addErrorMessage("Please select a Diagnosis");
-            return;
-        }
-        if (current == null) {
-            JsfUtil.addErrorMessage("Favourite Item is not create by getter. Please contact vendor.");
-            return;
-        }
-        if (current.getFavouriteType() == null) {
-            JsfUtil.addErrorMessage("Favourite Type NOT current.");
-            return;
-        }
-        if (current.getTemplateFrom() == null) {
-            JsfUtil.addErrorMessage("From NOT current.");
-            return;
-        }
-        if (current.getTemplateTo() == null) {
-            JsfUtil.addErrorMessage("To NOT current.");
-            return;
-        }
-        if (current.getTemplateFrom().equals(current.getTemplateTo())) {
-            JsfUtil.addErrorMessage("From is equal not To. So not added.");
-            return;
-        }
-        switch (current.getFavouriteType()) {
-            case kg:
-                current.setFromDays(null);
-                current.setToDays(null);
-                current.setFromKg(current.getTemplateFrom());
-                current.setToKg(current.getTemplateTo());
-                break;
-            case days:
-                current.setFromDays(current.getTemplateFrom());
-                current.setToDays(current.getTemplateTo());
-                current.setFromKg(null);
-                current.setToKg(null);
-                break;
-            case months:
-                current.setFromDays(current.getTemplateFrom() * 30.4167);
-                current.setToDays(current.getTemplateTo() * 30.4167);
-                current.setFromKg(null);
-                current.setToKg(null);
-                break;
-            case years:
-                current.setFromDays(current.getTemplateFrom() * 365);
-                current.setToDays(current.getTemplateTo() * 365);
-                current.setFromKg(null);
-                current.setToKg(null);
-                break;
-            default:
-                JsfUtil.addErrorMessage("Favourite Type NOT current.");
-                return;
-        }
-
-        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
-        current.setForItem(item);
-        current.setForWebUser(sessionController.getLoggedUser());
-        current.setOrderNo(getItems().size() + 1.0);
-        favouriteItemFacade.create(current);
-        current = null;
-        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
-        JsfUtil.addSuccessMessage("Saved");
-
-    }
+//    public void addToFavouriteDiagnosis() {
+//        if (item == null) {
+//            JsfUtil.addErrorMessage("Please select a Diagnosis");
+//            return;
+//        }
+//        if (current == null) {
+//            JsfUtil.addErrorMessage("Favourite Item is not create by getter. Please contact vendor.");
+//            return;
+//        }
+//        if (current.getFavouriteType() == null) {
+//            JsfUtil.addErrorMessage("Favourite Type NOT current.");
+//            return;
+//        }
+//        if (current.getTemplateFrom() == null) {
+//            JsfUtil.addErrorMessage("From NOT current.");
+//            return;
+//        }
+//        if (current.getTemplateTo() == null) {
+//            JsfUtil.addErrorMessage("To NOT current.");
+//            return;
+//        }
+//        if (current.getTemplateFrom().equals(current.getTemplateTo())) {
+//            JsfUtil.addErrorMessage("From is equal not To. So not added.");
+//            return;
+//        }
+//        switch (current.getFavouriteType()) {
+//            case kg:
+//                current.setFromDays(null);
+//                current.setToDays(null);
+//                current.setFromKg(current.getTemplateFrom());
+//                current.setToKg(current.getTemplateTo());
+//                break;
+//            case days:
+//                current.setFromDays(current.getTemplateFrom());
+//                current.setToDays(current.getTemplateTo());
+//                current.setFromKg(null);
+//                current.setToKg(null);
+//                break;
+//            case months:
+//                current.setFromDays(current.getTemplateFrom() * 30.4167);
+//                current.setToDays(current.getTemplateTo() * 30.4167);
+//                current.setFromKg(null);
+//                current.setToKg(null);
+//                break;
+//            case years:
+//                current.setFromDays(current.getTemplateFrom() * 365);
+//                current.setToDays(current.getTemplateTo() * 365);
+//                current.setFromKg(null);
+//                current.setToKg(null);
+//                break;
+//            default:
+//                JsfUtil.addErrorMessage("Favourite Type NOT current.");
+//                return;
+//        }
+//
+//        current.setType(PrescriptionTemplateType.FavouriteDiagnosis);
+//        current.setForItem(item);
+//        current.setForWebUser(sessionController.getLoggedUser());
+//        current.setOrderNo(getItems().size() + 1.0);
+//        favouriteItemFacade.create(current);
+//        current = null;
+//        fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
+//        JsfUtil.addSuccessMessage("Saved");
+//
+//    }
 
     public void updateSelected() {
         updateSelected(current);

@@ -95,19 +95,19 @@ public class PlanController implements Serializable {
         }
     }
     
-    public List<ClinicalEntity> completeDiagnosis(String qry) {
-        List<ClinicalEntity> c;
-        Map m = new HashMap();
-        m.put("t", SymanticType.Preventive_Procedure);
-        m.put("n", "%" + qry.toUpperCase() + "%");
-        String sql;
-        sql="select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-        c = getFacade().findBySQL(sql,m,10);
-        if (c == null) {
-            c = new ArrayList<>();
-        }
-        return c;
-    }
+//    public List<ClinicalEntity> completeDiagnosis(String qry) {
+//        List<ClinicalEntity> c;
+//        Map m = new HashMap();
+//        m.put("t", SymanticType.Preventive_Procedure);
+//        m.put("n", "%" + qry.toUpperCase() + "%");
+//        String sql;
+//        sql="select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
+//        c = getFacade().findBySQL(sql,m,10);
+//        if (c == null) {
+//            c = new ArrayList<>();
+//        }
+//        return c;
+//    }
 
     public List<ClinicalEntity> getSelectedItems() {
         Map m = new HashMap();
