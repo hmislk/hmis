@@ -11,7 +11,7 @@
             <h:panelGrid columns="4" id="spec">     
                 <p:panel header="Speciality">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="acSpeciality" value="#{bookingPastController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{specialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <f:ajax  event="change" execute="@this" render="scStaff tbl bSession "  /> 
                         </p:selectOneListbox>
@@ -21,7 +21,7 @@
 
                 <p:panel header="Consultant">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="scStaff" value="#{bookingPastController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingPastController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <f:ajax  event="change" execute="@this" render="tbl bSession"  /> 
                         </p:selectOneListbox>

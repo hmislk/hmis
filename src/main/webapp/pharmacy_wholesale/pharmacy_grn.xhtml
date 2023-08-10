@@ -20,7 +20,7 @@
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                     <h:outputLabel value="GRN Institution"/>
-                    <p:autoComplete converter="institutionConverter" value="#{grnController.grnBill.referenceInstitution}"
+                    <p:autoComplete  value="#{grnController.grnBill.referenceInstitution}"
                                     completeMethod="#{institutionController.completeCompany}" 
                                     forceSelection="true"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />

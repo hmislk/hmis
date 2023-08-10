@@ -14,7 +14,7 @@
                 <p:panel header="Admitted Patients">
                     <h:panelGrid id="gpSelectText" columns="4" >
                         <h:outputLabel value="Type Patinet Name or BHT"/>
-                        <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                        <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                         value="#{roomChangeController.current}"
                                         completeMethod="#{admissionController.completePatient}" 
                                         var="myItem" itemValue="#{myItem}" 
@@ -80,7 +80,7 @@
                                 <p:tab title="New Room Detail">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Type Room Number or Facility"/>
-                                        <p:autoComplete converter="fac" forceSelection="true" id="cmbDoc" 
+                                        <p:autoComplete forceSelection="true" id="cmbDoc" 
                                                         value="#{roomChangeController.newRoomFacilityCharge}"
                                                         completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                         var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"/>
@@ -118,7 +118,7 @@
                                             #{rm.dischargedBy.webUserPerson.name}
                                         </p:column>
                                         <p:column headerText="Room">
-                                            <p:autoComplete converter="fac" forceSelection="true"
+                                            <p:autoComplete forceSelection="true"
                                                             value="#{rm.roomFacilityCharge}" 
                                                             completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                             var="rf" itemLabel="#{rf.name}" itemValue="#{rf}"  

@@ -46,7 +46,7 @@
                                     <h:outputText id="lblName" value="Pack Name" ></h:outputText>
                                     <h:inputText autocomplete="off" id="txtName" value="#{amppController.current.name}"  ></h:inputText>
                                     <h:outputText  value="Select AMP" ></h:outputText>
-                                    <p:autoComplete  converter="ampCon" completeMethod="#{ampController.completeAmp}" 
+                                    <p:autoComplete  completeMethod="#{ampController.completeAmp}" 
                                                      var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{amppController.current.amp}" ></p:autoComplete>
                                     <h:outputText  value="Size" ></h:outputText>
                                     <h:inputText autocomplete="off" value="#{amppController.current.dblValue}"  ></h:inputText>

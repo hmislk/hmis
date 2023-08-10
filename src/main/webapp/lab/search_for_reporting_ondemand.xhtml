@@ -46,7 +46,7 @@
                                         itemValue="#{dept}" 
                                         forceSelection="true" 
                                         value="#{searchController.reportKeyWord.department}" 
-                                        converter="departmentConverter"/>
+                                        />
                                     <h:commandLink 
                                         id="btnSearch3" 
                                         action="#{searchController.createPatientInvestigationsTableLogin()}" 
@@ -111,7 +111,7 @@
                                         itemLabel="#{dept.name}" 
                                         itemValue="#{dept}" 
                                         forceSelection="true" 
-                                        value="#{searchController.reportKeyWord.departmentFrom}" converter="departmentConverter"/>
+                                        value="#{searchController.reportKeyWord.departmentFrom}" />
 
                                     <h:outputLabel 
                                         class="form-label"
@@ -120,7 +120,7 @@
                                     <p:autoComplete 
                                         class="form-control"
                                         inputStyleClass="w-100"
-                                        converter="admis" 
+                                         
                                         widgetVar="aPt" 
                                         id="acPt" 
                                         forceSelection="true" 

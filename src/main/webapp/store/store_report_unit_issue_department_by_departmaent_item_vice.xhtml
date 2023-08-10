@@ -20,12 +20,12 @@
                             <h:outputLabel value="Issue From" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="To" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
 

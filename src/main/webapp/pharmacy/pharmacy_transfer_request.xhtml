@@ -25,13 +25,13 @@
                         <f:facet name="header">
                             Select Department To Request For
                         </f:facet>
-                        <p:autoComplete converter="departmentConverter" value="#{transferRequestController.bill.toDepartment}" 
+                        <p:autoComplete  value="#{transferRequestController.bill.toDepartment}" 
                                         forceSelection="true"
                                         completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />                    
                     </p:panelGrid>
                     <p:panel header="Add Item ">
                         <p:autoComplete  value="#{transferRequestController.currentBillItem.item}"
-                                         forceSelection="true"  converter="itemcon"
+                                         forceSelection="true"  
                                          completeMethod="#{itemController.completeAmpItem}" 
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column headerText="Item" >

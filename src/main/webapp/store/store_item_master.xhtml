@@ -77,7 +77,7 @@
                                             </p:selectOneMenu>
 
                                             <p:outputLabel  value="Manufacturer" ></p:outputLabel>
-                                            <p:autoComplete  converter="ManuFacCon" completeMethod="#{manufacturerController.completeManu}"
+                                            <p:autoComplete completeMethod="#{manufacturerController.completeManu}"
                                                              var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{storeAmpController.current.institution}" ></p:autoComplete>
 
                                             <h:outputLabel value="Item Category"/>

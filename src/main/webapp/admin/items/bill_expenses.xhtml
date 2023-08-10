@@ -27,7 +27,7 @@
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </h:inputText>
 
-                                    <p:selectOneListbox converter="billExpenseConverter"   id="lstSelect"   value="#{billExpenseController.current}" style="min-width: 400px; " scrollHeight="500" class="w-100">
+                                    <p:selectOneListbox  id="lstSelect"   value="#{billExpenseController.current}" style="min-width: 400px; " scrollHeight="500" class="w-100">
                                         <f:selectItems  value="#{billExpenseController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >

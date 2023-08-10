@@ -18,8 +18,6 @@
                     <p:panelGrid columns="2" >
                         <p:outputLabel value="Select BHT with Errors" ></p:outputLabel>
                         <p:selectOneMenu value="#{admissionController.current}"
-
-                                         converter="admis"
                                          >
                             <f:selectItems value="#{admissionController.admissionsWithErrors}"
                                            var="admi"
@@ -44,7 +42,7 @@
                         <p:outputLabel id="bh" value="#{admissionController.current.bhtNo}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
                         <p:inputText id="bht" value="#{admissionController.current.bhtNo}" />
 
-                        <p:autoComplete  converter="fac" forceSelection="true"  
+                        <p:autoComplete  forceSelection="true"  
                                          id="cmbDoc" 
                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                          completeMethod="#{roomFacilityChargeController.completeRoom}"

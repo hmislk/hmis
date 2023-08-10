@@ -51,7 +51,7 @@
 
     <div class="row mt-2">
         <div class="col-md-9 p-1">
-            <p:autoComplete id="acNewPtArea" converter="areaCon" completeMethod="#{areaController.completeArea}" var="pta" class="w-100" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}"  placeholder="Address" ></p:autoComplete>
+            <p:autoComplete id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta" class="w-100" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}"  placeholder="Address" ></p:autoComplete>
         </div>
         
     </div>

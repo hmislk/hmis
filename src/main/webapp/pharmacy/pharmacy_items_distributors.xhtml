@@ -35,7 +35,7 @@
                     </p:autoComplete>
                     <p:spacer width="60" height="1" ></p:spacer>
 
-                    <p:autoComplete converter="itemcon" value="#{itemsDistributorsController.currentItem}" 
+                    <p:autoComplete  value="#{itemsDistributorsController.currentItem}" 
                                     forceSelection="true" id="acItem"
                                     completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                         <p:column headerText="Name" >

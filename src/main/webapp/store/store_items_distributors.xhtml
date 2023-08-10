@@ -33,7 +33,7 @@
                                 <h:outputLabel value=""/>
                             
                                 <h:outputLabel value="Item"/>
-                                <p:autoComplete converter="itemcon" value="#{storeItemsDistributorsController.currentItem}" 
+                                <p:autoComplete  value="#{storeItemsDistributorsController.currentItem}" 
                                                 forceSelection="true"
                                                 completeMethod="#{itemController.completeStoreItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Name" style="max-width: 500px;">
