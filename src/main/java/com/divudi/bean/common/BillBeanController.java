@@ -143,23 +143,23 @@ public class BillBeanController implements Serializable {
         }
     }
 
-    public boolean checkAllowedPaymentMethod(MembershipScheme membershipScheme, PaymentMethod paymentMethod) {
-        String sql = "Select s From AllowedPaymentMethod s"
-                + " where s.retired=false "
-                + " and  s.membershipScheme=:ms "
-                + " and s.paymentMethod=:pm ";
-        HashMap hm = new HashMap();
-        hm.put("ms", membershipScheme);
-        hm.put("pm", paymentMethod);
-
-        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstByJpql(sql, hm);
-
-        if (allowedPaymentMethod != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//    public boolean checkAllowedPaymentMethod(MembershipScheme membershipScheme, PaymentMethod paymentMethod) {
+//        String sql = "Select s From AllowedPaymentMethod s"
+//                + " where s.retired=false "
+//                + " and  s.membershipScheme=:ms "
+//                + " and s.paymentMethod=:pm ";
+//        HashMap hm = new HashMap();
+//        hm.put("ms", membershipScheme);
+//        hm.put("pm", paymentMethod);
+//
+//        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstByJpql(sql, hm);
+//
+//        if (allowedPaymentMethod != null) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;

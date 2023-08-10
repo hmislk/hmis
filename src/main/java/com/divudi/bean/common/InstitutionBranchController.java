@@ -60,17 +60,17 @@ public class InstitutionBranchController implements Serializable {
         return selectedItems;
     }
 
-    public List<Institution> completeIns(String qry) {
-        String sql;
-        sql = "select c from Institution c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findBySQL(sql);
-    }
+//    public List<Institution> completeIns(String qry) {
+//        String sql;
+//        sql = "select c from Institution c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+//        return getFacade().findBySQL(sql);
+//    }
 
-    public List<Institution> completeCompany(String qry) {
-        String sql;
-        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
-        return getFacade().findBySQL(sql);
-    }
+//    public List<Institution> completeCompany(String qry) {
+//        String sql;
+//        sql = "select c from Institution c where c.retired=false and c.institutionType=com.divudi.data.InstitutionType.Company and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name";
+//        return getFacade().findBySQL(sql);
+//    }
 
     public List<Institution> completeCredit(String query) {
         List<Institution> suggestions;
