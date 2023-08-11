@@ -25,9 +25,9 @@
                                         </div>
                                     </p:tab>
 
-                                    <p:tab title="OPD Reports" disabled="true">
+                                    <p:tab title="OPD Reports">
                                         <h:panelGrid columns="1" >
-                                            <p:commandButton ajax="false" value="OPD Bill List" action="report_list_opd_bills" 
+                                            <p:commandButton ajax="false" value="OPD Bill List" action="#{searchController.navigateToOpdBillList()}" 
                                                              styleClass="linkButton"></p:commandButton>
                                             <p:commandButton ajax="false" value="Cancelled Bill List" action="#" styleClass="linkButton"></p:commandButton>
                                             <p:commandButton ajax="false" value="Returned Bill List" action="#" styleClass="linkButton"></p:commandButton>
