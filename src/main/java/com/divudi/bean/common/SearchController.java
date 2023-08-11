@@ -184,7 +184,7 @@ public class SearchController implements Serializable {
 
     public String navigateToListOtherInstitutionBills() {
         bills = null;
-        return "/reportInstitution/other_institution_bills";
+        return "/analytics/other_institution_bills";
     }
 
     public String navigateToAnalytics() {
