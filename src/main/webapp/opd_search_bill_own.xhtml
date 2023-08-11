@@ -59,7 +59,7 @@
 
 
                                     <div class="d-grid gap-2">
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createOpdBillSearch}" class="w-100"/>
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchDepartmentOpdBills}" class="w-100"/>
                                     <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
                                         <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                                     </p:commandButton>
@@ -214,7 +214,7 @@
 
                                 <div class="printBlock">
                                     <p:dataTable rowIndexVar="i" id="tblBillsExport" value="#{searchController.bills}" rowKey="#{bill1.id}"
-                                                 var="bill1" paginator="false">
+                                                 var="bill1" paginator="false" style="display: none;">
                                         <p:column headerText="No" >
                                             <h:outputLabel value="#{i+1}"/>
                                         </p:column>
