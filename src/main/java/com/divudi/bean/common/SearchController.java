@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -167,13 +169,13 @@ public class SearchController implements Serializable {
     private Institution creditCompany;
 
     private Institution otherInstitution;
-    
+
     private Institution institution;
     private Department department;
     List<Bill> prescreptionBills;
     private Department fromDepartment;
     private Department toDepartment;
-    
+    private int manageListIndex;
 
     public String menuBarSearch() {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
@@ -189,7 +191,7 @@ public class SearchController implements Serializable {
         bills = null;
         return "/analytics/index";
     }
-    
+
     public String navigateToOpdBillList() {
         bills = null;
         return "/analytics/opd_bill_list";
@@ -291,7 +293,7 @@ public class SearchController implements Serializable {
 
         Map temMap = new HashMap();
 
-        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql,10);
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, 10);
         checkRefundBillItems(patientInvestigations);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
@@ -640,6 +642,14 @@ public class SearchController implements Serializable {
         this.institution = institution;
     }
 
+    public int getManageListIndex() {
+        return manageListIndex;
+    }
+
+    public void setManageListIndex(int manageListIndex) {
+        this.manageListIndex = manageListIndex;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -931,8 +941,6 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant adjustments(/faces/pharmacy/pharmacy_variant_ajustment_pre_list.xhtml)");
     }
-
-    
 
     public Department getDepartment() {
         return department;
@@ -5223,18 +5231,40 @@ public class SearchController implements Serializable {
 
     public void searchDepartmentOpdBills() {
         Date startTime = new Date();
+
+        if (fromDate != null && toDate != null) {
+
+            long timeGapInMillis = toDate.getTime() - fromDate.getTime();
+
+            long daysGap = timeGapInMillis / (1000 * 60 * 60 * 24);
+
+            if (daysGap > 3) {
+//                if (searchKeyword.getBillNo() == null && searchKeyword.getBillNo().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                } else if (searchKeyword.getPatientName() == null && searchKeyword.getPatientName().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                } else if (searchKeyword.getPatientPhone() == null && searchKeyword.getPatientPhone().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                }
+                JsfUtil.addErrorMessage("Please select upto 3 days");
+                return;
+            }
+        }
+
         createTableByKeyword(BillType.OpdBill, null, sessionController.getDepartment());
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
+
     public void searchOpdBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill, institution, department);
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
 
     public void listOpdBills() {
         Date startTime = new Date();
@@ -5360,10 +5390,10 @@ public class SearchController implements Serializable {
 
     @EJB
     private PatientFacade patientFacade;
-    
-    public void createTableByKeyword(BillType billType){
+
+    public void createTableByKeyword(BillType billType) {
         createTableByKeyword(billType, null, null);
-    } 
+    }
 
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
         bills = null;
@@ -5376,14 +5406,14 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
 
-        if (ins != null ) {
-                sql += " and b.institution=:ins ";
-                temMap.put("ins", ins);
+        if (ins != null) {
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", ins);
         }
-        
-        if (dep != null ) {
-                sql += " and b.department=:dep ";
-                temMap.put("dep", dep);
+
+        if (dep != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", dep);
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -5421,8 +5451,6 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    
 
     public void fillAllBills() {
         bills = null;
