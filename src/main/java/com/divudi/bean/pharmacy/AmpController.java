@@ -512,44 +512,44 @@ public class AmpController implements Serializable {
         addingVtmInVmp = new VirtualProductIngredient();
     }
 
-    public List<Amp> completeAmpByCode(String qry) {
+//    public List<Amp> completeAmpByCode(String qry) {
+//
+//        Map m = new HashMap();
+//        m.put("n", "%" + qry + "%");
+//        m.put("dep", DepartmentType.Store);
+//        if (qry != null) {
+//            ampList = getFacade().findBySQL("select c from Amp c where "
+//                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
+//                    + "((c.code) like :n ) order by c.code", m, 30);
+//            //////// // System.out.println("a size is " + a.size());
+//        }
+//        if (ampList == null) {
+//            ampList = new ArrayList<>();
+//        }
+//        return ampList;
+//    }
 
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
-        if (qry != null) {
-            ampList = getFacade().findBySQL("select c from Amp c where "
-                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
-                    + "((c.code) like :n ) order by c.code", m, 30);
-            //////// // System.out.println("a size is " + a.size());
-        }
-        if (ampList == null) {
-            ampList = new ArrayList<>();
-        }
-        return ampList;
-    }
-
-    public List<Amp> completeAmpByBarCode(String qry) {
-
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
-        String sql = "select c from Amp c where "
-                + " c.retired=false and c.departmentType!=:dep and "
-                + "((c.barcode) like :n ) order by c.barcode";
-        //   ////// // System.out.println("sql = " + sql);
-        //   ////// // System.out.println("m = " + m);
-
-        if (qry != null) {
-            ampList = getFacade().findBySQL(sql, m, 30);
-            //   ////// // System.out.println("a = " + a);
-            //////// // System.out.println("a size is " + a.size());
-        }
-        if (ampList == null) {
-            ampList = new ArrayList<>();
-        }
-        return ampList;
-    }
+//    public List<Amp> completeAmpByBarCode(String qry) {
+//
+//        Map m = new HashMap();
+//        m.put("n", "%" + qry + "%");
+//        m.put("dep", DepartmentType.Store);
+//        String sql = "select c from Amp c where "
+//                + " c.retired=false and c.departmentType!=:dep and "
+//                + "((c.barcode) like :n ) order by c.barcode";
+//        //   ////// // System.out.println("sql = " + sql);
+//        //   ////// // System.out.println("m = " + m);
+//
+//        if (qry != null) {
+//            ampList = getFacade().findBySQL(sql, m, 30);
+//            //   ////// // System.out.println("a = " + a);
+//            //////// // System.out.println("a size is " + a.size());
+//        }
+//        if (ampList == null) {
+//            ampList = new ArrayList<>();
+//        }
+//        return ampList;
+//    }
     @EJB
     BillNumberGenerator billNumberBean;
 
