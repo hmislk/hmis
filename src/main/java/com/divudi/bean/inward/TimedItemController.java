@@ -173,41 +173,41 @@ public class TimedItemController implements Serializable {
         this.bulkText = bulkText;
     }
 
-    public List<TimedItem> getSelectedItems() {
+//    public List<TimedItem> getSelectedItems() {
+//
+//        if (selectText.trim().equals("")) {
+//            selectedItems = getFacade().findBySQL("select c from TimedItem c where c.retired=false order by c.name");
+//        } else {
+//            String sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+//            selectedItems = getFacade().findBySQL(sql);
+//
+//        }
+//        return selectedItems;
+//    }
 
-        if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from TimedItem c where c.retired=false order by c.name");
-        } else {
-            String sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+//    public List<TimedItem> getSelectedTheatreItems() {
+//        String sql = "select c from TimedItem c "
+//                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
+//                + " and c.departmentType=:dt "
+//                + " order by c.name";
+//        Map m = new HashMap();
+//        m.put("dt", DepartmentType.Theatre);
+//        selectedItems = getFacade().findByJpql(sql, m);
+//        ////System.out.println("selectedItems = " + selectedItems);
+//        return selectedItems;
+//    }
 
-        }
-        return selectedItems;
-    }
-
-    public List<TimedItem> getSelectedTheatreItems() {
-        String sql = "select c from TimedItem c "
-                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
-                + " and c.departmentType=:dt "
-                + " order by c.name";
-        Map m = new HashMap();
-        m.put("dt", DepartmentType.Theatre);
-        selectedItems = getFacade().findByJpql(sql, m);
-        ////System.out.println("selectedItems = " + selectedItems);
-        return selectedItems;
-    }
-
-    public List<TimedItem> getSelectedInwardItems() {
-        String sql = "select c from TimedItem c "
-                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
-                + " and c.departmentType=:dt "
-                + " order by c.name";
-        Map m = new HashMap();
-        m.put("dt", DepartmentType.Inward);
-        selectedItems = getFacade().findByJpql(sql, m);
-        ////System.out.println("selectedItems = " + selectedItems);
-        return selectedItems;
-    }
+//    public List<TimedItem> getSelectedInwardItems() {
+//        String sql = "select c from TimedItem c "
+//                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
+//                + " and c.departmentType=:dt "
+//                + " order by c.name";
+//        Map m = new HashMap();
+//        m.put("dt", DepartmentType.Inward);
+//        selectedItems = getFacade().findByJpql(sql, m);
+//        ////System.out.println("selectedItems = " + selectedItems);
+//        return selectedItems;
+//    }
 
     public void prepareAdd() {
         current = new TimedItem();
