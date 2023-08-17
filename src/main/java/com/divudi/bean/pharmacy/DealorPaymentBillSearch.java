@@ -145,34 +145,34 @@ public class DealorPaymentBillSearch implements Serializable {
         this.ejbApplication = ejbApplication;
     }
 
-    public List<Bill> getUserBillsOwn() {
-        List<Bill> userBills;
-        if (getUser() == null) {
-            userBills = new ArrayList<>();
-            //////// // System.out.println("user is null");
-        } else {
-            userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
-        }
-        if (userBills == null) {
-            userBills = new ArrayList<>();
-        }
-        return userBills;
-    }
+//    public List<Bill> getUserBillsOwn() {
+//        List<Bill> userBills;
+//        if (getUser() == null) {
+//            userBills = new ArrayList<>();
+//            //////// // System.out.println("user is null");
+//        } else {
+//            userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
+//            //////// // System.out.println("user ok");
+//        }
+//        if (userBills == null) {
+//            userBills = new ArrayList<>();
+//        }
+//        return userBills;
+//    }
 
-    public List<Bill> getBillsOwn() {
-        if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
-                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), getSessionController().getInstitution(), BillType.CashRecieveBill);
-            } else {
-                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), getSessionController().getInstitution(), BillType.CashRecieveBill);
-            }
-            if (bills == null) {
-                bills = new ArrayList<>();
-            }
-        }
-        return bills;
-    }
+//    public List<Bill> getBillsOwn() {
+//        if (bills == null) {
+//            if (txtSearch == null || txtSearch.trim().equals("")) {
+//                bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), getSessionController().getInstitution(), BillType.CashRecieveBill);
+//            } else {
+//                bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), getSessionController().getInstitution(), BillType.CashRecieveBill);
+//            }
+//            if (bills == null) {
+//                bills = new ArrayList<>();
+//            }
+//        }
+//        return bills;
+//    }
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
