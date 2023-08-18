@@ -41,6 +41,8 @@ import javax.enterprise.context.RequestScoped;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import com.divudi.data.LoginRequest;
+import com.divudi.entity.Patient;
+import com.divudi.entity.Person;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.MediaType;
@@ -248,25 +250,36 @@ public class Lims {
 
     private JSONObject constructPatientSampleJson(PatientSample ps) {
         JSONObject jSONObject = new JSONObject();
-        jSONObject.put("name", ps.getPatient().getPerson().getName());
-        jSONObject.put("age", ps.getPatient().getPerson().getAgeAsString());
-        jSONObject.put("sex", ps.getPatient().getPerson().getSex().toString());
-        jSONObject.put("barcode", ps.getIdStr());
-        jSONObject.put("insid", ps.getBill().getInsId());
-        jSONObject.put("deptid", ps.getBill().getDeptId());
-        jSONObject.put("billDate", CommonController.formatDate(ps.getBill().getCreatedAt(),"dd MMM yy"));
-        jSONObject.put("id", ps.getIdStr());
+        if (ps != null) {
+            Patient patient = ps.getPatient();
+            if (patient != null) {
+                Person person = patient.getPerson();
+                if (person != null) {
+                    jSONObject.put("name", person.getName() != null ? person.getName() : "");
+                    jSONObject.put("age", person.getAgeAsString() != null ? person.getAgeAsString() : "");
+                    jSONObject.put("sex", person.getSex() != null ? person.getSex().toString() : "");
+                }
+            }
+            jSONObject.put("barcode", ps.getIdStr() != null ? ps.getIdStr() : "");
+            Bill bill = ps.getBill();
+            if (bill != null) {
+                jSONObject.put("insid", bill.getInsId() != null ? bill.getInsId() : "");
+                jSONObject.put("deptid", bill.getDeptId() != null ? bill.getDeptId() : "");
+                jSONObject.put("billDate", CommonController.formatDate(bill.getCreatedAt(), "dd MMM yy"));
+            }
+            jSONObject.put("id", ps.getIdStr() != null ? ps.getIdStr() : "");
+        }
         List<Item> tpiics = testComponantsForPatientSample(ps);
         String tbis = "";
         String temTube = "";
-        for (Item i : tpiics) {
-            tbis += i.getName() + ", ";
-            if (i instanceof Investigation) {
-                Investigation temIx = (Investigation) i;
-                if (temIx.getInvestigationTube() != null) {
-                    temTube = temIx.getInvestigationTube().getName();
-                } else {
-                    temTube = "";
+        if (tpiics != null) {
+            for (Item i : tpiics) {
+                if (i != null) {
+                    tbis += i.getName() != null ? i.getName() + ", " : "";
+                    if (i instanceof Investigation) {
+                        Investigation temIx = (Investigation) i;
+                        temTube = temIx != null && temIx.getInvestigationTube() != null ? temIx.getInvestigationTube().getName() : "";
+                    }
                 }
             }
         }
