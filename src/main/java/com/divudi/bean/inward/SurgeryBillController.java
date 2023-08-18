@@ -463,46 +463,46 @@ public class SurgeryBillController implements Serializable {
         return batchBill;
     }
 
-    private List<Bill> getBillsByForwardRef(Bill b) {
-        String sql = "Select bf from Bill bf where bf.cancelled=false and "
-                + " bf.retired=false and bf.forwardReferenceBill=:bill";
-        HashMap hm = new HashMap();
-        hm.put("bill", getBatchBill());
-        List<Bill> list = getBillFacade().findByJpql(sql, hm);
+//    private List<Bill> getBillsByForwardRef(Bill b) {
+//        String sql = "Select bf from Bill bf where bf.cancelled=false and "
+//                + " bf.retired=false and bf.forwardReferenceBill=:bill";
+//        HashMap hm = new HashMap();
+//        hm.put("bill", getBatchBill());
+//        List<Bill> list = getBillFacade().findByJpql(sql, hm);
+//
+//        if (list == null) {
+//            return new ArrayList<>();
+//        }
+//
+//        return list;
+//    }
 
-        if (list == null) {
-            return new ArrayList<>();
-        }
-
-        return list;
-    }
-
-    public void setBatchBill(Bill batchBill) {
-        makeNull();
-        this.batchBill = batchBill;
-        for (Bill b : getBillsByForwardRef(batchBill)) {
-            if (b.getSurgeryBillType() == SurgeryBillType.ProfessionalFee) {
-                // System.err.println(SurgeryBillType.ProfessionalFee);
-                setProfessionalBill(b);
-                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
-                setProEncounterComponents(enc);
-            }
-
-            if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
-                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
-                setTimedEncounterComponents(enc);
-            }
-
-            if (b.getSurgeryBillType() == SurgeryBillType.Service) {
-                departmentBillItems = getInwardBean().createDepartmentBillItems(batchBill.getPatientEncounter(), getBatchBill());
-            }
-
-            if (b.getSurgeryBillType() == SurgeryBillType.PharmacyItem) {
-                createIssueTable();
-            }
-
-        }
-    }
+//    public void setBatchBill(Bill batchBill) {
+//        makeNull();
+//        this.batchBill = batchBill;
+//        for (Bill b : getBillsByForwardRef(batchBill)) {
+//            if (b.getSurgeryBillType() == SurgeryBillType.ProfessionalFee) {
+//                // System.err.println(SurgeryBillType.ProfessionalFee);
+//                setProfessionalBill(b);
+//                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
+//                setProEncounterComponents(enc);
+//            }
+//
+//            if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
+//                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
+//                setTimedEncounterComponents(enc);
+//            }
+//
+//            if (b.getSurgeryBillType() == SurgeryBillType.Service) {
+//                departmentBillItems = getInwardBean().createDepartmentBillItems(batchBill.getPatientEncounter(), getBatchBill());
+//            }
+//
+//            if (b.getSurgeryBillType() == SurgeryBillType.PharmacyItem) {
+//                createIssueTable();
+//            }
+//
+//        }
+//    }
 
     private List<BillItem> pharmacyIssues;
     List<BillItem> storeIssues;

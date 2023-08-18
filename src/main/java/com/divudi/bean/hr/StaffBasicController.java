@@ -393,25 +393,25 @@ public class StaffBasicController implements Serializable {
         }
     }
 
-    public List<StaffPaysheetComponent> getItems2() {
-        if (items == null) {
-            String sql = "Select s from StaffPaysheetComponent s"
-                    + " where s.retired=false "
-                    + " and s.paysheetComponent.componentType=:tp "
-                    + " order by s.staff.codeInterger";
-            //and (s.toDate>= :td or s.toDate is null)
-            HashMap hm = new HashMap();
-            // hm.put("td", getToDate());
-            //    hm.put("fd", getFromDate());
-            //  hm.put("st", getCurrent().getStaff());
-            hm.put("tp", PaysheetComponentType.BasicSalary);
-
-            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
-
-        }
-
-        return items;
-    }
+//    public List<StaffPaysheetComponent> getItems2() {
+//        if (items == null) {
+//            String sql = "Select s from StaffPaysheetComponent s"
+//                    + " where s.retired=false "
+//                    + " and s.paysheetComponent.componentType=:tp "
+//                    + " order by s.staff.codeInterger";
+//            //and (s.toDate>= :td or s.toDate is null)
+//            HashMap hm = new HashMap();
+//            // hm.put("td", getToDate());
+//            //    hm.put("fd", getFromDate());
+//            //  hm.put("st", getCurrent().getStaff());
+//            hm.put("tp", PaysheetComponentType.BasicSalary);
+//
+//            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+//
+//        }
+//
+//        return items;
+//    }
 
     private Date date;
 

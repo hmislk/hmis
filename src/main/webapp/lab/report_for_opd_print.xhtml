@@ -21,7 +21,7 @@
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                     </p:calendar>
-                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" action="#{searchController.createPatientInvestigationsTableLogin()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" action="#{searchController.fillToDepartmentPatientInvestigations()}" onclick="onSubmitButton();" />
                                     <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
                                     <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                                 </h:panelGrid>

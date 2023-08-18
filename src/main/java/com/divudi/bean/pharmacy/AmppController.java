@@ -99,13 +99,13 @@ public class AmppController implements Serializable {
         items = null;
     }
 
-    private void saveVmpp() {
-        if (getCurrent().getVmpp().getId() == null) {
-            getVmppFacade().create(getCurrent().getVmpp());
-        } else {
-            getVmppFacade().edit(getCurrent().getVmpp());
-        }
-    }
+//    private void saveVmpp() {
+//        if (getCurrent().getVmpp().getId() == null) {
+//            getVmppFacade().create(getCurrent().getVmpp());
+//        } else {
+//            getVmppFacade().edit(getCurrent().getVmpp());
+//        }
+//    }
 
     public void saveSelected() {
         Vmpp tmp = getPharmacyBean().getVmpp(getCurrent(), getPackUnit());

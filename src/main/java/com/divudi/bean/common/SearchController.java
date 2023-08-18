@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -167,13 +169,13 @@ public class SearchController implements Serializable {
     private Institution creditCompany;
 
     private Institution otherInstitution;
-    
+
     private Institution institution;
     private Department department;
     List<Bill> prescreptionBills;
     private Department fromDepartment;
     private Department toDepartment;
-    
+    private int manageListIndex;
 
     public String menuBarSearch() {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
@@ -182,14 +184,14 @@ public class SearchController implements Serializable {
 
     public String navigateToListOtherInstitutionBills() {
         bills = null;
-        return "/reportInstitution/other_institution_bills";
+        return "/analytics/other_institution_bills";
     }
 
     public String navigateToAnalytics() {
         bills = null;
         return "/analytics/index";
     }
-    
+
     public String navigateToOpdBillList() {
         bills = null;
         return "/analytics/opd_bill_list";
@@ -291,56 +293,59 @@ public class SearchController implements Serializable {
 
         Map temMap = new HashMap();
 
-        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql,10);
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, 10);
         checkRefundBillItems(patientInvestigations);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
 
     }
 
-    public void createPatientInvestigationsTableLogin() {
+    public void fillToDepartmentPatientInvestigations() {
         Date startTime = new Date();
 
-        String sql = "select pi from PatientInvestigation pi join pi.investigation  "
-                + " i join pi.billItem.bill b join b.patient.person p where "
+        String jpql = "select pi "
+                + " from PatientInvestigation pi "
+                + " join pi.investigation i "
+                + " join pi.billItem.bill b "
+                + " join b.patient.person p "
+                + " where "
                 + " b.createdAt between :fromDate and :toDate  "
-                + " and b.department=:dep ";
+                + " and b.toDepartment=:dep ";
 
         Map temMap = new HashMap();
-
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((p.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((p.phone) like :patientPhone )";
-            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  ((i.name) like :itm )";
-            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
-        }
-
-        if (patientEncounter != null) {
-            sql += "and pi.encounter=:en";
-            temMap.put("en", patientEncounter);
-        }
-
-        sql += " order by pi.id desc  ";
-//    
-
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("dep", getSessionController().getLoggedUser().getDepartment());
 
-        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and  ((p.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and  ((p.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            jpql += " and  ((i.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (patientEncounter != null) {
+            jpql += "and pi.encounter=:en";
+            temMap.put("en", patientEncounter);
+        }
+
+        jpql += " order by pi.id desc  ";
+//    
+
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP, 50);
         checkRefundBillItems(patientInvestigations);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
@@ -640,6 +645,14 @@ public class SearchController implements Serializable {
         this.institution = institution;
     }
 
+    public int getManageListIndex() {
+        return manageListIndex;
+    }
+
+    public void setManageListIndex(int manageListIndex) {
+        this.manageListIndex = manageListIndex;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -931,8 +944,6 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Major stock adjustments/Stock variant adjustments(/faces/pharmacy/pharmacy_variant_ajustment_pre_list.xhtml)");
     }
-
-    
 
     public Department getDepartment() {
         return department;
@@ -5223,18 +5234,40 @@ public class SearchController implements Serializable {
 
     public void searchDepartmentOpdBills() {
         Date startTime = new Date();
+
+        if (fromDate != null && toDate != null) {
+
+            long timeGapInMillis = toDate.getTime() - fromDate.getTime();
+
+            long daysGap = timeGapInMillis / (1000 * 60 * 60 * 24);
+
+            if (daysGap > 3) {
+//                if (searchKeyword.getBillNo() == null && searchKeyword.getBillNo().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                } else if (searchKeyword.getPatientName() == null && searchKeyword.getPatientName().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                } else if (searchKeyword.getPatientPhone() == null && searchKeyword.getPatientPhone().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                }
+                JsfUtil.addErrorMessage("Please select upto 3 days");
+                return;
+            }
+        }
+
         createTableByKeyword(BillType.OpdBill, null, sessionController.getDepartment());
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
+
     public void searchOpdBills() {
         Date startTime = new Date();
         createTableByKeyword(BillType.OpdBill, institution, department);
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
 
     public void listOpdBills() {
         Date startTime = new Date();
@@ -5360,10 +5393,10 @@ public class SearchController implements Serializable {
 
     @EJB
     private PatientFacade patientFacade;
-    
-    public void createTableByKeyword(BillType billType){
+
+    public void createTableByKeyword(BillType billType) {
         createTableByKeyword(billType, null, null);
-    } 
+    }
 
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
         bills = null;
@@ -5376,14 +5409,14 @@ public class SearchController implements Serializable {
                 + " and b.createdAt between :fromDate and :toDate "
                 + " and b.retired=false ";
 
-        if (ins != null ) {
-                sql += " and b.institution=:ins ";
-                temMap.put("ins", ins);
+        if (ins != null) {
+            sql += " and b.institution=:ins ";
+            temMap.put("ins", ins);
         }
-        
-        if (dep != null ) {
-                sql += " and b.department=:dep ";
-                temMap.put("dep", dep);
+
+        if (dep != null) {
+            sql += " and b.department=:dep ";
+            temMap.put("dep", dep);
         }
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
@@ -5421,8 +5454,6 @@ public class SearchController implements Serializable {
         bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    
 
     public void fillAllBills() {
         bills = null;
@@ -7549,8 +7580,10 @@ public class SearchController implements Serializable {
         reportKeyWord.setArea(null);
     }
 
-    public void listnerReportSearch() {
+    public String navigateToLabReportSearch() {
+        patientInvestigations = new ArrayList<>();
         getReportKeyWord().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        return "/lab/search_for_reporting_ondemand";
     }
 
     public SearchController() {

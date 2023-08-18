@@ -636,47 +636,47 @@ public class InvestigationItemController implements Serializable {
 
     }
 
-    public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
-        List<InvestigationItem> iivs;
-        if (qry.trim().equals("")) {
-            return new ArrayList<>();
-        } else {
-            String sql;
-            Map m = new HashMap();
-            sql = "select i from InvestigationItem i where i.retired<>true "
-                    + "and i.ixItemType = :t "
-                    + "and (i.name) like :n "
-                    + "order by i.name";
+//    public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
+//        List<InvestigationItem> iivs;
+//        if (qry.trim().equals("")) {
+//            return new ArrayList<>();
+//        } else {
+//            String sql;
+//            Map m = new HashMap();
+//            sql = "select i from InvestigationItem i where i.retired<>true "
+//                    + "and i.ixItemType = :t "
+//                    + "and (i.name) like :n "
+//                    + "order by i.name";
+//
+//            sql = "select i from InvestigationItem i where "
+//                    + " (i.name) like :n "
+//                    + "order by i.name";
+//
+////            m.put("t", InvestigationItemType.Value);
+//            m.put("n", "'%" + qry.toUpperCase() + "%'");
+//            //System.out.println("m = " + m);
+//            iivs = getEjbFacade().findByJpql(sql, m);
+//        }
+//        if (iivs == null) {
+//            iivs = new ArrayList<>();
+//        }
+//        return iivs;
+//    }
 
-            sql = "select i from InvestigationItem i where "
-                    + " (i.name) like :n "
-                    + "order by i.name";
-
-//            m.put("t", InvestigationItemType.Value);
-            m.put("n", "'%" + qry.toUpperCase() + "%'");
-            //System.out.println("m = " + m);
-            iivs = getEjbFacade().findByJpql(sql, m);
-        }
-        if (iivs == null) {
-            iivs = new ArrayList<>();
-        }
-        return iivs;
-    }
-
-    public List<InvestigationItem> completeIxItem(String qry) {
-        List<InvestigationItem> iivs;
-        if (qry.trim().equals("") || currentInvestigation == null || currentInvestigation.getId() == null) {
-            return new ArrayList<>();
-        } else {
-            String sql;
-            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
-            iivs = getEjbFacade().findBySQL(sql);
-        }
-        if (iivs == null) {
-            iivs = new ArrayList<>();
-        }
-        return iivs;
-    }
+//    public List<InvestigationItem> completeIxItem(String qry) {
+//        List<InvestigationItem> iivs;
+//        if (qry.trim().equals("") || currentInvestigation == null || currentInvestigation.getId() == null) {
+//            return new ArrayList<>();
+//        } else {
+//            String sql;
+//            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
+//            iivs = getEjbFacade().findBySQL(sql);
+//        }
+//        if (iivs == null) {
+//            iivs = new ArrayList<>();
+//        }
+//        return iivs;
+//    }
 
     public List<InvestigationItem> completeTemplate(String qry) {
         List<InvestigationItem> iivs;
@@ -897,24 +897,24 @@ public class InvestigationItemController implements Serializable {
         return "/lab/investigation_format";
     }
     
-    public String uploadExcelToCreateInvestigations() {
-        if (file == null) {
-            JsfUtil.addErrorMessage("No file");
-            return "";
-        }
-        try {
-            InputStream inputStream = file.getInputStream();
-            String text = new BufferedReader(
-                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                    .lines()
-                    .collect(Collectors.joining("\n"));
-
-            convertJsonToIx(text);
-
-        } catch (IOException ex) {
-        }
-        return "/lab/uploaded_investigations";
-    }
+//    public String uploadExcelToCreateInvestigations() {
+//        if (file == null) {
+//            JsfUtil.addErrorMessage("No file");
+//            return "";
+//        }
+//        try {
+//            InputStream inputStream = file.getInputStream();
+//            String text = new BufferedReader(
+//                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+//                    .lines()
+//                    .collect(Collectors.joining("\n"));
+//
+//            convertJsonToIx(text);
+//
+//        } catch (IOException ex) {
+//        }
+//        return "/lab/uploaded_investigations";
+//    }
 
     private void convertJsonToIx(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();

@@ -129,27 +129,27 @@ public class ConsumableCategoryController implements Serializable {
         return getFacade().findAll();
     }
 
-    public List<ConsumableCategory> completeConsumableCategory(String qry) {
-        List<ConsumableCategory> cc;
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select c from Category c"
-                + "  where c.retired=false"
-                + " and (type(c)= :parm ) "
-                + " and (c.name) like :q "
-                + " order by c.name";
-
-        temMap.put("parm", ConsumableCategory.class);
-        temMap.put("q", "%" + qry.toUpperCase() + "%");
-
-        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-        if (cc == null) {
-            cc = new ArrayList<>();
-        }
-        return cc;
-    }
+//    public List<ConsumableCategory> completeConsumableCategory(String qry) {
+//        List<ConsumableCategory> cc;
+//        String sql;
+//        Map temMap = new HashMap();
+//
+//        sql = "select c from Category c"
+//                + "  where c.retired=false"
+//                + " and (type(c)= :parm ) "
+//                + " and (c.name) like :q "
+//                + " order by c.name";
+//
+//        temMap.put("parm", ConsumableCategory.class);
+//        temMap.put("q", "%" + qry.toUpperCase() + "%");
+//
+//        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//
+//        if (cc == null) {
+//            cc = new ArrayList<>();
+//        }
+//        return cc;
+//    }
 
     private boolean errorCheck() {
         if (getSelected() != null) {

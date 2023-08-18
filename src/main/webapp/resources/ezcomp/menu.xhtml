@@ -285,7 +285,7 @@
 
                     <p:menuitem ajax="false" action="/lab/sample" actionListener="#{patientInvestigationController.toCollectSample()}" value="Sampling" rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/receive" actionListener="#{patientInvestigationController.toPrintWorksheets()}" value="Worksheets" rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand" value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" actionListener="#{searchController.listnerReportSearch}" ></p:menuitem>
+                    <p:menuitem ajax="false" action="#{searchController.navigateToLabReportSearch}"  value="Reports/Search" rendered="#{webUserController.hasPrivilege('LabReportSearch')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_institution" value="Reports/Search By Logged Institution" rendered="#{false and webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_for_reporting_ondemand_department" value="Reports/Search By Logged Department" rendered="#{webUserController.hasPrivilege('LabReportSearchByLoggedInstitution')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/lab/search_reports" value="Reporting" rendered="#{webUserController.hasPrivilege('LabReporting')}" ></p:menuitem>

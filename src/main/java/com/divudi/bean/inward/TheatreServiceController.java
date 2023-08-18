@@ -108,18 +108,18 @@ public class TheatreServiceController implements Serializable {
         return d;
     }
 
-    public List<TheatreService> completeService(String query) {
-        List<TheatreService> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            suggestions = getTheatreServiceFacade().findBySQL(sql);
-        }
-        return suggestions;
-    }
+//    public List<TheatreService> completeService(String query) {
+//        List<TheatreService> suggestions;
+//        String sql;
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+//            //////// // System.out.println(sql);
+//            suggestions = getTheatreServiceFacade().findBySQL(sql);
+//        }
+//        return suggestions;
+//    }
 
     public List<TheatreService> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -332,23 +332,23 @@ public class TheatreServiceController implements Serializable {
         return temp;
     }
 
-    public List<ServiceFee> getServiceFee() {
-
-        List<ServiceFee> temp = new ArrayList<ServiceFee>();
-
-        for (TheatreService s : getItem()) {
-            ServiceFee si = new ServiceFee();
-            si.setService(s);
-
-            String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
-
-            si.setItemFees(getItemFeeFacade().findBySQL(sql));
-
-            temp.add(si);
-        }
-
-        return temp;
-    }
+//    public List<ServiceFee> getServiceFee() {
+//
+//        List<ServiceFee> temp = new ArrayList<ServiceFee>();
+//
+//        for (TheatreService s : getItem()) {
+//            ServiceFee si = new ServiceFee();
+//            si.setService(s);
+//
+//            String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
+//
+//            si.setItemFees(getItemFeeFacade().findBySQL(sql));
+//
+//            temp.add(si);
+//        }
+//
+//        return temp;
+//    }
 
     public List<TheatreService> getItems() {
         String sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.department.name";

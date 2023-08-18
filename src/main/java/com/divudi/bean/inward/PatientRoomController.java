@@ -137,13 +137,13 @@ public class PatientRoomController implements Serializable {
         return ejbFacade;
     }
 
-    public List<PatientRoom> getItems() {
-        if (items == null) {
-            String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
-            items = getEjbFacade().findBySQL(sql);
-        }
-        return items;
-    }
+//    public List<PatientRoom> getItems() {
+//        if (items == null) {
+//            String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
+//            items = getEjbFacade().findBySQL(sql);
+//        }
+//        return items;
+//    }
 
     /**
      *
