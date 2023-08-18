@@ -300,7 +300,7 @@ public class SearchController implements Serializable {
 
     }
 
-    public void fillToDepartmentPatientInvestigations() {
+    public void fillToMyDepartmentPatientInvestigations() {
         Date startTime = new Date();
 
         String jpql = "select pi "
@@ -316,6 +316,57 @@ public class SearchController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("dep", getSessionController().getLoggedUser().getDepartment());
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            jpql += " and  ((p.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and  ((b.insId) like :billNo )";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            jpql += " and  ((p.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            jpql += " and  ((i.name) like :itm )";
+            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (patientEncounter != null) {
+            jpql += "and pi.encounter=:en";
+            temMap.put("en", patientEncounter);
+        }
+
+        jpql += " order by pi.id desc  ";
+//    
+
+        patientInvestigations = getPatientInvestigationFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP, 50);
+        checkRefundBillItems(patientInvestigations);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
+    }
+    
+    public void fillToDepartmentPatientInvestigations() {
+        Date startTime = new Date();
+
+        String jpql = "select pi "
+                + " from PatientInvestigation pi "
+                + " join pi.investigation i "
+                + " join pi.billItem.bill b "
+                + " join b.patient.person p "
+                + " where "
+                + " b.createdAt between :fromDate and :toDate  "
+                + " and b.toDepartment=:dep ";
+
+        Map temMap = new HashMap();
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+        temMap.put("dep", getReportKeyWord().getDepartment());
 
         if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
             jpql += " and  ((p.name) like :patientName )";

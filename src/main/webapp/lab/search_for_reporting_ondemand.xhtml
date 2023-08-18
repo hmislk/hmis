@@ -48,12 +48,21 @@
                                         value="#{searchController.reportKeyWord.department}" 
                                         />
                                     <h:commandLink 
+                                        id="btnSearch4" 
+                                        action="#{searchController.fillToMyDepartmentPatientInvestigations()}" 
+                                        styleClass="mt-2 btn btn-success">
+                                        <h:outputText value="List Reports to My department" />
+                                        <i class="fa fa-search" style="margin-left: 5px;"></i>
+                                    </h:commandLink>
+
+                                    <h:commandLink 
                                         id="btnSearch3" 
                                         action="#{searchController.fillToDepartmentPatientInvestigations()}" 
                                         styleClass="mt-2 btn btn-success">
-                                        <h:outputText value="Department Search (50 max)" />
+                                        <h:outputText value="List Reports to Selected Department" />
                                         <i class="fa fa-search" style="margin-left: 5px;"></i>
                                     </h:commandLink>
+
                                     <h:commandLink 
                                         id="btnSearch" 
                                         action="#{searchController.createPatientInvestigationsTable()}" 
@@ -120,7 +129,7 @@
                                     <p:autoComplete 
                                         class="form-control"
                                         inputStyleClass="w-100"
-                                         
+
                                         widgetVar="aPt" 
                                         id="acPt" 
                                         forceSelection="true" 
@@ -285,16 +294,24 @@
                                                        id="btnSample" 
                                                        action="#{patientInvestigationController.markAsSampled}" >
                                             <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                            <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" ></p:graphicImage>
+                                            <p:graphicImage library="image" styleClass="standedicon" name="bleed.png" rendered="#{pi.collected ne true}"></p:graphicImage>
+                                            <p:graphicImage library="image" styleClass="standedicon" name="bleedok.jpg" rendered="#{pi.collected eq true}"></p:graphicImage>
                                         </p:commandLink>
-                                        <p:commandLink process="btnReceive" update="tblBills"  disabled="#{!pi.received ne true and !webUserController.hasPrivilege('LabSampleReceiving')}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
-                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
-                                            <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" ></p:graphicImage>
-                                        </p:commandLink>
-                                        <p:commandLink ajax="false" id="btnPrintWorksheets" action="/lab/single_worksheet" disabled="#{pi.billItem.bill.cancelled}">
-                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
-                                            <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
-                                        </p:commandLink>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}">
+                                            <p:commandLink process="btnReceive" update="tblBills"  disabled="#{pi.collected ne true}"   id="btnReceive"  action="#{patientInvestigationController.markAsReceived()}" >
+                                                <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="receive.jpeg" rendered="#{pi.received ne true }" ></p:graphicImage>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="receiveok.jpg" rendered="#{pi.received eq true}"></p:graphicImage>
+                                            </p:commandLink>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{pi.billItem.bill.cancelled ne true}">
+                                            <p:commandLink ajax="false" id="btnPrintWorksheets" disabled="#{pi.received ne true}" action="/lab/single_worksheet" >
+                                                <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                <p:graphicImage library="image" styleClass="standedicon" name="worksheet.gif" ></p:graphicImage>
+                                            </p:commandLink>
+                                        </h:panelGroup>
+
                                         <p:commandLink id="btnNewReport" ajax="false" 
                                                        disabled="#{!pi.received}" 
                                                        action="/lab/patient_report"  
