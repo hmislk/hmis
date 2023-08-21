@@ -213,12 +213,15 @@ public class Lims {
         }
 
         // Generate JSON response
+        Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
         for (PatientSample ps : ptSamples) {
-            JSONObject j = constructPatientSampleJson(ps);
-            System.out.println("j = " + j);
-            if (j != null) {
-                array.put(j);
+            if (uniqueIds.add(ps.getId())) { // Only proceed if the ID is unique
+                JSONObject j = constructPatientSampleJson(ps);
+                System.out.println("j = " + j);
+                if (j != null) {
+                    array.put(j);
+                }
             }
         }
         JSONObject jSONObjectOut = new JSONObject();
@@ -253,6 +256,7 @@ public class Lims {
     private JSONObject constructPatientSampleJson(PatientSample ps) {
         System.out.println("constructPatientSampleJson");
         System.out.println("ps = " + ps);
+        boolean correct = true;
         JSONObject jSONObject = new JSONObject();
         if (ps != null) {
             Patient patient = ps.getPatient();
@@ -278,24 +282,33 @@ public class Lims {
         String temTube = "";
         if (tpiics != null) {
             for (Item i : tpiics) {
-                if (i != null) {
-                    System.out.println("i = " + i.getName());
-                    tbis += i.getName() != null ? i.getName() + ", " : "";
-                    if (i instanceof Investigation) {
-                        Investigation temIx = (Investigation) i;
-                        temTube = temIx.getInvestigationTube() != null ? temIx.getInvestigationTube().getName() : "";
+                if (i == null || i.getName() == null) {
+                    correct = false;
+                    continue; // Skip to the next iteration if i is null or i.getName() is null
+                }
+                System.out.println("i = " + i.getName());
+                tbis += i.getName() + ", ";
+                if (i instanceof Investigation) {
+                    Investigation temIx = (Investigation) i;
+                    if (temIx.getInvestigationTube() == null) {
+                        correct = false;
+                        continue; // Skip to the next iteration if temIx.getInvestigationTube() is null
                     }
+                    temTube = temIx.getInvestigationTube().getName();
                 }
             }
-            jSONObject.put("tube", temTube);
-            if (tbis.length() > 3) {
-                tbis = tbis.substring(0, tbis.length() - 2);
-            }
-            tbis += " - " + temTube;
-            jSONObject.put("tests", tbis);
-            return jSONObject;
         }
-        return null;
+        jSONObject.put("tube", temTube);
+        if (tbis.length() > 3) {
+            tbis = tbis.substring(0, tbis.length() - 2);
+        }
+        tbis += " - " + temTube;
+        jSONObject.put("tests", tbis);
+        if (correct) {
+            return jSONObject;
+        } else {
+            return null;
+        }
     }
 
     @GET
