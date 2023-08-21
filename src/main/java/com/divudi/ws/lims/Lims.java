@@ -217,7 +217,9 @@ public class Lims {
         for (PatientSample ps : ptSamples) {
             JSONObject j = constructPatientSampleJson(ps);
             System.out.println("j = " + j);
-            array.put(j);
+            if (j != null) {
+                array.put(j);
+            }
         }
         JSONObject jSONObjectOut = new JSONObject();
         jSONObjectOut.put("Barcodes", array);
@@ -249,6 +251,8 @@ public class Lims {
     }
 
     private JSONObject constructPatientSampleJson(PatientSample ps) {
+        System.out.println("constructPatientSampleJson");
+        System.out.println("ps = " + ps);
         JSONObject jSONObject = new JSONObject();
         if (ps != null) {
             Patient patient = ps.getPatient();
@@ -275,21 +279,23 @@ public class Lims {
         if (tpiics != null) {
             for (Item i : tpiics) {
                 if (i != null) {
+                    System.out.println("i = " + i.getName());
                     tbis += i.getName() != null ? i.getName() + ", " : "";
                     if (i instanceof Investigation) {
                         Investigation temIx = (Investigation) i;
-                        temTube = temIx != null && temIx.getInvestigationTube() != null ? temIx.getInvestigationTube().getName() : "";
+                        temTube = temIx.getInvestigationTube() != null ? temIx.getInvestigationTube().getName() : "";
                     }
                 }
             }
+            jSONObject.put("tube", temTube);
+            if (tbis.length() > 3) {
+                tbis = tbis.substring(0, tbis.length() - 2);
+            }
+            tbis += " - " + temTube;
+            jSONObject.put("tests", tbis);
+            return jSONObject;
         }
-        jSONObject.put("tube", temTube);
-        if (tbis.length() > 3) {
-            tbis = tbis.substring(0, tbis.length() - 2);
-        }
-        tbis += " - " + temTube;
-        jSONObject.put("tests", tbis);
-        return jSONObject;
+        return null;
     }
 
     @GET
@@ -345,26 +351,31 @@ public class Lims {
     }
 
     public List<Item> testComponantsForPatientSample(PatientSample ps) {
+        System.out.println("testComponantsForPatientSample");
+        System.out.println("ps = " + ps);
         if (ps == null) {
             return new ArrayList<>();
         }
         List<Item> ts = new ArrayList<>();
         Map m = new HashMap();
-        String j = "select ps.investigationComponant from PatientSampleComponant ps "
+        String j = "select ps.investigationComponant "
+                + " from PatientSampleComponant ps "
                 + " where ps.patientSample=:pts "
                 + " group by ps.investigationComponant";
         m = new HashMap();
         m.put("pts", ps);
-
+        System.out.println("j = " + j);
+        System.out.println("m = " + m);
         ts = itemFacade.findByJpql(j, m);
+        System.out.println("ts = " + ts);
         return ts;
     }
 
     public List<PatientSample> prepareSampleCollectionByBillsForRequestss(List<Bill> bills, WebUser wu) {
         String j = "";
         Map m;
-        //// // System.out.println("prepareSampleCollectionByBillsForRequestss");
-        Set<PatientSample> rPatientSamplesSet = new HashSet<>();
+        System.out.println("prepareSampleCollectionByBillsForRequestss");
+        Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
 
         if (bills == null) {
             return null;
@@ -381,7 +392,7 @@ public class Lims {
 
             for (PatientInvestigation ptix : pis) {
 
-                //// // System.out.println("ptix = " + ptix);
+                System.out.println("ptix = " + ptix);
                 Investigation ix = ptix.getInvestigation();
 
                 ptix.setCollected(true);
@@ -395,33 +406,45 @@ public class Lims {
 
                 for (InvestigationItem ixi : ixis) {
 
-                    if (ixi.getIxItemType() == InvestigationItemType.Value || ixi.getIxItemType() == InvestigationItemType.Template) {
+                    if (ixi.getIxItemType() == InvestigationItemType.Value) {
+
+                        if (ixi.getTube() == null) {
+                            continue;
+                        }
+                        if (ixi.getSample() == null) {
+                            continue;
+                        }
+
                         j = "select ps from PatientSample ps "
                                 + " where ps.tube=:tube "
                                 + " and ps.sample=:sample "
                                 + " and ps.machine=:machine "
                                 + " and ps.patient=:pt "
-                                + " and ps.bill=:bill "
-                                + " and ps.collected=:ca";
+                                + " and ps.bill=:bill ";
+//                                + " and ps.collected=:ca
                         m = new HashMap();
                         m.put("tube", ixi.getTube());
+
                         m.put("sample", ixi.getSample());
                         m.put("machine", ixi.getMachine());
                         m.put("pt", b.getPatient());
                         m.put("bill", b);
-                        m.put("ca", false);
+//                        m.put("ca", false);
                         if (ix.isHasMoreThanOneComponant()) {
                             j += " and ps.investigationComponant=:sc ";
                             m.put("sc", ixi.getSampleComponent());
                         }
-                        //// // System.out.println("j = " + j);
-                        //// // System.out.println("m = " + m);
+                        System.out.println("j = " + j);
+                        System.out.println("m = " + m);
 
                         PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
-                        //// // System.out.println("pts = " + pts);
+                        System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
                             pts.setTube(ixi.getTube());
+                            if (ixi.getSample() == null || ixi.getSample().getName() == null || ixi.getSample().getName().trim().equals("")) {
+                                continue;
+                            }
                             pts.setSample(ixi.getSample());
                             if (ix.isHasMoreThanOneComponant()) {
                                 pts.setInvestigationComponant(ixi.getSampleComponent());
@@ -440,7 +463,7 @@ public class Lims {
                             pts.setSentToAnalyzer(false);
                             patientSampleFacade.create(pts);
                         }
-                        rPatientSamplesSet.add(pts);
+                        rPatientSamplesMap.put(pts.getId(), pts);
 
                         PatientSampleComponant ptsc;
                         j = "select ps from PatientSampleComponant ps "
@@ -455,7 +478,7 @@ public class Lims {
                         m.put("pt", b.getPatient());
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
-                        //// // System.out.println("j = " + j);
+                        System.out.println("j = " + j);
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
@@ -474,7 +497,7 @@ public class Lims {
 
         }
 
-        List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesSet);
+        List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesMap.values());
         return rPatientSamples;
     }
 
