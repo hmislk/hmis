@@ -63,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -150,19 +151,28 @@ public class InvestigationController implements Serializable {
     private StreamedContent downloadingFile;
     private int adminTabIndex;
 
+    @Deprecated
     public String navigateToManageInvestigationForEmr() {
         return "/emr/admin/investigations";
     }
-
+    
+    @Deprecated
     public String navigateToAddInvestigationForLab() {
         current = new Investigation();
-        return "/lab/manage_investigation";
+        return "/admin/lims/index";
     }
     
+    public String navigateToLimsAdminIndex() {
+        current = new Investigation();
+        return "/admin/lims/index";
+    }
+
+
     public String navigateToAddInvestigationForAdmin() {
         current = new Investigation();
-        return "/admin/items/investigation";
+        return "/admin/lims/investigation";
     }
+    
     
     public String navigateToAddInvestigationForLabForExport() {
         current = new Investigation();

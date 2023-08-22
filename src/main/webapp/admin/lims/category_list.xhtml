@@ -7,11 +7,13 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/admin/items/admin_items_index.xhtml">
-            <ui:define name="item">
+        <ui:composition template="/admin/lims/index.xhtml">
+            <ui:define name="subcontent">
 
                 <h:form>
-                    <p:dataTable value="#{investigationCategoryController.items}" var="item"
+                    <p:dataTable value="#{investigationCategoryController.items}" 
+                                 paginatorAlwaysVisible="false"
+                                 var="item"
                                  paginator="true" 
                                  rows="10" 
                                  emptyMessage="No investigation Categories found."
@@ -29,11 +31,26 @@
                             </f:facet>
                             <h:outputText value="#{item.description}"/>
                         </p:column>
-                        <p:column sortBy="#{item.orderNo}" filterBy="#{item.orderNo}" filterMatchMode="equals">
+                        <p:column>
                             <f:facet name="header">
-                                <h:outputText value="Order No"/>
+                                <h:outputText value="Actions"/>
                             </f:facet>
-                            <h:outputText value="#{item.orderNo}"/>
+                            <p:commandButton ajax="false" 
+                                             class="mx-1"
+                                             value="Edit" 
+                                             icon="pi pi-pencil" 
+                                             action="#{investigationCategoryController.navigateToEditInvestigationCategory()}">
+                                <f:setPropertyActionListener value="#{item}" target="#{investigationCategoryController.current}"></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             class="mx-1"
+                                             value="Delete" 
+                                             icon="fa fa-trash" 
+                                             onclick="if (!confirm('Are you sure you want to delete this item?'))
+                                                         return false;" 
+                                             action="#{investigationCategoryController.delete()}">
+                                <f:setPropertyActionListener value="#{item}" target="#{investigationCategoryController.current}"></f:setPropertyActionListener>
+                            </p:commandButton>
                         </p:column>
 
                     </p:dataTable>

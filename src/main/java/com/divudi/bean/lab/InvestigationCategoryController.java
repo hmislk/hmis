@@ -137,7 +137,6 @@ public class InvestigationCategoryController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -150,7 +149,6 @@ public class InvestigationCategoryController implements Serializable {
         recreateModel();
         getItems();
         current = null;
-        getCurrent();
     }
 
     private InvestigationCategoryFacade getFacade() {
@@ -199,22 +197,45 @@ public class InvestigationCategoryController implements Serializable {
         return "/admin/items/opd_service_category.xhtml";
     }
 
+    @Deprecated
     public String navigateToAddInvestigationCategoryForAdmin() {
         prepareAdd();
-        return "/admin/items/investigation_category";
+        return "/admin/lims/investigation_category";
     }
 
+    @Deprecated
     public String navigateToEditInvestigationCategoryForAdmin() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/items/investigation_category";
+        return "/admin/lims/investigation_category";
     }
 
+    @Deprecated
     public String navigateToListInvestigationCategoriesForAdmin() {
         getItems();
         return "/admin/items/investigation_category_list";
+    }
+    
+
+    public String navigateToAddInvestigationCategory() {
+        prepareAdd();
+        return "/admin/lims/category";
+    }
+
+
+    public String navigateToEditInvestigationCategory() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        return "/admin/lims/category";
+    }
+
+    public String navigateToListInvestigationCategories() {
+        getItems();
+        return "/admin/lims/category_list";
     }
 
     public String navigateToOpdServiceSubCategory() {
