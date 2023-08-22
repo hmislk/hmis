@@ -17,7 +17,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="Department :#{storeTransferIssueController.requestedBill.department.name}" />
                         </f:facet>
-                        <p:autoComplete converter="stfcon" completeMethod="#{staffController.completeStaffWithoutDoctors}" styleClass="noPrintButton"
+                        <p:autoComplete  completeMethod="#{staffController.completeStaffWithoutDoctors}" styleClass="noPrintButton"
                                         forceSelection="true" placeholder="Hand Over To"
                                         var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
                                         value="#{storeTransferIssueController.issuedBill.toStaff}" ></p:autoComplete>

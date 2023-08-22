@@ -30,7 +30,7 @@
                             <h:panelGroup id="panelPatient" >
                                 <p:panel header="Patient Details">
                                     <h:outputLabel value="Type Patient Name or BHT : "/>
-                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                    <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                                     value="#{inwardProfessionalBillController.current.patientEncounter}" 
                                                     completeMethod="#{admissionController.completePatient}"
                                                     var="apt2" itemLabel="#{amp2.bhtNo}"
@@ -63,14 +63,14 @@
                                         <h:outputLabel  value="Select Speciality" ></h:outputLabel>
                                         <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardProfessionalBillController.currentBillFee.speciality}" id="acSpeciality"
                                                         completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                        converter="specilityCon">
+                                                        >
                                             <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff pIxAdd  pBillDetails" />
                                         </p:autoComplete>
 
                                         <h:outputLabel  value="Select Staff / Doctor" ></h:outputLabel>
                                         <p:autoComplete  style="width: 400px;" forceSelection="true" value="#{inwardProfessionalBillController.currentBillFee.staff}" id="scStaff"
                                                          completeMethod="#{inwardProfessionalBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                         converter="stfcon">
+                                                         >
                                             <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails"  />
                                         </p:autoComplete>
                                         <h:outputLabel value="Professional Fee"/>

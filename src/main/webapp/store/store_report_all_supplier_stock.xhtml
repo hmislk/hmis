@@ -20,7 +20,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                                            forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
                             </h:panelGrid>
                         <h:panelGrid columns="4" >

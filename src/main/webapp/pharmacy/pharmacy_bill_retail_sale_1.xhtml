@@ -61,7 +61,6 @@
                                                 </style>
                                                 <p:autoComplete accesskey="i"    id="acStock" class="w-100"
                                                                 value="#{pharmacySaleController1.stock}" 
-                                                                converter="stockCon" 
                                                                 completeMethod="#{pharmacySaleController1.completeAvailableStocksFromNameOrGeneric}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="30"
                                                                 >
@@ -464,7 +463,6 @@
                                                                      completeMethod="#{institutionController.completeCreditCompany}" 
                                                                      var="myi" itemLabel="#{myi.name}" 
                                                                      itemValue="#{myi}"
-                                                                     converter="institutionConverter" 
                                                                      disabled="#{pharmacySaleController1.paymentMethod ne 'Credit' }">
 
                                                         <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
@@ -482,7 +480,7 @@
                                                                      var="mys" 
                                                                      itemLabel="#{mys.person.nameWithTitle}" 
                                                                      itemValue="#{mys}"
-                                                                     converter="stfcon" 
+                                                                      
                                                                      disabled="#{pharmacySaleController1.paymentMethod ne 'Credit' }">
                                                         <p:column headerText="Name" >
                                                             <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>

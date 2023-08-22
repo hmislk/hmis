@@ -52,18 +52,18 @@ public class BillExpenseController implements Serializable {
         return itemsToRemove;
     }
 
-    public List<BillExpense> completeBillExpense(String query) {
-        List<BillExpense> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
-        }
-        return suggestions;
-    }
+//    public List<BillExpense> completeBillExpense(String query) {
+//        List<BillExpense> suggestions;
+//        String sql;
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+//            //////// // System.out.println(sql);
+//            suggestions = getFacade().findBySQL(sql);
+//        }
+//        return suggestions;
+//    }
 
     public List<BillExpense> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -74,13 +74,13 @@ public class BillExpenseController implements Serializable {
         return selectedItems;
     }
 
-    public List<BillExpense> completeItem(String qry) {
-        List<BillExpense> completeItems = getFacade().findBySQL("select c from Item c "
-                + " where ( type(c) = BillExpense or type(c) = Packege ) "
-                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
-                + "  order by c.name");
-        return completeItems;
-    }
+//    public List<BillExpense> completeItem(String qry) {
+//        List<BillExpense> completeItems = getFacade().findBySQL("select c from Item c "
+//                + " where ( type(c) = BillExpense or type(c) = Packege ) "
+//                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
+//                + "  order by c.name");
+//        return completeItems;
+//    }
 
     public void prepareAdd() {
         current = new BillExpense();
@@ -225,46 +225,5 @@ public class BillExpenseController implements Serializable {
         }
     }
 
-    @FacesConverter("billExpenseConverter")
-    public static class BillExpenseConverter implements Converter {
 
-        public BillExpenseConverter() {
-        }
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            BillExpenseController controller = (BillExpenseController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billExpenseController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof BillExpense) {
-                BillExpense o = (BillExpense) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillExpenseController.class.getName());
-            }
-        }
-    }
 }

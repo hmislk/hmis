@@ -21,7 +21,7 @@
                                 <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryPharmacy}"
-                                                converter="categoryConverter"
+                                              
                                                 var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
                                     <p:column headerText="Category">
                                         <h:outputLabel value="#{cat.name}"/>
@@ -68,7 +68,6 @@
                                 </f:facet>
                                     <p:autoComplete forceSelection="true" value="#{a.category}"
                                                     completeMethod="#{categoryController.completeCategoryPharmacy}" 
-                                                    converter="categoryConverter"
                                                     var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
                                         <p:column>
                                             <h:outputLabel value="#{cat.name}"/>

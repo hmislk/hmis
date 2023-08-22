@@ -45,7 +45,7 @@
 
                                     <h:outputLabel value="Type Patient Name or BHT : "/>
                                     <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                    converter="admis"
+                                                    
                                                     value="#{billBhtController.patientEncounter}" 
                                                     completeMethod="#{admissionController.completePatient}"
                                                     var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -77,7 +77,6 @@
                                         <p:autoComplete value="#{itemController.category}" id="ct" 
                                                         forceSelection="true"
                                                         completeMethod="#{categoryController.completeCategoryService}"
-                                                        converter="categoryConverter"
                                                         var="cat" itemLabel="#{cat.name}" 
                                                         itemValue="#{cat}" >
                                             <p:column headerText="Category">

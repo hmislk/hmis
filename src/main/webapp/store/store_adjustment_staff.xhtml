@@ -16,7 +16,7 @@
                     <p:panel header="Staff Stock Adjustment" >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="Item" ></h:outputLabel>
-                            <p:autoComplete   forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" converter="stockCon" completeMethod="#{storeAdjustmentController.completeStaffStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
+                            <p:autoComplete   forceSelection="true"  id="acStock" value="#{storeAdjustmentController.stock}" completeMethod="#{storeAdjustmentController.completeStaffStocks}" var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
                                 <p:column headerText="Staff">
                                     <h:outputLabel value="#{i.staff.person.name}" ></h:outputLabel>
                                 </p:column>

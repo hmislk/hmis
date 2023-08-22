@@ -19,7 +19,6 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Institution" ></h:outputLabel>
                             <p:autoComplete id="acIns" 
-                                            converter="institutionConverter"
                                             completeMethod="#{institutionController.completeIns}" var="ins" 
                                             itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
                                             value="#{billController.institution}">
@@ -28,7 +27,7 @@
                             <p:autoComplete id="acDept" 
                                             completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{billController.department}" converter="departmentConverter" >
+                                            value="#{billController.department}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>

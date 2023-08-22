@@ -63,7 +63,6 @@
 
                                                 <p:autoComplete accesskey="i"    id="acStock" 
                                                                 value="#{pharmacyWholeSaleController1.stock}" 
-                                                                converter="stockCon" 
                                                                 completeMethod="#{pharmacyWholeSaleController1.completeAvailableStocksFromNameOrGeneric}" 
                                                                 var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                                 >
@@ -449,7 +448,6 @@
                                                                      completeMethod="#{institutionController.completeCreditCompany}" 
                                                                      var="myi" itemLabel="#{myi.name}" 
                                                                      itemValue="#{myi}"
-                                                                     converter="institutionConverter" 
                                                                      disabled="#{pharmacyWholeSaleController1.paymentMethod ne 'Credit' }">
 
                                                         <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
@@ -467,7 +465,7 @@
                                                                      var="mys" 
                                                                      itemLabel="#{mys.person.nameWithTitle}" 
                                                                      itemValue="#{mys}"
-                                                                     converter="stfcon" 
+                                                                      
                                                                      disabled="#{pharmacyWholeSaleController1.paymentMethod ne 'Credit' }">
                                                         <p:column headerText="Name" >
                                                             <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>

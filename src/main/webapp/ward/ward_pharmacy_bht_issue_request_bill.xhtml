@@ -61,14 +61,14 @@
                                     <p:panel header="Patient Detail">                                        
                                         <h:panelGrid columns="2" >
                                             <h:outputLabel value="Requesting Pharmacy"/>
-                                            <p:autoComplete converter="departmentConverter" value="#{pharmacySaleBhtController.department}" 
+                                            <p:autoComplete  value="#{pharmacySaleBhtController.department}" 
                                                             forceSelection="true" disabled="#{pharmacySaleBhtController.department ne null}"
                                                             completeMethod="#{departmentController.completeDeptPharmacy}" var="vt" 
                                                             itemLabel="#{vt.name}" itemValue="#{vt}" >
                                                 <p:ajax event="itemSelect" process="@this" update="@this" />
                                             </p:autoComplete>
                                             <h:outputLabel value="Patinet Name or BHT"/>
-                                            <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                            <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                                             value="#{pharmacySaleBhtController.patientEncounter}" 
                                                             completeMethod="#{admissionController.completePatient}"
                                                             var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -110,7 +110,7 @@
                                                         </style>
                                                         <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                                         value="#{pharmacySaleBhtController.stock}" 
-                                                                        converter="stockCon" 
+                                                                        
                                                                         completeMethod="#{pharmacySaleBhtController.completeAvailableStocksSelectedPharmacy}" 
                                                                         var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                                         >

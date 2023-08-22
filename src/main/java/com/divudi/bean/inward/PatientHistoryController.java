@@ -101,23 +101,23 @@ public class PatientHistoryController implements Serializable {
         this.patientInvestigationFacade = patientInvestigationFacade;
     }
 
-    public List<PatientEncounter> getPatientEncounters() {
-        if (searchedPatient == null) {
-            return new ArrayList<PatientEncounter>();
-        }
-
-
-        String sql = "select pe from PatientEncounter pe where pe.retired=false and pe.patient=:pt";
-        HashMap hm = new HashMap();
-        hm.put("pt", getSearchedPatient());
-        patientEncounters = getPatientEncounterFacade().findByJpql(sql, hm);
-
-        if (patientEncounters == null) {
-            return new ArrayList<PatientEncounter>();
-        }
-
-        return patientEncounters;
-    }
+//    public List<PatientEncounter> getPatientEncounters() {
+//        if (searchedPatient == null) {
+//            return new ArrayList<PatientEncounter>();
+//        }
+//
+//
+//        String sql = "select pe from PatientEncounter pe where pe.retired=false and pe.patient=:pt";
+//        HashMap hm = new HashMap();
+//        hm.put("pt", getSearchedPatient());
+//        patientEncounters = getPatientEncounterFacade().findByJpql(sql, hm);
+//
+//        if (patientEncounters == null) {
+//            return new ArrayList<PatientEncounter>();
+//        }
+//
+//        return patientEncounters;
+//    }
 
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
 

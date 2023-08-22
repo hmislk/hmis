@@ -108,18 +108,18 @@ public class TheatreServiceController implements Serializable {
         return d;
     }
 
-    public List<TheatreService> completeService(String query) {
-        List<TheatreService> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            suggestions = getTheatreServiceFacade().findBySQL(sql);
-        }
-        return suggestions;
-    }
+//    public List<TheatreService> completeService(String query) {
+//        List<TheatreService> suggestions;
+//        String sql;
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+//            //////// // System.out.println(sql);
+//            suggestions = getTheatreServiceFacade().findBySQL(sql);
+//        }
+//        return suggestions;
+//    }
 
     public List<TheatreService> getSelectedItems() {
         if (selectText.trim().equals("")) {
@@ -332,23 +332,23 @@ public class TheatreServiceController implements Serializable {
         return temp;
     }
 
-    public List<ServiceFee> getServiceFee() {
-
-        List<ServiceFee> temp = new ArrayList<ServiceFee>();
-
-        for (TheatreService s : getItem()) {
-            ServiceFee si = new ServiceFee();
-            si.setService(s);
-
-            String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
-
-            si.setItemFees(getItemFeeFacade().findBySQL(sql));
-
-            temp.add(si);
-        }
-
-        return temp;
-    }
+//    public List<ServiceFee> getServiceFee() {
+//
+//        List<ServiceFee> temp = new ArrayList<ServiceFee>();
+//
+//        for (TheatreService s : getItem()) {
+//            ServiceFee si = new ServiceFee();
+//            si.setService(s);
+//
+//            String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
+//
+//            si.setItemFees(getItemFeeFacade().findBySQL(sql));
+//
+//            temp.add(si);
+//        }
+//
+//        return temp;
+//    }
 
     public List<TheatreService> getItems() {
         String sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.department.name";
@@ -538,49 +538,6 @@ public class TheatreServiceController implements Serializable {
     public static class ServiceControllerConverter implements Converter {
 
         public ServiceControllerConverter() {
-        }
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "theatreServiceController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof TheatreService) {
-                TheatreService o = (TheatreService) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + TheatreServiceController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("inwServ")
-    public static class ServiceConverter implements Converter {
-
-        public ServiceConverter() {
         }
 
         @Override

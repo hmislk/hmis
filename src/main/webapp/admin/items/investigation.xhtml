@@ -81,13 +81,13 @@
 
                                         <p:panel header="Links" style="white-space: nowrap;" >
                                             <h:panelGrid columns="2" >
-                                                <p:commandLink ajax="false" action="#{investigationController.toEditReportFormat()}" value="Report Format - Single Item" target="_blank"></p:commandLink><br/>
-                                                <p:commandLink ajax="false" action="#{investigationController.toEditReportFormatMoveAll()}" value="Report Format - All Items" target="_blank"></p:commandLink><br/>
-                                                <p:commandLink ajax="false" action="#{investigationController.toEditReportCalculations()}" value="Calculations" target="_blank"></p:commandLink><br/>
-                                                <p:commandLink ajax="false" action="#{investigationController.toReplaceableIxs()}" value="Replaceable Ix" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.navigateToEditFormatSingle()}" value="Report Format - Single Item" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.navigateToEditFormatMultiple() }" value="Report Format - All Items" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.navigateToManageCalculations() }" value="Calculations" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.navigateToReplaceableInvestigations()}" value="Replaceable Ix" target="_blank"></p:commandLink><br/>
 
 
-                                                <p:commandLink ajax="false" action="#{investigationController.toListReportItems()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
+                                                <p:commandLink ajax="false" action="#{investigationController.navigateToManageReportComponents()}" value="List of Investigation's Items" target="_blank"></p:commandLink><br/>
 
 
                                                 <p:commandLink ajax="false" action="#{investigationController.toLoadParentInvestigation()}" 
@@ -95,12 +95,11 @@
 
 
                                                 <p:commandLink disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
-                                                               ajax="false" action="#{investigationController.toEditFees()}"
+                                                               ajax="false" action="#{investigationController.navigateToManageFees()}"
                                                                actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
                                                                value="Prices" ></p:commandLink><br/>
 
-                                                <p:commandLink ajax="false" action="/lab/investigation_list" value="List of Investigations" target="_blank"></p:commandLink><br/>
-
+                                                
                                             </h:panelGrid>
                                         </p:panel>
                                     </p:panelGrid>

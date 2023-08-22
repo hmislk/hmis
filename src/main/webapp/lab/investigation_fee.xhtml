@@ -124,11 +124,11 @@
                                         <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
                                     </h:selectOneListbox>
                                     <h:outputText value="Speciality"/>
-                                    <p:autoComplete converter="specilityCon" forceSelection="true" id="cmbSpe" value="#{itemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  forceSelection="true" id="cmbSpe" value="#{itemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
                                         <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
                                     </p:autoComplete>
                                     <h:outputText value="Staff"/>
-                                    <p:autoComplete converter="stfcon" forceSelection="true" id="cmbDoc" value="#{itemFeeController.currentFee.staff}" completeMethod="#{itemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{itemFeeController.currentFee.staff}" completeMethod="#{itemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
                                         <f:ajax execute="cmbSpe" event="keypress"/>
                                     </p:autoComplete>
 

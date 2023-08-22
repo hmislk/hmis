@@ -173,41 +173,41 @@ public class TimedItemController implements Serializable {
         this.bulkText = bulkText;
     }
 
-    public List<TimedItem> getSelectedItems() {
+//    public List<TimedItem> getSelectedItems() {
+//
+//        if (selectText.trim().equals("")) {
+//            selectedItems = getFacade().findBySQL("select c from TimedItem c where c.retired=false order by c.name");
+//        } else {
+//            String sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+//            selectedItems = getFacade().findBySQL(sql);
+//
+//        }
+//        return selectedItems;
+//    }
 
-        if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from TimedItem c where c.retired=false order by c.name");
-        } else {
-            String sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+//    public List<TimedItem> getSelectedTheatreItems() {
+//        String sql = "select c from TimedItem c "
+//                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
+//                + " and c.departmentType=:dt "
+//                + " order by c.name";
+//        Map m = new HashMap();
+//        m.put("dt", DepartmentType.Theatre);
+//        selectedItems = getFacade().findByJpql(sql, m);
+//        ////System.out.println("selectedItems = " + selectedItems);
+//        return selectedItems;
+//    }
 
-        }
-        return selectedItems;
-    }
-
-    public List<TimedItem> getSelectedTheatreItems() {
-        String sql = "select c from TimedItem c "
-                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
-                + " and c.departmentType=:dt "
-                + " order by c.name";
-        Map m = new HashMap();
-        m.put("dt", DepartmentType.Theatre);
-        selectedItems = getFacade().findByJpql(sql, m);
-        ////System.out.println("selectedItems = " + selectedItems);
-        return selectedItems;
-    }
-
-    public List<TimedItem> getSelectedInwardItems() {
-        String sql = "select c from TimedItem c "
-                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
-                + " and c.departmentType=:dt "
-                + " order by c.name";
-        Map m = new HashMap();
-        m.put("dt", DepartmentType.Inward);
-        selectedItems = getFacade().findByJpql(sql, m);
-        ////System.out.println("selectedItems = " + selectedItems);
-        return selectedItems;
-    }
+//    public List<TimedItem> getSelectedInwardItems() {
+//        String sql = "select c from TimedItem c "
+//                + " where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
+//                + " and c.departmentType=:dt "
+//                + " order by c.name";
+//        Map m = new HashMap();
+//        m.put("dt", DepartmentType.Inward);
+//        selectedItems = getFacade().findByJpql(sql, m);
+//        ////System.out.println("selectedItems = " + selectedItems);
+//        return selectedItems;
+//    }
 
     public void prepareAdd() {
         current = new TimedItem();
@@ -435,43 +435,4 @@ public class TimedItemController implements Serializable {
         }
     }
 
-    @FacesConverter("timedIt")
-    public static class TimedItemConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            TimedItemController controller = (TimedItemController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "timedItemController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof TimedItem) {
-                TimedItem o = (TimedItem) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + TimedItemController.class.getName());
-            }
-        }
-    }
 }

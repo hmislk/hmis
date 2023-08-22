@@ -101,7 +101,7 @@
                                                             var="ins" 
                                                             itemLabel="#{ins.name}" 
                                                             itemValue="#{ins}" 
-                                                            converter="institutionConverter" >
+                                                             >
                                                 <p:ajax event="itemSelect" process="acIns" update="gpSomDepartment" listener="#{itemFeeManager.fillDepartments()}" ></p:ajax>
                                             </p:autoComplete>
                                         </h:panelGroup>
@@ -125,7 +125,7 @@
                                                             var="spe" 
                                                             itemLabel="#{spe.name}" 
                                                             itemValue="#{spe}" 
-                                                            converter="specilityCon" >
+                                                             >
                                                 <p:ajax event="itemSelect" process="@this" update="somEmployee" listener="#{itemFeeManager.fillStaff()}" ></p:ajax>
                                             </p:autoComplete>
                                         </h:panelGroup>

@@ -28,7 +28,7 @@
                         </p:selectOneMenu>
 
                         <h:outputText value="Service Category/Sub Category" rendered="#{dataAdministrationController.item ne null and dataAdministrationController.item eq 3}"/>
-                        <p:autoComplete converter="categoryConverter" 
+                        <p:autoComplete
                                         completeMethod="#{categoryController.completeServiceCategory}" 
                                         var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" 
                                         forceSelection="true" value="#{dataAdministrationController.itemCategory}" 

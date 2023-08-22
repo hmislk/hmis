@@ -16,7 +16,7 @@
                         <h:panelGrid columns="5" >
 <!--                            <h:outputLabel value="Staff" >
                             </h:outputLabel>
-                            <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{reportsStock.staff}" converter="stfcon" >
+                            <p:autoComplete completeMethod="#{staffController.completeStaff}" var="staff" itemLabel="#{staff.person.name}" itemValue="#{staff}" forceSelection="true" value="#{reportsStock.staff}"  >
                             </p:autoComplete>-->
                             <p:commandButton ajax="false" value="Fill" action="#{reportsStock.fillAllStaffStocks}" ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >

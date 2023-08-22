@@ -20,12 +20,12 @@
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Issue To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>

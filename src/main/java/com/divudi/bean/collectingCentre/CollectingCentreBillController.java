@@ -243,30 +243,30 @@ public class CollectingCentreBillController implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public void calculateSelectedBillTotals() {
-        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
-        grosTotal = bt.getGrossTotal();
-        netTotal = bt.getNetTotal();
-        discount = bt.getDiscount();
-        vat = bt.getVat();
-        vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
-    }
+//    public void calculateSelectedBillTotals() {
+//        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+//        grosTotal = bt.getGrossTotal();
+//        netTotal = bt.getNetTotal();
+//        discount = bt.getDiscount();
+//        vat = bt.getVat();
+//        vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
+//    }
 
-    public void clear() {
-        opdBill = new BilledBill();
-        printPreview = false;
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTableByKeywordToPayBills();
-    }
+//    public void clear() {
+//        opdBill = new BilledBill();
+//        printPreview = false;
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTableByKeywordToPayBills();
+//    }
 
-    public void clearPharmacy() {
-        opdBill = new BilledBill();
-        printPreview = false;
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTablePharmacyCreditToPayBills();
-    }
+//    public void clearPharmacy() {
+//        opdBill = new BilledBill();
+//        printPreview = false;
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTablePharmacyCreditToPayBills();
+//    }
 
     public void saveBillOPDCredit() {
 

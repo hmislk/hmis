@@ -163,7 +163,7 @@
                                                             </p:inputText>
                                                         </td>
                                                         <td  >
-                                                            <p:autoComplete id="acNewPtArea" converter="areaCon" 
+                                                            <p:autoComplete id="acNewPtArea" 
                                                                             completeMethod="#{areaController.completeArea}" 
                                                                             var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
                                                                             itemValue="#{pta}" forceSelection="true" 
@@ -363,7 +363,7 @@
                                                                  var="mys" 
                                                                  itemLabel="#{mys.person.nameWithTitle}" 
                                                                  itemValue="#{mys}"
-                                                                 converter="stfcon" >
+                                                                  >
                                                     <p:column headerText="Name" >
                                                         <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
                                                     </p:column>
@@ -391,7 +391,7 @@
 
 
                                         <p:tab title="Staff">
-                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{opdPreBillController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 300px;">
+                                            <p:autoComplete forceSelection="true"  value="#{opdPreBillController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 300px;">
                                             </p:autoComplete>
                                         </p:tab>
                                         <p:tab title="Referrals">
@@ -400,7 +400,7 @@
                                                 <p:autoComplete forceSelection="true" id="cmdIns" 
                                                                 value="#{opdPreBillController.referredByInstitution}" 
                                                                 completeMethod="#{institutionController.completeIns}" var="refi" 
-                                                                itemLabel="#{refi.name}" itemValue="#{refi}" converter="institutionConverter">
+                                                                itemLabel="#{refi.name}" itemValue="#{refi}" >
                                                     <p:column headerText="Name">
                                                         #{refi.name}
                                                     </p:column>

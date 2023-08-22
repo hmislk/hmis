@@ -63,13 +63,13 @@
                                     <p:selectBooleanCheckbox   id="chkBilledAs" value="#{timedItemController.billedAs}" itemLabel="Billed as a seperate timedItem"  >
                                         <p:ajax event="change" process="@this" update="billedAsIx" />
                                     </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="timedIt"  disabled="#{!timedItemController.billedAs}" widgetVar="aIx1" id="billedAsIx" forceSelection="true" value="#{timedItemController.current.billedAs}" completeMethod="#{timedItemController.completeInvest}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  disabled="#{!timedItemController.billedAs}" widgetVar="aIx1" id="billedAsIx" forceSelection="true" value="#{timedItemController.current.billedAs}" completeMethod="#{timedItemController.completeInvest}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30"  style="width: 400px;">
                                     </p:autoComplete>
 
                                     <p:selectBooleanCheckbox  id="chkReportedAs" value="#{timedItemController.reportedAs}" itemLabel="Reported as a seperate timedItem" >
                                         <p:ajax event="change" process="@this" update="reportedAsIx" />
                                     </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="timedIt" disabled="#{!timedItemController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{timedItemController.current.reportedAs}" completeMethod="#{timedItemController.completeInvest}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
+                                    <p:autoComplete disabled="#{!timedItemController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{timedItemController.current.reportedAs}" completeMethod="#{timedItemController.completeInvest}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
                                     </p:autoComplete>
 
                                     <h:outputText value="Institution" ></h:outputText>

@@ -174,55 +174,55 @@ public class AdmissionController implements Serializable {
         return lst;
     }
 
-    public List<Admission> completePatientPaymentDue(String qry) {
-        String sql = "Select b.patientEncounter From "
-                + " BilledBill b where"
-                + " b.retired=false "
-                + " and b.cancelled=false "
-                + " and b.billType=:btp "
-                + " and (abs(b.netTotal)-abs(b.paidAmount)) > :val "
-                + " and ((b.patientEncounter.bhtNo) like :q or"
-                + " (b.patientEncounter.patient.person.name) like :q ) "
-                + " order by b.patientEncounter.bhtNo";
-        HashMap hm = new HashMap();
-        hm.put("btp", BillType.InwardFinalBill);
-        hm.put("val", 0.1);
-        hm.put("q", "%" + qry.toUpperCase() + "%");
+//    public List<Admission> completePatientPaymentDue(String qry) {
+//        String sql = "Select b.patientEncounter From "
+//                + " BilledBill b where"
+//                + " b.retired=false "
+//                + " and b.cancelled=false "
+//                + " and b.billType=:btp "
+//                + " and (abs(b.netTotal)-abs(b.paidAmount)) > :val "
+//                + " and ((b.patientEncounter.bhtNo) like :q or"
+//                + " (b.patientEncounter.patient.person.name) like :q ) "
+//                + " order by b.patientEncounter.bhtNo";
+//        HashMap hm = new HashMap();
+//        hm.put("btp", BillType.InwardFinalBill);
+//        hm.put("val", 0.1);
+//        hm.put("q", "%" + qry.toUpperCase() + "%");
+//
+//        List<Admission> b = getEjbFacade().findBySQL(sql, hm, 20);
+//
+//        if (b == null) {
+//            return new ArrayList<>();
+//        }
+//
+//        return b;
+//
+//    }
 
-        List<Admission> b = getEjbFacade().findBySQL(sql, hm, 20);
-
-        if (b == null) {
-            return new ArrayList<>();
-        }
-
-        return b;
-
-    }
-
-    public List<Admission> completePatientPaymentMax(String qry) {
-        String sql = "Select b.patientEncounter From "
-                + " BilledBill b where"
-                + " b.retired=false "
-                + " and b.cancelled=false "
-                + " and b.billType=:btp"
-                + " and (abs(b.paidAmount)- abs(b.netTotal)) > :val "
-                + " and ((b.patientEncounter.bhtNo) like :q or"
-                + " (b.patientEncounter.patient.person.name) like :q ) "
-                + " order by b.patientEncounter.bhtNo";
-        HashMap hm = new HashMap();
-        hm.put("btp", BillType.InwardFinalBill);
-        hm.put("val", 0.1);
-        hm.put("q", "%" + qry.toUpperCase() + "%");
-
-        List<Admission> b = getEjbFacade().findBySQL(sql, hm, 20);
-
-        if (b == null) {
-            return new ArrayList<>();
-        }
-
-        return b;
-
-    }
+//    public List<Admission> completePatientPaymentMax(String qry) {
+//        String sql = "Select b.patientEncounter From "
+//                + " BilledBill b where"
+//                + " b.retired=false "
+//                + " and b.cancelled=false "
+//                + " and b.billType=:btp"
+//                + " and (abs(b.paidAmount)- abs(b.netTotal)) > :val "
+//                + " and ((b.patientEncounter.bhtNo) like :q or"
+//                + " (b.patientEncounter.patient.person.name) like :q ) "
+//                + " order by b.patientEncounter.bhtNo";
+//        HashMap hm = new HashMap();
+//        hm.put("btp", BillType.InwardFinalBill);
+//        hm.put("val", 0.1);
+//        hm.put("q", "%" + qry.toUpperCase() + "%");
+//
+//        List<Admission> b = getEjbFacade().findBySQL(sql, hm, 20);
+//
+//        if (b == null) {
+//            return new ArrayList<>();
+//        }
+//
+//        return b;
+//
+//    }
 
     public List<Admission> getSelectedItems() {
         selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -280,20 +280,20 @@ public class AdmissionController implements Serializable {
         return suggestions;
     }
 
-    public List<Admission> completePatientCredit(String query) {
-        List<Admission> suggestions;
-        String sql;
-        HashMap hm = new HashMap();
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from Admission c where c.retired=false and c.paymentMethod=:pm  and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-            hm.put("pm", PaymentMethod.Credit);
-            ////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, hm, TemporalType.TIME, 20);
-        }
-        return suggestions;
-    }
+//    public List<Admission> completePatientCredit(String query) {
+//        List<Admission> suggestions;
+//        String sql;
+//        HashMap hm = new HashMap();
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from Admission c where c.retired=false and c.paymentMethod=:pm  and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
+//            hm.put("pm", PaymentMethod.Credit);
+//            ////// // System.out.println(sql);
+//            suggestions = getFacade().findBySQL(sql, hm, TemporalType.TIME, 20);
+//        }
+//        return suggestions;
+//    }
 
     public List<Admission> completePatientDishcargedNotFinalized(String query) {
         List<Admission> suggestions;
@@ -353,18 +353,18 @@ public class AdmissionController implements Serializable {
         return suggestions;
     }
 
-    public List<Admission> completeDishcahrgedPatient(String query) {
-        List<Admission> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from Admission c where c.retired=false and c.discharged=true and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-            ////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, 20);
-        }
-        return suggestions;
-    }
+//    public List<Admission> completeDishcahrgedPatient(String query) {
+//        List<Admission> suggestions;
+//        String sql;
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from Admission c where c.retired=false and c.discharged=true and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
+//            ////// // System.out.println(sql);
+//            suggestions = getFacade().findBySQL(sql, 20);
+//        }
+//        return suggestions;
+//    }
 
     public void prepareAdd() {
         current = new Admission();
@@ -372,16 +372,16 @@ public class AdmissionController implements Serializable {
 
     List<Admission> admissionsWithErrors;
 
-    public List<Admission> getAdmissionsWithErrors() {
-        String sql;
-        sql = "select p from Admission p where p.retired=false "
-                + "and (p.patient is null or p.bhtNo is null)";
-        admissionsWithErrors = getFacade().findBySQL(sql, 20);
-        if (admissionsWithErrors == null) {
-            admissionsWithErrors = new ArrayList<>();
-        }
-        return admissionsWithErrors;
-    }
+//    public List<Admission> getAdmissionsWithErrors() {
+//        String sql;
+//        sql = "select p from Admission p where p.retired=false "
+//                + "and (p.patient is null or p.bhtNo is null)";
+//        admissionsWithErrors = getFacade().findBySQL(sql, 20);
+//        if (admissionsWithErrors == null) {
+//            admissionsWithErrors = new ArrayList<>();
+//        }
+//        return admissionsWithErrors;
+//    }
 
     public void setAdmissionsWithErrors(List<Admission> admissionsWithErrors) {
         this.admissionsWithErrors = admissionsWithErrors;
@@ -1019,45 +1019,6 @@ public class AdmissionController implements Serializable {
     /**
      *
      */
-    @FacesConverter("admis")
-    public static class AdmissionConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            AdmissionController controller = (AdmissionController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "admissionController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Admission) {
-                Admission o = (Admission) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AdmissionController.class.getName());
-            }
-        }
-    }
 
     @FacesConverter(forClass = Admission.class)
     public static class AdmissionControllerConverter implements Converter {

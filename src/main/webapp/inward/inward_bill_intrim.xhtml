@@ -33,7 +33,7 @@
                             <h:panelGrid columns="10" styleClass="alignTop">
 
                                 <p:outputLabel value="Type to SelectBHT" ></p:outputLabel>
-                                <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                                 value="#{bhtSummeryController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
                                                 var="myItem" itemValue="#{myItem}" 

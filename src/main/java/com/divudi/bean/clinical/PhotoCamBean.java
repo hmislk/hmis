@@ -116,32 +116,32 @@ public class PhotoCamBean implements Serializable {
         getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent());
     }
 
-    public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
-        if (getPatientEncounterController().getCurrent() == null) {
-            JsfUtil.addErrorMessage("Select Encounter");
-            return;
-        }
-        if (getPatientEncounterController().getCurrent().getId() == null) {
-            getPatientEncounterController().saveSelected();
-        }
-        getPatientEncounterController().getEncounterImage().setImageValue(captureEvent.getData());
-        getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
-        getPatientEncounterController().getEncounterImage().setImageType("image/png");
-        getPatientEncounterController().getEncounterImage().setEncounter(getPatientEncounterController().getCurrent());
-        getPatientEncounterController().getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
-        if (getPatientEncounterController().getEncounterImage().getId() == null) {
-            clinicalFindingValueFacade.create(getPatientEncounterController().getEncounterImage());
-        } else {
-            clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
-        }
-        getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + getPatientEncounterController().getEncounterImage().getId() + ".png");
-        clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
-        getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
-        getPatientEncounterController().setEncounterImage(null);
-
-        getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
-        getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
-    }
+//    public void oncaptureVisitPhoto(CaptureEvent captureEvent) {
+//        if (getPatientEncounterController().getCurrent() == null) {
+//            JsfUtil.addErrorMessage("Select Encounter");
+//            return;
+//        }
+//        if (getPatientEncounterController().getCurrent().getId() == null) {
+//            getPatientEncounterController().saveSelected();
+//        }
+//        getPatientEncounterController().getEncounterImage().setImageValue(captureEvent.getData());
+//        getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + "000" + ".png");
+//        getPatientEncounterController().getEncounterImage().setImageType("image/png");
+//        getPatientEncounterController().getEncounterImage().setEncounter(getPatientEncounterController().getCurrent());
+//        getPatientEncounterController().getEncounterImage().setClinicalFindingValueType(ClinicalFindingValueType.VisitImage);
+//        if (getPatientEncounterController().getEncounterImage().getId() == null) {
+//            clinicalFindingValueFacade.create(getPatientEncounterController().getEncounterImage());
+//        } else {
+//            clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
+//        }
+//        getPatientEncounterController().getEncounterImage().setImageName("encounter_image_" + getPatientEncounterController().getEncounterImage().getId() + ".png");
+//        clinicalFindingValueFacade.edit(getPatientEncounterController().getEncounterImage());
+//        getPatientEncounterController().getEncounterImages().add(getPatientEncounterController().getEncounterImage());
+//        getPatientEncounterController().setEncounterImage(null);
+//
+//        getPatientEncounterController().getEncounterFindingValues().add(getPatientEncounterController().getEncounterImage());
+//        getPatientEncounterController().setEncounterImages(getPatientEncounterController().fillEncounterImages(getPatientEncounterController().getCurrent()));
+//    }
 
     public void oncapture(CaptureEvent captureEvent) {
         String photo = getRandomImageName();

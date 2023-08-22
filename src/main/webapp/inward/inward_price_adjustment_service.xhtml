@@ -33,7 +33,6 @@
                                 <p:autoComplete value="#{inwardPriceAdjustmntController.category}" 
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryService}"
-                                                converter="categoryConverter"
                                                 var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" 
                                                 itemValue="#{cat}" >
                                     <p:column headerText="Category">
@@ -121,7 +120,6 @@
                                 <p:column filterBy="#{a.category.name}" filterMatchMode="contains" headerText="Category Name" exportable="false">
                                     <p:autoComplete forceSelection="true" value="#{a.category}" 
                                                     completeMethod="#{categoryController.completeCategoryService}" 
-                                                    converter="categoryConverter"
                                                     var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
                                         <p:column>
                                             <h:outputLabel value="#{cat.name}"/>
