@@ -27,10 +27,14 @@
                                                        value="List categories" 
                                                        action="#{investigationCategoryController.navigateToListInvestigationCategories}" />
 
+                                    <p:commandButton   class="w-100"  ajax="false" 
+                                                       value="Add Tube" 
+                                                       action="#{investigationTubeController.navigateToAddTube()}" />
 
                                     <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="categories" 
-                                                       action="#{investigationController.navigateToAddInvestigationForAdmin()}" />
+                                                       value="List Tubes" 
+                                                       action="#{investigationTubeController.navigateToListTubes()}" />
+
                                     <p:commandButton   
                                         class="w-100" 
                                         ajax="false" 
