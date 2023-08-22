@@ -110,6 +110,10 @@
                             </p:tab>
                             <p:tab title="Setup">
                                 <div class="d-grid gap-2">
+                                    <p:commandButton id="btnMatch" value="Make All to Match Investigation" 
+                                                     ajax="false" 
+                                                     action="#{investigationItemController.makeAllInvestigationsAndItemsToMachIxDetails()}">
+                                    </p:commandButton>
                                     <p:commandButton  class="w-100" 
                                                       ajax="false" 
                                                       value="Create New Items for New Institution" 

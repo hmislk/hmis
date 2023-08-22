@@ -101,6 +101,13 @@ public class InvestigationItemController implements Serializable {
     InvestigationController investigationController;
     @Inject
     private ItemController itemController;
+    @Inject
+    InvestigationTubeController investigationTubeController;
+    @Inject
+    SampleController sampleController;
+    @Inject
+    MachineController machineController;
+
     /**
      * Properties
      */
@@ -213,6 +220,42 @@ public class InvestigationItemController implements Serializable {
                 }
             }
         }
+    }
+
+    public void makeAllInvestigationsAndItemsToMachIxDetails() {
+        System.out.println("makeAllInvestigationsAndItemsToMachIxDetails");
+        InvestigationTube tixt = investigationTubeController.getAnyTube();
+        Sample ts = sampleController.getAnySample();
+        Machine tm = machineController.getAnyMachine();
+        for (Investigation tix : investigationController.getAllIxs()) {
+            System.out.println("tix = " + tix);
+            boolean needToSaveIx = false;
+            if (tix.getMachine() == null) {
+                needToSaveIx = true;
+                tix.setMachine(tm);
+            }
+            if (tix.getInvestigationTube() == null) {
+                needToSaveIx = true;
+                tix.setInvestigationTube(tixt);
+            }
+            if (tix.getSample() == null) {
+                needToSaveIx = true;
+                tix.setSample(ts);
+            }
+            if (needToSaveIx) {
+                System.out.println("saving");
+                investigationController.saveSelected(tix);
+            }
+            for (InvestigationItem tixi : getImportantItems(tix)) {
+                tixi.setTube(tix.getInvestigationTube());
+                tixi.setSample(tix.getSample());
+                tixi.setMachine(tix.getMachine());
+//                Item sc = itemController.getFirstInvestigationSampleComponents(tix);
+//                tixi.setSampleComponent(sc);
+                getFacade().edit(tixi);
+            }
+        }
+
     }
 
     public List<InvestigationItem> listInvestigationItemsFilteredByItemTypes(Investigation ix, List<InvestigationItemType> types) {
@@ -662,7 +705,6 @@ public class InvestigationItemController implements Serializable {
 //        }
 //        return iivs;
 //    }
-
 //    public List<InvestigationItem> completeIxItem(String qry) {
 //        List<InvestigationItem> iivs;
 //        if (qry.trim().equals("") || currentInvestigation == null || currentInvestigation.getId() == null) {
@@ -677,7 +719,6 @@ public class InvestigationItemController implements Serializable {
 //        }
 //        return iivs;
 //    }
-
     public List<InvestigationItem> completeTemplate(String qry) {
         List<InvestigationItem> iivs;
         if (qry.trim().equals("")) {
@@ -896,7 +937,7 @@ public class InvestigationItemController implements Serializable {
         }
         return "/lab/investigation_format";
     }
-    
+
 //    public String uploadExcelToCreateInvestigations() {
 //        if (file == null) {
 //            JsfUtil.addErrorMessage("No file");
@@ -915,7 +956,6 @@ public class InvestigationItemController implements Serializable {
 //        }
 //        return "/lab/uploaded_investigations";
 //    }
-
     private void convertJsonToIx(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -1753,7 +1793,7 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
         return "/lab/investigation_format";
     }
-    
+
     public String toEditInvestigationFormatMultiple() {
         if (currentInvestigation == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -2190,6 +2230,17 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.DynamicLabel);
         l.add(InvestigationItemType.Template);
         importantItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
+        return importantItems;
+    }
+
+    public List<InvestigationItem> getImportantItems(Investigation tix) {
+        List<InvestigationItemType> l = new ArrayList<>();
+        l.add(InvestigationItemType.Value);
+        l.add(InvestigationItemType.Flag);
+        l.add(InvestigationItemType.Calculation);
+        l.add(InvestigationItemType.DynamicLabel);
+        l.add(InvestigationItemType.Template);
+        importantItems = listInvestigationItemsFilteredByItemTypes(tix, l);
         return importantItems;
     }
 

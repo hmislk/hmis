@@ -51,6 +51,10 @@ public class InvestigationTubeController implements Serializable {
         return "/admin/lims/tube";
     }
 
+    public InvestigationTube getAnyTube(){
+        return getItems().get(0);
+    }
+    
     public String navigateToEditTube() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");

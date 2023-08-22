@@ -106,6 +106,10 @@ public class SampleController implements Serializable {
     public Sample getCurrent() {
         return current;
     }
+    
+    public Sample getAnySample() {
+        return getItems().get(0);
+    }
 
     public void setCurrent(Sample current) {
         this.current = current;
