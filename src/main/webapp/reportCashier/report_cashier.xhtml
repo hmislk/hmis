@@ -23,7 +23,7 @@
                                                              action="#{cashierReportController.navigateToDepartmentAllCashierReport}" 
                                                              actionListener="#{cashierReportController.recreteModal}"/>
                                             <p:commandButton class="w-100" ajax="false" value="1) Cashier Report" 
-                                                             action="report_cashier_detailed_by_user.xhtml" 
+                                                             action="#{cashierReportController.navigateToReportcashierDetailedByUser()}" 
                                                              actionListener="#{commonReport.recreteModal}"/>
                                             <p:commandButton class="w-100" ajax="false" value="1.1) Cashier Report(Using Recipt No)" action="#{cashierReportController.navigateToCashierReport}" actionListener="#{commonReport.recreteModal2}"/>
                                             <p:commandButton class="w-100" ajax="false" value="2) Cashier Summary" action="#{cashierReportController.navigateToCashierSummary}" actionListener="#{commonReport.recreteModal}"/>

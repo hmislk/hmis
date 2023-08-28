@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -30,6 +31,7 @@ import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Area;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -70,9 +72,12 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 @Named
 @SessionScoped
@@ -165,6 +170,9 @@ public class ChannelReportController implements Serializable {
     ///////////
     @EJB
     private ChannelBean channelBean;
+    
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
     @Inject
     SessionController sessionController;
     @Inject
@@ -1426,6 +1434,26 @@ public class ChannelReportController implements Serializable {
     BillsTotals refundBillList;
 
     public void createChannelCashierBillList() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        auditEvent.setEventTrigger("createChannelCashierBillList()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         getBilledBillList().setBills(createUserBills(new BilledBill(), getWebUser(), getDepartment()));
         getCanceledBillList().setBills(createUserBills(new CancelledBill(), getWebUser(), getDepartment()));
@@ -1452,6 +1480,11 @@ public class ChannelReportController implements Serializable {
         getRefundBillList().setCheque(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
 
         createSummary();
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     private List<String1Value1> channelSummary;
