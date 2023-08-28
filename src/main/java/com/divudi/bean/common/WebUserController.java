@@ -200,6 +200,7 @@ public class WebUserController implements Serializable {
         selected.setRetirer(getSessionController().getLoggedUser());
         selected.setRetiredAt(Calendar.getInstance().getTime());
         getFacade().edit(selected);
+
         UtilityController.addErrorMessage("User Removed");
     }
 
@@ -508,8 +509,6 @@ public class WebUserController implements Serializable {
     public void onlyAddStaffForExsistingUserListner() {
         createOnlyUser = false;
     }
-    
-    
 
     public List<WebUser> getToApproveUsers() {
         String temSQL;
@@ -578,13 +577,17 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToListUsers() {
+        fillLightUsers();
+        return "/admin/users/list_users";
+    }
+
+    private void fillLightUsers() {
         HashMap m = new HashMap();
         String jpql;
         jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.id)"
                 + " from WebUser wu "
                 + " order by wu.name";
         webUseLights = (List<WebUserLight>) getFacade().findLightsByJpql(jpql);
-        return "/admin/users/admin_view_user";
     }
 
     public List<WebUser> getSelectedItems() {
@@ -722,7 +725,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         current = selected;
-        return "/admin/users/admin_user";
+        return "/admin/users/index";
     }
 
     public String navigateToManageStaff() {
@@ -847,7 +850,7 @@ public class WebUserController implements Serializable {
     }
 
     public String backToViewUsers() {
-        return "/admin/users/admin_view_user";
+        return "/admin/users/list_users";
     }
 
     public String changeCurrentUserPassword() {
@@ -982,10 +985,10 @@ public class WebUserController implements Serializable {
     }
 
     public void setSelectedLight(WebUserLight selectedLight) {
-        if(selectedLight!=null){
+        if (selectedLight != null) {
             selected = getFacade().find(selectedLight.getId());
-        }else{
-            selected=null;
+        } else {
+            selected = null;
         }
         this.selectedLight = selectedLight;
     }
