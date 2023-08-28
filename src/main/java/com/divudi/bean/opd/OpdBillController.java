@@ -21,6 +21,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -77,6 +78,8 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -127,6 +130,8 @@ public class OpdBillController implements Serializable {
     PriceMatrixController priceMatrixController;
     @Inject
     PatientController patientController;
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
 
     /**
      * Class Variables
@@ -245,7 +250,6 @@ public class OpdBillController implements Serializable {
 //        m.put("bb", batchBill);
 //        return billFacade.findByJpql(j, m);
 //    }
-
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -262,7 +266,6 @@ public class OpdBillController implements Serializable {
 //        vat = bt.getVat();
 //        netPlusVat = vat + netTotal;
 //    }
-
     public void clear() {
         opdBill = new BilledBill();
         opdPaymentCredit = 0.0;
@@ -276,7 +279,6 @@ public class OpdBillController implements Serializable {
 //        comment = null;
 //        searchController.createTablePharmacyCreditToPayBills();
 //    }
-
 //    public void saveBillOPDCredit() {
 //
 //        BilledBill temp = new BilledBill();
@@ -343,7 +345,6 @@ public class OpdBillController implements Serializable {
 //        JsfUtil.addSuccessMessage("Paid");
 //        opdBill = temp;
 //    }
-
 //    public void saveBillPharmacyCredit() {
 //
 //        BilledBill temp = new BilledBill();
@@ -394,7 +395,6 @@ public class OpdBillController implements Serializable {
 //        opdBill = temp;
 //
 //    }
-
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
     }
@@ -495,7 +495,6 @@ public class OpdBillController implements Serializable {
 //        }
 //        return a;
 //    }
-
 //    public List<Bill> completePharmacyCreditBill(String qry) {
 //        List<Bill> a = null;
 //        String sql;
@@ -532,7 +531,6 @@ public class OpdBillController implements Serializable {
 //        }
 //        return a;
 //    }
-
 //    public List<Bill> completeBillFromDealor(String qry) {
 //        List<Bill> a = null;
 //        String sql;
@@ -563,7 +561,6 @@ public class OpdBillController implements Serializable {
 //        }
 //        return a;
 //    }
-
 //    public List<Bill> completeBillFromDealorStore(String qry) {
 //        List<Bill> a = null;
 //        String sql;
@@ -595,7 +592,6 @@ public class OpdBillController implements Serializable {
 //        }
 //        return a;
 //    }
-
 //    public List<Bill> completeSurgeryBills(String qry) {
 //
 //        String sql;
@@ -618,7 +614,6 @@ public class OpdBillController implements Serializable {
 //
 //        return tmps;
 //    }
-
 //    public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
 //        String sql;
 //        HashMap hash = new HashMap();
@@ -646,7 +641,6 @@ public class OpdBillController implements Serializable {
 //
 //        return bill;
 //    }
-
     public List<Bill> getCreditBills(Institution institution) {
         String sql;
         HashMap hash = new HashMap();
@@ -1116,9 +1110,45 @@ public class OpdBillController implements Serializable {
     }
 
     public String settleOpdBill() {
-        if (!executeSettleBillActions()) {
-            return "";
+        String ipAddress;
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
         }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        if (!executeSettleBillActions()) {
+
+            return "";
+
+        }
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd/opd_bill_print?faces-redirect=true";
     }
 
@@ -2609,8 +2639,6 @@ public class OpdBillController implements Serializable {
     /**
      *
      */
-    
-
     @FacesConverter(forClass = Bill.class)
     public static class BillConverter implements Converter {
 
