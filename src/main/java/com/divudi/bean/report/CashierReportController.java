@@ -298,7 +298,7 @@ public class CashierReportController implements Serializable {
         if (sessionController != null && sessionController.getLoggedUser() != null) {
             auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
         }
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("calCashierData()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -449,7 +449,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
 
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
@@ -486,7 +486,7 @@ public class CashierReportController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("calCashierDataChannel()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         header = "Channel";
@@ -642,7 +642,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
 
     }
 
@@ -824,7 +824,7 @@ public class CashierReportController implements Serializable {
         }
 
         Date startTime = new Date();
-        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml?faces-redirect=true)");
         Date endTime = new Date();
         duration = endTime.getTime() - startedTime.getTime();
         auditEvent.setEventDuration(duration);
