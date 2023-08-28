@@ -178,7 +178,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
         hm.put("tp", getPaysheetComponent());
         hm.put("st", getCurrent().getStaff());
         hm.put("dt", getCurrent().getFromDate());
-        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         for (StaffPaysheetComponent ss : tmp) {
             ss.setToDate(getCurrent().getFromDate());
@@ -288,7 +288,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
 //        if (!getRepeatedComponent().isEmpty()) {
 //            for (StaffPaysheetComponent sp : items) {

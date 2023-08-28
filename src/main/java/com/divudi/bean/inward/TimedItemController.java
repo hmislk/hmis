@@ -86,7 +86,7 @@ public class TimedItemController implements Serializable {
         } else {
             sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -126,7 +126,7 @@ public class TimedItemController implements Serializable {
                 sql = "select c from TimedItem c "
                         + " where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' "
                         + " order by c.name";
-                suggestions = getFacade().findBySQL(sql);
+                suggestions = getFacade().findByJpql(sql);
             } else {
                 sql = "select c from TimedItem c "
                         + " where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' "
@@ -176,10 +176,10 @@ public class TimedItemController implements Serializable {
 //    public List<TimedItem> getSelectedItems() {
 //
 //        if (selectText.trim().equals("")) {
-//            selectedItems = getFacade().findBySQL("select c from TimedItem c where c.retired=false order by c.name");
+//            selectedItems = getFacade().findByJpql("select c from TimedItem c where c.retired=false order by c.name");
 //        } else {
 //            String sql = "select c from TimedItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-//            selectedItems = getFacade().findBySQL(sql);
+//            selectedItems = getFacade().findByJpql(sql);
 //
 //        }
 //        return selectedItems;

@@ -345,7 +345,7 @@ public class BookingController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and (p.person.name like '%" + query.toUpperCase() + "%'or  p.code like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -373,7 +373,7 @@ public class BookingController implements Serializable {
             consultants = getStaffFacade().findByJpql(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
-            consultants = getStaffFacade().findBySQL(sql);
+            consultants = getStaffFacade().findByJpql(sql);
         }
 //        ////// // System.out.println("consultants = " + consultants);
         setStaff(null);
@@ -430,7 +430,7 @@ public class BookingController implements Serializable {
                     sql = "select p from Staff p where p.retired=false "
                             + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
-                    consultants = getStaffFacade().findBySQL(sql);
+                    consultants = getStaffFacade().findByJpql(sql);
                 }
 
             } else {
@@ -858,7 +858,7 @@ public class BookingController implements Serializable {
                 + " where f.retired=false "
                 + " and f.item=:ses ";
         m.put("ses", item);
-        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        List<ItemFee> list = getItemFeeFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        System.err.println("Fetch Fess " + list.size());
         return list;
     }
@@ -871,7 +871,7 @@ public class BookingController implements Serializable {
                 + " where f.retired=false "
                 + " and f.item.id=:ses ";
         m.put("ses", l);
-        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        List<ItemFee> list = getItemFeeFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        System.err.println("Fetch Fess " + list.size());
         return list;
     }
@@ -1571,7 +1571,7 @@ public class BookingController implements Serializable {
         m.put("staff", s);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            tmp = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1648,7 +1648,7 @@ public class BookingController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
     }
 
@@ -1670,7 +1670,7 @@ public class BookingController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", ss.getSessionDate());
         hh.put("ss", ss);
-        return getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        return getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
     }
 
@@ -1695,7 +1695,7 @@ public class BookingController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionAt());
         hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
         //absentCount=billSessions.size();
 
     }

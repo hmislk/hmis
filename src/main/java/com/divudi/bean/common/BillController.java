@@ -313,12 +313,12 @@ public class BillController implements Serializable {
         Payment p = createPayment(temp, paymentMethod);
 
         String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql);
 
         for (BillItem bi : billItems) {
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
-            List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 
             calculateBillfeePayments(billFees, p);
         }
@@ -546,7 +546,7 @@ public class BillController implements Serializable {
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 20);
+            a = getFacade().findByJpql(sql, hash, 20);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -578,7 +578,7 @@ public class BillController implements Serializable {
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
             //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 10);
+            a = getFacade().findByJpql(sql, hash, 10);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -604,7 +604,7 @@ public class BillController implements Serializable {
 
         temMap.put("billType", BillType.SurgeryBill);
         temMap.put("q", "%" + qry.toUpperCase() + "%");
-        List<Bill> tmps = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 20);
+        List<Bill> tmps = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 20);
 
         return tmps;
     }
@@ -717,7 +717,7 @@ public class BillController implements Serializable {
         m.put("ins", institution);
         m.put("fd", fd);
         m.put("td", td);
-        List<Bill> bill = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> bill = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -740,7 +740,7 @@ public class BillController implements Serializable {
         hm.put("ins", institution);
         hm.put("tp1", billType1);
         hm.put("tp2", billType2);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1943,7 +1943,7 @@ public class BillController implements Serializable {
         Map m = new HashMap();
         m.put("bt", billTypeForVat);
         m.put("id", startIdForVat);
-        List<Bill> bs = getFacade().findBySQL(j, m, 1000);
+        List<Bill> bs = getFacade().findByJpql(j, m, 1000);
         txtBillNoForVat = "";
         for (Bill b : bs) {
             if (b.getVatPlusNetTotal() == 0.00) {

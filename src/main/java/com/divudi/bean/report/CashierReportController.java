@@ -1300,7 +1300,7 @@ public class CashierReportController implements Serializable {
         temMap.put("bill", billClass.getClass());
         temMap.put("cret", w);
         temMap.put("ins", getSessionController().getInstitution());
-        return getBillFacade().findObjectBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findObjectByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
 //  New One  userBillTotalsWithPaymentMethods
@@ -1719,7 +1719,7 @@ public class CashierReportController implements Serializable {
         temMap.put("cret", w);
         temMap.put("ins", getSessionController().getInstitution());
 
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         double tot = 0;
         for (Bill b : bills) {
             tot += b.getNetTotal();
@@ -1783,7 +1783,7 @@ public class CashierReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }
@@ -1809,7 +1809,7 @@ public class CashierReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }
@@ -1840,7 +1840,7 @@ public class CashierReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }
@@ -1866,7 +1866,7 @@ public class CashierReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }
@@ -1952,7 +1952,7 @@ public class CashierReportController implements Serializable {
         temMap.put("pm", paymentMethod);
         temMap.put("bill", bill.getClass());
         temMap.put("web", w);
-        List<Bill> bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         double tot = 0;
         for (Bill b : bills) {
             tot += b.getNetTotal();

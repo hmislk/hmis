@@ -179,7 +179,7 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
-        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(s, m, TemporalType.DATE);
         return billSessions;
     }
 
@@ -210,7 +210,7 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("item", i);
         m.put("sd", d);
-        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(s, m, TemporalType.DATE);
         return billSessions;
     }
 
@@ -299,7 +299,7 @@ public class ServiceSessionFunctions {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("ss", serviceSession);
-        tmp = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        tmp = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
         return tmp.size() + 1;
     }
 

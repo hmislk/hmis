@@ -1196,9 +1196,9 @@ public class Fhir {
         m.put("bid", lastId);
         m.put("ret", true);
         if (recordCount == null || recordCount == 0) {
-            billfees = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+            billfees = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         } else {
-            billfees = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+            billfees = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP, recordCount);
         }
 
         if (billfees == null) {
@@ -1231,9 +1231,9 @@ public class Fhir {
         m.put("bid", fromId);
         m.put("ret", true);
         if (recordCount == null || recordCount == 0) {
-            billItems = billItemFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+            billItems = billItemFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         } else {
-            billItems = billItemFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+            billItems = billItemFacade.findByJpql(j, m, TemporalType.TIMESTAMP, recordCount);
         }
 
         if (billItems == null) {
@@ -1276,9 +1276,9 @@ public class Fhir {
         m.put("bid", fromId);
         m.put("ret", true);
         if (recordCount == null || recordCount == 0) {
-            bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+            bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         } else {
-            bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+            bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP, recordCount);
         }
 
         if (bills == null) {
@@ -1349,7 +1349,7 @@ public class Fhir {
         m.put("id", agentId);
         m.put("fd", commonFunctions.getStartOfDay(fromDate));
         m.put("td", commonFunctions.getEndOfDay(toDate));
-        billObjects = billSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //System.out.println("m = " + m);
 //        //System.out.println("sql = " + sql);

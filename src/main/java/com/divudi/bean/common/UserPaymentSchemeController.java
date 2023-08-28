@@ -169,7 +169,7 @@ public  class UserPaymentSchemeController implements Serializable {
 
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + getSessionController().getLoggedUser().getId();
-        items = getEjbFacade().findBySQL(sql);
+        items = getEjbFacade().findByJpql(sql);
         //////// // System.out.println("33");
 
         if (items == null) {
@@ -187,7 +187,7 @@ public  class UserPaymentSchemeController implements Serializable {
         }
 
         String sql = "SELECT i FROM WebUserPaymentScheme i where i.retired=false and i.webUser.id = " + selectedUser.getId();
-        items = getEjbFacade().findBySQL(sql);
+        items = getEjbFacade().findByJpql(sql);
         //////// // System.out.println("33");
 
         if (items == null) {
@@ -222,7 +222,7 @@ public  class UserPaymentSchemeController implements Serializable {
         }
 
         String sql = "SELECT i.department FROM WebUserPaymentScheme i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedUserDeparment = getPaymentSchemeFacade().findBySQL(sql);
+        selectedUserDeparment = getPaymentSchemeFacade().findByJpql(sql);
 
         if (selectedUserDeparment == null) {
             selectedUserDeparment = new ArrayList<PaymentScheme>();
@@ -249,7 +249,7 @@ public  class UserPaymentSchemeController implements Serializable {
         }
 
         String sql = "SELECT i.institution FROM WebUserPaymentScheme i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedInstitutions = getInstitutionFacade().findBySQL(sql);
+        selectedInstitutions = getInstitutionFacade().findByJpql(sql);
 
         if (selectedInstitutions == null) {
             selectedInstitutions = new ArrayList<Institution>();
@@ -273,7 +273,7 @@ public  class UserPaymentSchemeController implements Serializable {
     public List<PaymentScheme> getCurrentInsPaymentSchemes() {
 
         String sql = "SELECT i FROM PaymentScheme i where i.retired=false order by i.name";
-        currentInsPaymentSchemes = getPaymentSchemeFacade().findBySQL(sql);
+        currentInsPaymentSchemes = getPaymentSchemeFacade().findByJpql(sql);
 
         if (currentInsPaymentSchemes == null) {
             currentInsPaymentSchemes = new ArrayList<PaymentScheme>();

@@ -384,7 +384,7 @@ public class AttendanceUploadController implements Serializable {
         m.put("d", recordedDate);
         String sql = "Select ss from StaffShift ss where ss.retired=false and ss.staff=:s and "
                 + "  ss.shiftDate=:d";
-        List<StaffShift> ss = getStaffShiftFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<StaffShift> ss = getStaffShiftFacade().findByJpql(sql, m, TemporalType.DATE);
         if (!ss.isEmpty()) {
             //System.err.println("exist : " + ss.get(0).getStaff().getPerson().getName());
             return ss;

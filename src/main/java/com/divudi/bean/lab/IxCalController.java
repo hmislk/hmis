@@ -172,7 +172,7 @@ public  class IxCalController implements Serializable {
         if (ix != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Value);
-            vals = getIiFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
+            vals = getIiFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
         }
         if (vals == null) {
             vals = new ArrayList<InvestigationItem>();
@@ -194,7 +194,7 @@ public  class IxCalController implements Serializable {
             jpql = "select i from InvestigationItem i where i.retired=false and i.item.id = " + ix.getId() + " and i.ixItemType = :iit order by i.cssTop";
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Calculation);
-            cals = getIiFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+            cals = getIiFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
             if (cals == null) {
                 cals = new ArrayList<InvestigationItem>();
             }
@@ -244,7 +244,7 @@ public  class IxCalController implements Serializable {
         if (ix != null && cal != null) {
             sql = "select i from IxCal i where (i.retired=false or i.retired is null) and i.calIxItem.id = " + cal.getId();
             ////// // System.out.println("sql = " + sql);
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
         }
         if (items == null) {
             items = new ArrayList<>();

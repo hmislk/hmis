@@ -423,7 +423,7 @@ public class InwardSearch implements Serializable {
 
     private boolean checkPaidIndividual(BillItem bi) {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -464,7 +464,7 @@ public class InwardSearch implements Serializable {
     private boolean checkInvestigation() {
         String sql = "SELECT p FROM PatientInvestigation p where p.retired=false "
                 + " and p.billItem.bill.id=" + getBill().getId();
-        List<PatientInvestigation> tmp = getPatientInvestigationFacade().findBySQL(sql);
+        List<PatientInvestigation> tmp = getPatientInvestigationFacade().findByJpql(sql);
 
         for (PatientInvestigation p : tmp) {
             if (p.getDataEntered()) {
@@ -1030,7 +1030,7 @@ public class InwardSearch implements Serializable {
             }
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 
             cancelBillFee(can, b, tmp);
 
@@ -1094,7 +1094,7 @@ public class InwardSearch implements Serializable {
 
     private void cancelPaymentItems(Bill pb) {
         List<BillItem> pbis;
-        pbis = getBillItemFacede().findBySQL("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
+        pbis = getBillItemFacede().findByJpql("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
         for (BillItem pbi : pbis) {
             if (pbi.getPaidForBillFee() != null) {
                 pbi.getPaidForBillFee().setPaidValue(0.0);
@@ -1151,7 +1151,7 @@ public class InwardSearch implements Serializable {
             cancelBillComponents(can, b);
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 
             cancelBillFee(can, b, tmp);
 
@@ -1273,7 +1273,7 @@ public class InwardSearch implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
@@ -1285,7 +1285,7 @@ public class InwardSearch implements Serializable {
         if (getBill() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<>();
                 }

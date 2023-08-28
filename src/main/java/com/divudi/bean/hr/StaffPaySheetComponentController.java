@@ -239,7 +239,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         sql += " order by ss.staff.codeInterger";
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffPaysheetComponent> getItems() {

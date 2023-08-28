@@ -201,7 +201,7 @@ public class VmpController implements Serializable {
         } else {
             sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            vmpList = getFacade().findBySQL(sql);
+            vmpList = getFacade().findByJpql(sql);
         }
         return vmpList;
     }
@@ -313,7 +313,7 @@ public class VmpController implements Serializable {
             return new ArrayList<VirtualProductIngredient>();
         } else {
 
-            vivs = getVivFacade().findBySQL("select v from VtmsVmps v where v.vmp.id = " + getCurrent().getId());
+            vivs = getVivFacade().findByJpql("select v from VtmsVmps v where v.vmp.id = " + getCurrent().getId());
 
             if (vivs == null) {
                 return new ArrayList<VirtualProductIngredient>();
@@ -461,7 +461,7 @@ public class VmpController implements Serializable {
         } else {
             sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -501,10 +501,10 @@ public class VmpController implements Serializable {
 
     public List<Vmp> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Vmp c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Vmp c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vmp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+            selectedItems = getFacade().findByJpql(sql);
         }
         return selectedItems;
     }
@@ -632,7 +632,7 @@ public class VmpController implements Serializable {
                     + " from Vmp v "
                     + " where v.retired=false "
                     + " order by v.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

@@ -384,7 +384,7 @@ public class ReportsTransfer implements Serializable {
         m.put("td", toDate);
         m.put("bt", bt);
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return billItems;
@@ -427,7 +427,7 @@ public class ReportsTransfer implements Serializable {
                     + " and b.retired=false "
                     + " order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -453,7 +453,7 @@ public class ReportsTransfer implements Serializable {
                 + " where b.department=:fdept "
                 + " and b.createdAt  between :fd and :td "
                 + " and b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -498,7 +498,7 @@ public class ReportsTransfer implements Serializable {
 
         sql += " and b.bill.billType=:bt "
                 + " order by b.item.name";
-        transferItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -659,7 +659,7 @@ public class ReportsTransfer implements Serializable {
 
         sql += " order by b.id";
 
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -686,7 +686,7 @@ public class ReportsTransfer implements Serializable {
                 + " b.createdAt "
                 + " between :fd and :td and "
                 + " b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -1436,7 +1436,7 @@ public class ReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -1537,7 +1537,7 @@ public class ReportsTransfer implements Serializable {
         m.put("tdept", toDepartment);
         m.put("i", i);
 
-        return getItemFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getItemFacade().findObjectsArrayByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> fetchBHTIsssue(BillType billType, Item i) {
@@ -1556,7 +1556,7 @@ public class ReportsTransfer implements Serializable {
                 + " and b.bill.billType=:bt "
                 + " and b.item=:i ";
 
-        return getBillFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findObjectsArrayByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<ItemBHTIssueCountTrancerReciveCount> getItemBHTIssueCountTrancerReciveCounts() {

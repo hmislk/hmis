@@ -191,7 +191,7 @@ public class ServiceSessionLeaveController implements Serializable {
         hm.put("dt", bookingController.getSessionStartingDate());
         hm.put("st", getCurrentStaff());
 
-        serviceSessionLeaves = getFacade().findBySQL(slq, hm, TemporalType.DATE);
+        serviceSessionLeaves = getFacade().findByJpql(slq, hm, TemporalType.DATE);
 //        //// // System.out.println("hm = " + hm);
 //        //// // System.out.println("slq = " + slq);
 //        //// // System.out.println("serviceSessionLeaves.size() = " + serviceSessionLeaves.size());
@@ -285,7 +285,7 @@ public class ServiceSessionLeaveController implements Serializable {
         m.put("d", d);
         m.put("staff", s);
         m.put("class", ServiceSession.class);
-        List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m, TemporalType.DATE);
         return tmp;
     }
 
@@ -299,7 +299,7 @@ public class ServiceSessionLeaveController implements Serializable {
         m.put("d", d);
         m.put("staff", s);
         m.put("class", ServiceSessionLeave.class);
-        List<ServiceSessionLeave> tmp = getFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<ServiceSessionLeave> tmp = getFacade().findByJpql(sql, m, TemporalType.DATE);
         return tmp;
     }
 

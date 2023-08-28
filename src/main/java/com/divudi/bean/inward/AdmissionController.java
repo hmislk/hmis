@@ -146,7 +146,7 @@ public class AdmissionController implements Serializable {
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findBySQL(sql, hash, 20);
+            a = getFacade().findByJpql(sql, hash, 20);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -189,7 +189,7 @@ public class AdmissionController implements Serializable {
 //        hm.put("val", 0.1);
 //        hm.put("q", "%" + qry.toUpperCase() + "%");
 //
-//        List<Admission> b = getEjbFacade().findBySQL(sql, hm, 20);
+//        List<Admission> b = getEjbFacade().findByJpql(sql, hm, 20);
 //
 //        if (b == null) {
 //            return new ArrayList<>();
@@ -214,7 +214,7 @@ public class AdmissionController implements Serializable {
 //        hm.put("val", 0.1);
 //        hm.put("q", "%" + qry.toUpperCase() + "%");
 //
-//        List<Admission> b = getEjbFacade().findBySQL(sql, hm, 20);
+//        List<Admission> b = getEjbFacade().findByJpql(sql, hm, 20);
 //
 //        if (b == null) {
 //            return new ArrayList<>();
@@ -225,7 +225,7 @@ public class AdmissionController implements Serializable {
 //    }
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -246,7 +246,7 @@ public class AdmissionController implements Serializable {
                 + " or (c.patient.code) like :q) "
                 + " order by c.bhtNo ";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -260,7 +260,7 @@ public class AdmissionController implements Serializable {
                 + " (c.patient.person.name) like :q ) "
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -275,7 +275,7 @@ public class AdmissionController implements Serializable {
                 + " and c.paymentFinalized=true"
                 + " order by c.bhtNo";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -290,7 +290,7 @@ public class AdmissionController implements Serializable {
 //            sql = "select c from Admission c where c.retired=false and c.paymentMethod=:pm  and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
 //            hm.put("pm", PaymentMethod.Credit);
 //            ////// // System.out.println(sql);
-//            suggestions = getFacade().findBySQL(sql, hm, TemporalType.TIME, 20);
+//            suggestions = getFacade().findByJpql(sql, hm, TemporalType.TIME, 20);
 //        }
 //        return suggestions;
 //    }
@@ -309,7 +309,7 @@ public class AdmissionController implements Serializable {
             ////// // System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, h, 20);
+            suggestions = getFacade().findByJpql(sql, h, 20);
         }
         return suggestions;
     }
@@ -329,7 +329,7 @@ public class AdmissionController implements Serializable {
                 + " and "
                 + " (c.paymentFinalized is null or c.paymentFinalized=false)"
                 + " order by c.bhtNo";
-        currentAdmissions = getFacade().findBySQL(sql, h, 20);
+        currentAdmissions = getFacade().findByJpql(sql, h, 20);
     }
 
     public List<Admission> completePatientPaymentFinalized(String query) {
@@ -348,7 +348,7 @@ public class AdmissionController implements Serializable {
             ////// // System.out.println(sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, h, 20);
+            suggestions = getFacade().findByJpql(sql, h, 20);
         }
         return suggestions;
     }
@@ -361,7 +361,7 @@ public class AdmissionController implements Serializable {
 //        } else {
 //            sql = "select c from Admission c where c.retired=false and c.discharged=true and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
 //            ////// // System.out.println(sql);
-//            suggestions = getFacade().findBySQL(sql, 20);
+//            suggestions = getFacade().findByJpql(sql, 20);
 //        }
 //        return suggestions;
 //    }
@@ -376,7 +376,7 @@ public class AdmissionController implements Serializable {
 //        String sql;
 //        sql = "select p from Admission p where p.retired=false "
 //                + "and (p.patient is null or p.bhtNo is null)";
-//        admissionsWithErrors = getFacade().findBySQL(sql, 20);
+//        admissionsWithErrors = getFacade().findByJpql(sql, 20);
 //        if (admissionsWithErrors == null) {
 //            admissionsWithErrors = new ArrayList<>();
 //        }
@@ -395,7 +395,7 @@ public class AdmissionController implements Serializable {
         } else {
             sql = "select p from Admission p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
             ////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, 20);
+            suggestions = getFacade().findByJpql(sql, 20);
         }
         if (suggestions == null) {
             suggestions = new ArrayList<>();
@@ -810,7 +810,7 @@ public class AdmissionController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Admission i where i.retired=false and i.discharged=false order by i.bhtNo";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
             if (items == null) {
                 items = new ArrayList<>();
             }
@@ -839,7 +839,7 @@ public class AdmissionController implements Serializable {
         if (patientList == null) {
             String temSql;
             temSql = "SELECT i FROM Patient i where i.retired=false ";
-            patientList = getPatientFacade().findBySQL(temSql);
+            patientList = getPatientFacade().findByJpql(temSql);
         }
         return patientList;
     }

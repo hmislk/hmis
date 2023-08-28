@@ -188,7 +188,7 @@ public  class ItemForItemController implements Serializable {
 
     public List<ItemForItem> getItems() {
         if (getParentItem()!=null && getParentItem().getId()!=null ) {
-            items = getFacade().findBySQL("select c from ItemForItem c where c.retired=false and c.parentItem.id = " + getParentItem().getId() + " ");
+            items = getFacade().findByJpql("select c from ItemForItem c where c.retired=false and c.parentItem.id = " + getParentItem().getId() + " ");
         }
         if (items == null) {
             items = new ArrayList<ItemForItem>();

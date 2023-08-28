@@ -903,9 +903,9 @@ public class Finance {
         m.put("td", toDate);
         m.put("ret", true);
         if (recordCount == null || recordCount == 0) {
-            bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+            bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         } else {
-            bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+            bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP, recordCount);
         }
 
         if (bills == null) {

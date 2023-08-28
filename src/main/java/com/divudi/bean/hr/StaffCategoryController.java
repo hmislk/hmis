@@ -46,14 +46,14 @@ public class StaffCategoryController implements Serializable {
     String selectText = "";
 
     public List<StaffCategory> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from StaffCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from StaffCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<StaffCategory> completeStaffCategory(String qry) {
         List<StaffCategory> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from StaffCategory c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from StaffCategory c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<StaffCategory>();
@@ -154,7 +154,7 @@ public class StaffCategoryController implements Serializable {
                     + " from StaffCategory c "
                     + " where c.retired=false "
                     + " order by c.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

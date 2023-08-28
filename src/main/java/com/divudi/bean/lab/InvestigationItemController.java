@@ -712,7 +712,7 @@ public class InvestigationItemController implements Serializable {
 //        } else {
 //            String sql;
 //            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
-//            iivs = getEjbFacade().findBySQL(sql);
+//            iivs = getEjbFacade().findByJpql(sql);
 //        }
 //        if (iivs == null) {
 //            iivs = new ArrayList<>();
@@ -776,7 +776,7 @@ public class InvestigationItemController implements Serializable {
         } else {
             String sql;
             sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
-            iivs = getEjbFacade().findBySQL(sql);
+            iivs = getEjbFacade().findByJpql(sql);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -819,7 +819,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public List<InvestigationItem> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from InvestigationItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from InvestigationItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         if (selectedItems == null) {
             selectedItems = new ArrayList<>();
         }
@@ -844,7 +844,7 @@ public class InvestigationItemController implements Serializable {
         if (getCurrentInvestigation() == null || getCurrentInvestigation().getId() == null) {
             items = new ArrayList<>();
         } else {
-            items = getEjbFacade().findBySQL("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
+            items = getEjbFacade().findByJpql("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
             userChangableItems = null;
             getUserChangableItems();
         }
@@ -870,7 +870,7 @@ public class InvestigationItemController implements Serializable {
 
     public void convertCssValuesToRiValues() {
         String j = "select ri from ReportItem ri";
-        List<ReportItem> ris = riFacade.findBySQL(j);
+        List<ReportItem> ris = riFacade.findByJpql(j);
         for (ReportItem ri : ris) {
 
             try {
@@ -1054,7 +1054,7 @@ public class InvestigationItemController implements Serializable {
         }
         j += "order by i.id desc";
 
-        return getEjbFacade().findBySQL(j, m, 50);
+        return getEjbFacade().findByJpql(j, m, 50);
     }
 
     private String testName;
@@ -1766,7 +1766,7 @@ public class InvestigationItemController implements Serializable {
         if (ix != null && ix.getId() != null) {
             String temSql;
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId();
-            iis = getFacade().countBySql(temSql);
+            iis = getFacade().countByJpql(temSql);
         } else {
             iis = null;
         }

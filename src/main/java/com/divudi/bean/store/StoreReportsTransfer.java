@@ -292,7 +292,7 @@ public class StoreReportsTransfer implements Serializable {
 
         sql += " order by b.id";
 
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -333,7 +333,7 @@ public class StoreReportsTransfer implements Serializable {
 
         sql += " order by b.bill.id";
 
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -363,7 +363,7 @@ public class StoreReportsTransfer implements Serializable {
                 + " b.createdAt "
                 + " between :fd and :td and "
                 + " b.billType=:bt order by b.id";
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -444,7 +444,7 @@ public class StoreReportsTransfer implements Serializable {
 
         sql += " order by bi.bill.toDepartment.name, bi.item.category.name, bi.item.name, bi.id";
 
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         purchaseValue = 0.0;
         for (BillItem bi : transferItems) {
@@ -484,7 +484,7 @@ public class StoreReportsTransfer implements Serializable {
 
         ////System.out.println("sql = " + sql);
         ////System.out.println("m = " + m);
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         Map<Item, ItemBillRow> ibrs = new HashMap<>();
@@ -605,7 +605,7 @@ public class StoreReportsTransfer implements Serializable {
 
         ////System.out.println("sql = " + sql);
         ////System.out.println("m = " + m);
-        transferItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         purchaseValue = 0.0;
         saleValue = 0.0;
         Map<Item, ItemBillRow> ibrs = new HashMap<>();
@@ -734,7 +734,7 @@ public class StoreReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;
@@ -773,7 +773,7 @@ public class StoreReportsTransfer implements Serializable {
             sql = "select b from Bill b where b.createdAt "
                     + " between :fd and :td and b.billType=:bt order by b.id";
         }
-        transferBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalsValue = 0.0;
         discountsValue = 0.0;
         netTotalValues = 0.0;

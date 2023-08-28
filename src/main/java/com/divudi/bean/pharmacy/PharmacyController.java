@@ -145,7 +145,7 @@ public class PharmacyController implements Serializable {
                 + " (i.itemBatch.item.code) like :n  or  "
                 + " (i.itemBatch.item.barcode) like :n ) "
                 + " order by i.stock desc";
-        items = getStockFacade().findBySQL(sql, m, 30);
+        items = getStockFacade().findByJpql(sql, m, 30);
 
         return items;
     }
@@ -183,7 +183,7 @@ public class PharmacyController implements Serializable {
                 + "(i.staff.person.name) like :n or "
                 + "(i.itemBatch.item.name) like :n ) "
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -1462,7 +1462,7 @@ public class PharmacyController implements Serializable {
         hm.put("btp", BillType.PharmacyGrnBill);
         hm.put("btp2", BillType.PharmacyGrnReturn);
 
-        grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        grns = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1494,7 +1494,7 @@ public class PharmacyController implements Serializable {
         hm.put("to", getToDate());
         hm.put("btp", BillType.PharmacyPurchaseBill);
         hm.put("class", BilledBill.class);
-        directPurchase = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        directPurchase = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1514,7 +1514,7 @@ public class PharmacyController implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
-        pos = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        pos = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         for (BillItem t : pos) {
             //   t.setPharmaceuticalBillItem(getPoQty(t));

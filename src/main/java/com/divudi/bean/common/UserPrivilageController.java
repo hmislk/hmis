@@ -488,7 +488,7 @@ public class UserPrivilageController implements Serializable {
 
     private void removeAllPrivilages() {
         String sql = "SELECT i FROM WebUserPrivilege i where i.webUser.id= " + getCurrentWebUser().getId();
-        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql);
+        List<WebUserPrivilege> tmp = getEjbFacade().findByJpql(sql);
 
         for (WebUserPrivilege wb : tmp) {
             wb.setRetired(true);
@@ -521,7 +521,7 @@ public class UserPrivilageController implements Serializable {
         Map m = new HashMap();
         m.put("wup", p);
         String sql = "SELECT i FROM WebUserPrivilege i where i.retired=false and i.webUser.id= " + getCurrentWebUser().getId() + " and i.privilege=:wup ";
-        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<WebUserPrivilege> tmp = getEjbFacade().findByJpql(sql, m, TemporalType.DATE);
 
         if (tmp == null || tmp.isEmpty()) {
             wup = new WebUserPrivilege();
@@ -627,7 +627,7 @@ public class UserPrivilageController implements Serializable {
         }
 
         String sql = "SELECT i FROM WebUserPrivilege i where i.retired=false and i.webUser.id= " + getCurrentWebUser().getId() + " order by i.webUser.webUserPerson.name";
-        items = getEjbFacade().findBySQL(sql);
+        items = getEjbFacade().findByJpql(sql);
         if (items == null) {
             items = new ArrayList<>();
             root = createTreeNode();
@@ -669,7 +669,7 @@ public class UserPrivilageController implements Serializable {
 //        Map m = new HashMap();
 //        m.put("wup", p);
 //        String sql = "SELECT i FROM WebUserPrivilege i where i.webUser.id= " + getCurrentWebUser().getId() + " and i.privilege=:wup ";
-//        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql, m, TemporalType.DATE);
+//        List<WebUserPrivilege> tmp = getEjbFacade().findByJpql(sql, m, TemporalType.DATE);
 //        if (tmp == null || tmp.isEmpty()) {
 //            for (WebUserPrivilege wu : tmp) {
 //                if (!wu.isRetired()) {

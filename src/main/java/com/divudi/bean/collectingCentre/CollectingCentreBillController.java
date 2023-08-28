@@ -316,12 +316,12 @@ public class CollectingCentreBillController implements Serializable {
         Payment p = createPayment(temp, getPaymentMethod());
 
         String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql);
 
         for (BillItem bi : billItems) {
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
-            List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 
             calculateBillfeePayments(billFees, p);
         }

@@ -47,7 +47,7 @@ public class InvestigationItemValueController implements Serializable {
     String selectText = "";
 
     public List<InvestigationItemValue> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from InvestigationItemValue c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from InvestigationItemValue c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

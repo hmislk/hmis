@@ -143,7 +143,7 @@ public class ConsumableCategoryController implements Serializable {
 //        temMap.put("parm", ConsumableCategory.class);
 //        temMap.put("q", "%" + qry.toUpperCase() + "%");
 //
-//        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        cc = getFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        if (cc == null) {
 //            cc = new ArrayList<>();

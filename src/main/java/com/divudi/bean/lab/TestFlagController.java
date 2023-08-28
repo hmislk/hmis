@@ -292,7 +292,7 @@ public class TestFlagController implements Serializable {
         if (investigation != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Value);
-            investigationItemsOfValueType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
+            investigationItemsOfValueType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
         }
         if (investigationItemsOfValueType == null) {
             investigationItemsOfValueType = new ArrayList<InvestigationItem>();
@@ -305,7 +305,7 @@ public class TestFlagController implements Serializable {
         if (investigation != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Flag);
-            investigationItemsOfFlagType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType=:iit", m, TemporalType.DATE);
+            investigationItemsOfFlagType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType=:iit", m, TemporalType.DATE);
         }
         if (investigationItemsOfFlagType == null) {
             investigationItemsOfFlagType = new ArrayList<InvestigationItem>();

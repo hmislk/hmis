@@ -192,7 +192,7 @@ public class PharmacyErrorCheckingEjb {
         m.put("td", toDate);
         sql = "select bi from BillItem bi where bi.item=:i and bi.bill.department=:d "
                 + " and bi.createdAt between :fd and :td ";
-        return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> allBillItemsByDateOnlyStock(Item item, Department department, Date fromDate, Date toDate) {
@@ -244,7 +244,7 @@ public class PharmacyErrorCheckingEjb {
                 + " and bi.bill.billType in :bts "
                 + " order by bi.pharmaceuticalBillItem.stock.id,"
                 + " bi.createdAt ";
-        return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> allBillItems2(Item item, Department department) {

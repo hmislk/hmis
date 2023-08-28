@@ -395,7 +395,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
 
@@ -583,7 +583,7 @@ public class PharmacySaleReport implements Serializable {
         }
 
         sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
-        billItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -622,7 +622,7 @@ public class PharmacySaleReport implements Serializable {
         }
 
         sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
-        return billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1479,7 +1479,7 @@ public class PharmacySaleReport implements Serializable {
                 + " i.createdAt between :fd and :td "
                 + " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1508,7 +1508,7 @@ public class PharmacySaleReport implements Serializable {
         }
         sql += " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1532,7 +1532,7 @@ public class PharmacySaleReport implements Serializable {
                 + " i.createdAt between :fd and :td "
                 + " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1557,7 +1557,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and i.bill.createdAt between :fd and :td "
                 + " order by i.bill.deptId ";
 
-        return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1595,7 +1595,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1618,7 +1618,7 @@ public class PharmacySaleReport implements Serializable {
                 + "  and type(i)=:class"
                 + "  and i.createdAt between :fd and :td "
                 + " order by i.deptId ";
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -3747,7 +3747,7 @@ public class PharmacySaleReport implements Serializable {
         hm.put("ins", getInstitution());
         hm.put("dep", getDepartment());
 
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -4791,7 +4791,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql = " select d from Department d where d.retired=false ";
 
-        return getDepartmentFacade().findBySQL(sql);
+        return getDepartmentFacade().findByJpql(sql);
     }
 
     public List<ItemBatch> fetchPharmacyItemBatchs(Bill b) {
@@ -4811,7 +4811,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        return itemBatchFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return itemBatchFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> fetchPharmacyItemTotals(Department d, ItemBatch i, Bill b) {
@@ -5698,7 +5698,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and i.item.retired=false "
                 + " order by i.item.name ";
 
-        return ampFacade.findBySQL(sql);
+        return ampFacade.findByJpql(sql);
     }
 
     public List<Object[]> getAllDealorItemsWithCount() {
@@ -5732,7 +5732,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where i.retired=false "
                 + " order by i.institution.name ";
 
-        return institutionFacade.findBySQL(sql);
+        return institutionFacade.findByJpql(sql);
     }
 
     public List<ItemsDistributors> getAllDealorItems(Institution ins) {

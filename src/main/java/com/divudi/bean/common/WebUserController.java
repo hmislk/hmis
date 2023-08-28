@@ -28,6 +28,7 @@ import com.divudi.facade.WebUserFacade;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import com.divudi.facade.WebUserRoleFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,6 +44,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.FlowEvent;
 
 /**
@@ -91,6 +93,7 @@ public class WebUserController implements Serializable {
     List<WebUser> searchItems;
     private WebUser current;
     private WebUser selected;
+    private WebUserLight selectedLight;
     String selectText = "";
     List<Department> departments;
     List<Institution> institutions;
@@ -105,6 +108,7 @@ public class WebUserController implements Serializable {
     List<WebUserPrivilege> userPrivileges;
     private List<WebUser> webUsers;
     List<WebUser> itemsToRemove;
+    private List<WebUserLight> webUseLights;
 
     Staff staff;
     boolean createOnlyUser = false;
@@ -146,7 +150,7 @@ public class WebUserController implements Serializable {
                 + " c.drawer is not null "
                 + " order by c.drawer.name,c.webUserPerson.name";
 
-        webUsers = getFacade().findBySQL(sql);
+        webUsers = getFacade().findByJpql(sql);
     }
 
     public List<Department> getInstitutionDepatrments() {
@@ -155,7 +159,7 @@ public class WebUserController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -202,7 +206,7 @@ public class WebUserController implements Serializable {
     public List<WebUser> completeUser(String qry) {
         List<WebUser> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from WebUser c where c.retired=false and  ((c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
+            a = getFacade().findByJpql("select c from WebUser c where c.retired=false and  ((c.webUserPerson.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry.toUpperCase() + "%') order by c.webUserPerson.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -262,7 +266,7 @@ public class WebUserController implements Serializable {
             String sql;
             if (getInstitution() != null && getInstitution().getId() != null) {
                 sql = "select d from Department d where d.retired=false and d.institution.id = " + getInstitution().getId();
-                departments = getDepartmentFacade().findBySQL(sql);
+                departments = getDepartmentFacade().findByJpql(sql);
             }
         }
         if (departments == null) {
@@ -279,7 +283,7 @@ public class WebUserController implements Serializable {
         if (institutions == null) {
             String sql;
             sql = "select i from Institution i where i.retired=false order by i.name";
-            institutions = getInstitutionFacade().findBySQL(sql);
+            institutions = getInstitutionFacade().findByJpql(sql);
         }
         return institutions;
     }
@@ -313,7 +317,7 @@ public class WebUserController implements Serializable {
 
     public List<WebUser> getItems() {
         if (items == null) {
-            items = getFacade().findBySQL("Select d From WebUser d where d.retired = false order by d.webUserPerson.name");
+            items = getFacade().findByJpql("Select d From WebUser d where d.retired = false order by d.webUserPerson.name");
             dycryptName();
         }
 
@@ -388,7 +392,7 @@ public class WebUserController implements Serializable {
         boolean available = false;
         String j;
         j = "select w from WebUser w where w.retired=false";
-        List<WebUser> allUsers = getFacade().findBySQL(j);
+        List<WebUser> allUsers = getFacade().findByJpql(j);
         if (allUsers == null) {
             return false;
         }
@@ -504,11 +508,13 @@ public class WebUserController implements Serializable {
     public void onlyAddStaffForExsistingUserListner() {
         createOnlyUser = false;
     }
+    
+    
 
     public List<WebUser> getToApproveUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired=false AND u.activated=false";
-        return getEjbFacade().findBySQL(temSQL);
+        return getEjbFacade().findByJpql(temSQL);
     }
 
     public SessionController getSessionController() {
@@ -572,8 +578,12 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToListUsers() {
-        items = getFacade().findBySQL("select c from WebUser c where c.retired=false order by c.webUserPerson.name");
-//        dycryptName();
+        HashMap m = new HashMap();
+        String jpql;
+        jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.id)"
+                + " from WebUser wu "
+                + " order by wu.name";
+        webUseLights = (List<WebUserLight>) getFacade().findLightsByJpql(jpql);
         return "/admin/users/admin_view_user";
     }
 
@@ -959,7 +969,28 @@ public class WebUserController implements Serializable {
         return "/admin/users/admin_manage_users";
     }
 
-    @FacesConverter("webUs")
+    public List<WebUserLight> getWebUseLights() {
+        return webUseLights;
+    }
+
+    public void setWebUseLights(List<WebUserLight> webUseLights) {
+        this.webUseLights = webUseLights;
+    }
+
+    public WebUserLight getSelectedLight() {
+        return selectedLight;
+    }
+
+    public void setSelectedLight(WebUserLight selectedLight) {
+        if(selectedLight!=null){
+            selected = getFacade().find(selectedLight.getId());
+        }else{
+            selected=null;
+        }
+        this.selectedLight = selectedLight;
+    }
+
+    @FacesConverter(forClass = WebUser.class)
     public static class WebUserControllerConverter implements Converter {
 
         @Override

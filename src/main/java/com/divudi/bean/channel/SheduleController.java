@@ -239,7 +239,7 @@ public class SheduleController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
         }
         //////// // System.out.println(sql);
-        suggestions = getStaffFacade().findBySQL(sql);
+        suggestions = getStaffFacade().findByJpql(sql);
 
         return suggestions;
     }
@@ -252,7 +252,7 @@ public class SheduleController implements Serializable {
         } else {
             if (getCurrentStaff() != null) {
                 sql = "select p from ServiceSession p where p.retired=false and (p.name) like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
-                suggestions = getFacade().findBySQL(sql);
+                suggestions = getFacade().findByJpql(sql);
             } else {
                 suggestions = new ArrayList<>();
             }
@@ -299,7 +299,7 @@ public class SheduleController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = departmentFacade.findBySQL(sql);
+            d = departmentFacade.findByJpql(sql);
         }
 
         return d;
@@ -476,7 +476,7 @@ public class SheduleController implements Serializable {
                 + " and bs.serviceSession.sessionDate>=:nd";
         m.put("ss", ss);
         m.put("nd", new Date());
-        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.DATE);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         return sss.size() > 0;
     }
@@ -494,8 +494,8 @@ public class SheduleController implements Serializable {
         m.put("sg", ss.getSessionNumberGenerator());
         m.put("ss", ss);
         m.put("class", ServiceSession.class);
-        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        sss = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         return sss.isEmpty();
     }
 
@@ -512,7 +512,7 @@ public class SheduleController implements Serializable {
 
         String sql;
         sql = " SELECT sg FROM ServiceSession sg WHERE sg.retired=false";
-        List<ServiceSession> list = facade.findBySQL(sql);
+        List<ServiceSession> list = facade.findByJpql(sql);
 
         for (ServiceSession sng : list) {
             if (sng.getSessionNumberGenerator() != null) {
@@ -959,7 +959,7 @@ public class SheduleController implements Serializable {
         sql = "Select DISTINCT(f.serviceSession) from ItemFee f "
                 + " where f.retired=false "
                 + " and f.serviceSession is not null ";
-        List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findBySQL(sql);
+        List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findByJpql(sql);
         for (ServiceSession s : serviceSessionsAll) {
 
         }
@@ -1108,7 +1108,7 @@ public class SheduleController implements Serializable {
             m.put("sp", speciality);
         }
         m.put("ed", effectiveDate);
-        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<FeeChange> changes = getFeeChangeFacade().findByJpql(sql, m, TemporalType.DATE);
         for (FeeChange fc : feeChanges) {
             if ((fc.getFee().getFee() == 0) && (fc.getFee().getFfee() == 0)) {
                 continue;
@@ -1168,7 +1168,7 @@ public class SheduleController implements Serializable {
                 + " fc.retired=false "
                 + " and fc.validFrom>:ed ";
         m.put("ed", effectiveDate);
-        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        feeChangesList = getFeeChangeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void removeAddFee(FeeChange fc) {
@@ -1213,7 +1213,7 @@ public class SheduleController implements Serializable {
 
     public List<ServiceSession> getAllSession() {
         String sql = "Select s From ServiceSession s where s.retired=false order by s.staff.speciality.name,s.staff.person.name,s.sessionWeekday,s.startingTime ";
-        List<ServiceSession> tmp = getFacade().findBySQL(sql);
+        List<ServiceSession> tmp = getFacade().findByJpql(sql);
 
         return tmp;
     }

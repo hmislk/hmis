@@ -78,7 +78,7 @@ public class FormFormatController implements Serializable {
 //        }
         j += " order by s.person.name ";
 
-        staffes = staffFacade.findBySQL(j);
+        staffes = staffFacade.findByJpql(j);
 
         j = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.cssTop, i.cssLeft, i.id";
         m.put("cat", formCategory);
@@ -119,7 +119,7 @@ public class FormFormatController implements Serializable {
     }
 
     public List<FormFormat> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from FormFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from FormFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -212,7 +212,7 @@ public class FormFormatController implements Serializable {
     public List<FormFormat> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM FormFormat i where i.retired=false order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

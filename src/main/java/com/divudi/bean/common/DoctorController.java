@@ -83,7 +83,7 @@ public class DoctorController implements Serializable {
         
          String temSql;
             temSql = "SELECT d FROM Doctor d where d.retired=false ";
-            doctors = getFacade().findBySQL(temSql);   
+            doctors = getFacade().findByJpql(temSql);   
             
             commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
             
@@ -291,7 +291,7 @@ public class DoctorController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Doctor i where i.retired=false ";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }

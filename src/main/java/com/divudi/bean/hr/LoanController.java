@@ -49,14 +49,14 @@ public class LoanController implements Serializable {
     }
 
     public List<Loan> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Loan c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Loan c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<Loan> completeLoan(String qry) {
         List<Loan> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Loan c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Loan c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<Loan>();

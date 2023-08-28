@@ -167,7 +167,7 @@ public  class UserDepartmentController implements Serializable {
             return items;
         }
         String sql = "SELECT i FROM WebUserDepartment i where i.retired=false and i.webUser.id = " + selectedUser.getId() + "  order by i.department.name";
-        items = getEjbFacade().findBySQL(sql);
+        items = getEjbFacade().findByJpql(sql);
         if (items == null) {
             items = new ArrayList<>();
         }
@@ -197,7 +197,7 @@ public  class UserDepartmentController implements Serializable {
         }
 
         String sql = "SELECT i.department FROM WebUserDepartment i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedUserDeparment = getDepartmentFacade().findBySQL(sql);
+        selectedUserDeparment = getDepartmentFacade().findByJpql(sql);
 
         if (selectedUserDeparment == null) {
             selectedUserDeparment = new ArrayList<Department>();
@@ -224,7 +224,7 @@ public  class UserDepartmentController implements Serializable {
         }
 
         String sql = "SELECT i.institution FROM WebUserDepartment i where i.retired=false and i.webUser=" + getSelectedUser() + "order by i.name";
-        selectedInstitutions = getInstitutionFacade().findBySQL(sql);
+        selectedInstitutions = getInstitutionFacade().findByJpql(sql);
 
         if (selectedInstitutions == null) {
             selectedInstitutions = new ArrayList<Institution>();

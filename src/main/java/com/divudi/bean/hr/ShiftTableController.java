@@ -673,7 +673,7 @@ public class ShiftTableController implements Serializable {
                 + " where ss.retired=false "
                 + " order by ss.staff.codeInterger ";
 
-        List<Staff> staffs = staffFacade.findBySQL(sql);
+        List<Staff> staffs = staffFacade.findByJpql(sql);
 
 //        sql = "Select ss from StaffShift ss "
 //                + " where ss.retired=false "

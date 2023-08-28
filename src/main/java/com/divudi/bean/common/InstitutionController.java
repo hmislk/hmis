@@ -313,7 +313,7 @@ public class InstitutionController implements Serializable {
 
     private Boolean checkCodeExist() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        List<Institution> ins = getEjbFacade().findByJpql(sql);
         if (ins != null) {
             for (Institution i : ins) {
                 if (i.getCode() == null || i.getCode().trim().equals("")) {
@@ -330,7 +330,7 @@ public class InstitutionController implements Serializable {
 
     private Boolean checkCodeExistAgency() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        List<Institution> ins = getEjbFacade().findByJpql(sql);
         if (ins != null) {
             for (Institution i : ins) {
                 if (i.getCode() == null || i.getCode().trim().equals("")) {
@@ -595,7 +595,7 @@ public class InstitutionController implements Serializable {
     public void fillItems() {
         String j;
         j = "select i from Institution i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public void formatAgentSerial() {

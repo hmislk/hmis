@@ -539,7 +539,7 @@ public class InvestigationController implements Serializable {
 
     public void listDeletedIxs() {
         String sql = "select c from Investigation c where c.retired=true ";
-        deletedIxs = getFacade().findBySQL(sql);
+        deletedIxs = getFacade().findByJpql(sql);
     }
 
     public void undeleteSelectedIxs() {
@@ -602,7 +602,7 @@ public class InvestigationController implements Serializable {
         String sql;
         sql = "Select i from Investigation i where i.retired=false ";
         sql += " order by i.name";
-        allIxs = getFacade().findBySQL(sql);
+        allIxs = getFacade().findByJpql(sql);
     }
 
     public String listFilteredIxs() {
@@ -672,7 +672,7 @@ public class InvestigationController implements Serializable {
         sql = "Select i from Investigation i "
                 + " where i.retired=false ";
 
-        return getFacade().findBySQL(sql);
+        return getFacade().findByJpql(sql);
     }
 
     public List<Department> getInstitutionDepatrments() {
@@ -944,7 +944,7 @@ public class InvestigationController implements Serializable {
             // sql = "select c from Investigation c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             sql = "select c from Investigation c where c.retired=false and type(c)!=Packege and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -1002,7 +1002,7 @@ public class InvestigationController implements Serializable {
 
     public void deleteIxWithoutIxAndFixReportedAs() {
         String j = "select i from Investigation i";
-        List<Investigation> ixs = getFacade().findBySQL(j);
+        List<Investigation> ixs = getFacade().findByJpql(j);
         for (Investigation ix : ixs) {
             if (ix.getInstitution() == null) {
                 ix.setRetired(true);
@@ -1145,15 +1145,15 @@ public class InvestigationController implements Serializable {
 
     public List<Investigation> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Investigation c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Investigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Investigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
 
     public List<Investigation> completeItem(String qry) {
-        List<Investigation> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -1626,7 +1626,7 @@ public class InvestigationController implements Serializable {
 
     public List<ItemFee> getItemFee() {
         List<ItemFee> temp;
-        temp = getItemFeeFacade().findBySQL("select c from ItemFee c where c.retired = false and type(c.item) =Investigation order by c.item.name");
+        temp = getItemFeeFacade().findByJpql("select c from ItemFee c where c.retired = false and type(c.item) =Investigation order by c.item.name");
 
         if (temp == null) {
             return new ArrayList<ItemFee>();
@@ -1644,12 +1644,12 @@ public class InvestigationController implements Serializable {
 
     public void fillItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public List<Investigation> fillAllItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
-        return getFacade().findBySQL(sql);
+        return getFacade().findByJpql(sql);
     }
 
     public void createInvestigationWithFees() {
@@ -1662,14 +1662,14 @@ public class InvestigationController implements Serializable {
         String sql = "select distinct(c.item) from ItemFee c where c.retired = false "
                 + " and type(c.item) =Investigation "
                 + " order by c.item.name";
-        temp = getItemFacade().findBySQL(sql);
+        temp = getItemFacade().findByJpql(sql);
         for (Item item : temp) {
             ItemWithFee iwf = new ItemWithFee();
             iwf.setItem(item);
             sql = "select c from ItemFee c where c.retired = false "
                     + " and type(c.item) =Investigation "
                     + " and c.item.id=" + item.getId() + " order by c.item.name";
-            iwf.setItemFees(getItemFeeFacade().findBySQL(sql));
+            iwf.setItemFees(getItemFeeFacade().findByJpql(sql));
             itemWithFees.add(iwf);
         }
 

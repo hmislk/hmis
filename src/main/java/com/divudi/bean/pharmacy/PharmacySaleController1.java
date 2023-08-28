@@ -509,7 +509,7 @@ public class PharmacySaleController1 implements Serializable {
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -528,7 +528,7 @@ public class PharmacySaleController1 implements Serializable {
         } else {
             sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        stockList = getStockFacade().findBySQL(sql, m, 20);
+        stockList = getStockFacade().findByJpql(sql, m, 20);
 //        itemsWithoutStocks = completeRetailSaleItems(qry);
         //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
@@ -553,7 +553,7 @@ public class PharmacySaleController1 implements Serializable {
             sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
 
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
@@ -616,7 +616,7 @@ public class PharmacySaleController1 implements Serializable {
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 

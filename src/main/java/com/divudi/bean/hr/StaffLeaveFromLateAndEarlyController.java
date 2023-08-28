@@ -166,7 +166,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
             hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, 10);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, 10);
 
     }
 
@@ -200,7 +200,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("toTime", to);
         //// // System.out.println("sql = " + sql);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE, count);
     }
 
     public List<StaffShift> fetchStaffShiftLateIn(Staff staff, double from) {
@@ -254,7 +254,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
 
         //// // System.out.println("sql = " + sql);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE, count);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE, count);
     }
 
     public FinalVariables getFinalVariables() {
@@ -427,7 +427,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         hm.put("dt", date);
         hm.put("st", staff);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void addLeaveDataToStaffShift(StaffShift ss, LeaveType leaveType) {
@@ -636,7 +636,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -660,7 +660,7 @@ public class StaffLeaveFromLateAndEarlyController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

@@ -333,7 +333,7 @@ public class WebContentController implements Serializable {
                 + " from WebContent a "
                 + " where a.retired=false "
                 + " order by a.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public List<WebContent> getItems() {
