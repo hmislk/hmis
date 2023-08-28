@@ -4,9 +4,11 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.PaymentMethodValue;
@@ -16,6 +18,7 @@ import com.divudi.data.dataStructure.WebUserBillsTotal;
 import com.divudi.data.table.String1Value1;
 import com.divudi.data.table.String1Value5;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -32,10 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -75,6 +81,9 @@ public class CashierReportController implements Serializable {
     @Inject
     CommonReport commonReport;
 
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
+
     String header = "";
 
     /**
@@ -97,30 +106,58 @@ public class CashierReportController implements Serializable {
         toReciptNo = null;
         recreteModal();
     }
-    
-    public String navigateToDepartmentAllCashierReport(){
-        return "/reportCashier/report_cashier_summery_all";
+
+    public String navigateToDepartmentAllCashierReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        auditEvent.setEventTrigger("navigateToDepartmentAllCashierReport()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        return "/reportCashier/report_cashier_summery_all?faces-redirect=true";
     }
-    
-    public String navigateToCashierReport(){
+
+    public String navigateToCashierReport() {
         return "/reportCashier/report_cashier_detailed_by_user_by_reciptno.xhtml";
     }
-    
-    public String navigateToCashierSummary(){
+
+    public String navigateToCashierSummary() {
         return "/reportCashier/report_cashier_summery_by_user.xhtml";
     }
-    
-    public String navigateToCashierSummaryUsingReciptNo(){
+
+    public String navigateToCashierSummaryUsingReciptNo() {
         return "/reportCashier/report_cashier_summery_by_user_by_reciptno";
     }
 
-    public String navigateToAllCashierReportUsingReciptNo(){
+    public String navigateToAllCashierReportUsingReciptNo() {
         return "/reportCashier/report_cashier_summery_by_user_by_reciptno.xhtml";
     }
-    
-    public String navigateToAllCashierSummary(){
+
+    public String navigateToAllCashierSummary() {
         return "/reportCashier/report_cashier_summery_all_total_only.xhtml";
     }
+
     public CashierReportController() {
     }
 
@@ -235,6 +272,34 @@ public class CashierReportController implements Serializable {
     }
 
     public void calCashierData() {
+        String ipAddress;
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startedTime = new Date();
+        auditEvent.setEventDataTime(startedTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
         webUserBillsTotals = new ArrayList<>();
@@ -249,7 +314,7 @@ public class CashierReportController implements Serializable {
             double uCredit = 0;
             double uSlip = 0;
             for (BillType btp : getEnumController().getCashFlowBillTypes()) {
-                
+
                 BillsTotals newB = createRow(btp, "Billed", new BilledBill(), webUser);
 
                 if (newB.getCard() != 0 || newB.getCash() != 0 || newB.getCheque() != 0 || newB.getCredit() != 0 || newB.getSlip() != 0) {
@@ -386,9 +451,43 @@ public class CashierReportController implements Serializable {
         Date startTime = new Date();
         commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml)");
 
+        Date endTime = new Date();
+        duration = endTime.getTime() - startedTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     public void calCashierDataChannel() {
+
+        String ipAddress;
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startedTime = new Date();
+        auditEvent.setEventDataTime(startedTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         header = "Channel";
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -534,6 +633,11 @@ public class CashierReportController implements Serializable {
 
             tmp.setBillsTotals(billls);
             webUserBillsTotals.add(tmp);
+            Date endTime = new Date();
+            duration = endTime.getTime() - startedTime.getTime();
+            auditEvent.setEventDuration(duration);
+            auditEvent.setEventStatus("Completed");
+            auditEventApplicationController.logAuditEvent(auditEvent);
 
         }
 
@@ -543,6 +647,34 @@ public class CashierReportController implements Serializable {
     }
 
     public void calCashierDataCashier() {
+        String ipAddress;
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startedTime = new Date();
+        auditEvent.setEventDataTime(startedTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("calCashierDataCashier()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         header = "Cashier";
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -693,6 +825,11 @@ public class CashierReportController implements Serializable {
 
         Date startTime = new Date();
         commonController.printReportDetails(fromDate, toDate, startTime, "All Cashier Report(/reportCashier/report_cashier_summery_all.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startedTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
 
@@ -723,7 +860,6 @@ public class CashierReportController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "All cashier report(Using recipt No)(/reportCashier/report_cashier_summery_all_by_reciptno.xhtml)");
     }
 
-    
     public void calculateCashierSummeryTotals() {
         Date startTime = new Date();
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -748,11 +884,8 @@ public class CashierReportController implements Serializable {
                 uCheque += (newB.getCheque() + newC.getCheque() + newR.getCheque());
                 uCredit += (newB.getCredit() + newC.getCredit() + newR.getCredit());
                 uSlip += (newB.getSlip() + newC.getSlip() + newR.getSlip());
-                
 
             }
-
-            
 
             BillsTotals newSum = new BillsTotals();
             newSum.setName("Total ");
@@ -774,7 +907,7 @@ public class CashierReportController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "All cashier summery(/reportCashier/report_cashier_summery_all_total_only.xhtml)");
 
     }
-    
+
     public void calCashierDataTotalOnly() {
         Date startTime = new Date();
         finalCashTot = finalChequeTot = finalCardTot = finalCreditTot = finalSlipTot = 0;
@@ -1172,9 +1305,7 @@ public class CashierReportController implements Serializable {
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
-    
-   
+
     private double calTotalValueForLoggedDepartment(WebUser w, Bill billClass, PaymentMethod pM, BillType billType) {
 ////        int day= Calendar.HOUR_OF_DAY(getToDate())- Calendar.DATE(getFromDate()) ;
 //        Date a;

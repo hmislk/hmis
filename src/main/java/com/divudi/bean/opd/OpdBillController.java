@@ -1124,10 +1124,19 @@ public class OpdBillController implements Serializable {
         long duration;
         Date startTime = new Date();
         auditEvent.setEventDataTime(startTime);
-        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("settleOpdBill()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         if (!executeSettleBillActions()) {
