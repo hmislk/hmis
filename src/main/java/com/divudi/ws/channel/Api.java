@@ -873,7 +873,7 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //// // System.out.println("m = " + m);
 //        //// // System.out.println("sql = " + sql);
@@ -947,7 +947,7 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         List<ServiceSession> reList = new ArrayList<>();
         for (ServiceSession session : sessions) {
@@ -1067,7 +1067,7 @@ public class Api {
         m.put("id", agentId);
         m.put("fd", commonFunctions.getStartOfDay(fromDate));
         m.put("td", commonFunctions.getEndOfDay(toDate));
-        billObjects = billSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //// // System.out.println("m = " + m);
 //        //// // System.out.println("sql = " + sql);
@@ -1585,7 +1585,7 @@ public class Api {
                 + " where f.retired=false "
                 + " and f.item=:ses ";
         m.put("ses", item);
-        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        List<ItemFee> list = getItemFeeFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        System.err.println("Fetch Fess " + list.size());
         return list;
     }

@@ -62,6 +62,7 @@ public class MeasurementUnitController implements Serializable {
     }
     
     public String navigateToListAllMeasurementUnit(){
+        
         return "/emr/admin/units";
     }
 
@@ -168,8 +169,8 @@ public class MeasurementUnitController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        recreateModel();
-        getItems();
+        allUnits = null;
+        getAllUnits();
     }
 
     public void setSelectText(String selectText) {

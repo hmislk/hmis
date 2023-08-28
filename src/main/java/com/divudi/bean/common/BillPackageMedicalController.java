@@ -549,7 +549,7 @@ public class BillPackageMedicalController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", frmDate);
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
         for (BillItem bi : billItems) {
@@ -591,7 +591,7 @@ public class BillPackageMedicalController implements Serializable {
         m.put("fromDate", frmDate);
         m.put("class", bill.getClass());
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return billItems;
     }
@@ -644,7 +644,7 @@ public class BillPackageMedicalController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", frmDate);
 
-        return billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public double getTotal(List<BillItem> billItm) {

@@ -37,7 +37,7 @@ public class WebTemplateController implements Serializable {
     private void listAllWebTemplates() {
         String jpql = "select i "
                 + " from WebTemplate i";
-        items = webTemplateFacade.findBySQL(jpql);
+        items = webTemplateFacade.findByJpql(jpql);
     }
 
     public String navigateToAddNewTemplate() {

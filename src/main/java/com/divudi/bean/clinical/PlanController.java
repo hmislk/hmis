@@ -102,7 +102,7 @@ public class PlanController implements Serializable {
 //        m.put("n", "%" + qry.toUpperCase() + "%");
 //        String sql;
 //        sql="select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-//        c = getFacade().findBySQL(sql,m,10);
+//        c = getFacade().findByJpql(sql,m,10);
 //        if (c == null) {
 //            c = new ArrayList<>();
 //        }

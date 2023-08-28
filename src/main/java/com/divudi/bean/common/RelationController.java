@@ -81,7 +81,7 @@ public class RelationController implements Serializable {
     public List<Relation> getItems() {
         if (items == null) {
             String j = "select r from Relation r where r.retired=false order by r.orderNo";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

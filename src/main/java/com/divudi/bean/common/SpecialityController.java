@@ -137,7 +137,7 @@ public class SpecialityController implements Serializable {
     }
 
     public List<Speciality> completeSpeciality(String qry) {
-        selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
     
@@ -150,9 +150,9 @@ public class SpecialityController implements Serializable {
 
     public List<Speciality> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
 
         return selectedItems;
@@ -249,7 +249,7 @@ public class SpecialityController implements Serializable {
             String temSql;
             temSql = "SELECT i FROM Speciality i where i.retired=false order by i.name";
             //////// // System.out.println("Sql for SpacilityController.getItems is " + temSql);
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }

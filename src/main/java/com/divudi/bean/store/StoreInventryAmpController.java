@@ -37,7 +37,7 @@ public class StoreInventryAmpController implements Serializable {
 
     public List<Amp> getItemsByCode() {
         if (itemsByCode == null) {
-            itemsByCode = getFacade().findBySQL("select a from Amp a where a.retired=false order by a.code");
+            itemsByCode = getFacade().findByJpql("select a from Amp a where a.retired=false order by a.code");
         }
         return itemsByCode;
     }
@@ -135,7 +135,7 @@ public class StoreInventryAmpController implements Serializable {
                     + " from Amp a "
                     + " where a.retired=false "
                     + " order by a.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

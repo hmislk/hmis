@@ -69,7 +69,7 @@ public class AntibioticController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -109,10 +109,10 @@ public class AntibioticController implements Serializable {
 
     public List<Antibiotic> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Antibiotic c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Antibiotic c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+            selectedItems = getFacade().findByJpql(sql);
         }
         return selectedItems;
     }
@@ -246,7 +246,7 @@ public class AntibioticController implements Serializable {
         if (items == null) {
             String j;
             j = "select an from Antibiotic an where an.retired=false order by an.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

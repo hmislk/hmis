@@ -469,7 +469,7 @@ public class ApiMembership {
     private void saveBillFee(Item item, BillItem bi, Bill b) {
         List<BillFee> billFees = new ArrayList<>();
         String sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + item.getId();
-        List<ItemFee> itemFee = getItemFeeFacade().findBySQL(sql);
+        List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
         double val = 0.0;
         double valGros = 0.0;
         double vat = 0.0;
@@ -527,7 +527,7 @@ public class ApiMembership {
     private BillItem fechserviceFee(Item item) {
         BillItem bi = new BillItem();
         String sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + item.getId();
-        List<ItemFee> itemFee = getItemFeeFacade().findBySQL(sql);
+        List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
         double val = 0.0;
         double valGros = 0.0;
         double vat = 0.0;

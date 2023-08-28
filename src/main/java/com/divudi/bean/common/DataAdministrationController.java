@@ -238,7 +238,7 @@ public class DataAdministrationController {
         sql = "select b from Bill b where (b.billType=:bt1 or b.billType=:bt2) order by b.id desc";
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.PharmacyPre);
-        List<Bill> bs = getBillFacade().findBySQL(sql, m, 20);
+        List<Bill> bs = getBillFacade().findByJpql(sql, m, 20);
         for (Bill b : bs) {
             ////System.out.println("b = " + b);
             ////System.out.println("b.getBillType() = " + b.getBillType());
@@ -297,7 +297,7 @@ public class DataAdministrationController {
 
     public void makeAllAmpsWithNullDepartmentTypeToPharmacyType() {
         String j = "Select a from Amp a where a.retired=false and a.departmentType is null";
-        List<Item> amps = itemFacade.findBySQL(j);
+        List<Item> amps = itemFacade.findByJpql(j);
         for (Item a : amps) {
             if (a instanceof Amp) {
                 Amp amp = (Amp) a;
@@ -326,7 +326,7 @@ public class DataAdministrationController {
         m.put("rbt", BillType.OpdBill);
 
 //        bills = billFacade.findByJpql(s, m);
-        bills = billFacade.findBySQL(s, m, 10);
+        bills = billFacade.findByJpql(s, m, 10);
         for (Bill cb : bills) {
             for (BillItem bi : cb.getBillItems()) {
                 //System.out.println("bi = " + bi);
@@ -343,19 +343,19 @@ public class DataAdministrationController {
                 }
                 String sql;
                 sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-                List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+                List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
                 if (tmp.size() > 0) {
                 } else {
                     sql = "Select bi From BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getReferanceBillItem().getId();
                     BillItem billItem = getBillItemFacade().findFirstByJpql(sql);
                     sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
-                    tmp = getBillFeeFacade().findBySQL(sql);
+                    tmp = getBillFeeFacade().findByJpql(sql);
                     if (tmp.size() > 0) {
                         billSearch.cancelBillFee(cb, bi, tmp);
                     } else {
                         saveBillFee(billItem);
                         sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
-                        tmp = getBillFeeFacade().findBySQL(sql);
+                        tmp = getBillFeeFacade().findByJpql(sql);
                         billSearch.cancelBillFee(cb, bi, tmp);
                     }
                 }
@@ -407,7 +407,7 @@ public class DataAdministrationController {
 
     public void restBillNumber() {
         String sql = "Select b from BillNumber b where b.retired=false";
-        List<BillNumber> list = billNumberFacade.findBySQL(sql);
+        List<BillNumber> list = billNumberFacade.findByJpql(sql);
         for (BillNumber b : list) {
             b.setRetired(true);
             b.setRetiredAt(new Date());
@@ -504,7 +504,7 @@ public class DataAdministrationController {
                 + " order by b.createdAt ";
         temMap.put("billType", BillType.InwardBill);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public void updateInwardServiceBillWithPaymentmethord() {
@@ -808,7 +808,7 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("cd", new Date());
 
-        sessions.addAll(serviceSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP));
+        sessions.addAll(serviceSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP));
 
         return sessions;
     }
@@ -881,7 +881,7 @@ public class DataAdministrationController {
                 + " b.retired=false "
                 + " and b.billType is not null ";
 
-        objects = getBillFacade().findObjectBySQL(sql);
+        objects = getBillFacade().findObjectByJpql(sql);
 
         return objects;
     }
@@ -1052,7 +1052,7 @@ public class DataAdministrationController {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -1131,7 +1131,7 @@ public class DataAdministrationController {
         }
         sql += " order by c.description, c.name ";
 
-        return getPharmaceuticalItemCategoryFacade().findBySQL(sql);
+        return getPharmaceuticalItemCategoryFacade().findByJpql(sql);
     }
     
 //    Getters & Setters

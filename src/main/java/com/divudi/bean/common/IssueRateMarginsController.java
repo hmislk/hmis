@@ -194,7 +194,7 @@ public class IssueRateMarginsController implements Serializable {
         sql = "select m from IssueRateMargins m "
                 + " where m.retired=false ";
 
-        items = ejbFacade.findBySQL(sql);
+        items = ejbFacade.findByJpql(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Unit issue margin(/faces/store/issue_rate_margin_manager.xhtml)");
     }

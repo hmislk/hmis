@@ -118,7 +118,7 @@ public class StoreController1 implements Serializable {
                 + " ((i.itemBatch.item.name) like :n  or "
                 + " (i.itemBatch.item.code) like :n  or  "
                 + " (i.itemBatch.item.barcode) like :n ) ";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -131,7 +131,7 @@ public class StoreController1 implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.stock >:s and ((i.staff.code) like :n or (i.staff.person.name) like :n or (i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -913,7 +913,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase
         hm.put("class", BilledBill.class);
         hm.put("btp", BillType.StoreGrnBill);
 
-        grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        grns = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -929,7 +929,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase
         hm.put("to", getToDate());
         hm.put("btp", BillType.StorePurchase);
         hm.put("class", BilledBill.class);
-        directPurchase = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        directPurchase = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -949,7 +949,7 @@ commonController.printReportDetails(fromDate, toDate, startTime, "Store/Purchase
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
-        pos = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        pos = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         for (BillItem t : pos) {
             //   t.setPharmaceuticalBillItem(getPoQty(t));

@@ -88,7 +88,7 @@ public class MedicalPackageItemFeeController implements Serializable {
                 sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -101,7 +101,7 @@ public class MedicalPackageItemFeeController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -111,7 +111,7 @@ public class MedicalPackageItemFeeController implements Serializable {
         String temSql;
         if (getCurrentPackege() != null) {
             temSql = "SELECT i FROM MedicalPackageItem i where i.retired=false and i.packege.id = " + getCurrentPackege().getId();
-            items = getMedicalPackageItemFacade().findBySQL(temSql);
+            items = getMedicalPackageItemFacade().findByJpql(temSql);
         } else {
             items = null;
         }
@@ -237,7 +237,7 @@ public class MedicalPackageItemFeeController implements Serializable {
     public List<MedicalPackageFee> getCharges() {
 
         if (currentIx != null && currentIx.getId() != null) {
-            setCharges(getMedicalPackageFeeFacade().findBySQL("select c from MedicalPackageFee c where c.retired = false and c.packege.id=" + currentPackege.getId() + " and c.item.id = " + currentIx.getId()));
+            setCharges(getMedicalPackageFeeFacade().findByJpql("select c from MedicalPackageFee c where c.retired = false and c.packege.id=" + currentPackege.getId() + " and c.item.id = " + currentIx.getId()));
 
         } else {
             setCharges(new ArrayList<MedicalPackageFee>());

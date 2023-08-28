@@ -499,7 +499,7 @@ public class PatientEncounterController implements Serializable {
         }
         ////// // System.out.println("1. m = " + m);
         ////// // System.out.println("2. sql = " + jpql);
-        items = getFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        items = getFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
         ////// // System.out.println("3. items = " + items);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/All visits/(/faces/clinical/clinical_reports_all_opd_visits.xhtml)");
@@ -1321,7 +1321,7 @@ public class PatientEncounterController implements Serializable {
         }
         jpql += " order by e.id desc";
         if (count != null) {
-            return getBillFacade().findBySQL(jpql, m, count);
+            return getBillFacade().findByJpql(jpql, m, count);
         } else {
             return getBillFacade().findByJpql(jpql, m);
         }
@@ -1375,7 +1375,7 @@ public class PatientEncounterController implements Serializable {
         String sql;
         sql = "Select e from PatientEncounter e where e.patient=:p order by e.id desc";
         if (count != null) {
-            return getFacade().findBySQL(sql, m, count);
+            return getFacade().findByJpql(sql, m, count);
         } else {
             return getFacade().findByJpql(sql, m);
         }

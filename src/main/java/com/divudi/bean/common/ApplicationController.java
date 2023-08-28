@@ -171,7 +171,7 @@ public class ApplicationController {
             Map m = new HashMap();
             m.put("ins", ins);
             iln.institution = ins;
-            iln.patientCount = patientFacade.countBySql(j, m);
+            iln.patientCount = patientFacade.countByJpql(j, m);
         }
         iln.patientCount++;
         String poi = ins.getPointOfIssueNo();

@@ -200,7 +200,7 @@ public class Lims {
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
 //        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
-//        System.out.println("ptSamples = " + ptSamples);
+        
         // Check if necessary data is present
         if (requestSendingUser == null) {
             return constructErrorJson(1, "Username / password mismatch.", billId);
@@ -211,6 +211,7 @@ public class Lims {
         if (ptSamples == null || ptSamples.isEmpty()) {
             return constructErrorJson(2, "Error in Sample Generation. Please check investigation settings.", billId);
         }
+        System.out.println("ptSamples = " + ptSamples.size());
 
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
@@ -451,9 +452,6 @@ public class Lims {
                         if (pts == null) {
                             pts = new PatientSample();
                             pts.setTube(ixi.getTube());
-                            if (ixi.getSample() == null || ixi.getSample().getName() == null || ixi.getSample().getName().trim().equals("")) {
-                                continue;
-                            }
                             pts.setSample(ixi.getSample());
                             if (ix.isHasMoreThanOneComponant()) {
                                 pts.setInvestigationComponant(ixi.getSampleComponent());

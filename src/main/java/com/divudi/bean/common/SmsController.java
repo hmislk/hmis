@@ -71,7 +71,7 @@ public class SmsController implements Serializable {
 
     public void sendSmsAwaitingToSendInDatabase() {
         String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
-        List<Sms> smses = getSmsFacade().findBySQL(j);
+        List<Sms> smses = getSmsFacade().findByJpql(j);
 //        if (false) {
 //            Sms e = new Sms();
 //            e.getSentSuccessfully();
@@ -297,7 +297,7 @@ public class SmsController implements Serializable {
             row.setCount(l);
             smsSummeryRows.add(row);
         } else {
-            smses = getSmsFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            smses = getSmsFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         }
 
     }

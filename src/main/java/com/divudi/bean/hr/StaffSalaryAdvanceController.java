@@ -1218,7 +1218,7 @@ public class StaffSalaryAdvanceController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
 
-        items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        items = getStaffSalaryFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 

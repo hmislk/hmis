@@ -208,7 +208,7 @@ public class StaffChangeController implements Serializable {
 
         String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getSessionController().getInstitution().getId();
 
-        return getDepartmentFacade().findBySQL(sql);
+        return getDepartmentFacade().findByJpql(sql);
     }
 
     public StaffChangeController() {

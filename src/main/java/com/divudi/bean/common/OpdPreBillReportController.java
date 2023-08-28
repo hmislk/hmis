@@ -601,7 +601,7 @@ public class OpdPreBillReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", btpList);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }

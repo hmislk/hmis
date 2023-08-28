@@ -320,7 +320,7 @@ public class PurchaseReturnController implements Serializable {
 
     public void createBillItems() {
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId();
-        List<PharmaceuticalBillItem> tmp2 = getPharmaceuticalBillItemFacade().findBySQL(sql);
+        List<PharmaceuticalBillItem> tmp2 = getPharmaceuticalBillItemFacade().findByJpql(sql);
 
         for (PharmaceuticalBillItem i : tmp2) {
             BillItem bi = new BillItem();

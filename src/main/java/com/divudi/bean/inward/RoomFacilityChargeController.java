@@ -145,7 +145,7 @@ public class RoomFacilityChargeController implements Serializable {
 //        return suggestions;
 //    }
     public List<RoomFacilityCharge> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from RoomFacilityCharge c "
+        selectedItems = getFacade().findByJpql("select c from RoomFacilityCharge c "
                 + "where c.retired=false  and (c.name)"
                 + " like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -201,7 +201,7 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void fillRoomFacilityCharge() {
         String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
-        roomFacilityCharges = getEjbFacade().findBySQL(sql);
+        roomFacilityCharges = getEjbFacade().findByJpql(sql);
     }
 
     public void updateRoomFacilityCharge(RoomFacilityCharge r) {
@@ -219,7 +219,7 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void updateAllCharges() {
         String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
-        roomFacilityCharges = getEjbFacade().findBySQL(sql);
+        roomFacilityCharges = getEjbFacade().findByJpql(sql);
         for (RoomFacilityCharge r : roomFacilityCharges) {
             r.setAdminstrationCharge(adminstrationCharge);
             r.setMedicalCareCharge(medicalCareCharge);
@@ -295,7 +295,7 @@ public class RoomFacilityChargeController implements Serializable {
     public List<RoomFacilityCharge> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM RoomFacilityCharge i where i.retired=false ";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

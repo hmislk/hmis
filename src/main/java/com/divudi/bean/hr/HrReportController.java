@@ -422,7 +422,7 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Logged);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Fingure print recorde/Fingure print recorde by logged(/faces/hr/hr_report_finger_print_record_logged.xhtml)");
     }
@@ -438,7 +438,7 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Logged);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Fingure print recorde/Fingure print recorde by logged(hr_report_finger_print_record_logged.xhtml)");
     }
@@ -470,7 +470,7 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Fingure print recorde/Fingure print recorde by vertified(/faces/hr/hr_report_finger_print_record_verified.xhtml)");
     }
@@ -507,7 +507,7 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         //////////////////////////
 //        sql = "";
@@ -536,7 +536,7 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         //////////////////////////
 //        sql = "";
@@ -563,7 +563,7 @@ public class HrReportController implements Serializable {
         hm.put("ftp", FingerPrintRecordType.Varified);
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Fingure print recorde/Fingure print recorde by vertified(with logged recode)(/faces/hr/hr_report_finger_print_record_verified.xhtml)");
     }
@@ -584,7 +584,7 @@ public class HrReportController implements Serializable {
         hm.put("pr", "(NEW NEXT)");
 //        sql += " order by ss.staff,ss.recordTimeStamp";
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp ";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Fingure print recorde/Fingure print recorde by vertified(/faces/hr/hr_report_finger_print_record_verified.xhtml)");
     }
@@ -635,7 +635,7 @@ public class HrReportController implements Serializable {
         }
 
         sql += " order by ss.staff.codeInterger,ss.recordTimeStamp";
-        fingerPrintRecords = fingerPrintRecordFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        fingerPrintRecords = fingerPrintRecordFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Fingure print recorde/Fingure print recorde no shift selected(Fingure print recorde no shift selected)");
     }
@@ -737,7 +737,7 @@ public class HrReportController implements Serializable {
                 + " where ss.retired=false "
                 + " and ss.codeInterger!=0 "
                 + " order by ss.codeInterger ";
-        staffs = getStaffFacade().findBySQL(sql);
+        staffs = getStaffFacade().findByJpql(sql);
     }
 
     public void createStaffList() {
@@ -851,7 +851,7 @@ public class HrReportController implements Serializable {
         m.put("td", t.getTime());
         //System.out.println("m = " + m);
         //System.out.println("sql = " + sql);
-        staffs = getStaffFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        staffs = getStaffFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         //System.out.println("staffs.size() = " + staffs.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Administration/ Employee details(/faces/hr/hr_report_employee_detail.xhtml)");
         return staffs;
@@ -1504,7 +1504,7 @@ public class HrReportController implements Serializable {
         }
 
         sql += " order by ss.form.code,ss.staff.codeInterger ";
-        staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffLeaves = staffLeaveFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Leave/Leave report(/faces/hr/hr_report_leave.xhtml)");
     }
@@ -1559,7 +1559,7 @@ public class HrReportController implements Serializable {
         }
 
         sql += " order by ss.staff.codeInterger";
-        staffLeaves = staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffLeaves = staffLeaveFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Leave/Late leave(/faces/hr/hr_report_leave_system.xhtml)");
     }
@@ -1576,7 +1576,7 @@ public class HrReportController implements Serializable {
         hm.put("frm", fd);
         hm.put("to", td);
 
-        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return staffLeaveFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private List<StaffLeave> staffLeavesAnnual;
@@ -1701,7 +1701,7 @@ public class HrReportController implements Serializable {
 
         String sql = "select s from StaffLeaveSystem s "
                 + " where s.retired=false";
-        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql);
+        List<StaffLeave> list = staffLeaveFacade.findByJpql(sql);
 
         for (StaffLeave s : list) {
             if (s.getStaffShift() != null) {
@@ -1830,7 +1830,7 @@ public class HrReportController implements Serializable {
         hm.put("stf", staff);
         hm.put("ltp", leaveType.getLeaveTypes());
 
-        return staffLeaveFacade.findBySQL(sql, hm, TemporalType.DATE);
+        return staffLeaveFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
 //    public List<StaffLeave> createStaffLeave(LeaveType leaveType, Staff staff, Date fromDate, Date toDate) {
@@ -2046,7 +2046,7 @@ public class HrReportController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
 
-        return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return staffFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private List<Staff> fetchStaff(Date f, Date t) {
@@ -2095,7 +2095,7 @@ public class HrReportController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
 
-        return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return staffFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     private long fetchWorkedDays(Staff staff) {
@@ -2249,7 +2249,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.id ";
         //System.out.println("sql = " + sql);
 
-        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        List<StaffShift> sss = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         for (StaffShift ss : sss) {
             //System.out.println("ss = " + ss.getId());
@@ -2462,7 +2462,7 @@ public class HrReportController implements Serializable {
         hm.put("dtp", Arrays.asList(new DayType[]{DayType.DayOff, DayType.MurchantileHoliday, DayType.SleepingDay, DayType.Poya}));
 
         sql += " order by ss.dayOfWeek,ss.staff.codeInterger ";
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     private List<Object[]> fetchStaffShiftData() {
@@ -3331,7 +3331,7 @@ public class HrReportController implements Serializable {
                                 + " and ss.dayType not in :dtp "
                                 + " and ss.shiftDate=:d "
                                 + " and ss.staff=:stf ";
-                        List<StaffShift> sss = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+                        List<StaffShift> sss = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
                         for (StaffShift s : sss) {
                             List<StaffLeave> staffLeave = humanResourceBean.fetchStaffLeave(ss.getStaff(), ss.getShiftDate());
                             //System.out.println("staffLeave = " + staffLeave);
@@ -3772,7 +3772,7 @@ public class HrReportController implements Serializable {
                 + "  From StaffPaysheetComponent s"
                 + " where s.staffPaySheetComponentValue=0 ";
 
-        List<StaffPaysheetComponent> list = staffPaysheetComponentFacade.findBySQL(sql);
+        List<StaffPaysheetComponent> list = staffPaysheetComponentFacade.findByJpql(sql);
 
         if (list == null) {
             return;
@@ -3787,7 +3787,7 @@ public class HrReportController implements Serializable {
         String sql = "select s from StaffShift s "
                 + " where s.overTimeValuePerSecond=0"
                 + " and s.additionalForm is not null ";
-        List<StaffShift> list = staffShiftFacade.findBySQL(sql);
+        List<StaffShift> list = staffShiftFacade.findByJpql(sql);
         if (list == null) {
             return;
         }
@@ -3807,7 +3807,7 @@ public class HrReportController implements Serializable {
         String sql = "select s from StaffShift s"
                 + " where s.startRecord.recordTimeStamp is not null "
                 + " and s.endRecord.recordTimeStamp is not null";
-        List<StaffShift> list = staffShiftFacade.findBySQL(sql);
+        List<StaffShift> list = staffShiftFacade.findByJpql(sql);
         if (list == null) {
             return;
         }
@@ -3845,7 +3845,7 @@ public class HrReportController implements Serializable {
     public void updateAutomaticData() {
         String sql = "select s from StaffLeaveSystem s ";
 
-        List<StaffLeave> list = staffLeaveFacade.findBySQL(sql);
+        List<StaffLeave> list = staffLeaveFacade.findByJpql(sql);
         if (list == null) {
             return;
         }
@@ -3869,7 +3869,7 @@ public class HrReportController implements Serializable {
                 + " or s.referenceStaffShiftEarlyOut is not null "
                 + " or s.referenceStaffShift is not null )";
 
-        List<StaffShift> list2 = staffShiftFacade.findBySQL(sql);
+        List<StaffShift> list2 = staffShiftFacade.findByJpql(sql);
         if (list2 == null) {
             return;
         }
@@ -3891,7 +3891,7 @@ public class HrReportController implements Serializable {
         String sql = "select s from StaffPaysheetComponent s "
                 + " where s.retired=false ";
 
-        List<StaffPaysheetComponent> staffPaysheetComponents = staffPaysheetComponentFacade.findBySQL(sql);
+        List<StaffPaysheetComponent> staffPaysheetComponents = staffPaysheetComponentFacade.findByJpql(sql);
 
         if (staffPaysheetComponents == null) {
             return;
@@ -3919,7 +3919,7 @@ public class HrReportController implements Serializable {
                 + " and s.salaryCycle.retired=false "
                 + " and s.blocked=false";
 
-        List<StaffSalary> list = staffSalaryFacade.findBySQL(sql);
+        List<StaffSalary> list = staffSalaryFacade.findByJpql(sql);
         if (list == null) {
             return;
         }
@@ -3968,7 +3968,7 @@ public class HrReportController implements Serializable {
         }
 
         sql += " order by ss.staff.codeInterger,ss.shiftDate ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         calWorkedTimeTotal(staffShifts);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Attendence/Attendence report(/faces/hr/hr_report_attendance.xhtml)");
@@ -3991,7 +3991,7 @@ public class HrReportController implements Serializable {
         sql += " and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
         sql += " order by ss.staff.codeInterger ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void createStaffShiftLieAllowed() {
@@ -4002,7 +4002,7 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and ss.lieuAllowed=true ";
         sql += " order by ss.staff.codeInterger ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Staff shift report(/faces/hr/hr_report_staff_shift.xhtml)");
     }
@@ -4017,7 +4017,7 @@ public class HrReportController implements Serializable {
                 + "  and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
         sql += " order by ss.staff.codeInterger ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Staff shift report(Worked Lie Allowed)(/faces/hr/hr_report_staff_shift.xhtml)");
     }
@@ -4125,7 +4125,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         //System.out.println("sql = " + sql);
         //System.out.println("hm = " + hm);
-        staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffSalarys = staffSalaryFacade.findByJpql(sql, hm, TemporalType.DATE);
         calTotalNoPay();
         calTableTotal(staffSalarys);
 
@@ -4144,7 +4144,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         //System.out.println("sql = " + sql);
         //System.out.println("hm = " + hm);
-        staffSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffSalarys = staffSalaryFacade.findByJpql(sql, hm, TemporalType.DATE);
         calTotalNoPay();
         calTableTotal(staffSalarys);
         fetchWorkDays(staffSalarys);
@@ -4237,7 +4237,7 @@ public class HrReportController implements Serializable {
         sql += " order by ss.staff.codeInterger ";
         //System.out.println("sql = " + sql);
         //System.out.println("hm = " + hm);
-        return getStaffFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getStaffFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     String chequeNo;
@@ -4282,7 +4282,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffSalaryComponentQuary(hm);
         sql += " order by ss.staffSalary.staff.codeInterger ";
-        staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffSalaryComponants = staffSalaryComponantFacade.findByJpql(sql, hm, TemporalType.DATE);
         total = 0.0;
         for (StaffSalaryComponant ssc : staffSalaryComponants) {
             total += ssc.getComponantValue();
@@ -4306,7 +4306,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffSalaryComponentQuarySpe(hm);
         sql += " order by ss.staffSalary.staff.codeInterger ";
-        staffSalaryComponants = staffSalaryComponantFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffSalaryComponants = staffSalaryComponantFacade.findByJpql(sql, hm, TemporalType.DATE);
         total = 0.0;
         for (StaffSalaryComponant ssc : staffSalaryComponants) {
             total += ssc.getComponantValue();
@@ -4372,7 +4372,7 @@ public class HrReportController implements Serializable {
             sql = createStaffSalaryDeletedQuary(hm, s);
             //System.out.println("sql = " + sql);
             //System.out.println("hm = " + hm);
-            sSalarys = staffSalaryFacade.findBySQL(sql, hm, TemporalType.DATE);
+            sSalarys = staffSalaryFacade.findByJpql(sql, hm, TemporalType.DATE);
             sadd.setStaff(s);
             sadd.setSalarys(sSalarys);
             salaryAndDeletaedDetails.add(sadd);
@@ -4636,7 +4636,7 @@ public class HrReportController implements Serializable {
         HashMap hm = new HashMap();
         sql = createStaffShiftExtraQuary(hm);
         sql += " order by ss.staff.codeInterger ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Staff extra shift(/faces/hr/hr_report_staff_shift_extra.xhtml)");
     }
@@ -4647,7 +4647,7 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and ss.lateInLogged>0 "
                 + " order by ss.staff.codeInterger ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void createStaffShiftOnlyOt() {
@@ -4667,7 +4667,7 @@ public class HrReportController implements Serializable {
         sql += " and ss.startRecord.recordTimeStamp is not null "
                 + " and ss.endRecord.recordTimeStamp is not null ";
         sql += " order by ss.staff.codeInterger ";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Leave/Staff Shift History(/faces/hr/hr_report_staff_shift_history.xhtml)");
 
@@ -4680,7 +4680,7 @@ public class HrReportController implements Serializable {
         sql += " and ss.shiftStartTime  > ss.startRecord.recordTimeStamp";
         sql += " order by ss.staff.codeInterger ";
 //        sql += " order by ss.shift,ss.shiftDate";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
     }
 
@@ -4756,7 +4756,7 @@ public class HrReportController implements Serializable {
         }
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
         sql += " order by ss.staffShift.id,ss.staffShift.shiftDate";
-        staffShiftHistorys = staffShiftHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        staffShiftHistorys = staffShiftHistoryFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -4832,7 +4832,7 @@ public class HrReportController implements Serializable {
 
 //        sql += " and ss.shiftStartTime  < ss.startRecord.recordTimeStamp";
         sql += " order by ss.fingerPrintRecord.id,ss.id";
-        fingerPrintRecordHistorys = fingerPrintRecordHistoryFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        fingerPrintRecordHistorys = fingerPrintRecordHistoryFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Leave/Fingure print history(/faces/hr/hr_report_finger_print_history.xhtml)");
 
@@ -4863,7 +4863,7 @@ public class HrReportController implements Serializable {
             hm.put("toTime", getReportKeyWord().getTo() * 60);
         }
         sql += " order by ss.staff.codeInterger";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Attendence/Late in and early out(/faces/hr/hr_report_attendance_late_in_early_out.xhtml)");
 
@@ -4875,7 +4875,7 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and ss.earlyOutLogged>0 ";
         sql += " order by ss.staff.codeInterger";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
     }
 
@@ -4885,7 +4885,7 @@ public class HrReportController implements Serializable {
         sql = createStaffShiftQuary(hm);
         sql += " and ss.shiftEndTime < ss.endRecord.recordTimeStamp";
         sql += " order by ss.staff.codeInterger";
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
     }
 

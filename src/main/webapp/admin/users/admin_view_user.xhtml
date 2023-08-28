@@ -85,10 +85,11 @@
                                 <div class="col-md-9" >
 
                                     <ui:insert name="users" >
-                                        <p:dataTable id="lstSelect" value="#{webUserController.selectedItems}" 
+                                        <p:dataTable id="lstSelect" 
+                                                     value="#{webUserController.webUseLights}" 
                                                      var="u"
                                                      rowKey="#{u.id}"
-                                                     selection="#{webUserController.selected}" 
+                                                     selection="#{webUserController.selectedLight}" 
                                                      rows="100" 
                                                      selectionMode="single"
                                                      paginator="#{commonController.renderPaginator(webUserController.selectedItems, 10)}"
@@ -97,29 +98,11 @@
                                                      >
                                             <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
                                             <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
-                                            <p:column headerText="Institution" sortBy="#{u.institution.name}" filterBy="#{u.institution.name}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.institution.name}"/>
-                                            </p:column>
-
-                                            <p:column headerText="Department"  sortBy="#{u.department.name}" filterBy="#{u.department.name}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.department.name}"/>
-                                            </p:column>
-
-                                            <p:column headerText="Users Full Name" sortBy="#{u.webUserPerson.name}" filterBy="#{u.webUserPerson.name}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.webUserPerson.name}"/>
-                                            </p:column>
-
-                                            <p:column headerText="User Name" sortBy="#{u.name}" filterBy="#{u.name}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.name}"/>
-                                            </p:column>
-                                            <p:column headerText="Staff Name" sortBy="#{u.staff.person.name}" filterBy="#{u.staff.person.name}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.staff.person.name}"/>
-                                            </p:column>
-                                            <p:column headerText="Staff Code" sortBy="#{u.staff.code}" filterBy="#{u.staff.code}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.staff.code}" rendered="#{u.staff.code ne null}"/>
-                                            </p:column>
-                                            <p:column headerText="Staff Specility" sortBy="#{u.staff.speciality.name}" filterBy="#{u.staff.speciality.name}" filterMatchMode="contains">
-                                                <h:outputText value="#{u.staff.speciality.name}" rendered="#{u.staff.speciality ne null}"/>
+                                            <p:column headerText="User Name" 
+                                                      sortBy="#{u.userName}" 
+                                                      filterBy="#{u.userName}"
+                                                      filterMatchMode="contains">
+                                                <h:outputText value="#{u.userName}"/>
                                             </p:column>
                                         </p:dataTable>
                                     </ui:insert>

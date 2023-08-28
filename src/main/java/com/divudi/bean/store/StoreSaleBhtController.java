@@ -309,7 +309,7 @@ public class StoreSaleBhtController implements Serializable {
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -342,7 +342,7 @@ public class StoreSaleBhtController implements Serializable {
                     + " or (i.itemBatch.item.code) like :n)  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeRetailSaleItems(qry);
         //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;
@@ -375,7 +375,7 @@ public class StoreSaleBhtController implements Serializable {
                     + " or (i.itemBatch.item.code) like :n)  "
                     + " order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
         //  itemsWithoutStocks = completeRetailSaleItems(qry);
         //////// // System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return items;

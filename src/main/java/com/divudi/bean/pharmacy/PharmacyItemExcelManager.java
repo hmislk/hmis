@@ -434,7 +434,7 @@ public class PharmacyItemExcelManager implements Serializable {
         m.put("refBtp1", BillType.InwardBill);
         m.put("refBtp2", BillType.InwardProfessional);
 
-        List<Object[]> list2 = billFeeFacade.findObjectsArrayBySQL(sql, m, TemporalType.DATE);
+        List<Object[]> list2 = billFeeFacade.findObjectsArrayByJpql(sql, m, TemporalType.DATE);
 
         for (Object[] obj : list2) {
             BillFee billFee = (BillFee) obj[0];
@@ -719,7 +719,7 @@ public class PharmacyItemExcelManager implements Serializable {
                 + "  where s.retired=false"
                 + "  and s.staff is not null "
                 + " and s.roster is null";
-        List<StaffShift> list = staffShiftFacade.findBySQL(sql);
+        List<StaffShift> list = staffShiftFacade.findByJpql(sql);
         if (list == null) {
             return;
         }
@@ -761,7 +761,7 @@ public class PharmacyItemExcelManager implements Serializable {
     public void resetQtyValue() {
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.retired=false ";
 
-        List<PharmaceuticalBillItem> lis = getPharmaceuticalBillItemFacade().findBySQL(sql);
+        List<PharmaceuticalBillItem> lis = getPharmaceuticalBillItemFacade().findByJpql(sql);
 
         for (PharmaceuticalBillItem ph : lis) {
             if (ph.getBillItem() == null || ph.getBillItem().getBill() == null
@@ -2904,7 +2904,7 @@ public class PharmacyItemExcelManager implements Serializable {
     public void removeAllPharmaceuticalItems() {
         String sql;
         sql = "select p from PharmaceuticalItem p";
-        List<PharmaceuticalItem> pis = getPharmaceuticalItemFacade().findBySQL(sql);
+        List<PharmaceuticalItem> pis = getPharmaceuticalItemFacade().findByJpql(sql);
         for (PharmaceuticalItem p : pis) {
             getPharmaceuticalItemFacade().remove(p);
         }

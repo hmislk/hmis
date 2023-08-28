@@ -98,7 +98,7 @@ public class StoreCalculation {
         List<Item> tmp;
         if (i != null) {
             temSql = "SELECT i.item FROM ItemsDistributors i where i.retired=false and i.item.retired=false and i.institution.id = " + i.getId();
-            tmp = getItemFacade().findBySQL(temSql);
+            tmp = getItemFacade().findByJpql(temSql);
         } else {
             tmp = null;
         }
@@ -495,7 +495,7 @@ public class StoreCalculation {
         hash.put("itm", ib.getItem());
         hash.put("ret", ib.getRetailsaleRate());
         hash.put("pur", ib.getPurcahseRate());
-        List<ItemBatch> i = getItemBatchFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
+        List<ItemBatch> i = getItemBatchFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
         if (i.size() > 0) {
             ib = i.get(0);
         } else {
@@ -528,11 +528,11 @@ public class StoreCalculation {
 
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -558,11 +558,11 @@ public class StoreCalculation {
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -574,11 +574,11 @@ public class StoreCalculation {
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -590,11 +590,11 @@ public class StoreCalculation {
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }

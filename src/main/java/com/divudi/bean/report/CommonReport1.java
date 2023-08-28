@@ -229,7 +229,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("bTp", BillType.OpdBill);
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<Bill>();
         }
@@ -254,7 +254,7 @@ public class CommonReport1 implements Serializable {
             temMap.put("col", getCollectingIns());
         }
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<Bill>();
         }
@@ -428,7 +428,7 @@ public class CommonReport1 implements Serializable {
         m.put("toDate", getToDate());
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("temMap = " + temMap);
-        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        referralBillItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
         for (BillItem bi : referralBillItems) {
@@ -481,7 +481,7 @@ public class CommonReport1 implements Serializable {
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("temMap = " + temMap);
 //        referralBillItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-        bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bill = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
         for (Bill bilst : bill) {
@@ -786,7 +786,7 @@ public class CommonReport1 implements Serializable {
             sql = "SELECT b FROM BilledBill b WHERE b.retired=false and  b.billType =:bType and b.institution=:ins and b.collectingCentre=:col and b.createdAt between :fromDate and :toDate  order by b.collectingCentre.name";
             temMap.put("col", getCollectingIns());
         }
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<Bill>();
         }
@@ -816,7 +816,7 @@ public class CommonReport1 implements Serializable {
                 + "  and b.creditCompany=:col and b.createdAt between :fromDate and :toDate "
                 + "order by b.creditCompany.name";
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<>();
         }
@@ -900,7 +900,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("web", webUser);
         temMap.put("ins", getSessionController().getInstitution());
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -916,7 +916,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
 //        checkOtherInstiution
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -938,7 +938,7 @@ public class CommonReport1 implements Serializable {
             institution = b.getInstitution();
         }
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -960,7 +960,7 @@ public class CommonReport1 implements Serializable {
             temMap.put("ins", ins);
         }
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -974,7 +974,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("btp", billType);
         temMap.put("web", webUser);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1315,7 +1315,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bill", billClass.getClass());
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1343,7 +1343,7 @@ public class CommonReport1 implements Serializable {
         m.put("btp", BillType.StoreGrnBill);
         m.put("dt", dt);
 
-        bs = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bs = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return bs;
     }
@@ -1913,7 +1913,7 @@ public class CommonReport1 implements Serializable {
         m.put("ins", getSessionController().getInstitution());
         m.put("class", b.getClass());
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public double fetchBillsTotal(Bill b, BillType billType, PaymentScheme ps) {
@@ -2022,7 +2022,7 @@ public class CommonReport1 implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
 
-        return getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> getLabBillItemsOwnBilled() {
@@ -2060,7 +2060,7 @@ public class CommonReport1 implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
 
-        return getBillItemFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
     public void getLabBillsOwnBilledTotals() {

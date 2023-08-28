@@ -171,7 +171,7 @@ public class DesignComponentController implements Serializable {
     private void listItems(){
         String jpql = "select d "
                 + " from DesignComponent d";
-        list = facade.findBySQL(jpql);
+        list = facade.findByJpql(jpql);
     }
     
     private List<DesignComponent> listDataEntryForms(){

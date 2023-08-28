@@ -56,7 +56,7 @@ public class DepartmentController implements Serializable {
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public String toListDepartments() {
@@ -118,7 +118,7 @@ public class DepartmentController implements Serializable {
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
             String sql = "Select d from Department d where d.retired=false order by d.name";
-            searchItems = getFacade().findBySQL(sql);
+            searchItems = getFacade().findByJpql(sql);
             if (searchItems != null && !searchItems.isEmpty()) {
                 current = searchItems.get(0);
             } else {
@@ -142,7 +142,7 @@ public class DepartmentController implements Serializable {
             String sql = "Select d From Department d "
                     + " where d.retired=false "
                     + " and d.institution.id=" + getSessionController().getInstitution().getId();
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
         } else {
             String sql = "Select d From Department d "
                     + " where d.retired=false"
@@ -158,7 +158,7 @@ public class DepartmentController implements Serializable {
         List<Department> departments;
         String sql = "Select d From Department d "
                 + " where d.retired=false ";
-        departments = getFacade().findBySQL(sql);
+        departments = getFacade().findByJpql(sql);
         return departments;
     }
 
@@ -205,7 +205,7 @@ public class DepartmentController implements Serializable {
     public List<Department> getLogedDepartments() {
 
         String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getSessionController().getInstitution().getId();
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
 
         return items;
     }
@@ -215,7 +215,7 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -358,7 +358,7 @@ public class DepartmentController implements Serializable {
         if (m == null) {
             m = new HashMap();
         }
-        return getFacade().findBySQL(jpql, m, t);
+        return getFacade().findByJpql(jpql, m, t);
     }
 
     public List<Department> getInstitutionDepatrments(Institution ins, boolean includeAllInstitutionDepartmentsIfInstitutionIsNull, DepartmentType departmentType) {

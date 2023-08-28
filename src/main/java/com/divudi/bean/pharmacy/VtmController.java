@@ -134,7 +134,7 @@ public class VtmController implements Serializable {
         } else {
             sql = "select c from Vtm c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            vtmList = getFacade().findBySQL(sql);
+            vtmList = getFacade().findByJpql(sql);
         }
         return vtmList;
     }
@@ -232,10 +232,10 @@ public class VtmController implements Serializable {
     public List<Vtm> getSelectedItems() {
 
         if (selectText == null || selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Vtm c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Vtm c where c.retired=false order by c.name");
         } else {
             String sql = "select c from Vtm c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+            selectedItems = getFacade().findByJpql(sql);
 
         }
         return selectedItems;

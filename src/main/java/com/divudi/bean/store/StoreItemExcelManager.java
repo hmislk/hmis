@@ -896,7 +896,7 @@ public class StoreItemExcelManager implements Serializable {
     public void resetQtyValue() {
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.retired=false ";
 
-        List<PharmaceuticalBillItem> lis = getPharmaceuticalBillItemFacade().findBySQL(sql);
+        List<PharmaceuticalBillItem> lis = getPharmaceuticalBillItemFacade().findByJpql(sql);
 
         for (PharmaceuticalBillItem ph : lis) {
             if (ph.getBillItem() == null || ph.getBillItem().getBill() == null
@@ -1711,7 +1711,7 @@ public class StoreItemExcelManager implements Serializable {
     public void removeAllPharmaceuticalItems() {
         String sql;
         sql = "select p from PharmaceuticalItem p";
-        List<PharmaceuticalItem> pis = getPharmaceuticalItemFacade().findBySQL(sql);
+        List<PharmaceuticalItem> pis = getPharmaceuticalItemFacade().findByJpql(sql);
         for (PharmaceuticalItem p : pis) {
             getPharmaceuticalItemFacade().remove(p);
         }
