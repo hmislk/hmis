@@ -378,7 +378,7 @@ public class WebUserController implements Serializable {
         staff = null;
         department = null;
         institution = null;
-        return "/admin/users/admin_add_new_user";
+        return "/admin/users/user_add_new";
     }
 
     public SecurityController getSecurityController() {
@@ -411,35 +411,24 @@ public class WebUserController implements Serializable {
     }
 
     public String saveNewUser() {
-        // We Deal with a new Web ser only here
-        //
-
         if (current == null) {
             UtilityController.addErrorMessage("Nothing to save");
             return "";
         }
-
         if (createOnlyUserForExsistingUser && getStaff() == null) {
             UtilityController.addErrorMessage("Select Staff");
             return "";
         }
-
         if (userNameAvailable(getCurrent().getName())) {
             UtilityController.addErrorMessage("User name already exists. Plese enter another user name");
             return "";
         }
-
         getCurrent().setActivated(true);
         getCurrent().setActivatedAt(new Date());
         getCurrent().setActivator(getSessionController().getLoggedUser());
-
-        //////// // System.out.println("Start");
-        //Save Person
         getCurrent().getWebUserPerson().setCreatedAt(new Date());
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
         getPersonFacade().create(getCurrent().getWebUserPerson());
-        //////// // System.out.println("Person Saved");
-
         if (createOnlyUserForExsistingUser) {
             getCurrent().getWebUserPerson().setName(getStaff().getPerson().getName());
             getCurrent().getWebUserPerson().setAddress(getStaff().getPerson().getAddress());
@@ -476,18 +465,6 @@ public class WebUserController implements Serializable {
         getCurrent().setName((getCurrent().getName()));
         getCurrent().setWebUserPassword(getSecurityController().hash(getCurrent().getWebUserPassword()));
         getFacade().create(getCurrent());
-        //////// // System.out.println("Web User Saved");
-        //SetPrivilage
-//        for (Privileges p : currentPrivilegeses) {
-//            WebUserPrivilege pv = new WebUserPrivilege();
-//            pv.setWebUser(current);
-//            pv.setPrivilege(p);
-//            pv.setCreatedAt(new Date());
-//            pv.setCreater(getSessionController().getLoggedUser());
-//            getWebUserPrevilageFacade().create(pv);
-//
-//        }
-
         if (createOnlyUser) {
             UtilityController.addSuccessMessage("Add New User Only");
         } else if (createOnlyUserForExsistingUser) {
@@ -495,11 +472,9 @@ public class WebUserController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("Add New User & Staff");
         }
-
         recreateModel();
-        navigateToAddNewUser();
         selectText = "";
-        return BackToAdminManageUsers();
+        return navigateToListUsers();
     }
 
     public void onlyAddStaffListner() {
@@ -578,7 +553,7 @@ public class WebUserController implements Serializable {
 
     public String navigateToListUsers() {
         fillLightUsers();
-        return "/admin/users/list_users";
+        return "/admin/users/user_list";
     }
 
     private void fillLightUsers() {
@@ -725,7 +700,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         current = selected;
-        return "/admin/users/index";
+        return "/admin/users/user";
     }
 
     public String navigateToManageStaff() {
@@ -743,7 +718,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         current = selected;
-        return "/admin/users/admin_change_password";
+        return "/admin/users/change_password";
     }
 
     public String navigateToManagePrivileges() {
@@ -753,7 +728,7 @@ public class WebUserController implements Serializable {
         }
         getUserPrivilageController().setCurrentWebUser(selected);
         getUserPrivilageController().createSelectedPrivilegesForUser();
-        return "/admin/users/admin_user_privilages";
+        return "/admin/users/user_privileges";
     }
 
     public String navigateToManagePaymentSchemes() {
@@ -762,7 +737,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getUserPaymentSchemeController().setSelectedUser(selected);
-        return "/admin/users/admin_user_paymentScheme";
+        return "/admin/users/user_payment_schemes";
     }
 
     public String toManageSignature() {
@@ -780,7 +755,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         getUserDepartmentController().setSelectedUser(selected);
-        return "/admin/users/admin_user_department";
+        return "/admin/users/user_department";
     }
 
     public String toManageDashboards() {
@@ -791,10 +766,6 @@ public class WebUserController implements Serializable {
         current = selected;
         listWebUserDashboards();
         return "/admin_manage_dashboards";
-    }
-
-    public String BackToAdminManageUsers() {
-        return "/admin_manage_users";
     }
 
     public void addWebUserDashboard() {
@@ -850,7 +821,7 @@ public class WebUserController implements Serializable {
     }
 
     public String backToViewUsers() {
-        return "/admin/users/list_users";
+        return "/admin/users/user_list";
     }
 
     public String changeCurrentUserPassword() {
@@ -866,7 +837,7 @@ public class WebUserController implements Serializable {
         current.setWebUserPassword(getSecurityController().hash(newPassword));
         getFacade().edit(current);
         UtilityController.addSuccessMessage("Password changed");
-        return "/admin_manage_users";
+        return navigateToListUsers();
     }
 
     public UserPaymentSchemeController getUserPaymentSchemeController() {
@@ -969,7 +940,7 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToManageUsers() {
-        return "/admin/users/admin_manage_users";
+        return "/admin/users/index";
     }
 
     public List<WebUserLight> getWebUseLights() {

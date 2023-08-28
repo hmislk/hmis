@@ -78,7 +78,7 @@ public class LoginController implements Serializable {
     
     public String navigateToViewLogins(){
         fillLogins();
-        return "/admin/users/admin_view_logins";
+        return "/admin/users/user_logins";
     }
 
     public void fillLogins() {

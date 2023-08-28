@@ -5,7 +5,7 @@
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui">
     <h:body >
-        <ui:composition template="/admin/users/admin_manage_users.xhtml">
+        <ui:composition template="/admin/users/index.xhtml">
             <ui:define name="subcontent">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
                     <h:outputText value="You are NOT authorized"/>
