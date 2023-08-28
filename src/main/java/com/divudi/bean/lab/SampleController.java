@@ -12,6 +12,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.SampleFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,26 +40,21 @@ public class SampleController implements Serializable {
     SessionController sessionController;
     @EJB
     private SampleFacade ejbFacade;
-    List<Sample> selectedItems;
     private Sample current;
     private List<Sample> items = null;
-    String selectText = "";
 
-    public List<Sample> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Sample c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
+    public List<Sample> fillAllItems() {
+        String j = "select s "
+                + " from Sample s "
+                + " where s.retired=:ret "
+                + " order by s.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(j,m);
     }
 
     public void prepareAdd() {
         current = new Sample();
-    }
-
-    public void setSelectedItems(List<Sample> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
     }
 
     private void recreateModel() {
@@ -66,7 +62,6 @@ public class SampleController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
@@ -80,24 +75,12 @@ public class SampleController implements Serializable {
         getItems();
     }
 
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
-    }
-
-    public SampleFacade getEjbFacade() {
+    private SampleFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(SampleFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
-    public SessionController getSessionController() {
+    private SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 
     public SampleController() {
@@ -106,7 +89,7 @@ public class SampleController implements Serializable {
     public Sample getCurrent() {
         return current;
     }
-    
+
     public Sample getAnySample() {
         return getItems().get(0);
     }
@@ -115,8 +98,7 @@ public class SampleController implements Serializable {
         this.current = current;
     }
 
-    public void delete() {
-
+    public String delete() {
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -129,7 +111,24 @@ public class SampleController implements Serializable {
         recreateModel();
         getItems();
         current = null;
-        getCurrent();
+        return navigateToListItems();
+    }
+
+    public String navigateToListItems() {
+        return "/admin/lims/speciman_list";
+    }
+
+    public String navigateToAddItem() {
+        prepareAdd();
+        return "/admin/lims/speciman";
+    }
+
+    public String navigateToEditItem() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        return "/admin/lims/speciman";
     }
 
     private SampleFacade getFacade() {
@@ -138,13 +137,7 @@ public class SampleController implements Serializable {
 
     public List<Sample> getItems() {
         if (items == null) {
-            String j = "select s "
-                    + " from Sample s "
-                    + " where s.retired=:ret "
-                    + " order by s.name";
-            Map m = new HashMap();
-            m.put("ret", false);
-            items = getFacade().findByJpql(j, m);
+            items = fillAllItems();
         }
         return items;
     }

@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/lims/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="subcontent">
+        <h:form >
+            <p:panel class="form" >
+                <f:facet name="header" >
+                    <p:outputLabel value="Speciman Type" ></p:outputLabel>
+                </f:facet>
+
+                <h:outputLabel 
+                    for="txtName" 
+                    value="Name"
+                    class="form-label"></h:outputLabel>
+                <h:inputText 
+                    autocomplete="off" 
+                    id="txtName" 
+                    required="true"
+                    requiredMessage="Enter a Name"
+                    class="form-control"
+                    rendered="#{sampleController.current ne null}"
+                    value="#{sampleController.current.name}"  ></h:inputText>
+
+                <h:outputText 
+                    id="lblDec" 
+                    class="form-label"
+                    value="Description" ></h:outputText>
+                <h:inputText 
+                    autocomplete="off"
+                    id="txtDes" 
+                    class="form-control"
+                    rendered="#{sampleController.current ne null}"
+                    value="#{sampleController.current.description}"  ></h:inputText>
+
+                <p:commandButton 
+                    id="btnSave" 
+                    value="Save" 
+                    icon="pi pi-save" 
+                    ajax="false"
+                    action="#{sampleController.saveSelected()}" 
+                    class="btn-primary m-2">
+                </p:commandButton>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

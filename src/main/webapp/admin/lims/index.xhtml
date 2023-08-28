@@ -13,8 +13,7 @@
         <div class="row" >
             <div class="col-md-3" >
                 <h:form>
-
-                    <p:panel header="Manage Items/Services" rendered="true">
+                    <p:panel header="Manage Metadata" rendered="true">
                         <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}" >
                             <p:ajax process="@this" ></p:ajax>
                             <p:tab title="Manage Metadata">
@@ -28,23 +27,25 @@
                                                        action="#{investigationCategoryController.navigateToListInvestigationCategories}" />
 
                                     <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="Add Tube" 
+                                                       value="Add Container" 
                                                        action="#{investigationTubeController.navigateToAddTube()}" />
 
                                     <p:commandButton   class="w-100"  ajax="false" 
-                                                       value="List Tubes" 
+                                                       value="List Containers" 
                                                        action="#{investigationTubeController.navigateToListTubes()}" />
 
                                     <p:commandButton   
                                         class="w-100" 
                                         ajax="false" 
-                                        value="Containers" 
-                                        action="#{investigationController.navigateToListInvestigationsForAdmin()}" />
+                                        value="Add Speciman" 
+                                        action="#{sampleController.navigateToAddItem()}" />
+
                                     <p:commandButton   
                                         class="w-100" 
                                         ajax="false" 
-                                        value="Specimans" 
-                                        action="#{investigationCategoryController.navigateToInvestigationFees()}" />
+                                        value="List Specimans" 
+                                        action="#{sampleController.navigateToListItems()}" />
+
                                 </div>
                             </p:tab>
                             <p:tab title="Manage Investigations">
