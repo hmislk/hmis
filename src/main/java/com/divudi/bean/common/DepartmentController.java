@@ -261,6 +261,37 @@ public class DepartmentController implements Serializable {
         return departmentList;
     }
 
+    public List<Department> completeDeptWithIns(String qry) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        Institution selectedInstitution = (Institution) UIComponent.getCurrentComponent(context).getAttributes().get("selectedInstitution");
+        String sql;
+        HashMap<String, Object> hm = new HashMap<>();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        hm.put("ins", selectedInstitution);
+        departmentList = getFacade().findByJpql(sql, hm);
+        return departmentList;
+    }
+
+    public List<Department> completeDept(String qry, Institution ins) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        hm.put("ins", ins);
+        departmentList = getFacade().findByJpql(sql, hm);
+
+        return departmentList;
+    }
+
     public List<Department> completeDeptPharmacy(String qry) {
         String sql;
         HashMap hm = new HashMap();
@@ -487,9 +518,9 @@ public class DepartmentController implements Serializable {
         if (dep == null) {
             return;
         }
-        if(dep.getId()==null){
-             getFacade().create(dep);
-        }else{
+        if (dep.getId() == null) {
+            getFacade().create(dep);
+        } else {
             getFacade().edit(dep);
         }
     }
@@ -500,7 +531,6 @@ public class DepartmentController implements Serializable {
     /**
      *
      */
-
     @FacesConverter(forClass = Department.class)
     public static class DepartmentConverter implements Converter {
 

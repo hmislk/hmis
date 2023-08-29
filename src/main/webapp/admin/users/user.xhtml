@@ -17,15 +17,13 @@
 
                     <h:form>
                         <p:panel >
-
                             <f:facet name="header" >
                                 <h:outputLabel value="Manage User"/>
                                 <p:commandButton ajax="false" value="Save" action="#{webUserController.saveUser()}" >
                                 </p:commandButton>
-
-                                <p:commandButton ajax="false" value="Back" action="#{webUserController.backToViewUsers()}" >
-                                </p:commandButton>
-
+                            </f:facet>
+                            <f:facet name="footer" >
+                                <p:messages ></p:messages>
                             </f:facet>
 
                             <p:panelGrid columns="2">

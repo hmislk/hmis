@@ -107,7 +107,7 @@ public class WebUserController implements Serializable {
     Speciality speciality;
     List<WebUserPrivilege> userPrivileges;
     private List<WebUser> webUsers;
-    List<WebUser> itemsToRemove;
+    List<WebUserLight> itemsToRemove;
     private List<WebUserLight> webUseLights;
 
     Staff staff;
@@ -125,18 +125,37 @@ public class WebUserController implements Serializable {
 
     private List<Department> departmentsOfSelectedUsersInstitution;
 
+    public String navigateToRemoveMultipleUsers() {
+        return "/admin/users/user_remove_multiple";
+    }
+
     public void removeMultipleUsers() {
-        for (WebUser s : itemsToRemove) {
-            s.setRetired(true);
-            s.setRetireComments("Bulk Remove");
-            s.setRetirer(getSessionController().getLoggedUser());
+        if (itemsToRemove == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        if (itemsToRemove.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        for (WebUserLight s : itemsToRemove) {
+            if (s.getId() == null) {
+                continue;
+            }
+            WebUser twu = getFacade().find(s.getId());
+            if (twu == null) {
+                continue;
+            }
+            twu.setRetired(true);
+            twu.setRetireComments("Bulk Remove");
+            twu.setRetirer(getSessionController().getLoggedUser());
             try {
-                getFacade().edit(s);
+                getFacade().edit(twu);
             } catch (Exception e) {
             }
         }
         itemsToRemove = null;
-        items = null;
+        fillLightUsers();
     }
 
     public void updateWebUser(WebUser webUser) {
@@ -200,7 +219,8 @@ public class WebUserController implements Serializable {
         selected.setRetirer(getSessionController().getLoggedUser());
         selected.setRetiredAt(Calendar.getInstance().getTime());
         getFacade().edit(selected);
-
+        selected = null;
+        fillLightUsers();
         UtilityController.addErrorMessage("User Removed");
     }
 
@@ -557,12 +577,14 @@ public class WebUserController implements Serializable {
     }
 
     private void fillLightUsers() {
-        HashMap m = new HashMap();
+        HashMap<String, Object> m = new HashMap<>();
         String jpql;
         jpql = "Select new com.divudi.light.common.WebUserLight(wu.name, wu.id)"
                 + " from WebUser wu "
+                + " where wu.retired=:ret "
                 + " order by wu.name";
-        webUseLights = (List<WebUserLight>) getFacade().findLightsByJpql(jpql);
+        m.put("ret", false);
+        webUseLights = (List<WebUserLight>) getFacade().findLightsByJpql(jpql, m);
     }
 
     public List<WebUser> getSelectedItems() {
@@ -654,11 +676,11 @@ public class WebUserController implements Serializable {
         this.webUsers = webUsers;
     }
 
-    public List<WebUser> getItemsToRemove() {
+    public List<WebUserLight> getItemsToRemove() {
         return itemsToRemove;
     }
 
-    public void setItemsToRemove(List<WebUser> itemsToRemove) {
+    public void setItemsToRemove(List<WebUserLight> itemsToRemove) {
         this.itemsToRemove = itemsToRemove;
     }
 

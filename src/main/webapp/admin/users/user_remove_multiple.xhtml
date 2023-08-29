@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body >
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
+                    <h:outputText value="You are NOT authorized"/>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <h:form  >
+                        <div class="container-fluid p-2" >
+                            <div class="row" >
+                                <div class="col-md-12" >
+                                    <p:commandButton   
+                                        ajax="false"  
+                                        value="Remove all Selected Users" 
+                                        class="m-1"
+                                        onclick="if (!confirm('Are you sure you want to Remove User?'))
+                                                    return false;" 
+                                                    action="#{webUserController.removeMultipleUsers()}">
+                                    </p:commandButton>
+                                    <ui:insert name="users" >
+                                        <p:dataTable id="lstSelect" 
+                                                     value="#{webUserController.webUseLights}" 
+                                                     var="u"
+                                                     rowKey="#{u.id}"
+                                                     selection="#{webUserController.itemsToRemove}" 
+                                                     rows="10" 
+                                                     paginator="true"
+                                                     paginatorAlwaysVisible="false"
+                                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     rowsPerPageTemplate="10,50,100,500"
+                                                     >
+                                            <p:column selectionMode="multiple" width="30" ></p:column>
+                                            <p:column headerText="User Name" 
+                                                      sortBy="#{u.userName}" 
+                                                      filterBy="#{u.userName}"
+                                                      filterMatchMode="contains">
+                                                <h:outputText value="#{u.userName}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </ui:insert>
+                                </div>
+
+                            </div>
+                        </div>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

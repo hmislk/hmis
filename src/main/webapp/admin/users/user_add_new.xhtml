@@ -29,6 +29,9 @@
                                     action="#{webUserController.saveNewUser()}" ajax="false" >
                                 </p:commandButton>
                             </f:facet>
+                            <f:facet name="footer" >
+                                <p:messages ></p:messages>
+                            </f:facet>
 
                             <p:tabView >
                                 <p:tab title="Basic" >
@@ -54,17 +57,65 @@
                                                        rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
                                         <p:inputText autocomplete="off" 
                                                      id="txtAddress"
-                                                     style="min-width: 700px"
+                                                     class="w-100"
                                                      required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                      value="#{webUserController.current.webUserPerson.address}"
                                                      requiredMessage="Please enter an address."></p:inputText>
-                                        <p:outputLabel for="txtPhone" value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                        <p:inputText id="txtPhone" required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                        <p:outputLabel for="txtPhone" 
+                                                       class="w-100"
+                                                       value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:inputText id="txtPhone" 
+                                                     class="w-100"
+                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
                                                      value="#{webUserController.current.webUserPerson.mobile}"
                                                      requiredMessage="Plase enter a phone number"
-                                                     style="width: 700px"></p:inputText>
+                                                     ></p:inputText>
                                         <p:outputLabel value="Speciality" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
-                                        <autocomplete:completeSpeciality value="#{webUserController.speciality}" disable="#{webUserController.createOnlyUser}" rendered="#{!webUserController.createOnlyUserForExsistingUser}"/>
+                                        <p:autoComplete   forceSelection="true" id="speciality"
+                                                          value="#{webUserController.speciality}"
+                                                          completeMethod="#{specialityController.completeSpeciality}" 
+                                                          var="mys" 
+                                                          class="w-100"
+                                                          inputStyleClass="form-control"
+                                                          itemLabel="#{mys.name}" 
+                                                          itemValue="#{mys}"
+                                                          disabled="#{webUserController.createOnlyUser}" 
+                                                          rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                          >              
+                                        </p:autoComplete> 
+
+
+                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+                                        <p:autoComplete 
+                                            id="ins"
+                                            value="#{webUserController.institution}"
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ins"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}">
+                                            <p:ajax event="itemSelect" update="dep"/>
+                                        </p:autoComplete>
+
+                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+
+                                        <p:autoComplete 
+                                            id="dep"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            value="#{webUserController.department}" 
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            completeMethod="#{departmentController.completeDeptWithIns}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                            <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
+                                        </p:autoComplete>
+
+
+
 
                                         <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
                                         <p:inputText id="txtUsername"
@@ -92,11 +143,6 @@
                                         <autocomplete:completeStaff value="#{webUserController.staff}" rendered="#{webUserController.createOnlyUserForExsistingUser}" />
 
 
-                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                        <autocomplete:institution value="#{webUserController.institution}" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></autocomplete:institution>
-
-                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
-                                        <autocomplete:department value="#{webUserController.department}" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></autocomplete:department>
 
                                         <h:outputLabel value="Code" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
                                         <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
