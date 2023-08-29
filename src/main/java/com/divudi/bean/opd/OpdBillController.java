@@ -1110,14 +1110,13 @@ public class OpdBillController implements Serializable {
     }
 
     public String settleOpdBill() {
-        String ipAddress;
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
         String url = request.getRequestURL().toString();
 
-        ipAddress = request.getRemoteAddr();
+        String ipAddress = request.getRemoteAddr();
         System.out.println("Start");
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
