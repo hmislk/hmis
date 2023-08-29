@@ -51,13 +51,10 @@ public class AuditEventApplicationController {
     }
 
     private void processEventQueue() {
-        System.out.println("AuditEventControlller");
         while (!Thread.currentThread().isInterrupted()) {
             try {
-                System.out.println("AuditEventControlller start");
                 AuditEvent event = eventQueue.take();
                 saveOrUpdateEvent(event);
-                System.out.println("AuditEventControlller saved");
                
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
