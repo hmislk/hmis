@@ -133,6 +133,46 @@ public class PharmacyController implements Serializable {
 
     }
 
+    public String navigateToManagePharmaceuticals() {
+        return "/pharmacy/admin/index";
+    }
+
+    public String navigateToDosageForms() {
+        return "/pharmacy/admin/dosage_forms";
+    }
+
+    public String navigateToDosageFormsMultiple() {
+        return "/pharmacy/admin/dosage_forms_multiple";
+    }
+
+    public String navigateToAtc() {
+        return "/pharmacy/admin/atc";
+    }
+
+    public String navigateToAmp() {
+        return "/pharmacy/admin/amp";
+    }
+
+    public String navigateToAmpp() {
+        return "/pharmacy/admin/ampp";
+    }
+
+    public String navigateToAtm() {
+        return "/pharmacy/admin/atm";
+    }
+    
+    public String navigateToVmp(){
+        return "/pharmacy/admin/vmp";
+    }
+    
+    public String navigateToVtm(){
+        return "/pharmacy/admin/vtm";
+    }
+    
+    public String navigateToVmpp(){
+        return "/pharmacy/admin/vmpp";
+    }
+
     public List<Stock> completeAllStocks(String qry) {
         List<Stock> items;
         String sql;

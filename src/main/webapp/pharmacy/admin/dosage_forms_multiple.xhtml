@@ -1,15 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/pharmacy/pharmacy_admin.xhtml"
+                template="/pharmacy/admin/index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
-
-
     <ui:define name="subcontent">
-
         <h:panelGroup >
             <h:form  >
                 <p:panel >
@@ -17,7 +14,6 @@
                         <h:outputLabel value="Manage Pharmaceutical Item Categories" ></h:outputLabel>
                         <p:commandButton value="Back" ajax="false" action="/pharmacy/pharmacy_admin" icon="ui-icon-circle-triangle-w" style="float: right;" ></p:commandButton>
                     </f:facet>
-
                     <p:panel>
                         <h:panelGrid columns="2" id="pan" >
                             <p:selectOneRadio value="#{dataAdministrationController.reportKeyWord.string}" >
