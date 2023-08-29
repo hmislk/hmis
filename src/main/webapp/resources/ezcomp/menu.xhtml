@@ -854,6 +854,11 @@
                     <p:menuitem  ajax="false"  action="#{webContentController.navigateToManageWeb()}" value="Manage Web" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{formFormatController.navigateToManageForms()}" value="Manage Form" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{itemController.toManageItemdIndex()}" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{pharmacyController.navigateToManagePharmaceuticals}" 
+                        value="Manage Pharmaceuticals" 
+                        rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  action="#{feeController.navigateToAdminFee()}" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{feeController.navigateToAdminDiscounts()}" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="#{dataAdministrationController.navigateToAdminDataAdministration()}" value="Data Administration" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
