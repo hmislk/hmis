@@ -235,6 +235,31 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters) {
+        Query qry = getEntityManager().createQuery(jpql);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, TemporalType.DATE);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<?> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
     public List<T> findByJpql(String jpql, int maxResults) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(maxResults);
@@ -242,7 +267,6 @@ public abstract class AbstractFacade<T> {
     }
 
     public List<T> findByJpql(String jpql, Map<String, Object> parameters) {
-
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         Set s = parameters.entrySet();
         Iterator it = s.iterator();
