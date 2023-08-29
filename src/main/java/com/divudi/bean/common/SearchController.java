@@ -47,6 +47,8 @@ import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.StockFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.light.common.BillLight;
+import com.divudi.light.common.WebUserLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,6 +122,7 @@ public class SearchController implements Serializable {
     private BillType billType;
     private PaymentMethod paymentMethod;
     private List<Bill> bills;
+    private List<BillLight> billLights;
     private List<Bill> selectedBills;
     List<Bill> aceptPaymentBills;
     private List<BillFee> billFees;
@@ -602,6 +605,7 @@ public class SearchController implements Serializable {
         this.file = file;
     }
 
+    @Deprecated
     private void checkLabReportsApproved(List<Bill> bills) {
         for (Bill b : bills) {
             String sql;
@@ -619,6 +623,7 @@ public class SearchController implements Serializable {
         }
     }
 
+    
     private void checkLabReportsApprovedBillItem(List<BillItem> billItems) {
         for (BillItem bi : billItems) {
             String sql;
@@ -702,6 +707,14 @@ public class SearchController implements Serializable {
 
     public void setManageListIndex(int manageListIndex) {
         this.manageListIndex = manageListIndex;
+    }
+
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
     }
 
     public class billsWithbill {
@@ -5283,6 +5296,7 @@ public class SearchController implements Serializable {
     @Inject
     WebUserController webUserController;
 
+    @Deprecated
     public void searchDepartmentOpdBills() {
         Date startTime = new Date();
 
@@ -5310,6 +5324,36 @@ public class SearchController implements Serializable {
 
         createTableByKeyword(BillType.OpdBill, null, sessionController.getDepartment());
         checkLabReportsApproved(bills);
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
+    
+    public void searchDepartmentOpdBillLights() {
+        Date startTime = new Date();
+
+        if (fromDate != null && toDate != null) {
+
+            long timeGapInMillis = toDate.getTime() - fromDate.getTime();
+
+            long daysGap = timeGapInMillis / (1000 * 60 * 60 * 24);
+
+            if (daysGap > 3) {
+//                if (searchKeyword.getBillNo() == null && searchKeyword.getBillNo().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                } else if (searchKeyword.getPatientName() == null && searchKeyword.getPatientName().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                } else if (searchKeyword.getPatientPhone() == null && searchKeyword.getPatientPhone().trim().equals("")) {
+//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
+//                    return;
+//                }
+                JsfUtil.addErrorMessage("Please select upto 3 days");
+                return;
+            }
+        }
+
+        fillBills(BillType.OpdBill, null, sessionController.getDepartment());
+       
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
@@ -5446,9 +5490,68 @@ public class SearchController implements Serializable {
     private PatientFacade patientFacade;
 
     public void createTableByKeyword(BillType billType) {
-        createTableByKeyword(billType, null, null);
+        fillBills(billType, null, null);
+    }
+    
+    public void fillBills(BillType billType, Institution ins, Department dep) {
+        billLights = null;
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select new com.divudi.light.common.BillLight(bill.id, bill.insId, bill.createdAt, bill.institution.name, bill.toDepartment.name, bill.creater.name, bill.patient.person.name, bill.patient.person.phone, bill.total, bill.discount, bill.netTotal) "
+                + " from BilledBill bill "
+                + " where bill.billType = :billType "
+                + " and bill.createdAt between :fromDate and :toDate "
+                + " and bill.retired=false ";
+
+        if (ins != null) {
+            sql += " and bill.institution=:ins ";
+            temMap.put("ins", ins);
+        }
+
+        if (dep != null) {
+            sql += " and bill.department=:dep ";
+            temMap.put("dep", dep);
+        }
+
+        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
+            sql += " and  ((bill.patient.person.name) like :patientName )";
+            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
+            sql += " and  ((bill.patient.person.phone) like :patientPhone )";
+            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and  (((bill.insId) like :billNo )or((bill.deptId) like :billNo ))";
+            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            sql += " and  ((bill.netTotal) like :netTotal )";
+            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
+            sql += " and  ((bill.total) like :total )";
+            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by bill.createdAt desc  ";
+//    
+        temMap.put("billType", billType);
+        temMap.put("toDate", getToDate());
+        temMap.put("fromDate", getFromDate());
+
+      
+        billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap);
+
     }
 
+
+    @Deprecated
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
         bills = null;
         String sql;
@@ -7804,6 +7907,7 @@ public class SearchController implements Serializable {
     public List<Bill> getBills() {
         return bills;
     }
+    
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
