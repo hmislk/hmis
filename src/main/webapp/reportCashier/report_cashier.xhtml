@@ -65,9 +65,9 @@
                                     </p:tab>
                                     <p:tab title="3) Payment Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="1) OPD Doctor Payments and Due" action="/opd_search_professional_payment_due_1" actionListener="#{searchController.makeListNull2()}"/>                                
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD Doctor Payments(By Bill Item)" action="report_doctor_payment_opd" actionListener="#{searchController.makeListNull2()}"/>
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="3) OPD Doctor Payments(By Bill)" action="report_doctor_payment_opd_by_bill" actionListener="#{searchController.makeListNull2()}"/>
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="1) OPD Doctor Payments and Due" action="#{searchController.navigatToopdSearchProfessionalPaymentDue1()}" actionListener="#{searchController.makeListNull2()}"/>                                
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD Doctor Payments(By Bill Item)" action="#{searchController.navigatToReportDoctorPaymentOpd()}" actionListener="#{searchController.makeListNull2()}"/>
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="3) OPD Doctor Payments(By Bill)" action="#{searchController.navigatToReportDoctorPaymentOpdByBill()}" actionListener="#{searchController.makeListNull2()}"/>
                                         </div>
                                     </p:tab>
                                     <p:tab title="3) Handover Reports">
