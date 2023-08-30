@@ -8,41 +8,60 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="subcontent">
         <h:form  >
-            <p:panel header="Manage AMPs" >
-                <h:panelGrid id ="gpVeda" columns="2" >
-                    <f:facet name="header" >
-                        <h:outputText value="AMPs" ></h:outputText>
+
+            <p:dataTable 
+                value="#{pharmacyController.amps}" 
+                var="i"
+                selection="#{pharmacyController.ampsSelected}"
+                rowKey="#{i.id}"
+                rows="5"
+                paginator="true" 
+                paginatorPosition="both"
+                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                >
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h:outputText value="AMPs" />
                         <p:commandButton 
                             value="Remove Selected" 
                             action="#{pharmacyController.deleteMultipleAmps()}"
                             ajax="false"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" 
-                            ></p:commandButton>
-                    </f:facet>
-                    <p:dataTable 
-                        value="#{pharmacyController.amps}" 
-                        var="i"
-                        selection="#{pharmacyController.ampsSelected}"
-                        rowKey="#{i.id}"
-                        rows="5"
-                        paginator="true" 
-                        paginatorPosition="both"
-                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                        rowsPerPageTemplate="5,10,{ShowAll|'All'}"
-                        >
-                        <p:column selectionMode="multiple" width="50" >
-                        </p:column>
-                        <p:column headerText="Name" >
-                            <h:outputText value="#{i.name}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Actions" >
-                            
-                        </p:column>
-                    </p:dataTable>
-                </h:panelGrid>
-            </p:panel>
+                            />
+                    </div>
+                </f:facet>
+                <p:column 
+                    selectionMode="multiple" width="50" >
+                </p:column>
+                <p:column 
+                    headerText="Name" 
+                    sortBy="#{i.name}"
+                    filterBy="#{i.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="VMP" 
+                    sortBy="#{i.vmp.name}"
+                    filterBy="#{i.vmp.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.vmp.name}" ></h:outputText>
+                </p:column>
+                <p:column headerText="Actions" >
+                    <p:commandButton 
+                        ajax="false" 
+                        value="Delete" 
+                        action="#{pharmacyController.deleteSingleAmp()}" >
+                        <f:setPropertyActionListener 
+                            value="#{i}" 
+                            target="#{pharmacyController.amp}" ></f:setPropertyActionListener>
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
+
         </h:form>
     </ui:define>
 </ui:composition>

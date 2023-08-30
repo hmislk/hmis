@@ -172,7 +172,7 @@ public class PharmacyController implements Serializable {
     private void fillVtms() {
         String j = "select i "
                 + " from Vtm i "
-                + " where i.retired != false "
+                + " where i.retired != true "
                 + " order by i.name";
         vtms = vtmFacade.findByJpql(j);
     }
@@ -180,7 +180,7 @@ public class PharmacyController implements Serializable {
     private void fillAtms() {
         String j = "select i "
                 + " from Atm i "
-                + " where i.retired != false "
+                + " where i.retired != true "
                 + " order by i.name";
         atms = atmFacade.findByJpql(j);
     }
@@ -188,7 +188,7 @@ public class PharmacyController implements Serializable {
     private void fillVmps() {
         String j = "select i "
                 + " from Vmp i "
-                + " where i.retired != false "
+                + " where i.retired != true "
                 + " order by i.name";
         vmps = vmpFacade.findByJpql(j);
     }
@@ -196,7 +196,7 @@ public class PharmacyController implements Serializable {
     private void fillAmps() {
         String j = "select i "
                 + " from Amp i "
-                + " where i.retired != false "
+                + " where i.retired != true "
                 + " order by i.name";
         amps = ampFacade.findByJpql(j);
     }
@@ -204,7 +204,7 @@ public class PharmacyController implements Serializable {
     private void fillVmpps() {
         String j = "select i "
                 + " from Vmpp i "
-                + " where i.retired != false "
+                + " where i.retired != true "
                 + " order by i.name";
         vmpps = vmppFacade.findByJpql(j);
     }
@@ -212,7 +212,7 @@ public class PharmacyController implements Serializable {
     private void fillAmpps() {
         String j = "select i "
                 + " from Ampp i "
-                + " where i.retired != false "
+                + " where i.retired != true "
                 + " order by i.name";
         ampps = amppFacade.findByJpql(j);
     }
@@ -339,7 +339,7 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
-        amp.setRetired(true);
+        amp.setRetired(Boolean.TRUE);
         ampFacade.edit(amp);
         fillAmps();
     }
