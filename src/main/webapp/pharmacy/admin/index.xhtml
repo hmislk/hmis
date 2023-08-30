@@ -62,8 +62,15 @@
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
-                                                value="Measurement Units" 
-                                                action="pharmacy_measurement_unit" />
+                                                value="Add Unit" 
+                                                action="#{measurementUnitController.navigateToAddMeasurementUnit()}"  ></p:commandButton>
+                                            <p:commandButton 
+                                                class="w-100" 
+                                                ajax="false" 
+                                                value="List Units" 
+                                                action="#{measurementUnitController.navigateToListAllMeasurementUnit()}"  ></p:commandButton>
+
+                                            
                                         </div>
                                     </p:tab>
                                     <p:tab title="Medicines Management - Multiple">
