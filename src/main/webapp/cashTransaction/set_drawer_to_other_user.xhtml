@@ -13,7 +13,7 @@
             <h:form  >
                 <h:panelGrid columns="2">
                     <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                    <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}"
+                    <p:autoComplete  completeMethod="#{webUserController.completeUser}"
                                      styleClass="noPrintButton"
                                     forceSelection="true"
                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
