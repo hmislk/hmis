@@ -138,6 +138,37 @@ public class CashierReportController implements Serializable {
 
         return "/reportCashier/report_cashier_summery_all?faces-redirect=true";
     }
+    
+    public String navigateToReportCashierSummeryAllByReciptno() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        auditEvent.setEventTrigger("navigateToReportCashierSummeryAllByReciptno()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/report_cashier_summery_all_by_reciptno.xhtml?faces-redirect=true";
+    }
+    
 
     public String navigateToReportcashierDetailedByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
