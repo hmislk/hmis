@@ -16,7 +16,7 @@
                         <div class="col-md-3">
                             <h:form>
                                 <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
-                                    <p:ajax process="@this"></p:ajax>
+                                   <p:ajax process="@this" ></p:ajax>
                                     <p:tab title="Common Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" 
@@ -46,21 +46,21 @@
                                             <p:commandButton class="w-100" ajax="false" value="2.1) Cashier Summary(Using Recipt No)" action="#{cashierReportController.navigateToCashierSummaryUsingReciptNo()}" actionListener="#{commonReport.recreteModal2}"/>
                                             <p:commandButton class="w-100" ajax="false" value="3) All Cashier Report" action="#{cashierReportController.navigateToDepartmentAllCashierReport}" actionListener="#{cashierReportController.recreteModal}"/>
                                             <p:commandButton class="w-100" ajax="false" value="3.1) All Cashier Report(Using Recipt No)" action="#{cashierReportController.navigateToReportCashierSummeryAllByReciptno()}" actionListener="#{cashierReportController.recreteModal2}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="4) All Cashier Summary " action="report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="4.1) All Cashier Summary(Using Recipt No) " action="report_cashier_summery_all_total_only_by_reciptno" actionListener="#{cashierReportController.recreteModal2}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="5) All Cashier Summary Without Professional" action="report_cashier_summery_all_total_only_without_pro.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="6) Bill List" action="/opd_search_user_bills.xhtml"/>
-                                            <p:commandButton class="w-100" ajax="false" value="7) Cashier Service Count Report" action="report_cashier_item_count_by_user.xhtml"/>
-                                            <p:commandButton class="w-100" ajax="false" value="8) Bill Type Summery" action="/reportIncome/bill_type_summery.xhtml"/>
+                                            <p:commandButton class="w-100" ajax="false" value="4) All Cashier Summary " action="#{cashierReportController.navigateToAllCashierSummary()}" actionListener="#{cashierReportController.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="4.1) All Cashier Summary(Using Recipt No) " action="#{cashierReportController.navigateToAllCashierSummaryOnlyByReciptNo()}" actionListener="#{cashierReportController.recreteModal2}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="5) All Cashier Summary Without Professional" action="#{cashierReportController.navigateToReportCashierSummeryAllTotalOnlyWithoutPro()}" actionListener="#{cashierReportController.recreteModal}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="6) Bill List" action="#{cashierReportController.navigateToOpdSearchUserBills()}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="7) Cashier Service Count Report" action="#{cashierReportController.navigateToReportCashierItemCountByUser()}"/>
+                                            <p:commandButton class="w-100" ajax="false" value="8) Bill Type Summery" action="#{cashierReportController.navigateToBillTypeSummery()}"/>
                                         </div>
                                     </p:tab>
                                     <p:tab title="2) Package Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Package Detail Report- By Bill Items" 
-                                                             action="report_opd_package" actionListener="#{billPackageMedicalController.makeNull}"/>     
+                                                             action="#{billPackageMedicalController.navigateToReportOpdPackage()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="2) Package Detail Report- By Bill" 
-                                                             action="report_opd_package_bill" actionListener="#{billPackageMedicalController.makeNull}"/>     
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="3) Medical Package Detail Report" action="report_opd_package_medical" actionListener="#{billPackageMedicalController.makeNull}"/>
+                                                             action="#{billPackageMedicalController.navigateToReportOpdPackageBill()}" actionListener="#{billPackageMedicalController.makeNull}"/>     
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="3) Medical Package Detail Report" action="#{billPackageMedicalController.navigateToReportOpdPackageMedical()}" actionListener="#{billPackageMedicalController.makeNull}"/>
                                         </div>
                                     </p:tab>
                                     <p:tab title="3) Payment Reports">
