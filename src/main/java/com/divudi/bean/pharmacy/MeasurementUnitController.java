@@ -71,7 +71,7 @@ public class MeasurementUnitController implements Serializable {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
-        return "/emr/admin/unit";
+        return "/pharmacy/admin/unit";
     }
     
     public void fillAllUnits() {
