@@ -175,6 +175,22 @@ public abstract class AbstractFacade<T> {
         getEntityManager().merge(entity);
     }
 
+    public void batchEdit(List<T> entities) {
+        final int batchSize = 25; // you can set an appropriate batch size
+        int i = 0;
+        for (T entity : entities) {
+            getEntityManager().merge(entity);
+            i++;
+            if (i % batchSize == 0) {
+                getEntityManager().flush();
+                getEntityManager().clear();
+            }
+        }
+        // Flush one final time
+        getEntityManager().flush();
+        getEntityManager().clear();
+    }
+
     public void editAndCommit(T entity) {
         getEntityManager().merge(entity);
         getEntityManager().getTransaction().commit();
