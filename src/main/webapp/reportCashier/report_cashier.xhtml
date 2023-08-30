@@ -70,10 +70,10 @@
                                             <p:commandButton styleClass="linkButton600600" ajax="false" value="3) OPD Doctor Payments(By Bill)" action="#{searchController.navigatToReportDoctorPaymentOpdByBill()}" actionListener="#{searchController.makeListNull2()}"/>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="3) Handover Reports">
+                                    <p:tab title="4) Handover Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Handover Report" action="/reportCashier/report_income_without_credit_by_institution"/>                                
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2)Handover Report By Date" action="/reportLab/report_lab_hand_over_by_date_summery"/>                                
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="1) Handover Report" action="#{cashierReportController.navigateToReportIncomeWithoutCreditByInstitution()}"/>                                
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2)Handover Report By Date" action="#{labReportSearchByInstitutionController.navigatToReportLabHandOverByDateSummery()}"/>                                
                                         </div>
                                     </p:tab>
                                     <p:tab title="5) Category Reports">
