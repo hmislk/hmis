@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
@@ -15,6 +16,7 @@ import com.divudi.data.PaymentMethod;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -43,9 +45,12 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -81,6 +86,9 @@ public class CommonReport implements Serializable {
     BillSearch billSearch;
     @Inject
     private CommonController commonController;
+
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
     /**
      *
      * Properties
@@ -107,7 +115,7 @@ public class CommonReport implements Serializable {
     List<Bill> pharmacyUnitIssueReturnbill;
 
     private List<Bill> blankBills;
-    
+
     double pharmacyCashBilledBillTotals;
     double pharmacyCashCancelBillTotals;
     double pharmacyCashReturnbillTotals;
@@ -244,9 +252,10 @@ public class CommonReport implements Serializable {
         this.bills = bills;
     }
 
-    public String navigateToCashierDetailedReport(){
+    public String navigateToCashierDetailedReport() {
         return "/store/store_report_cashier_detailed_by_user.xhtml";
     }
+
     public double displayOutsideCalBillFees() {
         String jpql;
         jpql = "Select sum(bf.feeValue) from BillFee bf where bf.fee.feeType=:bft and bf.fee.institution=:ins "
@@ -284,6 +293,7 @@ public class CommonReport implements Serializable {
     double billTotalCancelStaff;
     double billTotalRefundStaff;
     private int manageLabReportIndex;
+
     public double getBillTotal() {
         return billTotal;
     }
@@ -1912,10 +1922,8 @@ public class CommonReport implements Serializable {
         }
 
         //System.out.println("temMap = " + temMap);
-        
         List<Bill> tbs = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        
-        
+
         return tbs;
 
     }
@@ -2814,7 +2822,34 @@ public class CommonReport implements Serializable {
     String header = "";
 
     public void createCashierTableByUser() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createCashierTableByUser()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         header = "Cashier Summery ";
         recreteModal();
         //Opd Billed Bills
@@ -3139,7 +3174,12 @@ public class CommonReport implements Serializable {
         //////////
         createSumAfterCash();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml or /reportCashier/report_cashier_summery_by_user.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Cashier Report(/reportCashier/report_cashier_detailed_by_user.xhtml?faces-redirect=true or /reportCashier/report_cashier_summery_by_user.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
 
@@ -3377,6 +3417,33 @@ public class CommonReport implements Serializable {
 //        getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
         //channell bills
+                FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        System.out.println("Start");
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+    
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createCashierTableByUserOnlyChannel()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
         BillType bty[] = {BillType.ChannelCash, BillType.ChannelPaid};
         List<BillType> btys = Arrays.asList(bty);
         getChannelBilled().setBills(userBillsOwn(new BilledBill(), btys, getWebUser(), getDepartment()));
@@ -3516,6 +3583,12 @@ public class CommonReport implements Serializable {
 
         //////////
         createSum();
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
 //        //Cash IN Billed
 //        getCashInBills().setBills(userBillsOwn(new BilledBill(), BillType.CashIn, getWebUser(), getDepartment()));
@@ -3563,7 +3636,7 @@ public class CommonReport implements Serializable {
         bills = null;
         String sql;
         Map m = new HashMap();
-        List<Bill> b ;
+        List<Bill> b;
         sql = "select b from Bill b where b.insId=:bn ";
         m.put("bn", s);
         b = getBillFacade().findByJpqlWithoutCache(sql, m);
@@ -3583,6 +3656,9 @@ public class CommonReport implements Serializable {
         if (!b.isEmpty()) {
             d = b.get(0).getCreatedAt();
         }
+        
+        
+
 
         return d;
     }
@@ -4297,7 +4373,7 @@ public class CommonReport implements Serializable {
 //        }
         Date startTime = new Date();
 
-        List<Object[]> objects ;
+        List<Object[]> objects;
         billTotal = 0.0;
         billTotalCancel = 0.0;
         billTotalRefund = 0.0;
@@ -4434,7 +4510,7 @@ public class CommonReport implements Serializable {
             WebUser webUser,
             Date fd, Date td, boolean hf, boolean sf) {
 
-        List<Object[]> titems ;
+        List<Object[]> titems;
         String sql;
         Map m = new HashMap();
 
@@ -4491,7 +4567,6 @@ public class CommonReport implements Serializable {
 
         sql += " group by i.name,bf.fee.feeType "
                 + " order by i.name ";
-
 
         titems = getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
@@ -5379,7 +5454,7 @@ public class CommonReport implements Serializable {
         for (Institution i : fetchCollectingCenters(billTypes)) {
             CollectingCenteRow row = new CollectingCenteRow();
             row.setI(i);
-            List<Bill> bs ;
+            List<Bill> bs;
             bs = getBillList(billTypes, i);
             double tot = 0.0;
             double totVat = 0.0;
@@ -6297,9 +6372,9 @@ public class CommonReport implements Serializable {
     public void setInvoceNo(String invoceNo) {
         this.invoceNo = invoceNo;
     }
-    
+
     public List<Bill> getBlankBills() {
-        if(blankBills==null){
+        if (blankBills == null) {
             blankBills = new ArrayList<>();
         }
         return blankBills;
