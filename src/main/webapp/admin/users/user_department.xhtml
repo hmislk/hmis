@@ -31,7 +31,7 @@
                             </f:facet>
                             <h:panelGrid  columns="2" >                          
                                 <h:outputLabel value="User"/>
-                                <p:autoComplete id="user" forceSelection="true" converter="webUs"  
+                                <p:autoComplete id="user" forceSelection="true"   
                                                 completeMethod="#{webUserController.completeUser}" var="us" 
                                                 itemLabel="#{us.webUserPerson.name}" itemValue="#{us}" 
                                                 value="#{userDepartmentController.selectedUser}" >
