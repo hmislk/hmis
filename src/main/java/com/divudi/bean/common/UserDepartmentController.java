@@ -251,26 +251,26 @@ public  class UserDepartmentController implements Serializable {
 
     public void setCurrentInstituion(Institution currentInstituion) {
         this.currentInstituion = currentInstituion;
-        getCurrentInsDepartments();
+//        getCurrentInsDepartments();
     }
 
-    public List<Department> getCurrentInsDepartments() {
-        if (currentInstituion == null) {
-            //////// // System.out.println("1");
-            return new ArrayList<>();
-        }
-        //////// // System.out.println("2");
-        Map m = new HashMap();
-        m.put("ins", currentInstituion);
-        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
-        currentInsDepartments = getDepartmentFacade().findByJpql(sql,m);
-        //////// // System.out.println("3");
-        if (currentInsDepartments == null) {
-            //////// // System.out.println("4");
-            currentInsDepartments = new ArrayList<>();
-        }
-        return currentInsDepartments;
-    }
+//    public List<Department> getCurrentInsDepartments() {
+//        if (currentInstituion == null) {
+//            //////// // System.out.println("1");
+//            return new ArrayList<>();
+//        }
+//        //////// // System.out.println("2");
+//        Map m = new HashMap();
+//        m.put("ins", currentInstituion);
+//        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
+//        currentInsDepartments = getDepartmentFacade().findByJpql(sql,m);
+//        //////// // System.out.println("3");
+//        if (currentInsDepartments == null) {
+//            //////// // System.out.println("4");
+//            currentInsDepartments = new ArrayList<>();
+//        }
+//        return currentInsDepartments;
+//    }
 
     public void setCurrentInsDepartments(List<Department> currentInsDepartments) {
         this.currentInsDepartments = currentInsDepartments;
