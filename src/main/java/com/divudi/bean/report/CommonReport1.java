@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
@@ -13,6 +14,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -41,9 +43,12 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -57,6 +62,7 @@ public class CommonReport1 implements Serializable {
     SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject AuditEventApplicationController auditEventApplicationController;
     ///////////////////
     @EJB
     private BillFacade billFacade;
@@ -1871,7 +1877,36 @@ public class CommonReport1 implements Serializable {
     }
 
     public void createOpdBillList() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createOpdBillList()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+ 
 
 //        if (paymentScheme == null) {
 //            JsfUtil.addErrorMessage("Please Select Payment Scheme");
@@ -1884,7 +1919,12 @@ public class CommonReport1 implements Serializable {
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     public List<Bill> fetchBills(Bill b, BillType billType, PaymentScheme ps) {

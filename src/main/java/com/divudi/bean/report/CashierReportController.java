@@ -569,6 +569,116 @@ public class CashierReportController implements Serializable {
         return "/reportCashier/report_cashier_detailed_user_by_billType.xhtml?faces-redirect=true";
     }
      
+     public String navigateToOpdBillReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateTOopdBillReport()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/opd_bill_report.xhtml?faces-redirect=true";
+    }
+     
+     public String navigateToReportOpdBillsForVat() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportOpdBillsForVat()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/report_opd_bills_for_vat.xhtml?faces-redirect=true";
+    }
+     
+     
+     
+     public String navigateToReportOpdBillPaymentSheame() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportOpdBillPaymentSheame()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/report_opd_bill_payment_sheame.xhtml?faces-redirect=true";
+    }
+     
      
       public String navigateToReportCashierDetailedByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
