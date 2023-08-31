@@ -264,6 +264,10 @@ public class CommonReport implements Serializable {
         return "/pharmacy/report_cashier_summery_by_user.xhtml";
     }
     
+    public String navigateToReportCashierSummaryAll(){
+        return "/pharmacy/report_cashier_summery_all.xhtml";
+    }
+    
     
     public double displayOutsideCalBillFees() {
         String jpql;
