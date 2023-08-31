@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
 
 
@@ -19,31 +19,31 @@
 
                     <p:panel header="Summary By Bill Type">
 
-                        <p:panelGrid columns="2" styleClass="alignTop" >
-                            <h:panelGrid columns="2">
+                        <p:panelGrid columns="1" styleClass="alignTop" class="w-100">
+                            <h:panelGrid columns="2" >
                                 <h:outputLabel value="From"/>
-                                <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yy HH:mm:ss a" >
+                                <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yy HH:mm:ss a" class="w-100">
                                 </p:calendar>
 
                                 <h:outputLabel value="To"/>
-                                <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yy HH:mm:ss a" >
+                                <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yy HH:mm:ss a" class="w-100">
                                 </p:calendar>
 
                                 <h:outputLabel value="Billed Department"/>
                                 <p:autoComplete id="frmdep" completeMethod="#{departmentController.completeDept}" 
                                                 var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                                 forceSelection="true" 
-                                                value="#{commonReport.fromDepartment}" />
+                                                value="#{commonReport.fromDepartment}" class="w-100"/>
 
                                 <h:outputLabel value="For Department"/>
                                 <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                                 var="tdept" itemLabel="#{tdept.name}" itemValue="#{tdept}" 
                                                 forceSelection="true" 
-                                                value="#{commonReport.toDepartment}" />
+                                                value="#{commonReport.toDepartment}" class="w-100"/>
 
 
                                 <h:outputLabel value="Select Bill Type" for="cmdBillType"/>
-                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}"
+                                <p:selectOneMenu id="cmdBillType" value="#{commonReport.billType}" class="w-100"
                                                  required="true"
                                                  requiredMessage="Please select a bill type">
                                     <f:selectItem itemLabel="Select Bill Type"/>
@@ -51,7 +51,7 @@
                                 </p:selectOneMenu>
                             </h:panelGrid>
 
-                            <h:panelGrid columns="1" style="min-width: 30em;" >
+                            <h:panelGrid columns="3" style="min-width: 30em;" >
                                 <p:commandButton  id="btnRefresh" ajax="false" value="Process" 
                                                   style="width: 90%; margin: auto;"
                                                   actionListener="#{commonReport.fillBillTypeBills()}" />  
