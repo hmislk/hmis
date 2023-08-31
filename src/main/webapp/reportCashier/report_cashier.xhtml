@@ -83,9 +83,9 @@
                                     </p:tab>
                                     <p:tab title="6) Bill Lists">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="1) List of Bills Raised" action="/opd_bill_report"/>   
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD payment scheme bills" action="/reportCashier/report_opd_bill_payment_sheame"/> 
-                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD VAT 15%" action="/reportCashier/report_opd_bills_for_vat"/> 
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="1) List of Bills Raised" action="#{cashierReportController.navigateToOpdBillReport()}"/>   
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD payment scheme bills" action="#{cashierReportController.navigateToReportOpdBillPaymentSheame()}"/> 
+                                            <p:commandButton styleClass="linkButton600600" ajax="false" value="2) OPD VAT 15%" action="#{cashierReportController.navigateToReportOpdBillsForVat()}"/> 
                                         </div>
                                     </p:tab>
                                     <p:tab title="7) Cashier Reports(Bill Fee Payment)">
