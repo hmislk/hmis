@@ -15,7 +15,5 @@ import javax.persistence.Entity;
  */
 @Entity
 public class PharmaceuticalItem extends Item implements Serializable {
-   
-   
  
 }

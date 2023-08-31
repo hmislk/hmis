@@ -168,7 +168,6 @@ public class WebUserController implements Serializable {
                 + " where c.retired=false "
                 + " c.drawer is not null "
                 + " order by c.drawer.name,c.webUserPerson.name";
-
         webUsers = getFacade().findByJpql(sql);
     }
 
@@ -180,7 +179,6 @@ public class WebUserController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getInstitution().getId();
             d = getDepartmentFacade().findByJpql(sql);
         }
-
         return d;
     }
 

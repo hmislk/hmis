@@ -27,28 +27,11 @@
                                             <p:commandButton class="w-100" ajax="false" value="Plan of actions" action="#{planController.navigateToManagePlans()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Pharmaceutical Metadata">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Add Unit" action="#{measurementUnitController.navigateToAddMeasurementUnit()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="List Units" action="#{measurementUnitController.navigateToListAllMeasurementUnit()}"  ></p:commandButton>
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Upload Meta Data">
+                                    <p:tab title="Upload">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Diagnosis" action="#{dataUploadBean.navigateToUploadDiagnoses()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload VTMs" action="#{dataUploadBean.toUploadVtms()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload ATMs" action="#{dataUploadBean.toUploadAtms()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload VMPs" action="#{dataUploadBean.toUploadVmps()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload AMPs" action="#{dataUploadBean.toUploadAmps()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Upload AMPs (Minimal)" action="#{dataUploadBean.toUploadAmpsMin()}"  ></p:commandButton>
-
-                                        </div>
-                                    </p:tab>
-                                    <p:tab title="Upload Data">
-                                        <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Upload Patients" action="#{dataUploadBean.toUploadPatients()}"  ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Upload Visits" action="#{dataUploadBean.navigateToUploadVisits()}"  ></p:commandButton>
-
                                         </div>
                                     </p:tab>
                                 </p:accordionPanel>

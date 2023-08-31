@@ -8,7 +8,7 @@
     <h:head>
     </h:head>
     <h:body>
-        <ui:composition template="/emr/admin/index.xhtml">
+        <ui:composition template="/pharmacy/admin/index.xhtml">
             <ui:define name="subcontent">
 
                 <h:form id="measurementUnitTableForm">
@@ -33,21 +33,21 @@
                             <h:outputText value="#{unit.frequencyUnit?'Yes':'No'}" />
                         </p:column>
                         <p:column headerText="Duration in Hours">
-                            <h:outputText value="#{unit.durationInHours?'Yes':'No'}" />
+                            <h:outputText value="#{unit.durationInHours}" />
                         </p:column>
                         <p:column headerText="Frequency in Hours">
-                            <h:outputText value="#{unit.frequencyInHours?'Yes':'No'}" />
+                            <h:outputText value="#{unit.frequencyInHours}" />
                         </p:column>
-                        <p:column headerText="Actions" >
-                            <p:commandButton value="Edit" action="#{measurementUnitController.navigateToEditMeasurementUnit()}" ajax="false" >
-                                <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" >
-                                </f:setPropertyActionListener>
+                        <p:column headerText="Actions">
+                            <p:commandButton icon="fa fa-pencil" action="#{measurementUnitController.navigateToEditMeasurementUnit()}" ajax="false" style="margin-right: 5px;">
+                                <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" />
                             </p:commandButton>
-                            <p:commandButton value="Edit" action="#{measurementUnitController.delete()}" ajax="false" >
-                                <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" >
-                                </f:setPropertyActionListener>
+                            <p:commandButton icon="fa fa-trash" action="#{measurementUnitController.delete()}" ajax="false">
+                                <f:setPropertyActionListener value="#{unit}" target="#{measurementUnitController.current}" />
                             </p:commandButton>
                         </p:column>
+
+
                     </p:dataTable>
                 </h:form>
 

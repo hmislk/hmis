@@ -11,24 +11,32 @@
             <h:form  >
                 <p:panel >
                     <f:facet name="header" >
-                        <h:outputLabel value="Manage Multiple Dosage Forms" ></h:outputLabel>
-                        <p:commandButton value="Back" ajax="false" action="/pharmacy/pharmacy_admin" icon="ui-icon-circle-triangle-w" style="float: right;" ></p:commandButton>
+                        <h:outputLabel value="Manage Multiple Pharmaceutical Items" ></h:outputLabel>
                     </f:facet>
                     <p:panel>
                         <h:panelGrid columns="2" id="pan" >
-                            <p:selectOneRadio value="#{dataAdministrationController.reportKeyWord.string}" >
-                                <f:selectItem itemLabel="Active" itemValue="0"/>
-                                <f:selectItem itemLabel="De-Active" itemValue="1"/>
-                                <f:ajax event="change" execute="@this" render="pan" />
-                            </p:selectOneRadio>
-                            <p:commandButton value="Fill" action="#{dataAdministrationController.fillPharmacyCategory()}" ajax="false" />
-                            <p:commandButton rendered="#{dataAdministrationController.reportKeyWord.string eq '1'}" ajax="false"
-                                             value="Active Categories" action="#{dataAdministrationController.actveSelectedCategories()}" />
-                            <p:commandButton rendered="#{dataAdministrationController.reportKeyWord.string eq '0'}" ajax="false"
-                                             value="De-Active Categories" action="#{dataAdministrationController.deActveSelectedCategories()}" />
+                            <p:commandButton 
+                                value="Fill" 
+                                action="#{pharmacyController.fillPharmaceuticalLights()}"
+                                ajax="false" />
+                            <p:commandButton 
+                                ajax="false"
+                                value="Active Categories" 
+                                action="#{pharmacyController.deleteSelectedPharmaceuticalLight()}" />
                         </h:panelGrid>
-                        <p:dataTable value="#{dataAdministrationController.pharmaceuticalItemCategorys}" var="c" 
-                                     selection="#{dataAdministrationController.selectedPharmaceuticalItemCategorys}" rowKey="#{c.id}">
+
+                        <p:dataTable 
+                            value="#{pharmacyController.allLights}" 
+                            var="c" 
+                            selection="#{pharmacyController.selectedLights}"
+                            rowKey="#{c.id}"
+
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+
+
+                            >
                             <p:column selectionMode="multiple"></p:column>
                             <p:column>
                                 <f:facet name="header">
@@ -62,7 +70,7 @@
                                 </f:facet>
                                 <p:outputLabel value="#{c.retirer.webUserPerson.name}" />
                             </p:column>
-F                        </p:dataTable>
+                            F                        </p:dataTable>
                     </p:panel>
                 </p:panel>
             </h:form>
