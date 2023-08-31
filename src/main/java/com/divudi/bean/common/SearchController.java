@@ -315,7 +315,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        System.out.println("Start");
+        
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -352,7 +352,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        System.out.println("Start");
+        
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -390,7 +390,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        System.out.println("Start");
+        
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
