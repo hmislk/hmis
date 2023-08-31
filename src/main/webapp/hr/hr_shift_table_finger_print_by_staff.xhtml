@@ -202,7 +202,7 @@
 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
                             <h:panelGroup  >
-                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
+                                <p:selectOneMenu  value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
                                                    itemLabel="#{i.timeLabel}" itemValue="#{i}" />
@@ -218,7 +218,7 @@
                     <p:column headerText="Attendence End" styleClass="fixedColumn200">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <h:panelGroup >                           
-                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
+                                <p:selectOneMenu  value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="endRc "

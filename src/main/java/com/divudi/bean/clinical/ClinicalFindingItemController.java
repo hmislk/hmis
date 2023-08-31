@@ -44,17 +44,17 @@ public class ClinicalFindingItemController implements Serializable {
     private List<ClinicalEntity> items = null;
     String selectText = "";
 
-    public List<ClinicalEntity> completeClinicalEntity(String qry) {
-        List<ClinicalEntity> c;
-        c = getFacade().findBySQL("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        if (c == null) {
-            c = new ArrayList<>();
-        }
-        return c;
-    }
+//    public List<ClinicalEntity> completeClinicalEntity(String qry) {
+//        List<ClinicalEntity> c;
+//        c = getFacade().findByJpql("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+//        if (c == null) {
+//            c = new ArrayList<>();
+//        }
+//        return c;
+//    }
 
     public List<ClinicalEntity> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from ClinicalEntity c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

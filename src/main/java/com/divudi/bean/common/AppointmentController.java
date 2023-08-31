@@ -106,21 +106,21 @@ public class AppointmentController implements Serializable {
         return Sex.values();
     }
 
-    public List<Bill> completeOpdCreditBill(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from BilledBill c where c.paidAmount is null and c.billType= :btp and c.paymentMethod= :pm and c.cancelledBill is null and c.refundedBill is null and c.retired=false and (c.insId) like '%" + qry.toUpperCase() + "%' order by c.creditCompany.name";
-            hash.put("btp", BillType.OpdBill);
-            hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, TemporalType.TIME);
-        }
-        if (a == null) {
-            a = new ArrayList<Bill>();
-        }
-        return a;
-    }
+//    public List<Bill> completeOpdCreditBill(String qry) {
+//        List<Bill> a = null;
+//        String sql;
+//        HashMap hash = new HashMap();
+//        if (qry != null) {
+//            sql = "select c from BilledBill c where c.paidAmount is null and c.billType= :btp and c.paymentMethod= :pm and c.cancelledBill is null and c.refundedBill is null and c.retired=false and (c.insId) like '%" + qry.toUpperCase() + "%' order by c.creditCompany.name";
+//            hash.put("btp", BillType.OpdBill);
+//            hash.put("pm", PaymentMethod.Credit);
+//            a = getFacade().findByJpql(sql, hash, TemporalType.TIME);
+//        }
+//        if (a == null) {
+//            a = new ArrayList<Bill>();
+//        }
+//        return a;
+//    }
 
     public CommonFunctions getCommonFunctions() {
         return commonFunctions;

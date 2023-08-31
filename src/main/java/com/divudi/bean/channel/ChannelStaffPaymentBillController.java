@@ -112,7 +112,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         if (getCurrent() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<BillFee>();
                 }
@@ -275,7 +275,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             h.put("btp2", BillType.ChannelCredit);
             h.put("ssDate", getDate());
 
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql, h, TemporalType.DATE);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql, h, TemporalType.DATE);
 
             for (BillFee bf : tmp) {
                 if (bf.getBill().getBillType() == BillType.ChannelCredit) {
@@ -347,7 +347,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
-        dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         //// // System.out.println("dueBillFees.size() = " + dueBillFees.size());
         //// // System.out.println("hm = " + hm);
         //// // System.out.println("sql = " + sql);
@@ -386,7 +386,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         m.put("ftp", FeeType.Staff);
         m.put("class", BilledBill.class);
         List<BillFee>nonRefundableBillFees=new ArrayList<>();
-        nonRefundableBillFees=billFeeFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        nonRefundableBillFees=billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         dueBillFees.addAll(nonRefundableBillFees);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/pay doctor(/faces/channel/channel_payment_staff_bill.xhtml)");
@@ -428,7 +428,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         hm.put("ftp", FeeType.OtherInstitution);
         hm.put("class", BilledBill.class);
         hm.put("bt", BillType.ChannelAgent);
-        dueBillFees = billFeeFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        dueBillFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Payment/Pay agent(/faces/channel/channel_payment_bill_search.xhtml)");
 
@@ -464,7 +464,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
             c.setTime(getDate());
             int wd = c.get(Calendar.DAY_OF_WEEK);
             sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getCurrentStaff().getId() + " and s.sessionWeekday=" + wd;
-            serviceSessions = getServiceSessionFacade().findBySQL(sql);
+            serviceSessions = getServiceSessionFacade().findByJpql(sql);
         }
 
         return serviceSessions;
@@ -823,7 +823,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        dueBillFeeReport = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         //////// // System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
@@ -843,7 +843,7 @@ public class ChannelStaffPaymentBillController implements Serializable {
     public List<BillItem> getBillItems() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id = " + current.getId();
-            billItems = getBillItemFacade().findBySQL(sql);
+            billItems = getBillItemFacade().findByJpql(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }

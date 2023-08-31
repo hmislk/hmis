@@ -113,23 +113,23 @@ public class DataUploadBean {
     }
 
     public String toUploadVtms() {
-        return "/emr/admin/upload_vtms";
+        return "/pharmacy/admin/upload_vtms";
     }
 
     public String toUploadAtms() {
-        return "/emr/admin/upload_atms";
+        return "/pharmacy/admin/upload_atms";
     }
 
     public String toUploadAmps() {
-        return "/emr/admin/upload_amps";
+        return "/pharmacy/admin/upload_amps";
     }
     
     public String toUploadAmpsMin() {
-        return "/emr/admin/upload_amps_minimal";
+        return "/pharmacy/admin/upload_amps_minimal";
     }
 
     public String toUploadVmps() {
-        return "/emr/admin/upload_vmps";
+        return "/pharmacy/admin/upload_vmps";
     }
 
     public void uploadPatients() {

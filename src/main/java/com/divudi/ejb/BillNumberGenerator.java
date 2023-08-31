@@ -351,7 +351,7 @@ public class BillNumberGenerator {
         String result;
         HashMap h = new HashMap();
         h.put("btp1", BillType.ClinicalOpdBooking);
-        Long l = getBillFacade().countBySql(sql, h);
+        Long l = getBillFacade().countByJpql(sql, h);
         List<Bill> b = getBillFacade().findByJpql(sql, h);
         if (l != null) {
             l = l + 1;

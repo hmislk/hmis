@@ -48,7 +48,7 @@ public class PatientRoomController implements Serializable {
     }
 
     public List<PatientRoom> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PatientRoom c where c.retired=false and i.patientRoomType = com.divudi.data.PatientRoomType.Pharmacy and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from PatientRoom c where c.retired=false and i.patientRoomType = com.divudi.data.PatientRoomType.Pharmacy and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -137,13 +137,13 @@ public class PatientRoomController implements Serializable {
         return ejbFacade;
     }
 
-    public List<PatientRoom> getItems() {
-        if (items == null) {
-            String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
-            items = getEjbFacade().findBySQL(sql);
-        }
-        return items;
-    }
+//    public List<PatientRoom> getItems() {
+//        if (items == null) {
+//            String sql = "SELECT i FROM PatientRoom i where i.retired=false order by i.name";
+//            items = getEjbFacade().findByJpql(sql);
+//        }
+//        return items;
+//    }
 
     /**
      *

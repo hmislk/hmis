@@ -592,7 +592,7 @@ public class GoogleChartController implements Serializable {
         m.put("fromDate", fd);
         m.put("bTypes", Arrays.asList(bts));
 
-        return getInstitutionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution, BillType billType) {

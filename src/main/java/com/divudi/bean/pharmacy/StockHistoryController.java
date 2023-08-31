@@ -70,7 +70,7 @@ public class StockHistoryController implements Serializable {
 //            //// // System.out.println("history.getStockAt() = " + history.getCreatedAt());
 //        }
         ////// // System.out.println("m = " + m);
-        pharmacyStockHistoryDays = facade.findDateListBySQL(jpql, m, TemporalType.TIMESTAMP);
+        pharmacyStockHistoryDays = facade.findDateListByJpql(jpql, m, TemporalType.TIMESTAMP);
         for (Date d : pharmacyStockHistoryDays) {
         }
 
@@ -114,7 +114,7 @@ public class StockHistoryController implements Serializable {
 
         jpql += " order by s.item.name";
 
-        pharmacyStockHistories = facade.findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        pharmacyStockHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         totalStockPurchaseValue = 0.0;
         totalStockSaleValue = 0.0;
         for (StockHistory psh : pharmacyStockHistories) {

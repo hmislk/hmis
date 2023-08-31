@@ -272,7 +272,7 @@ public class StaffPaySheetComponentAllPerformancePercentageController implements
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         if (!getRepeatedComponent().isEmpty()) {
             for (StaffPaysheetComponent sp : items) {

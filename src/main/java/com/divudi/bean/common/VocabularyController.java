@@ -92,7 +92,7 @@ public class VocabularyController implements Serializable {
     
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;
-        c = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        c = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
         }
@@ -100,7 +100,7 @@ public class VocabularyController implements Serializable {
     }
 
     public List<Vocabulary> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -192,7 +192,7 @@ public class VocabularyController implements Serializable {
         if (items == null) {
             String j ;
             j="select v from Vocabulary v where v.retired=false order by v.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -240,46 +240,5 @@ public class VocabularyController implements Serializable {
         }
     }
 
-    /**
-     *
-     */
-    @FacesConverter("vocabularyConverter")
-    public static class VocabularyConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            VocabularyController controller = (VocabularyController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "vocabularyController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Vocabulary) {
-                Vocabulary o = (Vocabulary) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + VocabularyController.class.getName());
-            }
-        }
-    }
+    
 }

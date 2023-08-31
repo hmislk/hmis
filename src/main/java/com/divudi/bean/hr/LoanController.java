@@ -49,14 +49,14 @@ public class LoanController implements Serializable {
     }
 
     public List<Loan> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Loan c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Loan c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<Loan> completeLoan(String qry) {
         List<Loan> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Loan c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Loan c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<Loan>();
@@ -198,43 +198,4 @@ public class LoanController implements Serializable {
         }
     }
 
-    @FacesConverter("loanCon")
-    public static class LoanControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            LoanController controller = (LoanController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "loanController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Loan) {
-                Loan o = (Loan) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + LoanController.class.getName());
-            }
-        }
-    }
 }

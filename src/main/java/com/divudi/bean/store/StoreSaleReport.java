@@ -352,7 +352,7 @@ public class StoreSaleReport implements Serializable {
         sql = "select i from Bill i where i.referenceBill.department=:d  "
                 + " and i.billType=:btp and type(i)=:class and"
                 + " i.createdAt between :fd and :td order by i.deptId ";
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -998,7 +998,7 @@ public class StoreSaleReport implements Serializable {
         m.put("dty", DepartmentType.Inventry);
         m.put("tdep", getToDepartment());
         
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
     
@@ -1033,7 +1033,7 @@ public class StoreSaleReport implements Serializable {
         m.put("dty", DepartmentType.Inventry);
         
         
-        billItem = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItem = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         grantTotal = 0.0;
 //        for (BillItem bi:billItem){
 //            grantTotal+=getGrantTotal();

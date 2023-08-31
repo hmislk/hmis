@@ -90,7 +90,7 @@ public class StaffTransferFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        transferForms = getTransferFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        transferForms = getTransferFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

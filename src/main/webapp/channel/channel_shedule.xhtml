@@ -27,7 +27,7 @@
                                             <h:outputLabel  value="Speciality" ></h:outputLabel>
                                             <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality" placeholder="Speciality"
                                                              completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                             converter="specilityCon">
+                                                             >
                                                 <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
                                             </p:autoComplete>
 
@@ -36,7 +36,7 @@
                                             <h:outputLabel  value="Doctor" ></h:outputLabel>
                                             <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff" placeholder="Doctor"
                                                               completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                              converter="stfcon">   
+                                                              >   
                                                 <f:ajax event="itemSelect" execute="scStaff" render="lstSelect gpDetail" listener="#{sheduleController.prepareAdd()}" />
                                             </p:autoComplete>  
 
@@ -270,7 +270,7 @@
                                                     <p:autoComplete forceSelection="true" value="#{sheduleController.current.sessionNumberGenerator}" 
                                                                     completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
                                                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                                    converter="genConvert">                            
+                                                                    >                            
                                                     </p:autoComplete>
 
                                                     <p:outputLabel value="Credit Numbers"/>

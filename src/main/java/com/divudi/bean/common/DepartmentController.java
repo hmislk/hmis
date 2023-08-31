@@ -56,7 +56,7 @@ public class DepartmentController implements Serializable {
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public String toListDepartments() {
@@ -118,7 +118,7 @@ public class DepartmentController implements Serializable {
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
             String sql = "Select d from Department d where d.retired=false order by d.name";
-            searchItems = getFacade().findBySQL(sql);
+            searchItems = getFacade().findByJpql(sql);
             if (searchItems != null && !searchItems.isEmpty()) {
                 current = searchItems.get(0);
             } else {
@@ -142,7 +142,7 @@ public class DepartmentController implements Serializable {
             String sql = "Select d From Department d "
                     + " where d.retired=false "
                     + " and d.institution.id=" + getSessionController().getInstitution().getId();
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
         } else {
             String sql = "Select d From Department d "
                     + " where d.retired=false"
@@ -158,7 +158,7 @@ public class DepartmentController implements Serializable {
         List<Department> departments;
         String sql = "Select d From Department d "
                 + " where d.retired=false ";
-        departments = getFacade().findBySQL(sql);
+        departments = getFacade().findByJpql(sql);
         return departments;
     }
 
@@ -205,7 +205,7 @@ public class DepartmentController implements Serializable {
     public List<Department> getLogedDepartments() {
 
         String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getSessionController().getInstitution().getId();
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
 
         return items;
     }
@@ -215,7 +215,7 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -256,6 +256,37 @@ public class DepartmentController implements Serializable {
                 + " and (c.name) like :q"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
+        departmentList = getFacade().findByJpql(sql, hm);
+
+        return departmentList;
+    }
+
+    public List<Department> completeDeptWithIns(String qry) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        Institution selectedInstitution = (Institution) UIComponent.getCurrentComponent(context).getAttributes().get("selectedInstitution");
+        String sql;
+        HashMap<String, Object> hm = new HashMap<>();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        hm.put("ins", selectedInstitution);
+        departmentList = getFacade().findByJpql(sql, hm);
+        return departmentList;
+    }
+
+    public List<Department> completeDept(String qry, Institution ins) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        hm.put("ins", ins);
         departmentList = getFacade().findByJpql(sql, hm);
 
         return departmentList;
@@ -358,7 +389,7 @@ public class DepartmentController implements Serializable {
         if (m == null) {
             m = new HashMap();
         }
-        return getFacade().findBySQL(jpql, m, t);
+        return getFacade().findByJpql(jpql, m, t);
     }
 
     public List<Department> getInstitutionDepatrments(Institution ins, boolean includeAllInstitutionDepartmentsIfInstitutionIsNull, DepartmentType departmentType) {
@@ -487,9 +518,9 @@ public class DepartmentController implements Serializable {
         if (dep == null) {
             return;
         }
-        if(dep.getId()==null){
-             getFacade().create(dep);
-        }else{
+        if (dep.getId() == null) {
+            getFacade().create(dep);
+        } else {
             getFacade().edit(dep);
         }
     }
@@ -500,45 +531,6 @@ public class DepartmentController implements Serializable {
     /**
      *
      */
-    @FacesConverter("departmentConverter")
-    public static class DepartmentControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DepartmentController controller = (DepartmentController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "departmentController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Department) {
-                Department o = (Department) object;
-                return getStringKey(o.getId());
-            } else {
-                return "";
-            }
-        }
-    }
-
     @FacesConverter(forClass = Department.class)
     public static class DepartmentConverter implements Converter {
 

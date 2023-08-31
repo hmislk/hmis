@@ -30,7 +30,7 @@
                                       completeMethod="#{channellingFeeController.completeDoctors}" 
                                       var="mys" itemLabel="#{mys.person.nameWithTitle}" 
                                       itemValue="#{mys}"
-                                      converter="stfcon">   
+                                      >   
                         <f:ajax event="itemSelect" execute="acDoc" 
                                 render="lstSelect gpDetail gpList" listener="#{channellingFeeController.fillSessions()}"/>
                     </p:autoComplete>  
@@ -124,7 +124,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup id="cmbSpe" >
-                                <p:autoComplete converter="specilityCon"  forceSelection="true" 
+                                <p:autoComplete   forceSelection="true" 
                                                 value="#{channellingFeeController.fee.speciality}"
                                                 completeMethod="#{specialityController.completeSpeciality}"
                                                 var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" 
@@ -139,7 +139,7 @@
                             </h:panelGroup>
 
                             <h:panelGroup id="cmbStaff" >
-                                <p:autoComplete converter="stfcon"  forceSelection="true" id="cmbDoc" 
+                                <p:autoComplete   forceSelection="true" id="cmbDoc" 
                                                 value="#{channellingFeeController.fee.staff}" 
                                                 completeMethod="#{channellingFeeController.completeStaff}" var="st" itemLabel="#{st.person.name}" itemValue="#{st}" size="30"  style="width: 400px;"
                                                 rendered="#{channellingFeeController.fee.feeType eq 'Staff'}">

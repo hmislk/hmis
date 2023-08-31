@@ -90,7 +90,7 @@ public class PatientReportBean {
         } else {
             String sql;
             sql = "select ii from InvestigationItem ii where ii.retired = false and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
-            ii = getIxItemFacade().findBySQL(sql);
+            ii = getIxItemFacade().findByJpql(sql);
         }
         if (ii == null) {
             ii = new ArrayList<InvestigationItem>();
@@ -111,7 +111,7 @@ public class PatientReportBean {
             String sql;
             sql = "select ii from InvestigationItem ii where ii.retired = false and ii.ixItemType = com.divudi.data.InvestigationItemType.Value and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
             //////// // System.out.println(sql);
-            ii = getIxItemFacade().findBySQL(sql);
+            ii = getIxItemFacade().findByJpql(sql);
             //////// // System.out.println("ii is " + ii + " and the cou");
         }
         if (ii == null) {
@@ -280,7 +280,7 @@ public class PatientReportBean {
         }
 
         //Add Antibiotics
-        List<Antibiotic> abs = getAntibioticFacade().findBySQL("select a from Antibiotic a where a.retired=false order by a.name");
+        List<Antibiotic> abs = getAntibioticFacade().findByJpql("select a from Antibiotic a where a.retired=false order by a.name");
 
         for (Antibiotic a : abs) {
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
@@ -395,7 +395,7 @@ public class PatientReportBean {
         dl = ii.getName();
         long ageInDays = commonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
-        List<InvestigationItemValueFlag> fs = iivfFacade.findBySQL(sql);
+        List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
             if (f.getSex() == p.getPerson().getSex()) {
                 dl = f.getFlagMessage();

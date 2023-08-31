@@ -271,7 +271,7 @@ public class ConsultantController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Consultant i where i.retired=false ";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }

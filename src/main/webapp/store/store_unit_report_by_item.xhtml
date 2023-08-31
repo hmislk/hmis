@@ -17,14 +17,14 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
@@ -37,7 +37,7 @@
                         <p:autoComplete completeMethod="#{categoryController.completeConsumableAndAssetCategory}" 
                                         var="cat" itemLabel="#{cat.name}"
                                         itemValue="#{cat}" forceSelection="true" 
-                                        value="#{reportsTransfer.category}" converter="categoryConverter" >
+                                        value="#{reportsTransfer.category}"  >
                         </p:autoComplete>
 
                         <p:commandButton ajax="false" value="Fill" 

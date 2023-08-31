@@ -97,7 +97,7 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public List<MembershipScheme> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from MembershipScheme c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from MembershipScheme c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -269,43 +269,5 @@ public class MembershipSchemeController implements Serializable {
     /**
      *
      */
-    @FacesConverter("membershipSchemeConverter")
-    public static class MembershipSchemeConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            MembershipSchemeController controller = (MembershipSchemeController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "membershipSchemeController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof MembershipScheme) {
-                MembershipScheme o = (MembershipScheme) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + MembershipSchemeController.class.getName());
-            }
-        }
-    }
+    
 }

@@ -105,7 +105,7 @@ public class InwardServiceController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -119,16 +119,16 @@ public class InwardServiceController implements Serializable {
         } else {
             sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public List<InwardService> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from InwardService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from InwardService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -159,7 +159,7 @@ public class InwardServiceController implements Serializable {
     }
 
     public List<InwardService> completeItem(String qry) {
-        List<InwardService> completeItems = getFacade().findBySQL("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<InwardService> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = InwardService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -340,7 +340,7 @@ public class InwardServiceController implements Serializable {
         HashMap hash = new HashMap();
         String sql = "select c from ItemFee c where c.retired = false and type(c.item) = :ser order by c.item.name";
         hash.put("ser", InwardService.class);
-        temp = getItemFeeFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
 
         if (temp == null) {
             return new ArrayList<ItemFee>();
@@ -359,7 +359,7 @@ public class InwardServiceController implements Serializable {
 
             String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
 
-            si.setItemFees(getItemFeeFacade().findBySQL(sql));
+            si.setItemFees(getItemFeeFacade().findByJpql(sql));
 
             temp.add(si);
         }
@@ -370,7 +370,7 @@ public class InwardServiceController implements Serializable {
     public List<InwardService> getItems() {
         String sql = "select c from InwardService c where c.retired=false order by c.category.name,c.department.name";
         //////// // System.out.println(sql);
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
 
         for (InwardService i : items) {
 
@@ -394,7 +394,7 @@ public class InwardServiceController implements Serializable {
             sql = "select c from InwardService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
 
         if (items == null) {
             items = new ArrayList<InwardService>();
@@ -408,7 +408,7 @@ public class InwardServiceController implements Serializable {
             sql = "select c from InwardService c where c.retired=false order by c.category.name,c.name";
 
             //////// // System.out.println(sql);
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
 
             for (InwardService i : items) {
 
@@ -436,7 +436,7 @@ public class InwardServiceController implements Serializable {
     private List<ItemFee> getFees(Item i) {
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
 
-        return getItemFeeFacade().findBySQL(sql);
+        return getItemFeeFacade().findByJpql(sql);
     }
 
     public SpecialityFacade getSpecialityFacade() {
@@ -526,49 +526,6 @@ public class InwardServiceController implements Serializable {
     public static class ServiceControllerConverter implements Converter {
 
         public ServiceControllerConverter() {
-        }
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "inwardServiceController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof InwardService) {
-                InwardService o = (InwardService) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + InwardServiceController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("inwServ")
-    public static class ServiceConverter implements Converter {
-
-        public ServiceConverter() {
         }
 
         @Override

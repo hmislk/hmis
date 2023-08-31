@@ -107,13 +107,13 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     }
 
-    public void saveSelectedDepartmentPaymentMethod() {
-        PriceMatrix a = new PaymentSchemeDiscount();
-        saveDepartmentForPaymentMethod(a);
-        createItemsDepartmentsPaymentMethod();
-        clearInstanceVars();
-
-    }
+//    public void saveSelectedDepartmentPaymentMethod() {
+//        PriceMatrix a = new PaymentSchemeDiscount();
+//        saveDepartmentForPaymentMethod(a);
+//        createItemsDepartmentsPaymentMethod();
+//        clearInstanceVars();
+//
+//    }
 
     public void saveSelectedDepartment() {
         PriceMatrix a = new OpdMemberShipDiscount();
@@ -220,34 +220,34 @@ public class OpdMemberShipDiscountController implements Serializable {
 
     }
 
-    public void saveDepartmentForPaymentMethod(PriceMatrix a) {
-
-        if (department == null) {
-            UtilityController.addErrorMessage("Please select a department");
-            return;
-        }
-
-        if (paymentMethod == null) {
-            UtilityController.addErrorMessage("Please select Payment Method");
-            return;
-        }
-
-        //  PriceMatrix a = new OpdMemberShipDiscount();
-        a.setMembershipScheme(null);
-        a.setPaymentScheme(null);
-        a.setPaymentMethod(paymentMethod);
-        a.setDepartment(department);
-        if (department != null) {
-            a.setInstitution(department.getInstitution());
-        }
-        a.setDiscountPercent(margin);
-        a.setCreatedAt(new Date());
-        a.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(a);
-        UtilityController.addSuccessMessage("Saved Successfully");
-        //    recreateModel();
-
-    }
+//    public void saveDepartmentForPaymentMethod(PriceMatrix a) {
+//
+//        if (department == null) {
+//            UtilityController.addErrorMessage("Please select a department");
+//            return;
+//        }
+//
+//        if (paymentMethod == null) {
+//            UtilityController.addErrorMessage("Please select Payment Method");
+//            return;
+//        }
+//
+//        //  PriceMatrix a = new OpdMemberShipDiscount();
+//        a.setMembershipScheme(null);
+//        a.setPaymentScheme(null);
+//        a.setPaymentMethod(paymentMethod);
+//        a.setDepartment(department);
+//        if (department != null) {
+//            a.setInstitution(department.getInstitution());
+//        }
+//        a.setDiscountPercent(margin);
+//        a.setCreatedAt(new Date());
+//        a.setCreater(getSessionController().getLoggedUser());
+//        getFacade().create(a);
+//        UtilityController.addSuccessMessage("Saved Successfully");
+//        //    recreateModel();
+//
+//    }
 
     public void saveOpdCategory() {
         PriceMatrix p = new OpdMemberShipDiscount();
@@ -340,7 +340,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.membershipScheme is not null "
                 + " order by a.membershipScheme.name,a.category.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
     
     
@@ -622,7 +622,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
         return "/membership/membership_scheme_discount_opd_by_department";
 
     }
@@ -634,7 +634,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public void fillMatricesForChannellingMembershipsForItemsDepartments() {
@@ -644,7 +644,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public void createItemsDepartmentsPaymentScheme() {

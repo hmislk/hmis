@@ -83,7 +83,7 @@ public class DoctorController implements Serializable {
         
          String temSql;
             temSql = "SELECT d FROM Doctor d where d.retired=false ";
-            doctors = getFacade().findBySQL(temSql);   
+            doctors = getFacade().findByJpql(temSql);   
             
             commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
             
@@ -291,7 +291,7 @@ public class DoctorController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Doctor i where i.retired=false ";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }
@@ -357,45 +357,6 @@ public class DoctorController implements Serializable {
         }
     }
 
-    @FacesConverter("conDoc")
-    public static class DoctorConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DoctorController controller = (DoctorController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "doctorController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Doctor) {
-                Doctor o = (Doctor) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorController.class.getName());
-            }
-        }
-    }
 
     public CommonController getCommonController() {
         return commonController;

@@ -277,7 +277,7 @@ public class StaffAmendmentFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        amendmentForms = getAmendmentFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        amendmentForms = getAmendmentFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -306,7 +306,7 @@ public class StaffAmendmentFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        amendmentForms = getAmendmentFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        amendmentForms = getAmendmentFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -340,7 +340,7 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("dt", getCurrAmendmentForm().getFromDate());
         hm.put("stf", getCurrAmendmentForm().getFromStaff());
 
-        fromStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        fromStaffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void fetchToStaffShift() {
@@ -355,7 +355,7 @@ public class StaffAmendmentFormController implements Serializable {
         hm.put("dt", getCurrAmendmentForm().getToDate());
         hm.put("stf", getCurrAmendmentForm().getToStaff());
 
-        toStaffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        toStaffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void fetchToShift() {
@@ -371,7 +371,7 @@ public class StaffAmendmentFormController implements Serializable {
 
         hm.put("rs", getCurrAmendmentForm().getToStaff().getRoster());
 
-        toShifts = shiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        toShifts = shiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     @EJB

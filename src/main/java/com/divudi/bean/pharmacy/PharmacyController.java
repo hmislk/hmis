@@ -29,10 +29,15 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.pharmacy.Amp;
 import com.divudi.entity.pharmacy.Ampp;
+import com.divudi.entity.pharmacy.Atm;
 import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.entity.pharmacy.Stock;
+import com.divudi.entity.pharmacy.Vmp;
+import com.divudi.entity.pharmacy.Vmpp;
+import com.divudi.entity.pharmacy.Vtm;
 import com.divudi.facade.AmpFacade;
 import com.divudi.facade.AmppFacade;
+import com.divudi.facade.AtmFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.DepartmentFacade;
@@ -41,7 +46,11 @@ import com.divudi.facade.ItemFacade;
 import com.divudi.facade.PharmaceuticalBillItemFacade;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import com.divudi.facade.StockFacade;
+import com.divudi.facade.VmpFacade;
+import com.divudi.facade.VmppFacade;
+import com.divudi.facade.VtmFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.light.pharmacy.PharmaceuticalItemLight;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,39 +75,51 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class PharmacyController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    private int pharmacyAdminIndex;
-    private int pharmacySummaryIndex;
-
-    /////
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
     @Inject
     CommonController commonController;
     @Inject
-    AmpController ampController;
-    //////////
+    private AmpController ampController;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
-    AmppFacade AmppFacade;
+    ItemFacade itemFacade;
+    @EJB
+    VtmFacade vtmFacade;
+    @EJB
+    AtmFacade atmFacade;
+    @EJB
+    VmpFacade vmpFacade;
+    @EJB
+    AmpFacade ampFacade;
+    @EJB
+    VmppFacade vmppFacade;
+    @EJB
+    AmppFacade amppFacade;
     @EJB
     PharmaceuticalItemFacade piFacade;
     @EJB
     private DepartmentFacade departmentFacade;
     @EJB
-    private BillItemFacade billItemFacade;
-    @EJB
     private StockFacade stockFacade;
     @EJB
     private BillFacade billFacade;
     @EJB
+    private BillItemFacade billItemFacade;
+    @EJB
     private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    @EJB
-    private AmpFacade ampFacade;
-    @EJB
-    ItemFacade itemFacade;
-    ///////////
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    private static final long serialVersionUID = 1L;
+    private int pharmacyAdminIndex;
+    private int pharmacySummaryIndex;
+
     private Item pharmacyItem;
     private Date fromDate;
     private Date toDate;
@@ -120,6 +141,370 @@ public class PharmacyController implements Serializable {
     private int managePharamcyReportIndex;
     double persentage;
     Category category;
+
+    private PharmaceuticalItemLight selectedLight;
+    private List<PharmaceuticalItemLight> selectedLights;
+    private List<PharmaceuticalItemLight> allLights;
+
+    private List<Atm> atms;
+    private List<Vtm> vtms;
+    private List<Vmp> vmps;
+    private List<Amp> amps;
+    private List<Vmpp> vmpps;
+    private List<Ampp> ampps;
+
+    private List<Atm> atmsSelected;
+    private List<Vtm> vtmsSelected;
+    private List<Vmp> vmpsSelected;
+    private List<Amp> ampsSelected;
+    private List<Vmpp> vmppsSelected;
+    private List<Ampp> amppsSelected;
+
+    private Atm atm;
+    private Vtm vtm;
+    private Vmp vmp;
+    private Amp amp;
+    private Vmpp vmpp;
+    private Ampp ampp;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Methods - Fill Data">
+    private void fillVtms() {
+        String j = "select i "
+                + " from Vtm i "
+                + " where i.retired != true "
+                + " order by i.name";
+        vtms = vtmFacade.findByJpql(j);
+    }
+
+    private void fillAtms() {
+        String j = "select i "
+                + " from Atm i "
+                + " where i.retired != true "
+                + " order by i.name";
+        atms = atmFacade.findByJpql(j);
+    }
+
+    private void fillVmps() {
+        String j = "select i "
+                + " from Vmp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        vmps = vmpFacade.findByJpql(j);
+    }
+
+    private void fillAmps() {
+        String j = "select i "
+                + " from Amp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        amps = ampFacade.findByJpql(j);
+    }
+
+    private void fillVmpps() {
+        String j = "select i "
+                + " from Vmpp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        vmpps = vmppFacade.findByJpql(j);
+    }
+
+    private void fillAmpps() {
+        String j = "select i "
+                + " from Ampp i "
+                + " where i.retired != true "
+                + " order by i.name";
+        ampps = amppFacade.findByJpql(j);
+    }
+
+    // </editor-fold> 
+    // <editor-fold defaultstate="collapsed" desc="Methods - Navigation">
+    public String navigateToListPharmaceuticals() {
+        fillPharmaceuticalLights();
+        return "/pharmacy/admin/items";
+    }
+
+    public String navigateToManagePharmaceuticals() {
+        return "/pharmacy/admin/index";
+    }
+
+    public String navigateToListAllPharmaceuticalItemsLight() {
+        return "/pharmacy/admin/items";
+    }
+
+    public String navigateToDosageForms() {
+        return "/pharmacy/admin/dosage_forms";
+    }
+
+    public String navigateToAtc() {
+        return "/pharmacy/admin/atc";
+    }
+
+    public String navigateToAmp() {
+        return "/pharmacy/admin/amp";
+    }
+
+    public String navigateToAmpp() {
+        return "/pharmacy/admin/ampp";
+    }
+
+    public String navigateToAtm() {
+        return "/pharmacy/admin/atm";
+    }
+
+    public String navigateToVmp() {
+        return "/pharmacy/admin/vmp";
+    }
+
+    public String navigateToVtm() {
+        return "/pharmacy/admin/vtm";
+    }
+
+    public String navigateToVmpp() {
+        return "/pharmacy/admin/vmpp";
+    }
+
+    public String navigateToDosageFormsMultiple() {
+        return "/pharmacy/admin/dosage_forms_multiple";
+    }
+
+    public String navigateToAtcMultiple() {
+        return "/pharmacy/admin/atc_multiple";
+    }
+
+    public String navigateToAmpMultiple() {
+        fillAmps();
+        return "/pharmacy/admin/amp_multiple";
+    }
+
+    public String navigateToAmppMultiple() {
+        fillAmpps();
+        return "/pharmacy/admin/ampp_multiple";
+    }
+
+    public String navigateToAtmMultiple() {
+        fillAtms();
+        return "/pharmacy/admin/atm_multiple";
+    }
+
+    public String navigateToVmpMultiple() {
+        fillVmps();
+        return "/pharmacy/admin/vmp_multiple";
+    }
+
+    public String navigateToVtmMultiple() {
+        fillVtms();
+        return "/pharmacy/admin/vtm_multiple";
+    }
+
+    public String navigateToVmppMultiple() {
+        fillVmpps();
+        return "/pharmacy/admin/vmpp_multiple";
+    }
+
+    // </editor-fold>
+    // <editor-fold defaultstate="collapsed" desc="Methods - Data Maniulation">
+    public void deleteSingleVtm() {
+        if (vtm == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        vtm.setRetired(true);
+        vtmFacade.edit(vtm);
+        fillVtms();
+    }
+
+    public void deleteSingleAtm() {
+        if (atm == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        atm.setRetired(true);
+        atmFacade.edit(atm);
+        fillAtms();
+    }
+
+    public void deleteSingleVmp() {
+        if (vmp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        vmp.setRetired(true);
+        vmpFacade.edit(vmp);
+        fillVmps();
+    }
+
+    public void deleteSingleAmp() {
+        if (amp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        amp.setRetired(Boolean.TRUE);
+        ampFacade.edit(amp);
+        fillAmps();
+    }
+
+    public void deleteSingleVmpp() {
+        if (vmpp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        vmpp.setRetired(true);
+        vmppFacade.edit(vmpp);
+        fillVmpps();
+    }
+
+    public void deleteSingleAmpp() {
+        if (ampp == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        ampp.setRetired(true);
+        amppFacade.edit(ampp);
+        fillAmpps();
+    }
+
+    public void deleteMultipleVtms() {
+        if (vtmsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vtmsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vtm i : vtmsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vtmFacade.batchEdit(vtmsSelected);
+        fillVtms();
+    }
+
+    public void deleteMultipleVmps() {
+        if (vmpsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmpsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmp i : vmpsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vmpFacade.batchEdit(vmpsSelected);
+        fillVmps();
+    }
+
+    public void deleteMultipleVmpps() {
+        if (vmppsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (vmppsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Vmpp i : vmppsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        vmppFacade.batchEdit(vmppsSelected);
+        fillVmpps();
+    }
+
+    public void deleteMultipleAmps() {
+        if (ampsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (ampsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Amp i : ampsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        ampFacade.batchEdit(ampsSelected);
+        fillAmps();
+    }
+
+    public void deleteMultipleAtms() {
+        if (atmsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (atmsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Atm i : atmsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        atmFacade.batchEdit(atmsSelected);
+        fillAtms();
+    }
+
+    public void deleteMultipleAmpps() {
+        if (amppsSelected == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        if (amppsSelected.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return;
+        }
+        for (Ampp i : amppsSelected) {
+            i.setRetired(true);
+            //TODO: Write to AuditEvent
+        }
+        amppFacade.batchEdit(amppsSelected);
+        fillAmpps();
+    }
+
+    // </editor-fold>
+    public void deleteSelectedPharmaceuticalLight() {
+        if (selectedLights == null || selectedLights.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        List<Item> itemsToUpdate = new ArrayList<>();
+        for (PharmaceuticalItemLight l : selectedLights) {
+            if (l.getId() == null) {
+                continue;
+            }
+            Item i = itemFacade.find(l.getId());
+            if (i == null) {
+                continue;
+            }
+            i.setRetired(true);
+            i.setRetirer(sessionController.getLoggedUser());
+            i.setRetiredAt(new Date());
+            itemsToUpdate.add(i);
+        }
+        itemFacade.batchEdit(itemsToUpdate);
+        fillPharmaceuticalLights();
+    }
+
+    public void fillPharmaceuticalLights() {
+        String jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
+                + " from PharmaceuticalItem p "
+                + " where p.retired != true "
+                + " order by p.name";
+        jpql = "select new com.divudi.bean.pharmacy.PharmaceuticalItemLight(p.id, p.name, p.clazz) "
+                + " from PharmaceuticalItem p ";
+//        Map m = new HashMap();
+//        m.put("ret", Boolean.TRUE);
+//        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql, m);
+        System.out.println("itemFacade = " + itemFacade);
+        System.out.println("jpql = " + jpql);
+        allLights = (List<PharmaceuticalItemLight>) itemFacade.findLightsByJpql(jpql);
+
+    }
 
     public void makeNull() {
         departmentSale = null;
@@ -145,7 +530,7 @@ public class PharmacyController implements Serializable {
                 + " (i.itemBatch.item.code) like :n  or  "
                 + " (i.itemBatch.item.barcode) like :n ) "
                 + " order by i.stock desc";
-        items = getStockFacade().findBySQL(sql, m, 30);
+        items = getStockFacade().findByJpql(sql, m, 30);
 
         return items;
     }
@@ -183,7 +568,7 @@ public class PharmacyController implements Serializable {
                 + "(i.staff.person.name) like :n or "
                 + "(i.itemBatch.item.name) like :n ) "
                 + "order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -542,10 +927,10 @@ public class PharmacyController implements Serializable {
     }
 
     public void makeAllPharmaceuticalItemsToAllowDiscounts() {
-        List<PharmaceuticalItem> pis = getPiFacade().findAll();
+        List<PharmaceuticalItem> pis = piFacade.findAll();
         for (PharmaceuticalItem pi : pis) {
             pi.setDiscountAllowed(true);
-            getPiFacade().edit(pi);
+            piFacade.edit(pi);
         }
         JsfUtil.addSuccessMessage("All Pharmaceutical Items were made to allow discounts");
 
@@ -1462,7 +1847,7 @@ public class PharmacyController implements Serializable {
         hm.put("btp", BillType.PharmacyGrnBill);
         hm.put("btp2", BillType.PharmacyGrnReturn);
 
-        grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        grns = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1494,7 +1879,7 @@ public class PharmacyController implements Serializable {
         hm.put("to", getToDate());
         hm.put("btp", BillType.PharmacyPurchaseBill);
         hm.put("class", BilledBill.class);
-        directPurchase = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        directPurchase = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1514,7 +1899,7 @@ public class PharmacyController implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
-        pos = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        pos = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         for (BillItem t : pos) {
             //   t.setPharmaceuticalBillItem(getPoQty(t));
@@ -1563,39 +1948,16 @@ public class PharmacyController implements Serializable {
     }
 
     public Item getPharmacyItem() {
-
         return pharmacyItem;
     }
 
-    public List<Ampp> getAmpps() {
-        if (pharmacyItem == null) {
-            return new ArrayList<>();
-        }
-        String sql;
-        Map m = new HashMap();
-        sql = "select p from Ampp p where p.retired=false and p.amp=:a order by p.dblValue";
-        m.put("a", pharmacyItem);
-        List<Ampp> list = getAmppFacade().findByJpql(sql, m);
-
-        if (list == null) {
-            return new ArrayList<>();
-        } else {
-            return list;
-        }
-    }
-
     public void setPharmacyItem(Item pharmacyItem) {
-
         makeNull();
         grns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
-        //System.out.println("Time 1 = " + new Date());
         createInstitutionSale();
-        //System.out.println("Time 2 = " + new Date());
         createInstitutionWholeSale();
-        //System.out.println("Time 3 = " + new Date());
         createInstitutionBhtIssue();
-        //System.out.println("Time 4 = " + new Date());
         createInstitutionStock();
         createInstitutionTransferIssue();
         createInstitutionIssue();
@@ -1874,22 +2236,6 @@ public class PharmacyController implements Serializable {
         this.itemController = itemController;
     }
 
-    public PharmaceuticalItemFacade getPiFacade() {
-        return piFacade;
-    }
-
-    public void setPiFacade(PharmaceuticalItemFacade piFacade) {
-        this.piFacade = piFacade;
-    }
-
-    public AmppFacade getAmppFacade() {
-        return AmppFacade;
-    }
-
-    public void setAmppFacade(AmppFacade AmppFacade) {
-        this.AmppFacade = AmppFacade;
-    }
-
     public double getPersentage() {
         return persentage;
     }
@@ -2019,6 +2365,182 @@ public class PharmacyController implements Serializable {
 
     public void setManagePharamcyReportIndex(int managePharamcyReportIndex) {
         this.managePharamcyReportIndex = managePharamcyReportIndex;
+    }
+
+    public PharmaceuticalItemLight getSelectedLight() {
+        return selectedLight;
+    }
+
+    public void setSelectedLight(PharmaceuticalItemLight selectedLight) {
+        this.selectedLight = selectedLight;
+    }
+
+    public List<PharmaceuticalItemLight> getSelectedLights() {
+        return selectedLights;
+    }
+
+    public void setSelectedLights(List<PharmaceuticalItemLight> selectedLights) {
+        this.selectedLights = selectedLights;
+    }
+
+    public List<PharmaceuticalItemLight> getAllLights() {
+        return allLights;
+    }
+
+    public void setAllLights(List<PharmaceuticalItemLight> allLights) {
+        this.allLights = allLights;
+    }
+
+    public AmpController getAmpController() {
+        return ampController;
+    }
+
+    public void setAmpController(AmpController ampController) {
+        this.ampController = ampController;
+    }
+
+    public List<Atm> getAtms() {
+        return atms;
+    }
+
+    public void setAtms(List<Atm> atms) {
+        this.atms = atms;
+    }
+
+    public List<Vtm> getVtms() {
+        return vtms;
+    }
+
+    public void setVtms(List<Vtm> vtms) {
+        this.vtms = vtms;
+    }
+
+    public List<Vmp> getVmps() {
+        return vmps;
+    }
+
+    public void setVmps(List<Vmp> vmps) {
+        this.vmps = vmps;
+    }
+
+    public List<Amp> getAmps() {
+        return amps;
+    }
+
+    public void setAmps(List<Amp> amps) {
+        this.amps = amps;
+    }
+
+    public List<Vmpp> getVmpps() {
+        return vmpps;
+    }
+
+    public void setVmpps(List<Vmpp> vmpps) {
+        this.vmpps = vmpps;
+    }
+
+    public List<Atm> getAtmsSelected() {
+        return atmsSelected;
+    }
+
+    public void setAtmsSelected(List<Atm> atmsSelected) {
+        this.atmsSelected = atmsSelected;
+    }
+
+    public List<Vtm> getVtmsSelected() {
+        return vtmsSelected;
+    }
+
+    public void setVtmsSelected(List<Vtm> vtmsSelected) {
+        this.vtmsSelected = vtmsSelected;
+    }
+
+    public List<Vmp> getVmpsSelected() {
+        return vmpsSelected;
+    }
+
+    public void setVmpsSelected(List<Vmp> vmpsSelected) {
+        this.vmpsSelected = vmpsSelected;
+    }
+
+    public List<Amp> getAmpsSelected() {
+        return ampsSelected;
+    }
+
+    public void setAmpsSelected(List<Amp> ampsSelected) {
+        this.ampsSelected = ampsSelected;
+    }
+
+    public List<Vmpp> getVmppsSelected() {
+        return vmppsSelected;
+    }
+
+    public void setVmppsSelected(List<Vmpp> vmppsSelected) {
+        this.vmppsSelected = vmppsSelected;
+    }
+
+    public List<Ampp> getAmppsSelected() {
+        return amppsSelected;
+    }
+
+    public void setAmppsSelected(List<Ampp> amppsSelected) {
+        this.amppsSelected = amppsSelected;
+    }
+
+    public Atm getAtm() {
+        return atm;
+    }
+
+    public void setAtm(Atm atm) {
+        this.atm = atm;
+    }
+
+    public Vtm getVtm() {
+        return vtm;
+    }
+
+    public void setVtm(Vtm vtm) {
+        this.vtm = vtm;
+    }
+
+    public Vmp getVmp() {
+        return vmp;
+    }
+
+    public void setVmp(Vmp vmp) {
+        this.vmp = vmp;
+    }
+
+    public Amp getAmp() {
+        return amp;
+    }
+
+    public void setAmp(Amp amp) {
+        this.amp = amp;
+    }
+
+    public Vmpp getVmpp() {
+        return vmpp;
+    }
+
+    public void setVmpp(Vmpp vmpp) {
+        this.vmpp = vmpp;
+    }
+
+    public Ampp getAmpp() {
+        return ampp;
+    }
+
+    public void setAmpp(Ampp ampp) {
+        this.ampp = ampp;
+    }
+
+    public List<Ampp> getAmpps() {
+        return ampps;
+    }
+
+    public void setAmpps(List<Ampp> ampps) {
+        this.ampps = ampps;
     }
 
 }

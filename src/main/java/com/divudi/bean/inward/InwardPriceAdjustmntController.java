@@ -283,7 +283,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         sql = "select a from InwardPriceAdjustment a "
                 + " where a.retired=false "
                 + " order by a.department.name,a.category.name,a.fromPrice";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public void createCategroyService() {

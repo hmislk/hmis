@@ -264,7 +264,7 @@ public class ShiftController implements Serializable {
 
         sql += " order by s.roster.name ";
 
-        shiftList = getFacade().findBySQL(sql);
+        shiftList = getFacade().findByJpql(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Entered shift report(/faces/hr/hr_shift_report.xhtml)");
     }
@@ -297,46 +297,6 @@ public class ShiftController implements Serializable {
             } catch (NumberFormatException exception) {
                 key = 0l;
             }
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Shift) {
-                Shift o = (Shift) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ShiftController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("shift")
-    public static class ShiftControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ShiftController controller = (ShiftController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "shiftController");
-            return controller.getFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
             return key;
         }
 

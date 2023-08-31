@@ -4,11 +4,13 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BilledBill;
 import com.divudi.entity.CancelledBill;
@@ -25,9 +27,12 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -39,6 +44,8 @@ public class LabReportSearchByInstitutionController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+            private AuditEventApplicationController auditEventApplicationController;
     String txtSearch;
     Date fromDate;
     Date toDate;
@@ -109,7 +116,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         String sql;
         if (txtSearch != null) {
             sql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p where ((p.name) like '%" + txtSearch.toUpperCase() + "%' or (b.insId) like '%" + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' or (i.name) like '%" + txtSearch.toUpperCase() + "%' ) order by pi.id desc";
-            searchedPatientInvestigations = getPiFacade().findBySQL(sql, 50);
+            searchedPatientInvestigations = getPiFacade().findByJpql(sql, 50);
         } else {
             searchedPatientInvestigations = null;
         }
@@ -491,12 +498,126 @@ public class LabReportSearchByInstitutionController implements Serializable {
             tm.put("pm2", PaymentMethod.Card);
             tm.put("pm3", PaymentMethod.Cheque);
             tm.put("bt", BilledBill.class);
-            labBillsB = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            labBillsB = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             calTotalsWithout();
         }
         return labBillsB;
     }
+    
+    public String navigateToReportIncomeWithoutCreditByInstitution(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateToReportIncomeWithoutCreditByInstitution()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportCashier/report_income_without_credit_by_institution.xhtml?faces-redirect=true";
+        
+    }
+
+    public String navigatToReportLabHandOverByDateSummery(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatToReportLabHandOverByDateSummery()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportLab/report_lab_hand_over_by_date_summery.xhtml?faces-redirect=true";
+        
+    }
+    
+    
+    public String navigatToReportCashierDetailedUserByBillType(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatToReportCashierDetailedUserByBillType()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/reportLab/report_cashier_detailed_user_by_billType.xhtml?faces-redirect=true";
+        
+    }
     public List<Bill> getLabBillsWithoutC() {
         if (labBillsC == null) {
             String sql;
@@ -510,7 +631,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
             tm.put("pm2", PaymentMethod.Card);
             tm.put("pm3", PaymentMethod.Cheque);
             tm.put("bt", CancelledBill.class);
-            labBillsC = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            labBillsC = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             calTotalsWithout();
         }
         return labBillsC;
@@ -529,7 +650,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
             tm.put("pm2", PaymentMethod.Card);
             tm.put("pm3", PaymentMethod.Cheque);
             tm.put("bt", RefundBill.class);
-            labBillsR = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            labBillsR = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             calTotalsWithout();
         }
         return labBillsR;
@@ -680,7 +801,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
             tm.put("billType", BillType.OpdBill);
             //  tm.put("ins", getSessionController().getInstitution());
             tm.put("toIns", getInstitution());
-            labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             calTotals();
         }
         return labBills;
@@ -698,7 +819,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
             tm.put("fromDate", fromDate);
             tm.put("toDate", toDate);
             tm.put("billType", BillType.OpdBill);
-            labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             calTotals();
         }
         return labBills;
@@ -730,7 +851,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
         tm.put("pm4", PaymentMethod.Slip);
         tm.put("ins", getSessionController().getInstitution());
         tm.put("toIns", getInstitution());
-        bills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
         if (bills != null) {
             calTotalsWithout();
         } else {
@@ -791,7 +912,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
             tm.put("pm4", PaymentMethod.Slip);
             tm.put("ins", getSessionController().getInstitution());
             tm.put("toIns", getInstitution());
-            labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+            labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
             if (labBills != null) {
                 calTotalsWithout();
             } else {
@@ -843,7 +964,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
                 tm.put("fromDate", fromDate);
                 tm.put("toDate", toDate);
                 tm.put("billType", BillType.OpdBill);
-                labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+                labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
                 calTotals();
             } else {
                 sql = "select f from Bill f where f.retired=false and f.billType = :billType and f.paymentMethod!=com.divudi.data.PaymentMethod.Credit and f.institution.id=" + getInstitution().getId() + " and f.createdAt between :fromDate and :toDate order by type(f), f.insId";
@@ -851,7 +972,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
                 tm.put("fromDate", fromDate);
                 tm.put("toDate", toDate);
                 tm.put("billType", BillType.OpdBill);
-                labBills = getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+                labBills = getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
                 calTotalsIns();
             }
         }
@@ -1053,7 +1174,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
                     + txtSearch.toUpperCase() + "%' or p.phone like '%" + txtSearch + "%' "
                     + " or (i.name) like '%" + txtSearch.toUpperCase() + "%' )  "
                     + " and b.createdAt between :fromDate and :toDate order by pi.id desc";
-            patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            patientInvestigations = getPiFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         }
     }
 
@@ -1072,7 +1193,7 @@ public class LabReportSearchByInstitutionController implements Serializable {
                 + " between :fromDate and :toDate order by pi.id desc";
         ////// // System.out.println("m = " + m);
         ////// // System.out.println("sql = " + sql);
-        patientInvestigations = getPiFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        patientInvestigations = getPiFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

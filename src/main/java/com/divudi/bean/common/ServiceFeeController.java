@@ -69,7 +69,7 @@ public class ServiceFeeController implements Serializable {
                 sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -81,14 +81,14 @@ public class ServiceFeeController implements Serializable {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
     }
 
     public void makeAllNullForeignCharges() {
-        for (Fee f : getFeeFacade().findBySQL("select f from Fee")) {
+        for (Fee f : getFeeFacade().findByJpql("select f from Fee")) {
             if (f.getFfee() == 0.0) {
                 f.setFfee(f.getFee());
                 getFeeFacade().edit(f);
@@ -251,7 +251,7 @@ public class ServiceFeeController implements Serializable {
 
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
-        fees = itemFeeFacade.findBySQL(sql);
+        fees = itemFeeFacade.findByJpql(sql);
     }
 
 //    public List<ItemFee> getCharges() {

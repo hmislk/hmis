@@ -316,7 +316,7 @@ public class OpdPreSettleController implements Serializable {
                 getBillItemFacade().create(newBil);
             }
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + tbi.getId();
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
             saveBillFee(tmp, newBil);
 
             getSaleBill().getBillItems().add(newBil);
@@ -641,7 +641,7 @@ public class OpdPreSettleController implements Serializable {
 
                     sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
-                    List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+                    List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 
                     calculateBillfeePayments(billFees, p);
                 }

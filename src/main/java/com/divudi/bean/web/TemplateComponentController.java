@@ -50,7 +50,7 @@ public class TemplateComponentController implements Serializable {
     private void listItems(){
         String jpql = "select t "
                 + " from TemplateComponent t";
-        items = facade.findBySQL(jpql);
+        items = facade.findByJpql(jpql);
     }
     
     public void saveCurrent() {

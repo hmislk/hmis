@@ -65,22 +65,22 @@ public class SymptomController implements Serializable {
         m.put("n", "%" + qry.toUpperCase() + "%");
         String sql;
         sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-        c = getFacade().findBySQL(sql, m, 10);
+        c = getFacade().findByJpql(sql, m, 10);
         if (c == null) {
             c = new ArrayList<>();
         }
         return c;
     }
 
-    public List<ClinicalEntity> getSelectedItems() {
-        Map m = new HashMap();
-        m.put("t", SymanticType.Symptom);
-        m.put("n", "%" + getSelectText().toUpperCase() + "%");
-        String sql;
-        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
-        selectedItems = getFacade().findByJpql(sql, m);
-        return selectedItems;
-    }
+//    public List<ClinicalEntity> getSelectedItems() {
+//        Map m = new HashMap();
+//        m.put("t", SymanticType.Symptom);
+//        m.put("n", "%" + getSelectText().toUpperCase() + "%");
+//        String sql;
+//        sql = "select c from ClinicalEntity c where c.retired=false and (c.name) like :n and c.symanticType=:t order by c.name";
+//        selectedItems = getFacade().findByJpql(sql, m);
+//        return selectedItems;
+//    }
 
  // Method to generate the Excel file and initiate the download
     public void downloadAsExcel() {

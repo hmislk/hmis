@@ -145,7 +145,7 @@ public class CreditSummeryController implements Serializable {
             temMap.put("credit", getInstitution());
         }
 
-        List<Department> tmp = getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Department> tmp = getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
     }
 
@@ -175,7 +175,7 @@ public class CreditSummeryController implements Serializable {
             temMap.put("credit", getInstitution());
         }
 
-        List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Category> tmp = getCategoryFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
 
     }
@@ -208,7 +208,7 @@ public class CreditSummeryController implements Serializable {
             temMap.put("credit", getInstitution());
         }
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -242,7 +242,7 @@ public class CreditSummeryController implements Serializable {
             temMap.put("credit", getInstitution());
         }
 
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -463,7 +463,7 @@ public class CreditSummeryController implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
         temMap.put("credit", getInstitution());
-        List<Bill> list = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Bill> list = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return list;
         //     return tmp;

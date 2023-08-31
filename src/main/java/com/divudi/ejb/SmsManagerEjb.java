@@ -53,7 +53,7 @@ public class SmsManagerEjb {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, 0);
         m.put("d", c.getTime());
-        List<Sms> smses = getSmsFacade().findBySQL(j,m,TemporalType.DATE);
+        List<Sms> smses = getSmsFacade().findByJpql(j,m,TemporalType.DATE);
         for (Sms e : smses) {
             e.setSentSuccessfully(Boolean.TRUE);
             e.setPending(false);

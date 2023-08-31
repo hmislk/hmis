@@ -1,0 +1,170 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not  sessionController.firstLogin }" >
+                    You are NOT authorized
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+
+                    <h:form>
+
+
+                        <p:panel header="Add New User" >
+                            <f:facet name="header" >
+                                <h:outputText value="Add New User" ></h:outputText>
+                                <p:commandButton
+                                    style="float: right;"
+                                    id="btnCreateUser" 
+                                    value="Save User" 
+                                    action="#{webUserController.saveNewUser()}" ajax="false" >
+                                </p:commandButton>
+                            </f:facet>
+                            <f:facet name="footer" >
+                                <p:messages ></p:messages>
+                            </f:facet>
+
+                            <p:tabView >
+                                <p:tab title="Basic" >
+                                    <p:panelGrid id="pg0" columns="2" style="text-align: left; ">
+                                        <p:outputLabel for="txtName" value="Name" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:inputText id="txtName" class="w-100"
+                                                     autocomplete="off"
+                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                     value="#{webUserController.current.webUserPerson.name}"
+                                                     requiredMessage="Please enter a Name"
+                                                     style="width: 700px"></p:inputText>
+                                        <p:outputLabel for="acTitle" value="Title" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:selectOneMenu 
+                                            id="acTitle"
+                                            required="false" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            value="#{webUserController.current.webUserPerson.title}"
+                                            requiredMessage="Please enter a Title">
+                                            <f:selectItem itemLabel="Select Title" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.titleDoctor}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel for="txtAddress" value="Address"
+
+                                                       rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:inputText autocomplete="off" 
+                                                     id="txtAddress"
+                                                     class="w-100"
+                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                     value="#{webUserController.current.webUserPerson.address}"
+                                                     requiredMessage="Please enter an address."></p:inputText>
+                                        <p:outputLabel for="txtPhone" 
+                                                       class="w-100"
+                                                       value="Mobile" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></p:outputLabel>
+                                        <p:inputText id="txtPhone" 
+                                                     class="w-100"
+                                                     required="true" rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                     value="#{webUserController.current.webUserPerson.mobile}"
+                                                     requiredMessage="Plase enter a phone number"
+                                                     ></p:inputText>
+                                        <p:outputLabel value="Speciality" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+                                        <p:autoComplete   forceSelection="true" id="speciality"
+                                                          value="#{webUserController.speciality}"
+                                                          completeMethod="#{specialityController.completeSpeciality}" 
+                                                          var="mys" 
+                                                          class="w-100"
+                                                          inputStyleClass="form-control"
+                                                          itemLabel="#{mys.name}" 
+                                                          itemValue="#{mys}"
+                                                          disabled="#{webUserController.createOnlyUser}" 
+                                                          rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                                          >              
+                                        </p:autoComplete> 
+
+
+                                        <p:outputLabel value="Institution" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+                                        <p:autoComplete 
+                                            id="ins"
+                                            value="#{webUserController.institution}"
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            completeMethod="#{institutionController.completeIns}"
+                                            var="ins"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}">
+                                            <p:ajax event="itemSelect" update="dep"/>
+                                        </p:autoComplete>
+
+                                        <p:outputLabel value="Department" rendered="#{!webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>                                            
+
+                                        <p:autoComplete 
+                                            id="dep"
+                                            class="w-100"
+                                            inputStyleClass="form-control"
+                                            value="#{webUserController.department}" 
+                                            rendered="#{!webUserController.createOnlyUserForExsistingUser}"
+                                            completeMethod="#{departmentController.completeDeptWithIns}"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                            <f:attribute name="selectedInstitution" value="#{webUserController.institution}" />
+                                        </p:autoComplete>
+
+
+
+
+                                        <p:outputLabel for="txtUsername" value="User Name"></p:outputLabel>
+                                        <p:inputText id="txtUsername"
+                                                     autocomplete="off" required="true" maxlength="50" 
+                                                     value="#{webUserController.current.name}" style="width: 700px"></p:inputText>
+
+                                        <p:outputLabel for="pw1" value="Password" ></p:outputLabel>
+                                        <p:password id="pw1" validatorMessage="Passwords are NOT matching." match="pw2" feedback="true" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
+
+                                        <p:outputLabel value="Re-enter password" for="pw2"></p:outputLabel>
+                                        <p:password id="pw2" required="true" maxlength="15" value="#{webUserController.current.webUserPassword}" style="width: 700px"/>
+                                    </p:panelGrid>
+                                </p:tab>
+                                <p:tab title="Advance" >
+                                    <p:panelGrid id="pg1" columns="2" style="text-align: left;" >
+                                        <p:outputLabel value="Add Only User" ></p:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{webUserController.createOnlyUser}" >
+                                            <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffListner()}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel value="Add User To Exsisting Staff" ></p:outputLabel>
+                                        <p:selectBooleanCheckbox value="#{webUserController.createOnlyUserForExsistingUser}" >
+                                            <p:ajax process="@this" update="pg1" listener="#{webUserController.onlyAddStaffForExsistingUserListner()}" />
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel value="Staff" rendered="#{webUserController.createOnlyUserForExsistingUser}" ></p:outputLabel>
+                                        <autocomplete:completeStaff value="#{webUserController.staff}" rendered="#{webUserController.createOnlyUserForExsistingUser}" />
+
+
+
+                                        <h:outputLabel value="Code" rendered="#{!webUserController.createOnlyUserForExsistingUser}"></h:outputLabel>
+                                        <p:inputText autocomplete="off" value="#{webUserController.current.code}" maxlength="10" rendered="#{!webUserController.createOnlyUserForExsistingUser}" style="width: 700px"></p:inputText>
+
+
+                                    </p:panelGrid>
+                                </p:tab>
+
+                            </p:tabView>
+
+
+
+
+                        </p:panel>
+
+
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

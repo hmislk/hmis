@@ -34,7 +34,7 @@
                                          requiredMessage="You must select a department" >
                         </p:autoComplete>
                         <h:outputLabel value="Reference Institution"/>
-                        <p:autoComplete converter="institutionConverter" value="#{commonReport.referenceInstitution}"
+                        <p:autoComplete  value="#{commonReport.referenceInstitution}"
                                         completeMethod="#{institutionController.completeCompany}" 
                                         forceSelection="true"
                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />

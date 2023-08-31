@@ -21,6 +21,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.StaffBean;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -77,6 +78,8 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -127,6 +130,8 @@ public class OpdBillController implements Serializable {
     PriceMatrixController priceMatrixController;
     @Inject
     PatientController patientController;
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
 
     /**
      * Class Variables
@@ -239,13 +244,12 @@ public class OpdBillController implements Serializable {
         return "/admin/institutions/collecting_centre";
     }
 
-    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
-        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
-        Map m = new HashMap();
-        m.put("bb", batchBill);
-        return billFacade.findByJpql(j, m);
-    }
-
+//    public List<Bill> validBillsOfBatchBill(Bill batchBill) {
+//        String j = "Select b from Bill b where b.backwardReferenceBill=:bb and b.cancelled=false";
+//        Map m = new HashMap();
+//        m.put("bb", batchBill);
+//        return billFacade.findByJpql(j, m);
+//    }
     public List<Bill> getSelectedBills() {
         return selectedBills;
     }
@@ -254,15 +258,14 @@ public class OpdBillController implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public void calculateSelectedBillTotals() {
-        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
-        grosTotal = bt.getGrossTotal();
-        netTotal = bt.getNetTotal();
-        discount = bt.getDiscount();
-        vat = bt.getVat();
-        netPlusVat = vat + netTotal;
-    }
-
+//    public void calculateSelectedBillTotals() {
+//        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+//        grosTotal = bt.getGrossTotal();
+//        netTotal = bt.getNetTotal();
+//        discount = bt.getDiscount();
+//        vat = bt.getVat();
+//        netPlusVat = vat + netTotal;
+//    }
     public void clear() {
         opdBill = new BilledBill();
         opdPaymentCredit = 0.0;
@@ -270,131 +273,128 @@ public class OpdBillController implements Serializable {
         searchController.createTableByKeywordToPayBills();
     }
 
-    public void clearPharmacy() {
-        opdBill = new BilledBill();
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTablePharmacyCreditToPayBills();
-    }
-
-    public void saveBillOPDCredit() {
-
-        BilledBill temp = new BilledBill();
-
-        if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
-            return;
-        }
-        if (opdPaymentCredit > opdBill.getBalance()) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
-            return;
-        }
-
-        temp.setReferenceBill(opdBill);
-        temp.setTotal(opdPaymentCredit);
-        temp.setPaidAmount(opdPaymentCredit);
-        temp.setNetTotal(opdPaymentCredit);
-
-        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        temp.setBillType(BillType.CashRecieveBill);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        temp.setComments(comment);
-
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
-
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
-        //create bill fee payments
-        //create bill fee payments
-        //create bill fee payments
-        //create bill fee payments
-        reminingCashPaid = opdPaymentCredit;
-
-        Payment p = createPayment(temp, paymentMethod);
-
-        String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
-
-        for (BillItem bi : billItems) {
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-
-            List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
-
-            calculateBillfeePayments(billFees, p);
-        }
-        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
-        opdBill.setCashPaid(calBillPaidValue(opdBill));
-        opdBill.setNetTotal(calBillPaidValue(opdBill));
-        getBillFacade().edit(opdBill);
-
-        JsfUtil.addSuccessMessage("Paid");
-        opdBill = temp;
-    }
-
-    public void saveBillPharmacyCredit() {
-
-        BilledBill temp = new BilledBill();
-
-        if (opdPaymentCredit == 0) {
-            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
-            return;
-        }
-        if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
-            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
-            return;
-        }
-
-        temp.setReferenceBill(opdBill);
-        temp.setTotal(opdPaymentCredit);
-        temp.setPaidAmount(opdPaymentCredit);
-        temp.setNetTotal(opdPaymentCredit);
-        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
-        ////// // System.out.println("opdPaymentCredit = " + opdPaymentCredit);
-        opdBill.setPaidAmount(opdPaymentCredit + opdBill.getPaidAmount());
-        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
-        getBillFacade().edit(opdBill);
-
-        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
-        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
-        temp.setBillType(BillType.CashRecieveBill);
-
-        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
-
-        temp.setComments(comment);
-
-        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
-
-        temp.setBillDate(new Date());
-        temp.setBillTime(new Date());
-        temp.setPaymentMethod(paymentMethod);
-        temp.setCreatedAt(new Date());
-        temp.setCreater(getSessionController().getLoggedUser());
-        getFacade().create(temp);
-
-        JsfUtil.addSuccessMessage("Paid");
-        opdBill = temp;
-
-    }
-
+//    public void clearPharmacy() {
+//        opdBill = new BilledBill();
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTablePharmacyCreditToPayBills();
+//    }
+//    public void saveBillOPDCredit() {
+//
+//        BilledBill temp = new BilledBill();
+//
+//        if (opdPaymentCredit == 0) {
+//            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+//            return;
+//        }
+//        if (opdPaymentCredit > opdBill.getBalance()) {
+//            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+//            return;
+//        }
+//
+//        temp.setReferenceBill(opdBill);
+//        temp.setTotal(opdPaymentCredit);
+//        temp.setPaidAmount(opdPaymentCredit);
+//        temp.setNetTotal(opdPaymentCredit);
+//
+//        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
+//        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
+//        temp.setBillType(BillType.CashRecieveBill);
+//
+//        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
+//
+//        temp.setComments(comment);
+//
+//        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//
+//        temp.setBillDate(new Date());
+//        temp.setBillTime(new Date());
+//        temp.setPaymentMethod(paymentMethod);
+//        temp.setCreatedAt(new Date());
+//        temp.setCreater(getSessionController().getLoggedUser());
+//        getFacade().create(temp);
+//        //create bill fee payments
+//        //create bill fee payments
+//        //create bill fee payments
+//        //create bill fee payments
+//        reminingCashPaid = opdPaymentCredit;
+//
+//        Payment p = createPayment(temp, paymentMethod);
+//
+//        String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
+//        List<BillItem> billItems = getBillItemFacade().findByJpql(sql);
+//
+//        for (BillItem bi : billItems) {
+//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
+//
+//            List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
+//
+//            calculateBillfeePayments(billFees, p);
+//        }
+//        opdBill.setBalance(opdBill.getBalance() - opdPaymentCredit);
+//        opdBill.setCashPaid(calBillPaidValue(opdBill));
+//        opdBill.setNetTotal(calBillPaidValue(opdBill));
+//        getBillFacade().edit(opdBill);
+//
+//        JsfUtil.addSuccessMessage("Paid");
+//        opdBill = temp;
+//    }
+//    public void saveBillPharmacyCredit() {
+//
+//        BilledBill temp = new BilledBill();
+//
+//        if (opdPaymentCredit == 0) {
+//            UtilityController.addErrorMessage("Please Select Correct Paid Amount");
+//            return;
+//        }
+//        if (opdPaymentCredit > (opdBill.getNetTotal() - opdBill.getPaidAmount())) {
+//            UtilityController.addErrorMessage("Please Enter Correct Paid Amount");
+//            return;
+//        }
+//
+//        temp.setReferenceBill(opdBill);
+//        temp.setTotal(opdPaymentCredit);
+//        temp.setPaidAmount(opdPaymentCredit);
+//        temp.setNetTotal(opdPaymentCredit);
+//        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+//        ////// // System.out.println("opdPaymentCredit = " + opdPaymentCredit);
+//        opdBill.setPaidAmount(opdPaymentCredit + opdBill.getPaidAmount());
+//        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+//        getBillFacade().edit(opdBill);
+//
+//        temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
+//        temp.setInsId(getBillNumberGenerator().institutionBillNumberGenerator(getSessionController().getInstitution(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill, BillNumberSuffix.NONE));
+//        temp.setBillType(BillType.CashRecieveBill);
+//
+//        temp.setDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setFromDepartment(getSessionController().getLoggedUser().getDepartment());
+//        temp.setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
+//
+//        temp.setToDepartment(getSessionController().getLoggedUser().getDepartment());
+//
+//        temp.setComments(comment);
+//
+//        getBillBean().setPaymentMethodData(temp, paymentMethod, getPaymentMethodData());
+//
+//        temp.setBillDate(new Date());
+//        temp.setBillTime(new Date());
+//        temp.setPaymentMethod(paymentMethod);
+//        temp.setCreatedAt(new Date());
+//        temp.setCreater(getSessionController().getLoggedUser());
+//        getFacade().create(temp);
+//
+//        JsfUtil.addSuccessMessage("Paid");
+//        opdBill = temp;
+//
+//    }
     public BillNumberGenerator getBillNumberGenerator() {
         return billNumberGenerator;
     }
@@ -468,185 +468,179 @@ public class OpdBillController implements Serializable {
         return Sex.values();
     }
 
-    public List<Bill> completeOpdCreditBill(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and c.billType= :btp "
-                    + " and c.paymentMethod= :pm "
-                    + " and c.cancelledBill is null "
-                    + " and c.refundedBill is null "
-                    + " and c.retired=false "
-                    + " and ((c.insId) like :q or"
-                    + " (c.patient.person.name) like :q "
-                    + " or (c.creditCompany.name) like :q ) "
-                    + " order by c.creditCompany.name";
-            hash.put("btp", BillType.OpdBill);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            a = getFacade().findByJpql(sql, hash);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completePharmacyCreditBill(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select b from BilledBill b "
-                    + " where (abs(b.netTotal)-abs(b.paidAmount))>:val "
-                    + " and b.billType in :btps "
-                    + " and b.paymentMethod= :pm "
-                    + " and b.institution=:ins "
-                    //                    + " and b.department=:dep "
-                    + " and b.retired=false "
-                    + " and b.refunded=false "
-                    + " and b.cancelled=false "
-                    + " and b.toStaff is null "
-                    + " and ( (b.insId) like :q or "
-                    + " (b.deptId) like :q or "
-                    + " (b.toInstitution.name) like :q ) "
-                    + " order by b.deptId ";
-            hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            hash.put("ins", getSessionController().getInstitution());
-//            hash.put("dep", getSessionController().getDepartment());
-//            //// // System.out.println("hash = " + hash);
-//            //// // System.out.println("sql = " + sql);
-//            //// // System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
-//            //// // System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
-            a = getFacade().findByJpql(sql, hash);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completeBillFromDealor(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
-        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and c.billType in :bts "
-                    + " and c.createdAt is not null "
-                    + " and c.deptId is not null "
-                    + " and c.cancelledBill is null "
-                    + " and c.retired=false "
-                    + " and c.paymentMethod=:pm  "
-                    + " and (((c.deptId) like :q ) "
-                    + " or ((c.fromInstitution.name)  like :q ))"
-                    + " order by c.fromInstitution.name";
-            hash.put("bts", billTypesListBilled);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 20);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completeBillFromDealorStore(String qry) {
-        List<Bill> a = null;
-        String sql;
-        HashMap hash = new HashMap();
-        if (qry != null) {
-            sql = "select c from BilledBill c "
-                    + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
-                    + " and (c.billType= :btp1 or c.billType= :btp2  )"
-                    + " and c.createdAt is not null "
-                    + " and c.deptId is not null "
-                    + " and c.cancelledBill is null "
-                    + " and c.retired=false "
-                    + " and c.paymentMethod=:pm  "
-                    + " and c.fromInstitution.institutionType=:insTp  "
-                    + " and (((c.deptId) like :q ) "
-                    + " or ((c.fromInstitution.name)  like :q ))"
-                    + " order by c.fromInstitution.name";
-            hash.put("btp1", BillType.PharmacyGrnBill);
-            hash.put("btp2", BillType.PharmacyPurchaseBill);
-            hash.put("pm", PaymentMethod.Credit);
-            hash.put("insTp", InstitutionType.StoreDealor);
-            hash.put("val", 0.1);
-            hash.put("q", "%" + qry.toUpperCase() + "%");
-            //     hash.put("pm", PaymentMethod.Credit);
-            a = getFacade().findBySQL(sql, hash, 10);
-        }
-        if (a == null) {
-            a = new ArrayList<>();
-        }
-        return a;
-    }
-
-    public List<Bill> completeSurgeryBills(String qry) {
-
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BilledBill b "
-                + " where b.billType = :billType "
-                + " and b.cancelled=false "
-                + " and b.retired=false "
-                + " and b.patientEncounter.discharged=false ";
-
-        sql += " and  (((b.patientEncounter.patient.person.name) like :q )";
-        sql += " or  ((b.patientEncounter.bhtNo) like :q )";
-        sql += " or  ((b.insId) like :q )";
-        sql += " or  ((b.procedure.item.name) like :q ))";
-        sql += " order by b.insId desc  ";
-
-        temMap.put("billType", BillType.SurgeryBill);
-        temMap.put("q", "%" + qry.toUpperCase() + "%");
-        List<Bill> tmps = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 20);
-
-        return tmps;
-    }
-
-    public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
-        String sql;
-        HashMap hash = new HashMap();
-
-        sql = "select c from BilledBill c where "
-                + " abs(c.netTotal)-abs(c.paidAmount)>:val"
-                + " and c.billType in :bts"
-                + " and c.createdAt is not null "
-                + " and c.deptId is not null "
-                + " and c.cancelled=false"
-                + " and c.retired=false"
-                + " and c.paymentMethod=:pm  "
-                + " and c.fromInstitution=:ins "
-                + " order by c.id ";
-        hash.put("bts", billTypes);
-        hash.put("pm", PaymentMethod.Credit);
-        hash.put("val", 0.1);
-        hash.put("ins", institution);
-        //     hash.put("pm", PaymentMethod.Credit);
-        List<Bill> bill = getFacade().findByJpql(sql, hash);
-
-        if (bill == null) {
-            bill = new ArrayList<>();
-        }
-
-        return bill;
-    }
-
+//    public List<Bill> completeOpdCreditBill(String qry) {
+//        List<Bill> a = null;
+//        String sql;
+//        HashMap hash = new HashMap();
+//        if (qry != null) {
+//            sql = "select c from BilledBill c "
+//                    + " where abs(c.netTotal)-abs(c.paidAmount)>:val "
+//                    + " and c.billType= :btp "
+//                    + " and c.paymentMethod= :pm "
+//                    + " and c.cancelledBill is null "
+//                    + " and c.refundedBill is null "
+//                    + " and c.retired=false "
+//                    + " and ((c.insId) like :q or"
+//                    + " (c.patient.person.name) like :q "
+//                    + " or (c.creditCompany.name) like :q ) "
+//                    + " order by c.creditCompany.name";
+//            hash.put("btp", BillType.OpdBill);
+//            hash.put("pm", PaymentMethod.Credit);
+//            hash.put("val", 0.1);
+//            hash.put("q", "%" + qry.toUpperCase() + "%");
+//            a = getFacade().findByJpql(sql, hash);
+//        }
+//        if (a == null) {
+//            a = new ArrayList<>();
+//        }
+//        return a;
+//    }
+//    public List<Bill> completePharmacyCreditBill(String qry) {
+//        List<Bill> a = null;
+//        String sql;
+//        HashMap hash = new HashMap();
+//        if (qry != null) {
+//            sql = "select b from BilledBill b "
+//                    + " where (abs(b.netTotal)-abs(b.paidAmount))>:val "
+//                    + " and b.billType in :btps "
+//                    + " and b.paymentMethod= :pm "
+//                    + " and b.institution=:ins "
+//                    //                    + " and b.department=:dep "
+//                    + " and b.retired=false "
+//                    + " and b.refunded=false "
+//                    + " and b.cancelled=false "
+//                    + " and b.toStaff is null "
+//                    + " and ( (b.insId) like :q or "
+//                    + " (b.deptId) like :q or "
+//                    + " (b.toInstitution.name) like :q ) "
+//                    + " order by b.deptId ";
+//            hash.put("btps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
+//            hash.put("pm", PaymentMethod.Credit);
+//            hash.put("val", 0.1);
+//            hash.put("q", "%" + qry.toUpperCase() + "%");
+//            hash.put("ins", getSessionController().getInstitution());
+////            hash.put("dep", getSessionController().getDepartment());
+////            //// // System.out.println("hash = " + hash);
+////            //// // System.out.println("sql = " + sql);
+////            //// // System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
+////            //// // System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
+//            a = getFacade().findByJpql(sql, hash);
+//        }
+//        if (a == null) {
+//            a = new ArrayList<>();
+//        }
+//        return a;
+//    }
+//    public List<Bill> completeBillFromDealor(String qry) {
+//        List<Bill> a = null;
+//        String sql;
+//        HashMap hash = new HashMap();
+//        BillType[] billTypesArrayBilled = {BillType.PharmacyGrnBill, BillType.PharmacyPurchaseBill, BillType.StoreGrnBill, BillType.StorePurchase};
+//        List<BillType> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+//        if (qry != null) {
+//            sql = "select c from BilledBill c "
+//                    + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
+//                    + " and c.billType in :bts "
+//                    + " and c.createdAt is not null "
+//                    + " and c.deptId is not null "
+//                    + " and c.cancelledBill is null "
+//                    + " and c.retired=false "
+//                    + " and c.paymentMethod=:pm  "
+//                    + " and (((c.deptId) like :q ) "
+//                    + " or ((c.fromInstitution.name)  like :q ))"
+//                    + " order by c.fromInstitution.name";
+//            hash.put("bts", billTypesListBilled);
+//            hash.put("pm", PaymentMethod.Credit);
+//            hash.put("val", 0.1);
+//            hash.put("q", "%" + qry.toUpperCase() + "%");
+//            //     hash.put("pm", PaymentMethod.Credit);
+//            a = getFacade().findByJpql(sql, hash, 20);
+//        }
+//        if (a == null) {
+//            a = new ArrayList<>();
+//        }
+//        return a;
+//    }
+//    public List<Bill> completeBillFromDealorStore(String qry) {
+//        List<Bill> a = null;
+//        String sql;
+//        HashMap hash = new HashMap();
+//        if (qry != null) {
+//            sql = "select c from BilledBill c "
+//                    + "where  abs(c.netTotal)-abs(c.paidAmount)>:val "
+//                    + " and (c.billType= :btp1 or c.billType= :btp2  )"
+//                    + " and c.createdAt is not null "
+//                    + " and c.deptId is not null "
+//                    + " and c.cancelledBill is null "
+//                    + " and c.retired=false "
+//                    + " and c.paymentMethod=:pm  "
+//                    + " and c.fromInstitution.institutionType=:insTp  "
+//                    + " and (((c.deptId) like :q ) "
+//                    + " or ((c.fromInstitution.name)  like :q ))"
+//                    + " order by c.fromInstitution.name";
+//            hash.put("btp1", BillType.PharmacyGrnBill);
+//            hash.put("btp2", BillType.PharmacyPurchaseBill);
+//            hash.put("pm", PaymentMethod.Credit);
+//            hash.put("insTp", InstitutionType.StoreDealor);
+//            hash.put("val", 0.1);
+//            hash.put("q", "%" + qry.toUpperCase() + "%");
+//            //     hash.put("pm", PaymentMethod.Credit);
+//            a = getFacade().findByJpql(sql, hash, 10);
+//        }
+//        if (a == null) {
+//            a = new ArrayList<>();
+//        }
+//        return a;
+//    }
+//    public List<Bill> completeSurgeryBills(String qry) {
+//
+//        String sql;
+//        Map temMap = new HashMap();
+//        sql = "select b from BilledBill b "
+//                + " where b.billType = :billType "
+//                + " and b.cancelled=false "
+//                + " and b.retired=false "
+//                + " and b.patientEncounter.discharged=false ";
+//
+//        sql += " and  (((b.patientEncounter.patient.person.name) like :q )";
+//        sql += " or  ((b.patientEncounter.bhtNo) like :q )";
+//        sql += " or  ((b.insId) like :q )";
+//        sql += " or  ((b.procedure.item.name) like :q ))";
+//        sql += " order by b.insId desc  ";
+//
+//        temMap.put("billType", BillType.SurgeryBill);
+//        temMap.put("q", "%" + qry.toUpperCase() + "%");
+//        List<Bill> tmps = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 20);
+//
+//        return tmps;
+//    }
+//    public List<Bill> getDealorBills(Institution institution, List<BillType> billTypes) {
+//        String sql;
+//        HashMap hash = new HashMap();
+//
+//        sql = "select c from BilledBill c where "
+//                + " abs(c.netTotal)-abs(c.paidAmount)>:val"
+//                + " and c.billType in :bts"
+//                + " and c.createdAt is not null "
+//                + " and c.deptId is not null "
+//                + " and c.cancelled=false"
+//                + " and c.retired=false"
+//                + " and c.paymentMethod=:pm  "
+//                + " and c.fromInstitution=:ins "
+//                + " order by c.id ";
+//        hash.put("bts", billTypes);
+//        hash.put("pm", PaymentMethod.Credit);
+//        hash.put("val", 0.1);
+//        hash.put("ins", institution);
+//        //     hash.put("pm", PaymentMethod.Credit);
+//        List<Bill> bill = getFacade().findByJpql(sql, hash);
+//
+//        if (bill == null) {
+//            bill = new ArrayList<>();
+//        }
+//
+//        return bill;
+//    }
     public List<Bill> getCreditBills(Institution institution) {
         String sql;
         HashMap hash = new HashMap();
@@ -727,7 +721,7 @@ public class OpdBillController implements Serializable {
         m.put("ins", institution);
         m.put("fd", fd);
         m.put("td", td);
-        List<Bill> bill = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> bill = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         if (bill == null) {
             bill = new ArrayList<>();
@@ -750,7 +744,7 @@ public class OpdBillController implements Serializable {
         hm.put("ins", institution);
         hm.put("tp1", billType1);
         hm.put("tp2", billType2);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1116,9 +1110,44 @@ public class OpdBillController implements Serializable {
     }
 
     public String settleOpdBill() {
-        if (!executeSettleBillActions()) {
-            return "";
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
         }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        if (!executeSettleBillActions()) {
+
+            return "";
+
+        }
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd/opd_bill_print?faces-redirect=true";
     }
 
@@ -1900,7 +1929,7 @@ public class OpdBillController implements Serializable {
         Map m = new HashMap();
         m.put("bt", billTypeForVat);
         m.put("id", startIdForVat);
-        List<Bill> bs = getFacade().findBySQL(j, m, 1000);
+        List<Bill> bs = getFacade().findByJpql(j, m, 1000);
         txtBillNoForVat = "";
         for (Bill b : bs) {
             if (b.getVatPlusNetTotal() == 0.00) {
@@ -2609,46 +2638,6 @@ public class OpdBillController implements Serializable {
     /**
      *
      */
-    @FacesConverter("bill")
-    public static class BillControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            OpdBillController controller = (OpdBillController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
-            return controller.getBillFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + OpdBillController.class.getName());
-            }
-        }
-    }
-
     @FacesConverter(forClass = Bill.class)
     public static class BillConverter implements Converter {
 

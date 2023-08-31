@@ -133,7 +133,7 @@ public class DiscardCategoryController implements Serializable {
                     + " from DiscardCategory c "
                     + " where c.retired=false "
                     + " order by c.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

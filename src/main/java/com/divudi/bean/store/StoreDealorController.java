@@ -54,7 +54,7 @@ public class StoreDealorController implements Serializable {
         //////// // System.out.println(sql);
         m.put("t", InstitutionType.StoreDealor);
         m.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getEjbFacade().findBySQL(sql, m, 10);
+        suggestions = getEjbFacade().findByJpql(sql, m, 10);
         //////// // System.out.println("suggestions = " + suggestions);
 
         return suggestions;

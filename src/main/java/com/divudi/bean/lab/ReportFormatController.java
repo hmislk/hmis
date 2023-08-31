@@ -40,7 +40,7 @@ public class ReportFormatController implements Serializable {
     String selectText = "";
 
     public List<ReportFormat> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ReportFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from ReportFormat c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -133,7 +133,7 @@ public class ReportFormatController implements Serializable {
     public List<ReportFormat> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM ReportFormat i where i.retired=false order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

@@ -188,7 +188,7 @@ public class InwardTimedItemController implements Serializable {
         m.put("fd", frmDate);
         m.put("td", toDate);
 
-        items = getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        items = getPatientItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
         totalMins = 0.0;

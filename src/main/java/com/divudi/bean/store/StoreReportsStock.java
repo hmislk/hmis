@@ -322,7 +322,7 @@ public class StoreReportsStock implements Serializable {
         temMap.put("dep", department);
         temMap.put("date", date);
 
-        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<PharmaceuticalBillItem> list = getPharmaceuticalBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         for (PharmaceuticalBillItem b : list) {
             StockHistory sh = getPreviousStockHistoryByBatch(b.getItemBatch(), b.getBillItem().getBill().getDepartment(), b.getBillItem().getCreatedAt());
@@ -377,7 +377,7 @@ public class StoreReportsStock implements Serializable {
             m.put("st", st);
             m.put("date", date);
 
-            List<PharmaceuticalBillItem> phList = getPharmaceuticalBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            List<PharmaceuticalBillItem> phList = getPharmaceuticalBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
             PharmaceuticalBillItem previousPh = null;
             double calculatedStock = 0;

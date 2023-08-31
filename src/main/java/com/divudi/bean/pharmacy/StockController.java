@@ -55,7 +55,7 @@ public class StockController implements Serializable {
     String selectText = "";
 
     public List<Stock> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Stock c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Stock c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -96,7 +96,7 @@ public class StockController implements Serializable {
     public List<Stock> completeStock(String qry) {
         List<Stock> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Stock c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Stock c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -271,47 +271,5 @@ public class StockController implements Serializable {
     /**
      *
      */
-    @FacesConverter("stockCon")
-    public static class StockControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StockController controller = (StockController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "stockController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            try {
-                key = Long.valueOf(value);
-            } catch (NumberFormatException e) {
-                key = 0l;
-            }
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Stock) {
-                Stock o = (Stock) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StockController.class.getName());
-            }
-        }
-    }
+    
 }

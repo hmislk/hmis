@@ -1865,7 +1865,7 @@ public class StaffSalaryController implements Serializable {
 
         sql += " order by ss.staff.codeInterger";
 
-        items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        items = getStaffSalaryFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         List<PaysheetComponent> paysheetComponentsAddition;
         List<PaysheetComponent> paysheetComponentsSubstraction;
@@ -2006,7 +2006,7 @@ public class StaffSalaryController implements Serializable {
         hm.put("fd", getSalaryCycle().getSalaryFromDate());
         hm.put("td", getSalaryCycle().getSalaryToDate());
 
-        items = getStaffSalaryFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffSalaryFacade().findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public StaffSalary fetchStaffSalaryTable(Staff stf, Date fromDate, Date toDate) {
@@ -2147,43 +2147,5 @@ public class StaffSalaryController implements Serializable {
         }
     }
 
-    @FacesConverter("staffSalaryCon")
-    public static class StaffSalaryControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffSalaryController controller = (StaffSalaryController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "staffSalaryController");
-            return controller.getStaffSalaryFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof StaffSalary) {
-                StaffSalary o = (StaffSalary) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffSalaryController.class.getName());
-            }
-        }
-    }
+    
 }

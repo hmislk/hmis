@@ -24,7 +24,7 @@
                         </p:selectOneMenu>
                         <p:outputLabel id="bh" value="#{admissionController.bhtText}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
 
-                        <p:autoComplete  converter="fac" forceSelection="true"  
+                        <p:autoComplete  forceSelection="true"  
                                          id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                          completeMethod="#{roomFacilityChargeController.completeRoom}"
@@ -138,7 +138,7 @@
                                                 value="#{inwardStaffPaymentBillController.referringDoctorSpeciality}" 
                                                 completeMethod="#{specialityController.completeSpeciality}" 
                                                 var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon" style="width: 200px!important;"  >
+                                                 style="width: 200px!important;"  >
                                     <f:ajax event="itemSelect" execute="@this" render="acRefDoc"/>
                                     <f:ajax event="blur" execute="@this" render="acRefDoc"/>
                                 </p:autoComplete>
@@ -150,7 +150,7 @@
                                                 var="ix" 
                                                 itemLabel="#{ix.person.name}" 
                                                 itemValue="#{ix}" size="30"  
-                                                converter="stfcon" >
+                                                 >
                                 </p:autoComplete>
 
                                 <p:watermark value="OPD Doctor Speciality" for="acSpeciality" ></p:watermark>
@@ -162,7 +162,7 @@
                                                 id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" 
                                                 var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon">
+                                                >
 
                                     <f:ajax event="itemSelect" execute="@this" render="scStaff"/>
                                     <f:ajax event="blur" execute="@this" render="scStaff"/>
@@ -172,7 +172,7 @@
                                                  value="#{admissionController.current.opdDoctor}" 
                                                  completeMethod="#{inwardStaffPaymentBillController.completeStaff}"
                                                  var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                 converter="stfcon">
+                                                 >
                                 </p:autoComplete>
 
                             </h:panelGrid>

@@ -237,7 +237,7 @@ public class BookingPastController implements Serializable {
             consultants = getStaffFacade().findByJpql(sql, m);
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
-            consultants = getStaffFacade().findBySQL(sql);
+            consultants = getStaffFacade().findByJpql(sql);
         }
 //        ////// // System.out.println("consultants = " + consultants);
         setStaff(null);
@@ -397,7 +397,7 @@ public class BookingPastController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
     }
 
@@ -491,7 +491,7 @@ public class BookingPastController implements Serializable {
                 + " where f.retired=false "
                 + " and f.item=:ses ";
         m.put("ses", item);
-        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        List<ItemFee> list = getItemFeeFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
         return list;
     }
 
@@ -530,7 +530,7 @@ public class BookingPastController implements Serializable {
         m.put("d", d);
         m.put("staff", s);
         m.put("class", ServiceSession.class);
-        return getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
     
     public void listnerStaffListForRowSelect() {
@@ -582,7 +582,7 @@ public class BookingPastController implements Serializable {
                     sql = "select p from Staff p where p.retired=false "
                             + " and p.person.name like '%" + getSelectTextConsultant().toUpperCase() + "%' "
                             + " order by p.person.name";
-                    consultants = getStaffFacade().findBySQL(sql);
+                    consultants = getStaffFacade().findByJpql(sql);
                 }
 
             } else {

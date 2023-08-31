@@ -430,9 +430,9 @@ public class AmpController implements Serializable {
 
     public List<Amp> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Amp c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Amp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -443,7 +443,7 @@ public class AmpController implements Serializable {
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Amp c where "
+            a = getFacade().findByJpql("select c from Amp c where "
                     + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
                     + " and ((c.name) like :n or (c.code)  "
                     + "like :n or (c.barcode) like :n) order by c.name", m, 30);
@@ -462,7 +462,7 @@ public class AmpController implements Serializable {
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
-            ampList = getFacade().findBySQL("select c from Amp c where "
+            ampList = getFacade().findByJpql("select c from Amp c where "
                     + " c.retired=false and"
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
@@ -498,7 +498,7 @@ public class AmpController implements Serializable {
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
-            vmps = getVmpFacade().findBySQL("select c from Vmp c where "
+            vmps = getVmpFacade().findByJpql("select c from Vmp c where "
                     + " c.retired=false and"
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
@@ -512,44 +512,44 @@ public class AmpController implements Serializable {
         addingVtmInVmp = new VirtualProductIngredient();
     }
 
-    public List<Amp> completeAmpByCode(String qry) {
+//    public List<Amp> completeAmpByCode(String qry) {
+//
+//        Map m = new HashMap();
+//        m.put("n", "%" + qry + "%");
+//        m.put("dep", DepartmentType.Store);
+//        if (qry != null) {
+//            ampList = getFacade().findByJpql("select c from Amp c where "
+//                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
+//                    + "((c.code) like :n ) order by c.code", m, 30);
+//            //////// // System.out.println("a size is " + a.size());
+//        }
+//        if (ampList == null) {
+//            ampList = new ArrayList<>();
+//        }
+//        return ampList;
+//    }
 
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
-        if (qry != null) {
-            ampList = getFacade().findBySQL("select c from Amp c where "
-                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
-                    + "((c.code) like :n ) order by c.code", m, 30);
-            //////// // System.out.println("a size is " + a.size());
-        }
-        if (ampList == null) {
-            ampList = new ArrayList<>();
-        }
-        return ampList;
-    }
-
-    public List<Amp> completeAmpByBarCode(String qry) {
-
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
-        m.put("dep", DepartmentType.Store);
-        String sql = "select c from Amp c where "
-                + " c.retired=false and c.departmentType!=:dep and "
-                + "((c.barcode) like :n ) order by c.barcode";
-        //   ////// // System.out.println("sql = " + sql);
-        //   ////// // System.out.println("m = " + m);
-
-        if (qry != null) {
-            ampList = getFacade().findBySQL(sql, m, 30);
-            //   ////// // System.out.println("a = " + a);
-            //////// // System.out.println("a size is " + a.size());
-        }
-        if (ampList == null) {
-            ampList = new ArrayList<>();
-        }
-        return ampList;
-    }
+//    public List<Amp> completeAmpByBarCode(String qry) {
+//
+//        Map m = new HashMap();
+//        m.put("n", "%" + qry + "%");
+//        m.put("dep", DepartmentType.Store);
+//        String sql = "select c from Amp c where "
+//                + " c.retired=false and c.departmentType!=:dep and "
+//                + "((c.barcode) like :n ) order by c.barcode";
+//        //   ////// // System.out.println("sql = " + sql);
+//        //   ////// // System.out.println("m = " + m);
+//
+//        if (qry != null) {
+//            ampList = getFacade().findByJpql(sql, m, 30);
+//            //   ////// // System.out.println("a = " + a);
+//            //////// // System.out.println("a size is " + a.size());
+//        }
+//        if (ampList == null) {
+//            ampList = new ArrayList<>();
+//        }
+//        return ampList;
+//    }
     @EJB
     BillNumberGenerator billNumberBean;
 
@@ -819,7 +819,7 @@ public class AmpController implements Serializable {
         List<Amp> lst;
         String sql;
         sql = "select a from Amp a where a.retired=false and length(a.code) > 5";
-        lst = getFacade().findBySQL(sql);
+        lst = getFacade().findByJpql(sql);
         return lst;
     }
 
@@ -906,49 +906,7 @@ public class AmpController implements Serializable {
     /**
      *
      */
-    @FacesConverter("ampCon")
-    public static class AmpControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            AmpController controller = (AmpController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "ampController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key = 0l;
-            try {
-                key = Long.valueOf(value);
-            } catch (Exception e) {
-                key = 0l;
-            }
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Amp) {
-                Amp o = (Amp) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AmpController.class.getName());
-            }
-        }
-    }
+    
 
     @FacesConverter(forClass = Amp.class)
     public static class AmpConverter implements Converter {

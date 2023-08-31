@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/admin/lims/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form>
+                    <p:dataTable value="#{investigationCategoryController.items}" 
+                                 paginatorAlwaysVisible="false"
+                                 var="item"
+                                 paginator="true" 
+                                 rows="10" 
+                                 emptyMessage="No investigation Categories found."
+                                 paginatorTemplate="{FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+                        <p:column sortBy="#{item.name}" filterBy="#{item.name}" filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Name"/>
+                            </f:facet>
+                            <h:outputText value="#{item.name}"/>
+                        </p:column>
+                        <p:column sortBy="#{item.description}" filterBy="#{item.description}" filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputText value="Description"/>
+                            </f:facet>
+                            <h:outputText value="#{item.description}"/>
+                        </p:column>
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Actions"/>
+                            </f:facet>
+                            <p:commandButton ajax="false" 
+                                             class="mx-1"
+                                             value="Edit" 
+                                             icon="pi pi-pencil" 
+                                             action="#{investigationCategoryController.navigateToEditInvestigationCategory()}">
+                                <f:setPropertyActionListener value="#{item}" target="#{investigationCategoryController.current}"></f:setPropertyActionListener>
+                            </p:commandButton>
+                            <p:commandButton ajax="false" 
+                                             class="mx-1"
+                                             value="Delete" 
+                                             icon="fa fa-trash" 
+                                             onclick="if (!confirm('Are you sure you want to delete this item?'))
+                                                         return false;" 
+                                             action="#{investigationCategoryController.delete()}">
+                                <f:setPropertyActionListener value="#{item}" target="#{investigationCategoryController.current}"></f:setPropertyActionListener>
+                            </p:commandButton>
+                        </p:column>
+
+                    </p:dataTable>
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

@@ -46,14 +46,14 @@ public class StaffCategoryController implements Serializable {
     String selectText = "";
 
     public List<StaffCategory> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from StaffCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from StaffCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<StaffCategory> completeStaffCategory(String qry) {
         List<StaffCategory> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from StaffCategory c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from StaffCategory c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<StaffCategory>();
@@ -154,7 +154,7 @@ public class StaffCategoryController implements Serializable {
                     + " from StaffCategory c "
                     + " where c.retired=false "
                     + " order by c.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -202,43 +202,5 @@ public class StaffCategoryController implements Serializable {
         }
     }
 
-    @FacesConverter("staffCategoryCon")
-    public static class StaffCategoryConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffCategoryController controller = (StaffCategoryController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "staffCategoryController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof StaffCategory) {
-                StaffCategory o = (StaffCategory) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffCategoryController.class.getName());
-            }
-        }
-    }
+   
 }

@@ -214,7 +214,7 @@ public class StaffController implements Serializable {
                 + " and s.speciality is null "
                 + " order by s.person.name ";
 
-        staffWithCode = getEjbFacade().findBySQL(sql);
+        staffWithCode = getEjbFacade().findByJpql(sql);
     }
 
     public void createStaffList() {
@@ -223,7 +223,7 @@ public class StaffController implements Serializable {
                 + " s.retired=false "
                 + " order by s.person.name ";
 
-        staffWithCode = getEjbFacade().findBySQL(sql);
+        staffWithCode = getEjbFacade().findByJpql(sql);
     }
 
     public void createStaffOnly() {
@@ -364,7 +364,7 @@ public class StaffController implements Serializable {
         }
 
         sql += " order by ss.codeInterger ";
-        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
 
@@ -418,7 +418,7 @@ public class StaffController implements Serializable {
         }
 
         sql += " order by ss.codeInterger ";
-        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
         selectedStaffes = staffWithCode;
         fetchWorkDays(staffWithCode);
     }
@@ -491,7 +491,7 @@ public class StaffController implements Serializable {
         sql += " order by ss.codeInterger ";
         ////System.out.println(sql);
         ////System.out.println("hm = " + hm);
-        staffWithCode = getEjbFacade().findBySQL(sql, hm, TemporalType.DATE);
+        staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Staff Salary advance(Process Salary Cycle)(/faces/hr/hr_staff_salary_advance.xhtml)");
 
@@ -562,7 +562,7 @@ public class StaffController implements Serializable {
                     + " order by p.person.name";
 
             //////System.out.println(sql);
-            suggestions = getEjbFacade().findBySQL(sql, 20);
+            suggestions = getEjbFacade().findByJpql(sql, 20);
         }
         return suggestions;
     }
@@ -583,7 +583,7 @@ public class StaffController implements Serializable {
                     + " order by s.person.name";
 
             //////System.out.println(sql);
-            suggestions = getEjbFacade().findBySQL(sql, hm, 20);
+            suggestions = getEjbFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
     }
@@ -603,7 +603,7 @@ public class StaffController implements Serializable {
                     + " order by p.person.name";
 
             //////System.out.println(sql);
-            suggestions = getEjbFacade().findBySQL(sql, 20);
+            suggestions = getEjbFacade().findByJpql(sql, 20);
         }
         return suggestions;
     }
@@ -627,7 +627,7 @@ public class StaffController implements Serializable {
             m.put("cd", new Date());
 
             //////System.out.println(sql);
-            suggestions = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 20);
+            suggestions = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 20);
         }
         return suggestions;
     }
@@ -687,7 +687,7 @@ public class StaffController implements Serializable {
             //////System.out.println(sql);
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, hm, 20);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
     }
@@ -723,7 +723,7 @@ public class StaffController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("rs", roster);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -754,7 +754,7 @@ public class StaffController implements Serializable {
                     + " (p.code) like '%" + query.toUpperCase() + "%' ) and type(p) != Doctor"
                     + " order by p.person.name";
             //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, 20);
+            suggestions = getFacade().findByJpql(sql, 20);
         }
         return suggestions;
     }
@@ -955,7 +955,7 @@ public class StaffController implements Serializable {
                 + " or (c.code) like :q "
                 + " order by c.person.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        List<Staff> s = getFacade().findBySQL(sql, hm, 20);
+        List<Staff> s = getFacade().findByJpql(sql, hm, 20);
         return s;
     }
 
@@ -1319,7 +1319,7 @@ public class StaffController implements Serializable {
         for (Staff s : selectedStaffes) {
             s.setAnnualWelfareUtilized(resetStaffBalance);
             getFacade().edit(s);
-            getFacade().flush();
+//            getFacade().flush();
         }
         JsfUtil.addSuccessMessage("Balances Updated");
     }
@@ -1327,7 +1327,7 @@ public class StaffController implements Serializable {
     public void fillStaffes() {
         String temSql;
         temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
-        staffes = getFacade().findBySQL(temSql);
+        staffes = getFacade().findByJpql(temSql);
     }
 
     public List<Staff> getItemsToRemove() {
@@ -1342,7 +1342,7 @@ public class StaffController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Staff i where i.retired=false and i.person is not null and i.person.name is not null order by i.person.name";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }
@@ -1417,7 +1417,7 @@ public class StaffController implements Serializable {
         m.put("d", tempReDate);
         m.put("s", getCurrent());
 
-        List<StaffSalary> cycles = staffSalaryFacade.findBySQL(sql, m, TemporalType.DATE);
+        List<StaffSalary> cycles = staffSalaryFacade.findByJpql(sql, m, TemporalType.DATE);
 
         if (cycles.size() > 0) {
             return true;
@@ -1492,52 +1492,7 @@ public class StaffController implements Serializable {
         return "/admin/staff/admin_manage_staff_index.xhtml";
     }
 
-    @FacesConverter("stfcon")
-    public static class StaffConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffController controller = (StaffController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "staffController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            if (value == null || value.trim().equals("null")) {
-                value = "";
-            }
-            try {
-                key = Long.valueOf(value);
-            } catch (Exception e) {
-                key = 0l;
-            }
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Staff) {
-                Staff o = (Staff) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffController.class.getName());
-            }
-        }
-    }
+   
 
     public CommonController getCommonController() {
         return commonController;

@@ -43,11 +43,11 @@
                                 <h:outputLabel/>
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
                                                 var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{searchController.reportKeyWord.department}" converter="departmentConverter"/>
+                                                value="#{searchController.reportKeyWord.department}" />
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" styleClass="shortinput2"
                                                 var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{searchController.reportKeyWord.departmentFrom}" converter="departmentConverter"/>
-                                <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" styleClass="shortinput2"
+                                                value="#{searchController.reportKeyWord.departmentFrom}" />
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" styleClass="shortinput2"
                                                 value="#{searchController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 

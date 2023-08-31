@@ -139,7 +139,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
 
     public List<InvestigationItem> getInvestigationItemsOfDynamicLabelType() {
         if (investigation != null) {
-            investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType = com.divudi.data.InvestigationItemType.DynamicLabel");
+            investigationItemsOfDynamicLabelType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType = com.divudi.data.InvestigationItemType.DynamicLabel");
         }
         if (investigationItemsOfDynamicLabelType == null) {
             investigationItemsOfDynamicLabelType = new ArrayList<InvestigationItem>();
@@ -242,7 +242,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         if (investigation != null) {
             Map m = new HashMap();
             m.put("iit", InvestigationItemType.Value);
-            investigationItemsOfValueType = getInvestigationItemFacade().findBySQL("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
+            investigationItemsOfValueType = getInvestigationItemFacade().findByJpql("select i from InvestigationItem i where i.retired=false and i.item.id = " + investigation.getId() + " and i.ixItemType =:iit", m, TemporalType.TIMESTAMP);
         }
         if (investigationItemsOfValueType == null) {
             investigationItemsOfValueType = new ArrayList<InvestigationItem>();
@@ -263,7 +263,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
     }
 
     public List<InvestigationItemValueFlag> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from InvestigationItemValueFlag c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from InvestigationItemValueFlag c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -355,7 +355,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         String sql;
         if (investigation != null) {
             sql = "select i from InvestigationItemValueFlag i where i.retired=false and i.item.id = " + investigation.getId();
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
         }
         if (items == null) {
             items = new ArrayList<InvestigationItemValueFlag>();
@@ -415,28 +415,28 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         }
     }
 
-    public List<InvestigationItemValueFlag> getDynamicLabels() {
-        String sql;
-        //////// // System.out.println("getting dynamic labels");
-        if (dynamicLabels == null) {
-            if (investigation != null && investigationItemofDynamicLabelType != null) {
-
-                sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
-                        + " i.investigationItemOfLabelType.id = " + investigationItemofDynamicLabelType.getId();
-                //////// // System.out.println("sql is " + sql);
-                dynamicLabels = getFacade().findBySQL(sql);
-                //////// // System.out.println("size is " + dynamicLabels.size());
-            } else {
-                //////// // System.out.println("no sql");
-                dynamicLabels = null;
-            }
-        }
-        if (dynamicLabels == null) {
-            //////// // System.out.println("null");
-            dynamicLabels = new ArrayList<InvestigationItemValueFlag>();
-        }
-        return dynamicLabels;
-    }
+//    public List<InvestigationItemValueFlag> getDynamicLabels() {
+//        String sql;
+//        //////// // System.out.println("getting dynamic labels");
+//        if (dynamicLabels == null) {
+//            if (investigation != null && investigationItemofDynamicLabelType != null) {
+//
+//                sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
+//                        + " i.investigationItemOfLabelType.id = " + investigationItemofDynamicLabelType.getId();
+//                //////// // System.out.println("sql is " + sql);
+//                dynamicLabels = getFacade().findByJpql(sql);
+//                //////// // System.out.println("size is " + dynamicLabels.size());
+//            } else {
+//                //////// // System.out.println("no sql");
+//                dynamicLabels = null;
+//            }
+//        }
+//        if (dynamicLabels == null) {
+//            //////// // System.out.println("null");
+//            dynamicLabels = new ArrayList<InvestigationItemValueFlag>();
+//        }
+//        return dynamicLabels;
+//    }
 
     public List<InvestigationItemValueFlag> getDynamicLabelsByIxItId(InvestigationItem ii) {
         String sql;
@@ -444,7 +444,7 @@ public class InvestigationItemDynamicLabelController implements Serializable {
         if (ii != null) {
             sql = "select i from InvestigationItemValueFlag i where i.retired=false and  "
                     + " i.investigationItemOfLabelType.id = " + ii.getId();
-            d = getFacade().findBySQL(sql);
+            d = getFacade().findByJpql(sql);
         } else {
             d = null;
         }

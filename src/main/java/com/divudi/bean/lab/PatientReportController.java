@@ -190,7 +190,7 @@ public class PatientReportController implements Serializable {
         }
         m.put("doc", doctor);
         m.put("app", true);
-        recentReportsOrderedByDoctor = getFacade().findBySQL(j, m, 100);
+        recentReportsOrderedByDoctor = getFacade().findByJpql(j, m, 100);
         if (false) {
             PatientReport r = new PatientReport();
             r.getApproved();
@@ -590,7 +590,7 @@ public class PatientReportController implements Serializable {
                 + "(pr.billItem.bill.patient.person.phone)=:phone and "
                 + " ((pr.billItem.bill.insId)=:billno or (pr.billItem.bill.deptId)=:billno)  "
                 + "order by pr.id desc ";
-        customerPis = getPiFacade().findBySQL(sql, m, 50);
+        customerPis = getPiFacade().findByJpql(sql, m, 50);
         return "/reports_list";
     }
 

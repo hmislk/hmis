@@ -27,7 +27,7 @@
                                         <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                     </h:inputText>
 
-                                    <p:selectOneListbox converter="serv"   id="lstSelect"   value="#{inwardServiceController.current}" style="min-width: 400px;" scrollHeight="500" class="w-100">
+                                    <p:selectOneListbox    id="lstSelect"   value="#{inwardServiceController.current}" style="min-width: 400px;" scrollHeight="500" class="w-100">
                                         <f:selectItems  value="#{inwardServiceController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
                                         </f:selectItems>
                                         <p:ajax event="change"   update="gpDetail" process="lstSelect" >
@@ -79,7 +79,7 @@
                                     <p:inputText autocomplete="off" value="#{inwardServiceController.current.code}" class="form-control"/>
 
                                     <h:outputText value="Service Category/Sub Category" ></h:outputText>
-                                    <p:autoComplete converter="categoryConverter"
+                                    <p:autoComplete 
                                                     completeMethod="#{categoryController.completeServiceCategory}" 
                                                     var="pta" itemLabel="#{pta.name} #{pta.parentCategory}" itemValue="#{pta}" 
                                                     forceSelection="true" value="#{inwardServiceController.current.category}" >                                    
@@ -90,7 +90,7 @@
                                     <p:selectBooleanCheckbox   id="chkBilledAs" value="#{inwardServiceController.billedAs}" itemLabel="Billed as a seperate investigation"  >
                                         <p:ajax event="change" process="@this" update="billedAsIx" />
                                     </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="serv"  disabled="#{!inwardServiceController.billedAs}" 
+                                    <p:autoComplete   disabled="#{!inwardServiceController.billedAs}" 
                                                     widgetVar="aIx1" id="billedAsIx" forceSelection="true" 
                                                     value="#{inwardServiceController.current.billedAs}" completeMethod="#{inwardServiceController.completeItem}" var="ix1" itemLabel="#{ix1.name}" itemValue="#{ix1}" size="30">
                                     </p:autoComplete>
@@ -98,7 +98,7 @@
                                     <p:selectBooleanCheckbox  id="chkReportedAs" value="#{inwardServiceController.reportedAs}" itemLabel="Reported as a seperate investigation" >
                                         <p:ajax event="change" process="@this" update="reportedAsIx" />
                                     </p:selectBooleanCheckbox>
-                                    <p:autoComplete converter="serv" disabled="#{!inwardServiceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{inwardServiceController.current.reportedAs}" completeMethod="#{inwardServiceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
+                                    <p:autoComplete  disabled="#{!inwardServiceController.reportedAs}" widgetVar="aIx2" id="reportedAsIx" forceSelection="true" value="#{inwardServiceController.current.reportedAs}" completeMethod="#{inwardServiceController.completeItem}" var="ix2" itemLabel="#{ix2.name}" itemValue="#{ix2}" size="30"  >
                                     </p:autoComplete>
 
                                     <h:outputText value="Institution" ></h:outputText>

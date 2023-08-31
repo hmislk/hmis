@@ -42,14 +42,14 @@ public class ServiceSessionController implements Serializable {
     String selectText = "";
 
     public List<ServiceSession> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ServiceSession c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<ServiceSession> completeServiceSession(String qry) {
         List<ServiceSession> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from ServiceSession c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from ServiceSession c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<ServiceSession>();
@@ -66,7 +66,7 @@ public class ServiceSessionController implements Serializable {
 
             sql = "select p from ServiceSession p where p.retired=false and (((p.staff.person.name) like '%" + query.toUpperCase() + "%') or ((p.name) like '%" + query.toUpperCase() + "%') or ((p.staff.speciality.name) like '%" + query.toUpperCase() + "%') ) order by p.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }

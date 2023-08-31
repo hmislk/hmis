@@ -46,8 +46,7 @@
 
 
                                     <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
-                                                    value="#{pharmacyIssueController.stock}" 
-                                                    converter="stockCon" 
+                                                    value="#{pharmacyIssueController.stock}"
                                                     completeMethod="#{pharmacyIssueController.completeAvailableStocks}" 
                                                     var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" >
                                         <p:column headerText="Item">

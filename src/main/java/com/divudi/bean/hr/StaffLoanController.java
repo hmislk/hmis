@@ -170,7 +170,7 @@ public class StaffLoanController implements Serializable {
                 PaysheetComponentType.LoanNetSalary,
                 PaysheetComponentType.Advance_Payment_Deduction}));
 
-            items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+            items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         }
 
         return items;
@@ -244,7 +244,7 @@ public class StaffLoanController implements Serializable {
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
-        paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        paysheetComponents = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         chequeDetails = false;
     }
@@ -305,7 +305,7 @@ public class StaffLoanController implements Serializable {
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
-        paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        paysheetComponents = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         chequeDetails = false;
     }
@@ -364,7 +364,7 @@ public class StaffLoanController implements Serializable {
 //        hm.put("tp", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant,
 //            PaysheetComponentType.LoanNetSalary,
 //            PaysheetComponentType.Advance_Payment_Deduction}));
-        paysheetComponents = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        paysheetComponents = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         if (paysheetComponents.size() > 0) {
             chequeDetails = true;

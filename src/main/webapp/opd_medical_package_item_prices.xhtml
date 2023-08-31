@@ -48,13 +48,13 @@
                                     </h:selectOneListbox>
 
                                     <h:outputText value="Speciality"/>
-                                    <p:autoComplete converter="specilityCon" forceSelection="true" id="cmbSpe" value="#{medicalPackageItemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  forceSelection="true" id="cmbSpe" value="#{medicalPackageItemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
                                         <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
                                     </p:autoComplete>
 
 
                                     <h:outputText value="Staff"/>
-                                    <p:autoComplete converter="stfcon" forceSelection="true" id="cmbDoc" value="#{medicalPackageItemFeeController.currentFee.staff}" completeMethod="#{medicalPackageItemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{medicalPackageItemFeeController.currentFee.staff}" completeMethod="#{medicalPackageItemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
                                         <f:ajax execute="cmbSpe" event="keypress"/>
                                     </p:autoComplete>
                                     <h:outputText value="Institution"/>
