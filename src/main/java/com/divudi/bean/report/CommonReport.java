@@ -256,6 +256,9 @@ public class CommonReport implements Serializable {
         return "/store/store_report_cashier_detailed_by_user.xhtml";
     }
 
+    public String navigateToreportCashierDetailedByUser(){
+        return "/pharmacy/report_cashier_detailed_by_user.xhtml";
+    }
     public double displayOutsideCalBillFees() {
         String jpql;
         jpql = "Select sum(bf.feeValue) from BillFee bf where bf.fee.feeType=:bft and bf.fee.institution=:ins "
