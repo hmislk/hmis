@@ -268,6 +268,13 @@ public class CommonReport implements Serializable {
         return "/pharmacy/report_cashier_summery_all.xhtml";
     }
     
+    public String navigateToReportCashierSummaryAllTotalOnly(){
+        return "/pharmacy/report_cashier_summery_all_total_only.xhtml";
+    }
+    
+    public String navigateToReportCashierDetailedByDepartment(){
+        return "/pharmacy/report_cashier_detailed_by_department.xhtml";
+    }
     
     public double displayOutsideCalBillFees() {
         String jpql;
