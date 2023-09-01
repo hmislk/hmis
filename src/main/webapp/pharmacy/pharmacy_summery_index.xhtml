@@ -33,10 +33,10 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false"  style="text-align: left"
                                                              value="1) All Department Sale Summary " 
-                                                             action="pharmacy_report_summery"/>                                    
+                                                             action="#{commonReport.navigateToPharmacyReportSummary()}"/>                                    
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2)Sale Summary - By Bill Type"
-                                                             action="pharmacy_report_sale_by_date_summery.xhtml"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3)Sale Summary - By Paymentmethod "
