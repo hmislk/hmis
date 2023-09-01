@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -25,6 +26,7 @@ import com.divudi.data.table.String1Value6;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.BillReportBean;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -65,9 +67,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -230,6 +235,7 @@ public class PharmacySaleReport implements Serializable {
     /////
     @Inject
     CommonController commonController;
+    @Inject AuditEventApplicationController auditEventApplicationController;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -4178,7 +4184,36 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createPharmacyReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createPharmacyReport()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+        
 
         List<Department> departments = fetchDepartment(DepartmentType.Pharmacy);
 
@@ -4519,8 +4554,12 @@ public class PharmacySaleReport implements Serializable {
             totalUnitIssueNC += newRow.getValue6();
             unitIssues.add(newRow);
         }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/All department sale summery(/faces/pharmacy/pharmacy_report_summery.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/All department sale summery(/faces/pharmacy/pharmacy_report_summery.xhtml?faces-redirect=true)");
 
     }
 
