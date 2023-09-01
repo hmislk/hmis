@@ -5577,7 +5577,34 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalePaymentMethodDetailByBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethodDetailByBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
 
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -5754,8 +5781,14 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, BillType.PharmacyWholeSale);
         grantCreditTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacyWholeSale);
         grantDiscountWholeSale = calGrantDiscountByDepartmentByBill(BillType.PharmacyWholeSale);
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml)");
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+     
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml?faces-redirect=true)");
     }
 
     public void createSalePaymentMethodDetailBillItems() {
