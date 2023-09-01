@@ -256,7 +256,7 @@ public class CommonReport implements Serializable {
         return "/store/store_report_cashier_detailed_by_user.xhtml";
     }
 
-    public String navigateToReportCashierDetailedByUser1(){
+    public String navigateToReportCashierDetailedByUser1() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -264,7 +264,7 @@ public class CommonReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -292,23 +292,56 @@ public class CommonReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/report_cashier_detailed_by_user.xhtml?faces-redirect=true";
     }
-    
-    public String navigateToReportCashierSummaryByUser(){
-        return "/pharmacy/report_cashier_summery_by_user.xhtml";
+
+    public String navigateToReportCashierSummaryByUser() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/report_cashier_summery_by_user.xhtml?faces-redirect=true";
     }
-    
-    public String navigateToReportCashierSummaryAll(){
+
+    public String navigateToReportCashierSummaryAll() {
         return "/pharmacy/report_cashier_summery_all.xhtml";
     }
-    
-    public String navigateToReportCashierSummaryAllTotalOnly(){
+
+    public String navigateToReportCashierSummaryAllTotalOnly() {
         return "/pharmacy/report_cashier_summery_all_total_only.xhtml";
     }
-    
-    public String navigateToReportCashierDetailedByDepartment(){
+
+    public String navigateToReportCashierDetailedByDepartment() {
         return "/pharmacy/report_cashier_detailed_by_department.xhtml";
     }
-    
+
     public double displayOutsideCalBillFees() {
         String jpql;
         jpql = "Select sum(bf.feeValue) from BillFee bf where bf.fee.feeType=:bft and bf.fee.institution=:ins "
@@ -867,8 +900,8 @@ public class CommonReport implements Serializable {
         }
         return channelRefundsProPayment;
     }
-    
-    public String navigateToReportCashierDetailedByUser(){
+
+    public String navigateToReportCashierDetailedByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -876,7 +909,7 @@ public class CommonReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -904,8 +937,8 @@ public class CommonReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashierBillFeePayment/report_cashier_detailed_by_user.xhtml?faces-redirect=true";
     }
-    
-    public String navigateToReportCashierSummeryByUser(){
+
+    public String navigateToReportCashierSummeryByUser() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -913,7 +946,7 @@ public class CommonReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -941,8 +974,8 @@ public class CommonReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashierBillFeePayment/report_cashier_summery_by_user.xhtml?faces-redirect=true";
     }
-    
-    public String navigateToReportCashierSummeryByDepartmentwise(){
+
+    public String navigateToReportCashierSummeryByDepartmentwise() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -950,7 +983,7 @@ public class CommonReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -978,7 +1011,7 @@ public class CommonReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashierBillFeePayment/report_cashier_summery_departmentwise.xhtml?faces-redirect=true";
     }
-    
+
     public void setChannelRefundsProPayment(BillsTotals channelRefundsProPayment) {
         this.channelRefundsProPayment = channelRefundsProPayment;
     }
@@ -2993,7 +3026,7 @@ public class CommonReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -3375,6 +3408,7 @@ public class CommonReport implements Serializable {
     }
 
     public void createCashierTableByUserOnlyChannel() {
+
         Date startTime = new Date();
 
         header = "Channel Summery";
@@ -3581,18 +3615,18 @@ public class CommonReport implements Serializable {
 //        getInwardRefunds().setSlip(calValue(new RefundBill(), BillType.InwardPaymentBill, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
         //channell bills
-                FacesContext context = FacesContext.getCurrentInstance();
+        FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
-    
+
         auditEvent.setEventDataTime(startTime);
         if (sessionController != null && sessionController.getDepartment() != null) {
             auditEvent.setDepartmentId(sessionController.getDepartment().getId());
@@ -3747,7 +3781,7 @@ public class CommonReport implements Serializable {
 
         //////////
         createSum();
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -3820,9 +3854,6 @@ public class CommonReport implements Serializable {
         if (!b.isEmpty()) {
             d = b.get(0).getCreatedAt();
         }
-        
-        
-
 
         return d;
     }
