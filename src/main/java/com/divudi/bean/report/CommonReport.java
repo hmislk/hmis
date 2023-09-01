@@ -4818,7 +4818,33 @@ public class CommonReport implements Serializable {
 //
 //    }
     public void createGrnDetailTableByDealor() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         recreateList();
 
@@ -4862,8 +4888,14 @@ public class CommonReport implements Serializable {
 
         getGrnReturnCancel().setSaleCash(calSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment(), getInstitution()));
         getGrnReturnCancel().setSaleCredit(calSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment(), getInstitution()));
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/pharmacy/pharmacy_report_grn_detail_by_supplier.xhtml)");
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+    
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN summery by supplier(/faces/pharmacy/pharmacy_report_grn_detail_by_supplier.xhtml?faces-redirect=true)");
     }
 
     public void createGrnDetailTableByDealorStore() {
