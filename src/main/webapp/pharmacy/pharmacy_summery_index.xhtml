@@ -56,11 +56,11 @@
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2) Sale Detail - By Bill Items" 
-                                                             action="pharmacy_report_sale_by_billItems.xhtml"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByBillItems()}"
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3) Sale Detail -By Discount Scheme"
-                                                             action="pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="4) Sale Summary By Discount Scheme Summary"
