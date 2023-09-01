@@ -235,7 +235,8 @@ public class PharmacySaleReport implements Serializable {
     /////
     @Inject
     CommonController commonController;
-    @Inject AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -662,7 +663,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private List<Object[]> fetchSaleValueByPaymentmethodBillDate() {
         String sql;
 
@@ -1123,7 +1124,6 @@ public class PharmacySaleReport implements Serializable {
 
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
-
 
         m.put("fd", fd);
         m.put("td", td);
@@ -2241,7 +2241,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod paymentMethod) {
         //   List<Stock> billedSummery;
         String sql;
@@ -2560,7 +2560,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -2581,8 +2581,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventTrigger("createSaleReportByDate()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-       
-        
         billedSummery = new PharmacySummery();
 
         List<Object[]> list = fetchSaleValueByDepartment();
@@ -2643,14 +2641,12 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-
     }
 
     public void createSaleWholeSaleReportByDate() {
         billedSummery = new PharmacySummery();
 
         List<String1Value3> listRowSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
-
 
         billedSummery.setBills(listRowSale);
 
@@ -2999,7 +2995,6 @@ public class PharmacySaleReport implements Serializable {
 
                 //System.out.println("cv = " + cv);
                 //System.out.println("sv = " + sv);
-
                 //System.out.println("pi = " + pi);
                 //System.out.println("ti = " + ti);
                 if (sv == 0) {
@@ -3125,7 +3120,6 @@ public class PharmacySaleReport implements Serializable {
                 //System.out.println("***billType = " + billType);
                 //System.out.println("itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
                 //System.out.println("qty = " + qty);
-
                 if (pi == null || !itemBatch.equals(pi)) {
                     r = new CategoryMovementReportRow();
                     r.setItemBatch(itemBatch);
@@ -4225,7 +4219,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -4245,9 +4239,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger("createPharmacyReport()");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
-        
 
         List<Department> departments = fetchDepartment(DepartmentType.Pharmacy);
 
@@ -4598,6 +4589,34 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalePaymentMethod() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethod()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethod();
@@ -4655,10 +4674,43 @@ public class PharmacySaleReport implements Serializable {
         grantCardTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card);
         grantCashTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
-    
+
     public void createSalePaymentMethodBillDate() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethodBillDate()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethodBillDate();
@@ -4716,6 +4768,13 @@ public class PharmacySaleReport implements Serializable {
         grantCardTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Card);
         grantCashTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Credit);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
 
     }
 
