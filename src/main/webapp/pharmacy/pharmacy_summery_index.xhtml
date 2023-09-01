@@ -40,11 +40,11 @@
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3)Sale Summary - By Paymentmethod "
-                                                             action="pharmacy_report_sale_by_date_summery_payment_method.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethod()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="4) Sale Summary - By Paymentmethod(By Bill) "
-                                                             action="pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethodByBill}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                         </div>
                                     </p:tab>  
@@ -52,7 +52,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="1) Sale Detail - By Bill " 
-                                                             action="pharmacy_report_sale_by_date_detail.xhtml"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}.xhtml"
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2) Sale Detail - By Bill Items" 
