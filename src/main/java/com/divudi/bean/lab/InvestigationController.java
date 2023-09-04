@@ -167,7 +167,13 @@ public class InvestigationController implements Serializable {
         return "/admin/lims/index";
     }
 
+    @Deprecated
     public String navigateToAddInvestigationForAdmin() {
+        current = new Investigation();
+        return "/admin/lims/investigation";
+    }
+    
+    public String navigateToAddInvestigation() {
         current = new Investigation();
         return "/admin/lims/investigation";
     }
