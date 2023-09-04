@@ -24,19 +24,25 @@
 
                             <f:facet name="header" >
                                 <h:outputLabel value="Manage User Privilages"/>
-                                <p:commandButton value="Update User Privilage"  action="#{userPrivilageController.savePrivileges()}" ajax="false" onclick="onSubmitButton();" >  
+                                <p:commandButton value="Update User Privilage"  
+                                                 action="#{userPrivilageController.savePrivileges()}" ajax="false" onclick="onSubmitButton();" >  
                                 </p:commandButton>
 
 
-                                <p:commandButton ajax="false" value="Back" action="#{webUserController.backToViewUsers()}" >
+                                <p:commandButton ajax="false" value="Back" 
+                                                 action="#{webUserController.navigateToListUsers()}" >
                                 </p:commandButton>
 
                             </f:facet>
 
                             <h:panelGrid  columns="2" >                          
 
-                                <p:autoComplete id="user"  forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" 
-                                                itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  
+                                <p:autoComplete id="user"  
+                                                forceSelection="true"  
+                                                completeMethod="#{webUserController.completeUser}" 
+                                                var="us" 
+                                                itemLabel="#{us.webUserPerson.name}" 
+                                                itemValue="#{us}"  
                                                 value="#{userPrivilageController.currentWebUser}" >
                                     <f:ajax event="itemSelect" execute="user" render="tree" />
                                 </p:autoComplete>
@@ -44,16 +50,15 @@
 
 
                             <p:panel id="tree">
-                                <p:growl id="messages" showDetail="true" escape="false"/>  
-                                <p:tree value="#{userPrivilageController.tmp}" var="node"  
-                                        selectionMode="checkbox" 
-                                        selection="#{userPrivilageController.selectedNodes}">  
+                                <p:tree 
+                                    value="#{userPrivilageController.rootTreeNode}" 
+                                    var="node"  
+                                    selectionMode="checkbox" 
+                                    selection="#{userPrivilageController.selectedNodes}">  
                                     <p:treeNode>  
                                         <h:outputText value="#{node}" />  
                                     </p:treeNode>  
                                 </p:tree>  
-
-
                             </p:panel>
                         </p:panel>
                     </p:panelGrid>

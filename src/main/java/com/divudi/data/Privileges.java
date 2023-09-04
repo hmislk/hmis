@@ -383,9 +383,6 @@ public enum Privileges {
     SearchAll,
     ChangePreferece,
     SendBulkSMS,
-    
-    
-    
     ClinicalAdministrationEditLetter,
     ClinicalPatientAdd,
     ClinicalPatientEdit,
@@ -394,14 +391,7 @@ public enum Privileges {
     ClinicalPatientNameChange,
     ClinicalMembershipAdd,
     ClinicalMembershipEdit,
-     
-    ClinicalPatientPhoneNumberEdit,
-    
-    
-    
-    
-    
-    ;
+    ClinicalPatientPhoneNumberEdit,;
 
     public String getLabel() {
         switch (this) {
@@ -414,6 +404,30 @@ public enum Privileges {
             default:
                 return this.toString();
 
+        }
+    }
+
+    public boolean isFromDatabase() {
+        switch (this) {
+            case Opd:
+            case Pharmacy:
+            case Lab:
+            case Channelling:
+            case Admin:
+            case Theatre:
+            case Store:
+            case Hr:
+            case Inward:
+            case Payment:
+            case Reports:
+            case Clinical:
+            case MemberShip:
+            case Search:
+            case User:
+                
+                return false;
+            default:
+                return true;
         }
     }
 
