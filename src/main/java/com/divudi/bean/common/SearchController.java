@@ -114,7 +114,8 @@ public class SearchController implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     SmsController smsController;
-    @Inject AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
 
     /**
      * Properties
@@ -306,8 +307,8 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
 
     }
-    
-    public String navigatToopdSearchProfessionalPaymentDue1(){
+
+    public String navigatToopdSearchProfessionalPaymentDue1() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -315,7 +316,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -343,8 +344,8 @@ public class SearchController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/opd_search_professional_payment_due_1.xhtml?faces-redirect=true";
     }
-    
-    public String navigatToReportDoctorPaymentOpd(){
+
+    public String navigatToReportDoctorPaymentOpd() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -352,7 +353,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -379,10 +380,10 @@ public class SearchController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_doctor_payment_opd.xhtml?faces-redirect=true";
-        
+
     }
-    
-    public String navigatToReportDoctorPaymentOpdByBill(){
+
+    public String navigatToReportDoctorPaymentOpdByBill() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -390,7 +391,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -417,7 +418,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/reportCashier/report_doctor_payment_opd.xhtml?faces-redirect=true";
-        
+
     }
 
     public void fillToMyDepartmentPatientInvestigations() {
@@ -470,7 +471,7 @@ public class SearchController implements Serializable {
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/report.search/logged department(/faces/lab/search_for_reporting_ondemand.xhtml)");
     }
-    
+
     public void fillToDepartmentPatientInvestigations() {
         Date startTime = new Date();
 
@@ -740,7 +741,6 @@ public class SearchController implements Serializable {
         }
     }
 
-    
     private void checkLabReportsApprovedBillItem(List<BillItem> billItems) {
         for (BillItem bi : billItems) {
             String sql;
@@ -2002,7 +2002,7 @@ public class SearchController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -2063,7 +2063,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-   
+
     }
 
     public void createTableByBillTypeAllDepartment() {
@@ -4995,6 +4995,14 @@ public class SearchController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD bill search to pay/Search All(/opd_search_pre_batch_bill.xhtml)");
     }
 
+    public void createOpdBillSearch() {
+        Date startTime = new Date();
+        createTableByKeyword(BillType.OpdBill);
+//        checkLabReportsApproved(bills);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
+
     public void createOpdBathcBillPreTablePaidOnly() {
         Date startTime = new Date();
         aceptPaymentBills = null;
@@ -5476,20 +5484,11 @@ public class SearchController implements Serializable {
         checkLabReportsApproved(bills);
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
+
     public void searchDepartmentOpdBillLights() {
         Date startTime = new Date();
-
-        if (fromDate != null && toDate != null) {
-
-            long timeGapInMillis = toDate.getTime() - fromDate.getTime();
-
-            long daysGap = timeGapInMillis / (1000 * 60 * 60 * 24);
-
-        }
-
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
-       
+
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
@@ -5628,7 +5627,7 @@ public class SearchController implements Serializable {
     public void createTableByKeyword(BillType billType) {
         fillBills(billType, null, null);
     }
-    
+
     public void fillBills(BillType billType, Institution ins, Department dep) {
         billLights = null;
         String sql;
@@ -5674,21 +5673,18 @@ public class SearchController implements Serializable {
             sql += " and  ((bill.total) like :total )";
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
-
         sql += " order by bill.createdAt desc  ";
-//    
+    
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        
+
         System.out.println("temMap = " + temMap);
         System.out.println("sql = " + sql);
 
-      
-        billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap);
+        billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-
 
     @Deprecated
     public void createTableByKeyword(BillType billType, Institution ins, Department dep) {
@@ -8046,7 +8042,6 @@ public class SearchController implements Serializable {
     public List<Bill> getBills() {
         return bills;
     }
-    
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
