@@ -1905,7 +1905,7 @@ public class Qb {
 
         for (BillFee bf : b.getBillFees()) {
 
-            if (bf.getFeeGrossValue() == null || bf.getFeeGrossValue() < 0.01) {
+            if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
             }
 
@@ -2010,7 +2010,7 @@ public class Qb {
 
         for (BillFee bf : b.getBillFees()) {
 
-            if (bf.getFeeGrossValue() == null || bf.getFeeGrossValue() < 0.01) {
+            if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
             }
 
@@ -2115,7 +2115,7 @@ public class Qb {
 
         for (BillFee bf : b.getBillFees()) {
 
-            if (bf.getFeeGrossValue() == null || bf.getFeeGrossValue() < 0.01) {
+            if (bf.getFeeGrossValue() == null || Math.abs(bf.getFeeGrossValue()) < 0.01) {
                 continue;
             }
 
