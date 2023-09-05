@@ -201,7 +201,37 @@
                                 </p:panelGrid>
 
                             </p:tab>
+                            <p:tab title="Links" >
+                                <h:panelGrid columns="2" >
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToEditFormatSingle()}" 
+                                        value="Report Format - Single Item" ></p:commandLink>
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToEditFormatMultiple() }" value="Report Format - All Items" ></p:commandLink>
+                                    <p:commandLink
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToManageCalculations() }" value="Calculations" ></p:commandLink>
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToReplaceableInvestigations()}" value="Replaceable Ix" ></p:commandLink>
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToManageReportComponents()}" value="List of Investigation's Items" ></p:commandLink>
+                                    <p:commandLink 
+                                        ajax="false" 
+                                        action="#{investigationController.toLoadParentInvestigation()}" 
+                                        value="Load Parent Investigation" ></p:commandLink>
+                                    <p:commandLink
+                                        disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToManageFees()}"
+                                        actionListener="#{viewController.makeInvestigationAsPreviousPage()}"
+                                        value="Prices" ></p:commandLink>
+                                </h:panelGrid>                                                                                
 
+                            </p:tab>
                         </p:tabView>
 
 
