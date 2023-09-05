@@ -250,7 +250,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to delete");
             return "";
         }
-        return "/admin/items/investigation_single";
+        return "/admin/lims/investigation_single";
     }
 
     public String navigateToListInvestigationsForAdmin() {

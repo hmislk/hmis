@@ -7,8 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/admin/items/admin_items_index.xhtml">
-            <ui:define name="item">
+        <ui:composition template="/admin/lims/index.xhtml">
+            <ui:define name="subcontent">
 
                 <h:form>
                     <p:dataTable value="#{investigationController.items}" var="item"

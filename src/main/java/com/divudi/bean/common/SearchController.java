@@ -5486,20 +5486,6 @@ public class SearchController implements Serializable {
 
             long daysGap = timeGapInMillis / (1000 * 60 * 60 * 24);
 
-            if (daysGap > 3) {
-//                if (searchKeyword.getBillNo() == null && searchKeyword.getBillNo().trim().equals("")) {
-//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
-//                    return;
-//                } else if (searchKeyword.getPatientName() == null && searchKeyword.getPatientName().trim().equals("")) {
-//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
-//                    return;
-//                } else if (searchKeyword.getPatientPhone() == null && searchKeyword.getPatientPhone().trim().equals("")) {
-//                    JsfUtil.addErrorMessage("Please select upto 3 days or Use filtering data option");
-//                    return;
-//                }
-                JsfUtil.addErrorMessage("Please select upto 3 days");
-                return;
-            }
         }
 
         fillBills(BillType.OpdBill, null, sessionController.getDepartment());
@@ -5694,6 +5680,9 @@ public class SearchController implements Serializable {
         temMap.put("billType", billType);
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
+        
+        System.out.println("temMap = " + temMap);
+        System.out.println("sql = " + sql);
 
       
         billLights = (List<BillLight>) getBillFacade().findLightsByJpql(sql, temMap);
