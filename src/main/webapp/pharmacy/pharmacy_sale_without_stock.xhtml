@@ -1,0 +1,466 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:bil="http://java.sun.com/jsf/composite/bill"
+      xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="bill" >
+
+                    <p:panel rendered="#{!pharmacySaleWithoutStockController.billPreview}"  >
+                        <div class="row" >
+                            <div class="col-md-12" >
+                                <h:panelGroup id="panelError" >
+                                    <p:growl ></p:growl>
+                                    <h:panelGroup  
+                                        rendered="#{pharmacySaleWithoutStockController.errorMessage ne null}">
+                                        <p:outputLabel value="#{pharmacySaleWithoutStockController.errorMessage}" ></p:outputLabel>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                        <div class="row" >
+                            <div class="col-md-7" >
+                                <div class="row" >
+                                    <div class="col-md-3" >
+                                        <p:outputLabel class="form-label" value="Medicines/Devices" ></p:outputLabel>
+                                        <p:autoComplete accesskey="i"   
+                                                        id="acStock" 
+                                                        value="#{pharmacySaleWithoutStockController.stock}" 
+                                                        inputStyleClass="w-100 form-control"
+                                                        completeMethod="#{pharmacySaleWithoutStockController.completeAvailableStocksFromNameOrGeneric}" 
+                                                        var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
+                                                        >
+                                            <p:column headerText="Item">
+                                                <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;
+                                                               #{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
+                                                                 commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}"></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Code">
+                                                <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Generic">
+                                                <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Rate">
+                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  style="width: 50px!important;">
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:ajax event="itemSelect"   listener="#{pharmacySaleWithoutStockController.handleSelect}"  update="txtQty txtRate focusQty" ></p:ajax>
+                                        </p:autoComplete>
+                                        <p:focus id="focusQty" for="txtQty" ></p:focus>
+                                        <p:focus id="focusItem" for="acStock" ></p:focus>
+                                    </div>
+                                    <div class="col-md-2" >
+                                        <p:outputLabel value="Quantity" class="form-label" ></p:outputLabel>
+                                        <p:inputText  accesskey="q"  autocomplete="off" id="txtQty" value="#{pharmacySaleWithoutStockController.intQty}" 
+                                                      class="w-100 form-control">
+                                            <p:ajax event="keyup"  listener="#{pharmacySaleWithoutStockController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                            <p:ajax event="blur"  listener="#{pharmacySaleWithoutStockController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" update="txtRate txtVal" ></p:ajax>
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-2" >
+                                        <p:outputLabel value="Add" class="form-label"></p:outputLabel>
+                                        
+                                        <p:commandButton  accesskey="a" id="btnAdd" 
+                                                          value="Add" 
+                                                          class="w-100 form-control"
+                                                          action="#{pharmacySaleWithoutStockController.addBillItemNew()}" 
+                                                          process="@this txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}" 
+                                                          update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:commandButton>
+
+                                    </div>
+                                    <div class="col-md-2" >
+                                        <p:outputLabel value="Rate" class="form-label" ></p:outputLabel>
+                                        <p:inputText readonly="true" id="txtRate" class="w-100" value="#{pharmacySaleWithoutStockController.billItem.netRate}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-2" >
+                                        <p:outputLabel value="Value" class="form-label" ></p:outputLabel>
+                                        <p:inputText readonly="true" id="txtVal" class="w-100 form-control" value="#{pharmacySaleWithoutStockController.billItem.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                                <h:panelGrid columns="1" >
+
+
+
+
+
+
+                                    <p:panel header="Bill Items" id="pBis">
+                                        <p:dataTable id="tblBillItem" value="#{pharmacySaleWithoutStockController.preBill.billItems}"
+                                                     var="bi" rowIndexVar="s" editable="true" sortBy="#{bi.searialNo}" >
+
+                                            <p:ajax event="rowEdit" listener="#{pharmacySaleWithoutStockController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" />  
+                                            <p:ajax event="rowEditCancel" listener="#{pharmacySaleWithoutStockController.onEdit}" update="@this gros :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" /> 
+
+
+                                            <p:column headerText="Item">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" ></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Quantity">
+                                                <p:cellEditor>  
+                                                    <f:facet name="output">  
+                                                        <h:outputText value="#{bi.qty}" >
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputText>
+                                                    </f:facet>  
+                                                    <f:facet name="input">  
+                                                        <p:inputText autocomplete="off" id="ipTblQty" value="#{bi.qty}" style="width:96%"/>  
+                                                    </f:facet>  
+                                                </p:cellEditor> 
+                                            </p:column>
+
+                                            <p:column style="width:6%">  
+                                                <p:rowEditor />  
+                                            </p:column>  
+
+
+                                            <p:column headerText="Rate">
+                                                <h:outputLabel id="rate" value="#{bi.rate}" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Value">
+                                                <h:outputLabel value="#{bi.grossValue}" id="gros">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Expiry">
+                                                <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                </h:outputLabel>
+
+                                            </p:column>
+                                            <p:column headerText="Remove">
+                                                <p:commandButton value="Remove" action="#{pharmacySaleWithoutStockController.removeBillItem(bi)}" ajax="false" >
+
+                                                </p:commandButton>
+                                            </p:column>
+
+                                        </p:dataTable>
+                                    </p:panel>
+
+
+
+                                </h:panelGrid>
+                            </div>
+                            <div class="col-md-5" >
+                                <h:panelGrid columns="20"  >
+
+                                    
+                                    <p:selectOneMenu   id="pay" value="#{pharmacySaleWithoutStockController.paymentMethod}">    
+                                        <f:selectItems value="#{enumController.paymentMethods}"/>
+                                        <p:ajax process="@this cmbPs cmbPs2" 
+                                                update="pBillDetails creditCard cheque slip tvPt" 
+                                                event="change"  
+                                                listener="#{pharmacySaleWithoutStockController.changeListener()}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleWithoutStockController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}">   
+                                        <f:selectItem itemLabel="Discount Scheme"/>
+                                        <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                        <p:ajax process="@this pay " 
+                                                update="pBillDetails creditCard cheque slip" 
+                                                event="change"  
+                                                listener="#{pharmacySaleWithoutStockController.changeListener()}"/>
+                                    </p:selectOneMenu>
+
+                                    <p:selectOneMenu   id="cmbPs2" value="#{pharmacySaleWithoutStockController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">   
+                                        <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                        <p:ajax process="@this pay " 
+                                                update="pBillDetails creditCard cheque slip" 
+                                                event="change"  
+                                                listener="#{pharmacySaleWithoutStockController.changeListener()}"/>
+                                    </p:selectOneMenu>
+
+
+
+                                    <h:panelGroup id="creditCard" style="display: #{pharmacySaleWithoutStockController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                        <pa:creditCard paymentMethodData="#{pharmacySaleWithoutStockController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="cheque" style="display: #{pharmacySaleWithoutStockController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                        <pa:cheque paymentMethodData="#{pharmacySaleWithoutStockController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="slip" style="display: #{pharmacySaleWithoutStockController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                        <pa:slip paymentMethodData="#{pharmacySaleWithoutStockController.paymentMethodData}"/>
+                                    </h:panelGroup>
+
+                                    <p:commandButton ajax="false" accesskey="s" value="Settle" style="min-width: 50px"
+                                                     onclick="if (!confirm('Are you sure?'))
+                                                                 return false"
+                                                     action="#{pharmacySaleWithoutStockController.settleBillWithPay}" >
+                                        <f:facet name="title" >
+                                            <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
+                                            <h:outputLabel value="ettle"  ></h:outputLabel>
+                                        </f:facet>
+                                    </p:commandButton>
+                                   
+                                    <p:commandButton accesskey="n" value="New Pharmacy Bill without Stock"  class="w-100"
+                                                     ajax="false" action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}"  ></p:commandButton>
+
+
+                                </h:panelGrid>
+
+                                <p:panelGrid columns="2" class="w-100">
+                                    <p:outputLabel value="Referring Doctor" ></p:outputLabel>
+                                    <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleWithoutStockController.preBill.referredBy}" 
+                                                    completeMethod="#{doctorController.completeDoctor}" 
+                                                    var="ix" itemLabel="#{ix.person.name}" 
+                                                    itemValue="#{ix}" size="50" class="w-100" 
+                                                    >
+                                    </p:autoComplete>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{pharmacySaleWithoutStockController.comment}" id="comment" class="w-100"/>
+
+
+
+                                </p:panelGrid>
+
+
+                                <p:panel header="Bill Details" id="pBillDetails"  class="w-100">
+                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  class="w-100">
+                                        <h:outputLabel value="Total" ></h:outputLabel>
+                                        <h:outputLabel id="total" value="#{pharmacySaleWithoutStockController.preBill.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount" ></h:outputLabel>
+                                        <h:outputLabel id="dis" value="#{pharmacySaleWithoutStockController.preBill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Total" ></h:outputLabel>
+                                        <h:outputLabel id="netTotal" value="#{pharmacySaleWithoutStockController.preBill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel  value="Tendered" ></h:outputLabel>
+                                        <p:inputText autocomplete="off" accesskey="t" id="paid" value="#{pharmacySaleWithoutStockController.cashPaid}" >
+                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="blur"/>
+                                        </p:inputText>
+                                        <h:outputLabel  value="Balance" ></h:outputLabel>
+                                        <h:outputLabel id="balance" value="#{pharmacySaleWithoutStockController.balance}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+
+                                </p:panel>
+
+                                <p:panel header="Client Detail"> 
+                                    <p:tabView id="tvPt" style="min-height: 250px;"  activeIndex="#{pharmacySaleWithoutStockController.patientSearchTab}" >
+                                        <p:ajax event="tabChange"  process="@this"
+                                                update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                listener="#{pharmacySaleWithoutStockController.onTabChange}" />
+                                        <p:tab id="tabNewPt" title="New Patient"  >
+                                            <bil:newPatient controller="#{pharmacySaleWithoutStockController}"/>
+                                        </p:tab>
+
+                                        <p:tab id="tabSearchPt" title="Search Patient" >
+
+                                            <p:selectBooleanCheckbox value="#{patientController.reportKeyWord.additionalDetails}" 
+                                                                     itemLabel="Serch Only Registed Patient" >
+                                                <f:ajax execute="@this" render="acPt" />
+                                            </p:selectBooleanCheckbox>
+                                            <p:autoComplete
+                                                widgetVar="aPt" 
+                                                id="acPt" forceSelection="true" 
+                                                value="#{pharmacySaleWithoutStockController.searchedPatient}" 
+                                                completeMethod="#{patientController.completePatientByNameOrCode}" 
+                                                var="apt" itemLabel="#{apt.person.name}" 
+                                                itemValue="#{apt}" size="30"  
+                                                class="w-100"
+                                                disabled="#{pharmacySaleWithoutStockController.fromOpdEncounter}">
+                                                <p:column headerText="Name" class="w-100">
+                                                    <h:outputLabel value="#{apt.person.nameWithTitle}" class="w-100"/>
+                                                </p:column>
+                                                <p:column headerText="Age" class="w-100">
+                                                    <h:outputLabel value="#{apt.age}" class="w-100"/>
+                                                </p:column>
+                                                <p:column headerText="NIC">
+                                                    <h:outputLabel value="#{apt.person.nic}"/>
+                                                </p:column>
+                                                <p:column headerText="Code">
+                                                    <h:outputLabel value="#{apt.code}" />
+                                                </p:column>
+                                                <p:column headerText="PHN">
+                                                    <h:outputLabel value="#{apt.phn}"/>
+                                                </p:column>
+                                                <p:column headerText="Sex">
+                                                    <h:outputLabel value="#{apt.person.sex}" />
+                                                </p:column>
+                                                <p:column headerText="Address">
+                                                    <h:outputLabel value="#{apt.person.address}" />
+                                                </p:column>
+                                                <p:column headerText="Date of Birth">
+                                                    <h:outputLabel value="#{apt.person.dob}" >
+                                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                    </h:outputLabel>
+                                                </p:column>
+                                                <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"
+                                                        listener="#{pharmacySaleWithoutStockController2.searchPatientListener}"/>
+                                            </p:autoComplete>  
+                                            <h:panelGroup id="panSearch">
+                                                <pat:searchPatientDetail patient="#{pharmacySaleWithoutStockController2.searchedPatient}"  />
+                                            </h:panelGroup>
+                                            <div style="padding: 2px; margin: 2px; border: 1px solid;">
+                                                <p:outputLabel value="#{pharmacySaleWithoutStockController.opdEncounterComments}" ></p:outputLabel>
+                                            </div>
+                                        </p:tab>
+
+                                        <p:tab id="tabCredit" title="Credit"  >
+                                            <p:panelGrid columns="3" class="w-100">
+                                                <p:outputLabel value="Credit Company" ></p:outputLabel>
+                                                <p:autoComplete  class="w-100" 
+
+                                                                 forceSelection="true" 
+                                                                 value="#{pharmacySaleWithoutStockController.toInstitution}" 
+                                                                 id="scCreditCompany"
+                                                                 completeMethod="#{institutionController.completeCreditCompany}" 
+                                                                 var="myi" itemLabel="#{myi.name}" 
+                                                                 itemValue="#{myi}"  
+                                                                 disabled="#{pharmacySaleWithoutStockController.paymentMethod ne 'Credit' }">
+
+                                                    <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
+                                                            event="itemSelect"  listener="#{pharmacySaleWithoutStockController.paymentSchemeChanged}" />
+
+                                                </p:autoComplete>
+                                                <p:watermark for="scCreditCompany" value="Type at least 3 charactors of Company" ></p:watermark>
+
+                                                <p:outputLabel value="Staff Member" ></p:outputLabel>
+                                                <p:autoComplete  class="w-100"
+                                                                 forceSelection="true" 
+                                                                 value="#{pharmacySaleWithoutStockController2.toStaff}" 
+                                                                 id="scStaff"
+                                                                 completeMethod="#{staffController.completeStaff}" 
+                                                                 var="mys" 
+                                                                 itemLabel="#{mys.person.nameWithTitle}" 
+                                                                 itemValue="#{mys}"
+                                                                  
+                                                                 disabled="#{pharmacySaleWithoutStockController.paymentMethod ne 'Credit' }">
+                                                    <p:column headerText="Name" >
+                                                        <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
+                                                    </p:column>
+                                                    <p:column headerText="Annual Entitlement">
+                                                        <h:outputLabel value="#{mys.annualWelfareQualified}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+                                                    <p:column  headerText="Annual Utilized Value">
+                                                        <h:outputLabel value="#{mys.annualWelfareUtilized}" >
+                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                        </h:outputLabel>
+                                                    </p:column>
+
+                                                    <p:ajax process="scStaff" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
+                                                            event="itemSelect"  listener="#{pharmacySaleWithoutStockController.paymentSchemeChanged}" />
+
+                                                </p:autoComplete>
+                                                <p:watermark for="scStaff" value="Type at least 3 charactors of Staff member." ></p:watermark>
+                                            </p:panelGrid>
+                                        </p:tab>
+
+
+
+                                    </p:tabView>
+
+
+
+                                </p:panel>
+
+
+
+                            </div>
+                        </div>
+
+                        <p:defaultCommand  target="btnAdd" /> 
+                    </p:panel>
+
+
+
+
+
+                </h:form>
+
+                <h:form>
+
+
+                    <p:panel  rendered="#{pharmacySaleWithoutStockController.billPreview}" >
+
+
+
+
+                        <p:commandButton id="nullButton3" value="No Action"
+                                         action="#" style="display: none;" ></p:commandButton>
+                        <div class="nonPrintBlock" >
+                            <p:commandButton accesskey="p" id="btnPrint" value="Print" ajax="false" action="#" >
+                                <p:printer target="gpBillPreview" ></p:printer>
+                            </p:commandButton>
+                            <p:commandButton accesskey="n" value="New Pharmacy Bill"  
+                                             ajax="false" action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}" ></p:commandButton>
+                        </div>
+
+                        <h:panelGroup   id="gpBillPreview" >
+
+                            <h:panelGroup   id="gpBillPreviewSingle" >
+
+                            </h:panelGroup>
+
+                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false and sessionController.loggedPreference.pharmacyBillWithOutItem eq true}" > 
+                                        <phi:saleBill_without_item bill="#{pharmacySaleWithoutStockController.printBill}"></phi:saleBill_without_item>                                        
+                                    </h:panelGroup>
+                                </div>
+
+                                <div>
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill bill="#{pharmacySaleWithoutStockController.printBill}"></phi:saleBill>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                <div >
+                                    <h:panelGroup     rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq true}"> 
+                                        <phi:saleBill_prabodha bill="#{pharmacySaleWithoutStockController.printBill}"></phi:saleBill_prabodha>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                <div >
+                                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
+                                        <phi:saleBill_five_five bill="#{pharmacySaleWithoutStockController.printBill}"></phi:saleBill_five_five>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>                            
+
+                        </h:panelGroup>                     
+
+
+                    </p:panel>
+
+
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

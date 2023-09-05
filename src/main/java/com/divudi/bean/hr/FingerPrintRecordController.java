@@ -97,7 +97,7 @@ public class FingerPrintRecordController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        fingerPrintRecords = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        fingerPrintRecords = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void createFingerPrintRecordTableCreatedAt() {
@@ -150,14 +150,14 @@ public class FingerPrintRecordController implements Serializable {
     }
 
     public List<FingerPrintRecord> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from FingerPrintRecord c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<FingerPrintRecord> completeFingerPrintRecord(String qry) {
         List<FingerPrintRecord> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from FingerPrintRecord c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from FingerPrintRecord c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -355,63 +355,7 @@ public class FingerPrintRecordController implements Serializable {
         }
     }
 
-    @FacesConverter("fingerPrintRecordCon")
-    public static class FingerPrintRecordControllerConverter implements Converter {
 
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            FingerPrintRecordController controller = (FingerPrintRecordController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "fingerPrintRecordController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key = 0L;
-//            System.err.println("Value + "+value);
-            if ("".equals(value)) {
-                return key;
-            }
-
-            try {
-                key = Long.valueOf(value);
-                return key;
-            } catch (NumberFormatException e) {
-                key = 0l;
-//                System.err.println(e.getMessage());
-            }
-
-            return key;
-
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-
-            if (object == "") {
-                return null;
-            }
-
-            if (object instanceof FingerPrintRecord) {
-                FingerPrintRecord o = (FingerPrintRecord) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + FingerPrintRecordController.class.getName());
-            }
-        }
-    }
 
     public CommonController getCommonController() {
         return commonController;

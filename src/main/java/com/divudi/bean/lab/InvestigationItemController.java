@@ -29,7 +29,6 @@ import com.divudi.entity.lab.Machine;
 import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.Sample;
 import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
 import com.divudi.facade.InvestigationFacade;
 import com.divudi.facade.InvestigationItemFacade;
 import com.divudi.facade.InvestigationItemValueFacade;
@@ -41,7 +40,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -66,9 +64,6 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import net.sourceforge.barbecue.BarcodeFactory;
-import net.sourceforge.barbecue.BarcodeImageHandler;
-import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
@@ -106,6 +101,13 @@ public class InvestigationItemController implements Serializable {
     InvestigationController investigationController;
     @Inject
     private ItemController itemController;
+    @Inject
+    InvestigationTubeController investigationTubeController;
+    @Inject
+    SampleController sampleController;
+    @Inject
+    MachineController machineController;
+
     /**
      * Properties
      */
@@ -166,6 +168,23 @@ public class InvestigationItemController implements Serializable {
         }
     }
 
+    public List<InvestigationItem> completeIxValues(String qry) {
+        List<InvestigationItem> iivs;
+        String sql;
+        Map m = new HashMap();
+        sql = "select i from InvestigationItem i "
+                + " where i.retired=false "
+                + " and i.ixItemType =:vt "
+                + " and (i.name) like :qry";
+        m.put("vt", InvestigationItemType.Value);
+        m.put("qry", "%" + qry.toUpperCase() + "%");
+        iivs = getFacade().findByJpql(sql, m);
+        if (iivs == null) {
+            iivs = new ArrayList<>();
+        }
+        return iivs;
+    }
+
     public void previousInvestigation() {
         Investigation thisOne = getCurrentInvestigation();
         for (int i = 0; i < investigationController.getItems().size(); i++) {
@@ -203,6 +222,42 @@ public class InvestigationItemController implements Serializable {
         }
     }
 
+    public void makeAllInvestigationsAndItemsToMachIxDetails() {
+        System.out.println("makeAllInvestigationsAndItemsToMachIxDetails");
+        InvestigationTube tixt = investigationTubeController.getAnyTube();
+        Sample ts = sampleController.getAnySample();
+        Machine tm = machineController.getAnyMachine();
+        for (Investigation tix : investigationController.getAllIxs()) {
+            System.out.println("tix = " + tix);
+            boolean needToSaveIx = false;
+            if (tix.getMachine() == null) {
+                needToSaveIx = true;
+                tix.setMachine(tm);
+            }
+            if (tix.getInvestigationTube() == null) {
+                needToSaveIx = true;
+                tix.setInvestigationTube(tixt);
+            }
+            if (tix.getSample() == null) {
+                needToSaveIx = true;
+                tix.setSample(ts);
+            }
+            if (needToSaveIx) {
+                System.out.println("saving");
+                investigationController.saveSelected(tix);
+            }
+            for (InvestigationItem tixi : getImportantItems(tix)) {
+                tixi.setTube(tix.getInvestigationTube());
+                tixi.setSample(tix.getSample());
+                tixi.setMachine(tix.getMachine());
+//                Item sc = itemController.getFirstInvestigationSampleComponents(tix);
+//                tixi.setSampleComponent(sc);
+                getFacade().edit(tixi);
+            }
+        }
+
+    }
+
     public List<InvestigationItem> listInvestigationItemsFilteredByItemTypes(Investigation ix, List<InvestigationItemType> types) {
         List<InvestigationItem> tis = new ArrayList<>();
         if (ix != null) {
@@ -215,7 +270,7 @@ public class InvestigationItemController implements Serializable {
             Map m = new HashMap();
             m.put("item", ix);
             m.put("types", types);
-            tis = getFacade().findBySQL(temSql, m);
+            tis = getFacade().findByJpql(temSql, m);
         }
         return tis;
     }
@@ -230,7 +285,7 @@ public class InvestigationItemController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", currentInvestigation);
-        return getItemFacade().findBySQL(j, m);
+        return getItemFacade().findByJpql(j, m);
     }
 
     public void setCurrentReportComponants(List<Item> crc) {
@@ -516,7 +571,7 @@ public class InvestigationItemController implements Serializable {
         String sql = "select ri from ReportItem ri where ri.item = :item ";
         Map m = new HashMap();
         m.put("item", currentInvestigation);
-        return riFacade.findBySQL(sql, m);
+        return riFacade.findByJpql(sql, m);
     }
 
     public void moveUpAllReportItems() {
@@ -624,48 +679,46 @@ public class InvestigationItemController implements Serializable {
 
     }
 
-    public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
-        List<InvestigationItem> iivs;
-        if (qry.trim().equals("")) {
-            return new ArrayList<>();
-        } else {
-            String sql;
-            Map m = new HashMap();
-            sql = "select i from InvestigationItem i where i.retired<>true "
-                    + "and i.ixItemType = :t "
-                    + "and upper(i.name) like :n "
-                    + "order by i.name";
-
-            sql = "select i from InvestigationItem i where "
-                    + " upper(i.name) like :n "
-                    + "order by i.name";
-
-//            m.put("t", InvestigationItemType.Value);
-            m.put("n", "'%" + qry.toUpperCase() + "%'");
-            //System.out.println("m = " + m);
-            iivs = getEjbFacade().findBySQL(sql, m);
-        }
-        if (iivs == null) {
-            iivs = new ArrayList<>();
-        }
-        return iivs;
-    }
-
-    public List<InvestigationItem> completeIxItem(String qry) {
-        List<InvestigationItem> iivs;
-        if (qry.trim().equals("") || currentInvestigation == null || currentInvestigation.getId() == null) {
-            return new ArrayList<>();
-        } else {
-            String sql;
-            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and upper(i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
-            iivs = getEjbFacade().findBySQL(sql);
-        }
-        if (iivs == null) {
-            iivs = new ArrayList<>();
-        }
-        return iivs;
-    }
-
+//    public List<InvestigationItem> completeIxItemForAnyIx(String qry) {
+//        List<InvestigationItem> iivs;
+//        if (qry.trim().equals("")) {
+//            return new ArrayList<>();
+//        } else {
+//            String sql;
+//            Map m = new HashMap();
+//            sql = "select i from InvestigationItem i where i.retired<>true "
+//                    + "and i.ixItemType = :t "
+//                    + "and (i.name) like :n "
+//                    + "order by i.name";
+//
+//            sql = "select i from InvestigationItem i where "
+//                    + " (i.name) like :n "
+//                    + "order by i.name";
+//
+////            m.put("t", InvestigationItemType.Value);
+//            m.put("n", "'%" + qry.toUpperCase() + "%'");
+//            //System.out.println("m = " + m);
+//            iivs = getEjbFacade().findByJpql(sql, m);
+//        }
+//        if (iivs == null) {
+//            iivs = new ArrayList<>();
+//        }
+//        return iivs;
+//    }
+//    public List<InvestigationItem> completeIxItem(String qry) {
+//        List<InvestigationItem> iivs;
+//        if (qry.trim().equals("") || currentInvestigation == null || currentInvestigation.getId() == null) {
+//            return new ArrayList<>();
+//        } else {
+//            String sql;
+//            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
+//            iivs = getEjbFacade().findByJpql(sql);
+//        }
+//        if (iivs == null) {
+//            iivs = new ArrayList<>();
+//        }
+//        return iivs;
+//    }
     public List<InvestigationItem> completeTemplate(String qry) {
         List<InvestigationItem> iivs;
         if (qry.trim().equals("")) {
@@ -675,11 +728,11 @@ public class InvestigationItemController implements Serializable {
             Map m = new HashMap();
             sql = "select i from InvestigationItem i "
                     + " where i.retired=false "
-                    + " and i.ixItemType = :t and upper(i.name) like :q "
+                    + " and i.ixItemType = :t and (i.name) like :q "
                     + " order by i.name";
             m.put("t", InvestigationItemType.Template);
             m.put("q", "%" + qry.toUpperCase() + "%");
-            iivs = getEjbFacade().findBySQL(sql, m);
+            iivs = getEjbFacade().findByJpql(sql, m);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -723,7 +776,7 @@ public class InvestigationItemController implements Serializable {
         } else {
             String sql;
             sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
-            iivs = getEjbFacade().findBySQL(sql);
+            iivs = getEjbFacade().findByJpql(sql);
         }
         if (iivs == null) {
             iivs = new ArrayList<>();
@@ -766,7 +819,7 @@ public class InvestigationItemController implements Serializable {
     }
 
     public List<InvestigationItem> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from InvestigationItem c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from InvestigationItem c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         if (selectedItems == null) {
             selectedItems = new ArrayList<>();
         }
@@ -791,7 +844,7 @@ public class InvestigationItemController implements Serializable {
         if (getCurrentInvestigation() == null || getCurrentInvestigation().getId() == null) {
             items = new ArrayList<>();
         } else {
-            items = getEjbFacade().findBySQL("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
+            items = getEjbFacade().findByJpql("select ii from InvestigationItem ii where ii.retired=false and ii.item.id=" + getCurrentInvestigation().getId());
             userChangableItems = null;
             getUserChangableItems();
         }
@@ -817,7 +870,7 @@ public class InvestigationItemController implements Serializable {
 
     public void convertCssValuesToRiValues() {
         String j = "select ri from ReportItem ri";
-        List<ReportItem> ris = riFacade.findBySQL(j);
+        List<ReportItem> ris = riFacade.findByJpql(j);
         for (ReportItem ri : ris) {
 
             try {
@@ -881,22 +934,33 @@ public class InvestigationItemController implements Serializable {
             convertJsonToIx(text);
 
         } catch (IOException ex) {
-            System.out.println("ex = " + ex);
         }
         return "/lab/investigation_format";
     }
 
+//    public String uploadExcelToCreateInvestigations() {
+//        if (file == null) {
+//            JsfUtil.addErrorMessage("No file");
+//            return "";
+//        }
+//        try {
+//            InputStream inputStream = file.getInputStream();
+//            String text = new BufferedReader(
+//                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+//                    .lines()
+//                    .collect(Collectors.joining("\n"));
+//
+//            convertJsonToIx(text);
+//
+//        } catch (IOException ex) {
+//        }
+//        return "/lab/uploaded_investigations";
+//    }
     private void convertJsonToIx(String jsonString) {
         ObjectMapper mapper = new ObjectMapper();
-        System.out.println("jsonString = " + jsonString);
         try {
             JsonNode actualObj = mapper.readTree(jsonString);
             String color = actualObj.get("reportFormat").asText();
-            System.out.println("color = " + color);
-            System.out.println(actualObj.get("name").asText());
-            System.out.println(actualObj.get("code").asText());
-            System.out.println(actualObj.get("description").asText());
-            System.out.println(actualObj.get("orderNo").asText());
 
         } catch (JsonProcessingException ex) {
             Logger.getLogger(InvestigationItemController.class.getName()).log(Level.SEVERE, null, ex);
@@ -954,7 +1018,7 @@ public class InvestigationItemController implements Serializable {
         }
         j += "order by i.id desc";
 
-        return getEjbFacade().findFirstBySQL(j, m);
+        return getEjbFacade().findFirstByJpql(j, m);
     }
 
     public InvestigationItem getLastReportItemComplete(InvestigationItemType type) {
@@ -975,7 +1039,7 @@ public class InvestigationItemController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", getInstitution());
-            d = departmentFacade.findBySQL(sql, m);
+            d = departmentFacade.findByJpql(sql, m);
         }
 
         return d;
@@ -990,7 +1054,7 @@ public class InvestigationItemController implements Serializable {
         }
         j += "order by i.id desc";
 
-        return getEjbFacade().findBySQL(j, m, 50);
+        return getEjbFacade().findByJpql(j, m, 50);
     }
 
     private String testName;
@@ -1568,6 +1632,14 @@ public class InvestigationItemController implements Serializable {
         listInvestigationItem();
     }
 
+    public String navigateBackToManageInvestigation() {
+        if (currentInvestigation == null) {
+            return "";
+        }
+        investigationController.setCurrent(currentInvestigation);
+        return investigationController.navigateToManageInvestigationForLab();
+    }
+
     public void addNewFlag() {
         if (currentInvestigation == null) {
             UtilityController.addErrorMessage("Please select an investigation");
@@ -1682,7 +1754,7 @@ public class InvestigationItemController implements Serializable {
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item=:item order by i.riTop, i.riLeft";
             Map m = new HashMap();
             m.put("item", ix);
-            iis = ejbFacade.findBySQL(temSql, m);
+            iis = ejbFacade.findByJpql(temSql, m);
         } else {
             iis = new ArrayList<>();
         }
@@ -1694,7 +1766,7 @@ public class InvestigationItemController implements Serializable {
         if (ix != null && ix.getId() != null) {
             String temSql;
             temSql = "SELECT i FROM InvestigationItem i where i.retired=false and i.item.id = " + ix.getId();
-            iis = getFacade().countBySql(temSql);
+            iis = getFacade().countByJpql(temSql);
         } else {
             iis = null;
         }
@@ -1720,6 +1792,15 @@ public class InvestigationItemController implements Serializable {
         }
         listInvestigationItem();
         return "/lab/investigation_format";
+    }
+
+    public String toEditInvestigationFormatMultiple() {
+        if (currentInvestigation == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        listInvestigationItem();
+        return "/lab/investigation_format_multiple";
     }
 
     public ReportItemFacade getRiFacade() {
@@ -2149,6 +2230,17 @@ public class InvestigationItemController implements Serializable {
         l.add(InvestigationItemType.DynamicLabel);
         l.add(InvestigationItemType.Template);
         importantItems = listInvestigationItemsFilteredByItemTypes(currentInvestigation, l);
+        return importantItems;
+    }
+
+    public List<InvestigationItem> getImportantItems(Investigation tix) {
+        List<InvestigationItemType> l = new ArrayList<>();
+        l.add(InvestigationItemType.Value);
+        l.add(InvestigationItemType.Flag);
+        l.add(InvestigationItemType.Calculation);
+        l.add(InvestigationItemType.DynamicLabel);
+        l.add(InvestigationItemType.Template);
+        importantItems = listInvestigationItemsFilteredByItemTypes(tix, l);
         return importantItems;
     }
 

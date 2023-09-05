@@ -1,0 +1,167 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+
+
+                    <p:panelGrid columns="10" >
+                        <p:outputLabel value="From"/>
+                        <p:datePicker showTime="true" value="#{searchController.fromDate}" pattern="dd MM yyyy hh:mm" ></p:datePicker>
+
+                        <p:outputLabel value="To"/>
+                        <p:datePicker showTime="true" value="#{searchController.toDate}" pattern="dd MM yyyy hh:mm" ></p:datePicker>
+
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                         action="#{searchController.listAllBills()}"/>
+                        <p:commandButton value="Download" ajax="false" >
+                            <p:dataExporter target="tblBills" fileName="bills" type="xlsx" ></p:dataExporter>
+                        </p:commandButton>
+                    </p:panelGrid>
+
+                    <p:defaultCommand target="btnSearch" />
+
+
+
+                    <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" class="w-100"
+                                 rows="10"
+                                 paginator="true" paginatorPosition="both"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}">
+
+                        <p:column headerText="View" exportable="false">
+                            <p:commandButton value="View Bill" action="#{searchController.toViewBillSummery()}" ajax="false">
+                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}" />
+                            </p:commandButton>
+                        </p:column>
+
+                        <p:column headerText="ID">
+                            <p:outputLabel value="#{bill.id}" />
+                        </p:column>
+
+                        <p:column headerText="Type">
+                            <p:outputLabel value="#{bill.billType}" />
+                        </p:column>
+
+                        <p:column headerText="Class">
+                            <p:outputLabel value="#{bill.billClassType}" />
+                        </p:column>
+
+                        <p:column headerText="Ins ID">
+                            <p:outputLabel value="#{bill.insId}" />
+                        </p:column>
+
+                        <p:column headerText="Dept ID">
+                            <p:outputLabel value="#{bill.deptId}" />
+                        </p:column>
+
+                        <p:column headerText="Institution">
+                            <p:outputLabel value="#{bill.institution.name}" />
+                        </p:column>
+
+                        <p:column headerText="Department">
+                            <p:outputLabel value="#{bill.department.name}" />
+                        </p:column>
+
+                        <p:column headerText="Billed at">
+                            <p:outputLabel value="#{bill.createdAt}">
+                                <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss:SSS a" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Billed by">
+                            <p:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                        </p:column>
+
+                        <p:column headerText="Payment Method">
+                            <p:outputLabel value="#{bill.paymentMethod}" />
+                        </p:column>
+
+                        <p:column headerText="Gross Value">
+                            <p:outputLabel value="#{bill.total}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Discount">
+                            <p:outputLabel value="#{bill.discount}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Margin">
+                            <p:outputLabel value="#{bill.margin}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Net Value">
+                            <p:outputLabel value="#{bill.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="Comments">
+                            <h:panelGroup rendered="#{bill.cancelled}">
+                                <p:outputLabel style="color: red;" value="Cancelled: " />
+                                <p:outputLabel style="color: red;" value="#{bill.cancelledBill.id}" />
+                                <br/>
+                                <p:outputLabel style="color: red;" value="Cancelled at: " />
+                                <p:outputLabel style="color: red;" value="#{bill.cancelledBill.createdAt}">
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss:SSS a" />
+                                </p:outputLabel>
+                                <br/>
+                                <p:outputLabel style="color: red;" value="Cancelled By: " />
+                                <p:outputLabel style="color: red;" value="#{bill.cancelledBill.creater.webUserPerson.name}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{bill.refunded}">
+                                <p:outputLabel style="color: red;" value="Refunded: " />
+                                <p:outputLabel style="color: red;" value="#{bill.refundedBill.id}" />
+                                <br/>
+                                <p:outputLabel style="color: red;" value="Refunded at: " />
+                                <p:outputLabel style="color: red;" value="#{bill.refundedBill.createdAt}">
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss:SSS a" />
+                                </p:outputLabel>
+                                <br/>
+                                <p:outputLabel style="color: red;" value="Refunded By: " />
+                                <p:outputLabel style="color: red;" value="#{bill.refundedBill.creater.webUserPerson.name}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{bill.paid}">
+                                <p:outputLabel style="color: red;" value="Paid: " />
+                                <p:outputLabel style="color: red;" value="#{bill.paidBill.id}" />
+                                <br/>
+                                <p:outputLabel style="color: red;" value="Paid at: " />
+                                <p:outputLabel style="color: red;" value="#{bill.paidBill.createdAt}">
+                                    <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm:ss:SSS a" />
+                                </p:outputLabel>
+                                <br/>
+                                <p:outputLabel style="color: red;" value="Paid By: " />
+                                <p:outputLabel style="color: red;" value="#{bill.paidBill.creater.webUserPerson.name}" />
+                            </h:panelGroup>
+                        </p:column>
+
+                    </p:dataTable>
+
+
+
+
+
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

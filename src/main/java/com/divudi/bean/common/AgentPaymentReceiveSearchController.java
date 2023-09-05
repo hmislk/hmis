@@ -151,33 +151,33 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         comment = null;
     }
 
-    private void cancelBillComponents(CancelledBill can, BillItem bt) {
-        for (BillComponent nB : getBillComponents()) {
-            BillComponent bC = new BillComponent();
-            bC.setCatId(nB.getCatId());
-            bC.setDeptId(nB.getDeptId());
-            bC.setInsId(nB.getInsId());
-            bC.setDepartment(nB.getDepartment());
-            bC.setDeptId(nB.getDeptId());
-            bC.setInstitution(nB.getInstitution());
-            bC.setItem(nB.getItem());
-            bC.setName(nB.getName());
-            bC.setPackege(nB.getPackege());
-            bC.setSpeciality(nB.getSpeciality());
-            bC.setStaff(nB.getStaff());
-
-            bC.setBill(can);
-            bC.setBillItem(bt);
-            bC.setCreatedAt(new Date());
-            bC.setCreater(getSessionController().getLoggedUser());
-            getBillCommponentFacade().create(bC);
-        }
-
-    }
+//    private void cancelBillComponents(CancelledBill can, BillItem bt) {
+//        for (BillComponent nB : getBillComponents()) {
+//            BillComponent bC = new BillComponent();
+//            bC.setCatId(nB.getCatId());
+//            bC.setDeptId(nB.getDeptId());
+//            bC.setInsId(nB.getInsId());
+//            bC.setDepartment(nB.getDepartment());
+//            bC.setDeptId(nB.getDeptId());
+//            bC.setInstitution(nB.getInstitution());
+//            bC.setItem(nB.getItem());
+//            bC.setName(nB.getName());
+//            bC.setPackege(nB.getPackege());
+//            bC.setSpeciality(nB.getSpeciality());
+//            bC.setStaff(nB.getStaff());
+//
+//            bC.setBill(can);
+//            bC.setBillItem(bt);
+//            bC.setCreatedAt(new Date());
+//            bC.setCreater(getSessionController().getLoggedUser());
+//            getBillCommponentFacade().create(bC);
+//        }
+//
+//    }
 
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -310,32 +310,32 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     List<Bill> billsApproving;
     private Bill billForCancel;
 
-    public void approveCancellation() {
-
-        if (billsApproving == null) {
-            UtilityController.addErrorMessage("Select Bill to Approve Cancell");
-            return;
-        }
-        for (Bill b : billsApproving) {
-
-            b.setApproveUser(getSessionController().getCurrent());
-            b.setApproveAt(Calendar.getInstance().getTime());
-            getBillFacade().create(b);
-
-            cancelBillItems(b);
-            b.getBilledBill().setCancelled(true);
-            b.getBilledBill().setCancelledBill(b);
-
-            getBilledBillFacade().edit(getBill());
-
-            ejbApplication.getBillsToCancel().remove(b);
-
-            UtilityController.addSuccessMessage("Cancelled");
-
-        }
-
-        billForCancel = null;
-    }
+//    public void approveCancellation() {
+//
+//        if (billsApproving == null) {
+//            UtilityController.addErrorMessage("Select Bill to Approve Cancell");
+//            return;
+//        }
+//        for (Bill b : billsApproving) {
+//
+//            b.setApproveUser(getSessionController().getCurrent());
+//            b.setApproveAt(Calendar.getInstance().getTime());
+//            getBillFacade().create(b);
+//
+//            cancelBillItems(b);
+//            b.getBilledBill().setCancelled(true);
+//            b.getBilledBill().setCancelledBill(b);
+//
+//            getBilledBillFacade().edit(getBill());
+//
+//            ejbApplication.getBillsToCancel().remove(b);
+//
+//            UtilityController.addSuccessMessage("Cancelled");
+//
+//        }
+//
+//        billForCancel = null;
+//    }
 
     public List<Bill> getBillsToApproveCancellation() {
         //////// // System.out.println("1");
@@ -398,7 +398,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public List<BillItem> getBillItems() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billItems = getBillItemFacede().findBySQL(sql);
+            billItems = getBillItemFacede().findByJpql(sql);
             //////// // System.out.println("sql for bill item search is " + sql);
             //////// // System.out.println("results for bill item search is " + billItems);
             if (billItems == null) {
@@ -412,7 +412,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<BillComponent>();
             }
@@ -424,7 +424,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         if (getBill() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<BillFee>();
                 }
@@ -437,7 +437,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billFees = getBillFeeFacade().findBySQL(sql);
+            billFees = getBillFeeFacade().findByJpql(sql);
             if (billFees == null) {
                 billFees = new ArrayList<BillFee>();
             }

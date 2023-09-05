@@ -52,7 +52,7 @@ public class StoreAmpController implements Serializable {
 
     public List<Amp> getItemsByCode() {
         if (itemsByCode == null) {
-            itemsByCode = getFacade().findBySQL("select a from Amp a where a.retired=false order by a.code");
+            itemsByCode = getFacade().findByJpql("select a from Amp a where a.retired=false order by a.code");
         }
         return itemsByCode;
     }
@@ -148,7 +148,7 @@ public class StoreAmpController implements Serializable {
             Map m = new HashMap();
             m.put("dt", DepartmentType.Store);
             String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
-            items = getFacade().findBySQL(sql, m);
+            items = getFacade().findByJpql(sql, m);
         }
         return items;
     }
@@ -160,7 +160,7 @@ public class StoreAmpController implements Serializable {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
         String sql = "Select a from Item a where a.retired=true and a.departmentType=:dt order by a.name";
-        itemsAll.addAll(getFacade().findBySQL(sql, m));
+        itemsAll.addAll(getFacade().findByJpql(sql, m));
     }
 
     public List<Amp> getFilteredItems() {
@@ -199,7 +199,7 @@ public class StoreAmpController implements Serializable {
         m.put("dep", DepartmentType.Store);
         m.put("cat", getCurrent().getCategory());
 
-        Amp amp = getFacade().findFirstBySQL(sql, m);
+        Amp amp = getFacade().findFirstByJpql(sql, m);
 
 
         DecimalFormat df = new DecimalFormat("0000");

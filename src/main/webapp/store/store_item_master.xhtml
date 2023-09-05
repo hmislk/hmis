@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/store/store_admin.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -77,7 +77,7 @@
                                             </p:selectOneMenu>
 
                                             <p:outputLabel  value="Manufacturer" ></p:outputLabel>
-                                            <p:autoComplete  converter="ManuFacCon" completeMethod="#{manufacturerController.completeManu}"
+                                            <p:autoComplete completeMethod="#{manufacturerController.completeManu}"
                                                              var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{storeAmpController.current.institution}" ></p:autoComplete>
 
                                             <h:outputLabel value="Item Category"/>

@@ -9,16 +9,16 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_summery_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Pharmacy Sale Report" >
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Institution" ></h:outputLabel>
-                            <p:autoComplete converter="institutionConverter"
+                            <p:autoComplete 
                                             completeMethod="#{institutionController.completeIns}" var="ins" 
                                             itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
                                             value="#{billController.institution}">
@@ -26,7 +26,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{billController.department}" converter="departmentConverter" >
+                                            value="#{billController.department}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>

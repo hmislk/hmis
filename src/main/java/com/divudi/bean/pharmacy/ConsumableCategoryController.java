@@ -129,27 +129,27 @@ public class ConsumableCategoryController implements Serializable {
         return getFacade().findAll();
     }
 
-    public List<ConsumableCategory> completeConsumableCategory(String qry) {
-        List<ConsumableCategory> cc;
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select c from Category c"
-                + "  where c.retired=false"
-                + " and (type(c)= :parm ) "
-                + " and upper(c.name) like :q "
-                + " order by c.name";
-
-        temMap.put("parm", ConsumableCategory.class);
-        temMap.put("q", "%" + qry.toUpperCase() + "%");
-
-        cc = getFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
-
-        if (cc == null) {
-            cc = new ArrayList<>();
-        }
-        return cc;
-    }
+//    public List<ConsumableCategory> completeConsumableCategory(String qry) {
+//        List<ConsumableCategory> cc;
+//        String sql;
+//        Map temMap = new HashMap();
+//
+//        sql = "select c from Category c"
+//                + "  where c.retired=false"
+//                + " and (type(c)= :parm ) "
+//                + " and (c.name) like :q "
+//                + " order by c.name";
+//
+//        temMap.put("parm", ConsumableCategory.class);
+//        temMap.put("q", "%" + qry.toUpperCase() + "%");
+//
+//        cc = getFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+//
+//        if (cc == null) {
+//            cc = new ArrayList<>();
+//        }
+//        return cc;
+//    }
 
     private boolean errorCheck() {
         if (getSelected() != null) {
@@ -164,7 +164,7 @@ public class ConsumableCategoryController implements Serializable {
                         + " and c.code=:code ";
 
                 m.put("code", getSelected().getCode());
-                List<ConsumableCategory> list = getFacade().findBySQL(sql, m);
+                List<ConsumableCategory> list = getFacade().findByJpql(sql, m);
                 if (list.size() > 0) {
                     JsfUtil.addErrorMessage("Category Code " + getSelected().getCode() + " is alredy exsist.");
                     getSelected().setCode("");
@@ -222,43 +222,5 @@ public class ConsumableCategoryController implements Serializable {
     /**
      *
      */
-    @FacesConverter("consumableCategoryConverter")
-    public static class CategoryConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ConsumableCategoryController controller = (ConsumableCategoryController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "ConsumableCategoryController");
-            return controller.getFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof ConsumableCategory) {
-                ConsumableCategory o = (ConsumableCategory) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ConsumableCategoryController.class.getName());
-            }
-        }
-    }
+   
 }

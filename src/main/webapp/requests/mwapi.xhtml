@@ -13,8 +13,10 @@
         <f:viewParam name="msg" value="#{patientInvestigationController.msg}" ></f:viewParam>
         <f:viewAction action="#{patientInvestigationController.msgFromMiddleware()}" ></f:viewAction>
     </f:metadata>
+    
     <h:head>
     </h:head>
+    
     <h:body>
         #{patientInvestigationController.apiResponse}
     </h:body>

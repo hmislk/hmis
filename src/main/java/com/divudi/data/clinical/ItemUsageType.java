@@ -9,11 +9,16 @@ package com.divudi.data.clinical;
  *
  * @author buddhika
  */
+@Deprecated
 public enum ItemUsageType {
-    FavoutireMedicine,
+    EncounterDiagnosis,
     FavouriteDiagnosis,
     Allergies,
     EncounterItems,
     PatientItems,
     PatientAllergies,
+    FavouriteMedicine,
+    @Deprecated
+    FavoutireMedicine,
+
 }

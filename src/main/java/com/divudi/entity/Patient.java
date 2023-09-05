@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.PostLoad;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
@@ -48,10 +49,10 @@ public class Patient implements Serializable {
     WebUser creater;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date createdAt;
-//    @ManyToOne
-//    WebUser editer;
-//    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
-//    Date editedAt;
+    @ManyToOne
+    WebUser editer;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    Date editedAt;
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -98,9 +99,18 @@ public class Patient implements Serializable {
     @Size(max = 10)
     String phn;
 
+    private Long patientId;
+
     @Transient
     Bill bill;
 
+    private Boolean cardIssues;
+
+    @Temporal(javax.persistence.TemporalType.DATE)
+    private Date cardIssuedDate;
+
+    
+    
     public Institution getCreatedInstitution() {
         return createdInstitution;
     }
@@ -143,6 +153,11 @@ public class Patient implements Serializable {
         this.code = code;
     }
 
+    @PostLoad
+    private void onLoad() {
+        calAgeFromDob();
+    }
+    
     public void calAgeFromDob() {
         age = "";
         ageInDays = 0l;
@@ -183,7 +198,7 @@ public class Patient implements Serializable {
         period = new Period(dob, date, PeriodType.days());
         ageInDays = (long) period.getDays();
     }
-    
+
     public void calAgeFromDob(Date billedDate) {
         this.billedDate = billedDate;
         ageOnBilledDate = "";
@@ -262,9 +277,6 @@ public class Patient implements Serializable {
     public void setId(Long id) {
         this.id = id;
     }
-    
-    
-    
 
     @Override
     public int hashCode() {
@@ -292,6 +304,9 @@ public class Patient implements Serializable {
     }
 
     public Person getPerson() {
+        if (person == null) {
+            person = new Person();
+        }
         return person;
     }
 
@@ -331,22 +346,21 @@ public class Patient implements Serializable {
         this.createdAt = createdAt;
     }
 
-//    public WebUser getEditer() {
-//        return editer;
-//    }
-//
-//    public void setEditer(WebUser editer) {
-//        this.editer = editer;
-//    }
-//
-//    public Date getEditedAt() {
-//        return editedAt;
-//    }
-//
-//    public void setEditedAt(Date editedAt) {
-//        this.editedAt = editedAt;
-//    }
+    public WebUser getEditer() {
+        return editer;
+    }
 
+    public void setEditer(WebUser editer) {
+        this.editer = editer;
+    }
+
+    public Date getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(Date editedAt) {
+        this.editedAt = editedAt;
+    }
     public boolean isRetired() {
         return retired;
     }
@@ -423,12 +437,12 @@ public class Patient implements Serializable {
         calAgeFromDob(billedDate);
         return ageOnBilledDate;
     }
-    
+
     public String getAgeOnBilledDate(Date billedDate) {
         calAgeFromDob(billedDate);
         return ageOnBilledDate;
     }
-    
+
     public String ageOnBilledDate(Date billedDate) {
         calAgeFromDob(billedDate);
         return ageOnBilledDate;
@@ -472,6 +486,30 @@ public class Patient implements Serializable {
 
     public void setBilledDate(Date billedDate) {
         this.billedDate = billedDate;
+    }
+
+    public Boolean getCardIssues() {
+        return cardIssues;
+    }
+
+    public void setCardIssues(Boolean cardIssues) {
+        this.cardIssues = cardIssues;
+    }
+
+    public Date getCardIssuedDate() {
+        return cardIssuedDate;
+    }
+
+    public void setCardIssuedDate(Date cardIssuedDate) {
+        this.cardIssuedDate = cardIssuedDate;
+    }
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
     }
 
 }

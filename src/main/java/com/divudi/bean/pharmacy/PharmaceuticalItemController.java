@@ -8,7 +8,9 @@ import com.divudi.entity.pharmacy.PharmaceuticalItem;
 import com.divudi.facade.PharmaceuticalItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -30,14 +32,15 @@ public class PharmaceuticalItemController implements Serializable {
     private PharmaceuticalItem pharmaceuticalItem;
 
     public List<PharmaceuticalItem> completeItem(String qry) {
-        List<PharmaceuticalItem> a = null;
-        if (qry != null) {
-            a = getPharmaceuticalItemFacade().findBySQL("select c from PharmaceuticalItem c where (type(c)=Amp or type(c)=Ampp) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
-        }
-        if (a == null) {
-            a = new ArrayList<PharmaceuticalItem>();
-        }
-        return a;
+        String jpql = "select c "
+                + " from PharmaceuticalItem c "
+                + " where c.retired=:ret "
+                + " and c.name like :qry"
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("qry", "%" + qry + "%");
+        return pharmaceuticalItemFacade.findByJpql(jpql, m);
     }
 
     public PharmaceuticalItemFacade getPharmaceuticalItemFacade() {
@@ -55,7 +58,7 @@ public class PharmaceuticalItemController implements Serializable {
     public void setPharmaceuticalItem(PharmaceuticalItem pharmaceuticalItem) {
         this.pharmaceuticalItem = pharmaceuticalItem;
     }
-    
+
     @EJB
     private PharmaceuticalItemFacade ejbFacade;
 

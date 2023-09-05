@@ -127,7 +127,7 @@ public class InvestigationMonthSummeryController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
         //    temMap.put("pactype", com.divudi.entity.Packege.class);
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
         int c = 0;
@@ -137,7 +137,7 @@ public class InvestigationMonthSummeryController implements Serializable {
                 if (b.isRefunded() == null || b.isRefunded() == false) {
 //                    if (b.getItem() instanceof Packege) {
 //                        sql = "Select i from PackageItem p join p.item i where p.packege.id = " + b.getId();
-//                        List<Item> packageItems = getItemFacade().findBySQL(sql);
+//                        List<Item> packageItems = getItemFacade().findByJpql(sql);
 //                        for (Item i : packageItems) {
 //                            if (i.getId() == w.getId()) {
 //                                tot += i.getTotal();
@@ -175,7 +175,7 @@ public class InvestigationMonthSummeryController implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
 
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (investigations == null) {
             investigations = new ArrayList<Item>();
@@ -227,7 +227,7 @@ public class InvestigationMonthSummeryController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         //////// // System.out.println("Sql iiiiiiiii "+ sql);
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 
     }

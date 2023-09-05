@@ -34,6 +34,12 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
         <h:panelGroup id="gpBill">
+            
+              
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tblBills" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
+            
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="Purchase RETURN NOTE"/>

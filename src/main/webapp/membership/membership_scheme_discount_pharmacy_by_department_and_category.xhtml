@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/membership/administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Pharmacy Membership Discount Matrix" id="reportPrint">
 
@@ -80,7 +80,6 @@
                                     <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
                                                     forceSelection="true"
                                                     completeMethod="#{categoryController.completeCategoryPharmacy}"
-                                                    converter="categoryConverter"
                                                     var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
                                         <p:column headerText="Category">
                                             <h:outputLabel value="#{cat.name}"/>

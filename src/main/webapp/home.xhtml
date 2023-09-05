@@ -8,7 +8,29 @@
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
-           
+            <ui:define name="content" >
+
+
+
+                <h:form >
+                    <p:panelGrid columns="2" rendered="false" >
+                        <p:outputLabel value="Message" ></p:outputLabel>
+                        <p:inputText value="#{smsController.message}" ></p:inputText>
+                        <p:outputLabel value="Number" ></p:outputLabel>
+                        <p:inputText value="#{smsController.number}" ></p:inputText>
+                        <p:commandButton ajax="false" value="Sned SMS" action="#{smsController.sendSmsForPatientReport()}" >
+                        </p:commandButton>
+                    </p:panelGrid>
+
+
+
+                   
+
+                </h:form>
+
+
+
+            </ui:define>
         </ui:composition>
     </h:body>
 </html>

@@ -13,51 +13,57 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="2" >
-            <h:outputLabel value="Title"/>
-            <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.controller.newPatient.person.title}"  >
+    <div class="row">
+        <div class="col-md-4 p-1">
+            <p:selectOneMenu id="cmbTitle" value="#{cc.attrs.controller.newPatient.person.title}" placeholder="Title" class="form-control w-100">
                 <f:selectItem itemLabel="Select Title" />
-                <f:selectItems value="#{cc.attrs.controller.title}"/>
+                <f:selectItems value="#{cc.attrs.controller.title}" />
             </p:selectOneMenu>
-            <h:outputLabel value="Name"/>
-            <p:inputText autocomplete="off"  id="txtNewPtName" value="#{cc.attrs.controller.newPatient.person.name}" style="width: 200px;text-transform:capitalize;">
+        </div>
+        <div class="col-md-4 p-1">
+            <p:inputText autocomplete="off" id="txtNewPtName" value="#{cc.attrs.controller.newPatient.person.name}" class="form-control w-100" style="width: 200px; text-transform: capitalize;" placeholder="Age"></p:inputText>
+        </div>
+        <div class="col-md-4 p-1">
+            <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.controller.newPatient.person.sex}" style="width: 200px;" class="form-control w-100">
+                <f:selectItem itemLabel="Select Sex" />
+                <f:selectItems value="#{cc.attrs.controller.sex}" />
+            </p:selectOneMenu>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-4 p-1">
+            <p:inputText autocomplete="off" placeholder="Year (DOB)" id="year" value="#{cc.attrs.controller.yearMonthDay.year}" class="form-control w-100">
+                <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
             </p:inputText>
-            <h:outputLabel value="Sex"/>
-            <p:selectOneMenu id="txtNewSex"  value="#{cc.attrs.controller.newPatient.person.sex}" style="width: 200px;">
-                <f:selectItem itemLabel="Select Sex"/>
-                <f:selectItems value="#{cc.attrs.controller.sex}"/>
-            </p:selectOneMenu>
-            <h:outputLabel value="Age"/>
-            <h:panelGroup>
-                <p:inputText autocomplete="off"  id="year"  value="#{cc.attrs.controller.yearMonthDay.year}">
-                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}"  />
-                </p:inputText>
+        </div>
+        <div class="col-md-4 p-1">
+            <p:inputText autocomplete="off" id="month" placeholder="Month (DOB)" value="#{cc.attrs.controller.yearMonthDay.month}" class="form-control w-100">
+                <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
+            </p:inputText>
+        </div>
+        <div class="col-md-4 p-1">
+            <p:inputText autocomplete="off" id="day" placeholder="Day (DOB)" value="#{cc.attrs.controller.yearMonthDay.day}" class="form-control w-100">
+                <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
+            </p:inputText>
+        </div>
+    </div>
 
-                <p:inputText autocomplete="off" id="month" value="#{cc.attrs.controller.yearMonthDay.month}">
-                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}"  />
-                </p:inputText>
+    <div class="row mt-2">
+        <div class="col-md-9 p-1">
+            <p:autoComplete id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta" class="w-100" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}"  placeholder="Address" ></p:autoComplete>
+        </div>
+        
+    </div>
 
-                <p:inputText autocomplete="off" id="day"   value="#{cc.attrs.controller.yearMonthDay.day}">
-                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
-                </p:inputText>
-            </h:panelGroup>
-            <h:outputLabel value="Address"/>
-            <p:autoComplete id="acNewPtArea" converter="areaCon" completeMethod="#{areaController.completeArea}" var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}" ></p:autoComplete>
+    <div class="row mt-2">
+        <div class="col-md-6 p-1">
+            <p:inputText id="txtNewPtPhone" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}" placeholder="Mobile"></p:inputText>
+        </div>
+        <div class="col-md-6 p-1">
+            <p:inputText id="txtNewPtNic" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.nic}" placeholder="NIC"></p:inputText>
+        </div>
+    </div>
+</cc:implementation>
 
-            <h:outputLabel value="Phone"/>
-            <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}">
-            </p:inputMask>
-            <h:outputLabel value="Date of Birth"/>
-            <p:calendar  value="#{cc.attrs.controller.newPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
-                <f:ajax event="dateSelect" />
-            </p:calendar>
-            <h:outputLabel value="Nic"/>
-            <p:inputMask mask="999999999V" id="txtNewPtNic" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.nic}">
-            </p:inputMask>
-
-            <p:watermark value="YEAR" for="year" />
-            <p:watermark value="MONTH" for="month" />
-            <p:watermark value="DAYS" for="day" />
-        </h:panelGrid>
-    </cc:implementation>
 </html>

@@ -147,7 +147,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -472,7 +472,7 @@ public class CashSummeryControllerExcel1 implements Serializable {
         temMap.put("btp", BillType.PaymentBill);
         temMap.put("ins", getInstitution());
 
-        return getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     private double getDepartmentPaymentTotal(Department department) {

@@ -90,7 +90,7 @@ public class PatientReportBean {
         } else {
             String sql;
             sql = "select ii from InvestigationItem ii where ii.retired = false and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
-            ii = getIxItemFacade().findBySQL(sql);
+            ii = getIxItemFacade().findByJpql(sql);
         }
         if (ii == null) {
             ii = new ArrayList<InvestigationItem>();
@@ -111,7 +111,7 @@ public class PatientReportBean {
             String sql;
             sql = "select ii from InvestigationItem ii where ii.retired = false and ii.ixItemType = com.divudi.data.InvestigationItemType.Value and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
             //////// // System.out.println(sql);
-            ii = getIxItemFacade().findBySQL(sql);
+            ii = getIxItemFacade().findByJpql(sql);
             //////// // System.out.println("ii is " + ii + " and the cou");
         }
         if (ii == null) {
@@ -172,7 +172,7 @@ public class PatientReportBean {
                     HashMap hm = new HashMap();
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
-                    val = getPtRivFacade().findFirstBySQL(sql, hm);
+                    val = getPtRivFacade().findFirstByJpql(sql, hm);
                     if (val == null) {
                         ////// // System.out.println("val is null");
                         val = new PatientReportItemValue();
@@ -257,7 +257,7 @@ public class PatientReportBean {
 //                    r.isRetired()
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
-                    val = getPtRivFacade().findFirstBySQL(sql, hm);
+                    val = getPtRivFacade().findFirstByJpql(sql, hm);
 //                    ////// // System.out.println("val is " + val);
                     if (val == null) {
                         val = new PatientReportItemValue();
@@ -280,7 +280,7 @@ public class PatientReportBean {
         }
 
         //Add Antibiotics
-        List<Antibiotic> abs = getAntibioticFacade().findBySQL("select a from Antibiotic a where a.retired=false order by a.name");
+        List<Antibiotic> abs = getAntibioticFacade().findByJpql("select a from Antibiotic a where a.retired=false order by a.name");
 
         for (Antibiotic a : abs) {
             InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
@@ -291,7 +291,7 @@ public class PatientReportBean {
             hm.put("ptRp", ptReport);
             hm.put("inv", ii);
 
-            val = getPtRivFacade().findFirstBySQL(sql, hm);
+            val = getPtRivFacade().findFirstByJpql(sql, hm);
             if (val == null) {
                 val = new PatientReportItemValue();
                 val.setStrValue("");
@@ -325,7 +325,7 @@ public class PatientReportBean {
         m.put("i", i);
         m.put("a", a.getName());
         m.put("iit", InvestigationItemType.Antibiotic);
-        InvestigationItem ii = getIiFacade().findFirstBySQL(sql, m);
+        InvestigationItem ii = getIiFacade().findFirstByJpql(sql, m);
         //// // System.out.println("-------");
 
         if (ii == null) {
@@ -395,7 +395,7 @@ public class PatientReportBean {
         dl = ii.getName();
         long ageInDays = commonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
-        List<InvestigationItemValueFlag> fs = getIivfFacade().findBySQL(sql);
+        List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
             if (f.getSex() == p.getPerson().getSex()) {
                 dl = f.getFlagMessage();

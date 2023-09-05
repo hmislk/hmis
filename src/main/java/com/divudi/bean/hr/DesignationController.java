@@ -45,14 +45,14 @@ public class DesignationController implements Serializable {
     String selectText = "";
 
     public List<Designation> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Designation c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Designation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<Designation> completeDesignation(String qry) {
         List<Designation> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Designation c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Designation c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<Designation>();
@@ -150,7 +150,7 @@ public class DesignationController implements Serializable {
         if (items == null) {
             String j;
             j="select d from Designation d where d.retired=false order by d.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -198,43 +198,5 @@ public class DesignationController implements Serializable {
         }
     }
 
-    @FacesConverter("designationCon")
-    public static class DesignationControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DesignationController controller = (DesignationController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "designationController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Designation) {
-                Designation o = (Designation) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DesignationController.class.getName());
-            }
-        }
-    }
+    
 }

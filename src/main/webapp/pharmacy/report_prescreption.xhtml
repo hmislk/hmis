@@ -7,8 +7,8 @@
       xmlns:f="http://java.sun.com/jsf/core">
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >                          
@@ -26,7 +26,7 @@
                                                 itemValue="#{dept}" 
                                                 forceSelection="true" 
                                                 value="#{searchController.department}" 
-                                                converter="departmentConverter" ></p:autoComplete>
+                                                 ></p:autoComplete>
                                 
                                 <p:commandButton id="btnSearch" ajax="false" 
                                                  value="Search" 

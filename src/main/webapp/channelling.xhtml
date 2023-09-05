@@ -21,7 +21,7 @@
 
                 <p:panel header="Specialities" styleClass="alignTop">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="acSpeciality" value="#{bookingController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <p:ajax  event="change" process="@this" update="scStaff" /> 
                             <p:ajax  event="click" process="@this" update="scStaff" /> 
@@ -31,7 +31,7 @@
 
                 <p:panel header="Consultants" id="scStaff" styleClass="alignTop">    
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox   value="#{bookingController.staff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <!--<f:ajax  event="change" execute="@this" render="tblSessionsOfSelectedConsultant"  />--> 
                             <p:ajax  event="click" process="@this" update="tblSessionsOfSelectedConsultant"  /> 
@@ -147,8 +147,8 @@
                                 <p:inputText autocomplete="off"  id="txtNewPtName" value="#{channelBillController.newPatient.person.name}" style="width: 200px;text-transform:capitalize;">
                                 </p:inputText>
                                 <h:outputLabel value="Phone"/>
-                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
-                                </p:inputMask>
+                                <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
+                                </p:inputText>
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu id="txtNewSex"  value="#{channelBillController.newPatient.person.sex}" style="width: 200px;">
                                     <f:selectItem itemLabel="Select Sex"/>

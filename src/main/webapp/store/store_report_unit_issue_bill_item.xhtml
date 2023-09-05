@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_summery_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Unit Issue Report" >
@@ -20,12 +20,12 @@
                             <h:outputLabel value="Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>

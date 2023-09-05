@@ -124,12 +124,12 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
             sql += " and c.speciality=:sp";
             hm.put("sp", getProEncounterComponent().getBillFee().getSpeciality());
         }
-        sql += " and (upper(c.person.name) like :q "
-                + " or upper(c.code) like :q )"
+        sql += " and ((c.person.name) like :q "
+                + " or (c.code) like :q )"
                 + " order by c.person.name";
 
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        List<Staff> s = getStaffFacade().findBySQL(sql, hm, 20);
+        List<Staff> s = getStaffFacade().findByJpql(sql, hm, 20);
         ////// // System.out.println("s = " + s);
         return s;
     }
@@ -409,18 +409,18 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
 
         if (getCurrentBillFee() != null && getCurrentBillFee().getSpeciality() != null) {
             sql = " select p from Staff p where p.retired=false and "
-                    + " (upper(p.person.name) like :q "
-                    + " or  upper(p.code) like :q  ) "
+                    + " ((p.person.name) like :q "
+                    + " or  (p.code) like :q  ) "
                     + " and p.speciality=:spe order by p.person.name";
             hm.put("spe", getCurrentBillFee().getSpeciality());
         } else {
             sql = " select p from Staff p where p.retired=false and "
-                    + " (upper(p.person.name) "
-                    + " like :q or  upper(p.code) like :q "
+                    + " ((p.person.name) "
+                    + " like :q or  (p.code) like :q "
                     + " ) order by p.person.name";
         }
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getStaffFacade().findBySQL(sql, hm, 20);
+        suggestions = getStaffFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -490,7 +490,7 @@ public class InwardProfessionalBillControllerEstimate implements Serializable {
     }
 
     public List<Item> completeItem(String qry) {
-        List<Item> completeItems = getItemFacade().findBySQL("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<Item> completeItems = getItemFacade().findByJpql("select c from Item c where c.retired=false and (type(c) = Service or type(c) = Packege ) and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 

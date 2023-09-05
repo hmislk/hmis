@@ -41,15 +41,20 @@ public class CommonController implements Serializable {
     }
 
     private int number;
- 
+
     public int getNumber() {
         return number;
     }
- 
+
     public void increment() {
         number++;
     }
     
+    public static String formatNumber(double number, String format) {
+        DecimalFormat decimalFormat = new DecimalFormat(format);
+        return decimalFormat.format(number);
+    }
+
     public String getBaseUrl() {
         HttpServletRequest req = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
         String url = req.getRequestURL().toString();
@@ -115,6 +120,10 @@ public class CommonController implements Serializable {
         return timeInMs / 1000;
     }
 
+    public static String nameToCode(String name) {
+        return name.toLowerCase().replaceAll("\\s+", "_");
+    }
+
     public static boolean isValidEmail(String email) {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."
                 + "[a-zA-Z0-9_+&*-]+)*@"
@@ -150,7 +159,6 @@ public class CommonController implements Serializable {
         }
         s += "\n ***************";
 
-
     }
 
     //----------Date Time Formats
@@ -167,7 +175,29 @@ public class CommonController implements Serializable {
         s = d.format(date);
         return s;
     }
-    
+
+    public static double extractDoubleValue(String input) {
+        String cleanedInput = input.replaceAll(",", ""); // Remove commas
+        cleanedInput = cleanedInput.trim(); // Trim leading and trailing whitespace
+
+        if (cleanedInput.isEmpty()) {
+            return 0.0;
+        }
+
+        try {
+            return Double.parseDouble(cleanedInput);
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    public static String formatDate(Date date, String formatString) {
+        String s = "";
+        DateFormat d = new SimpleDateFormat(formatString);
+        s = d.format(date);
+        return s;
+    }
+
     public String getDateFormat2(Date date) {
         String s = "";
         DateFormat d = new SimpleDateFormat("YYYY-MMM-dd");
@@ -217,16 +247,16 @@ public class CommonController implements Serializable {
 //        //// // System.out.println("s = " + s);
         return s;
     }
-    
+
     public Double getDouble(String s) {
-        Double d =null;
-        if(s==null){
+        Double d = null;
+        if (s == null) {
             return d;
         }
-        try{
-            d=Double.parseDouble(s);
-        }catch(NumberFormatException e){
-            d=0.0;
+        try {
+            d = Double.parseDouble(s);
+        } catch (NumberFormatException e) {
+            d = 0.0;
         }
         return d;
     }

@@ -64,7 +64,7 @@ public class SessionNumberGenerateConrtroller implements Serializable {
         String sql;
         Map m=new HashMap();
         sql = " SELECT sg FROM SessionNumberGenerator sg WHERE sg.retired=false"
-                + " and upper(sg.name) like '%" + qry.toUpperCase() + "%' "
+                + " and (sg.name) like '%" + qry.toUpperCase() + "%' "
                 + " and sg.speciality=:sp"
                 + " and sg.staff=:s "
                 + " order by sg.name";
@@ -72,7 +72,7 @@ public class SessionNumberGenerateConrtroller implements Serializable {
         m.put("sp", sheduleController.getSpeciality());
         m.put("s", sheduleController.getCurrentStaff());
 
-        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findBySQL(sql,m);
+        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findByJpql(sql,m);
 
         return SessionNumberGeneratorlst;
     }
@@ -120,44 +120,6 @@ public class SessionNumberGenerateConrtroller implements Serializable {
         }
     }
 
-    @FacesConverter("genConvert")
-    public static class SpecialityConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            SessionNumberGenerateConrtroller controller = (SessionNumberGenerateConrtroller) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "sessionNumberGenerateConrtroller");
-            return controller.getSessionNumberGeneratorFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof SessionNumberGenerator) {
-                SessionNumberGenerator o = (SessionNumberGenerator) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + SessionNumberGenerateConrtroller.class.getName());
-            }
-        }
-    }
+    
 
 }

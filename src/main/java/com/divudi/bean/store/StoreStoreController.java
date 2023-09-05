@@ -104,10 +104,10 @@ public class StoreStoreController implements Serializable {
         double d = 0.0;
         m.put("n", "%" + qry.toUpperCase() + "%");
         sql = "select i from Stock i where i.department=:d and "
-                + " (upper(i.itemBatch.item.name) like :n  or "
-                + " upper(i.itemBatch.item.code) like :n  or  "
-                + " upper(i.itemBatch.item.barcode) like :n ) ";
-        items = getStockFacade().findBySQL(sql, m, 20);
+                + " ((i.itemBatch.item.name) like :n  or "
+                + " (i.itemBatch.item.code) like :n  or  "
+                + " (i.itemBatch.item.barcode) like :n ) ";
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -119,8 +119,8 @@ public class StoreStoreController implements Serializable {
         double d = 0.0;
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
-        sql = "select i from Stock i where i.stock >:s and (upper(i.staff.code) like :n or upper(i.staff.person.name) like :n or upper(i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        sql = "select i from Stock i where i.stock >:s and ((i.staff.code) like :n or (i.staff.person.name) like :n or (i.itemBatch.item.name) like :n ) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -130,7 +130,7 @@ public class StoreStoreController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
         hm.put("ins", ins);
-        d = getDepartmentFacade().findBySQL(sql, hm);
+        d = getDepartmentFacade().findByJpql(sql, hm);
 
         return d;
     }
@@ -229,7 +229,7 @@ public class StoreStoreController implements Serializable {
         hm.put("type", InstitutionType.Company);
         sql = "select c from Institution c where c.retired=false and c.institutionType=:type order by c.name";
 
-        return getInstitutionFacade().findBySQL(sql, hm);
+        return getInstitutionFacade().findByJpql(sql, hm);
     }
 
     private List<InstitutionStock> institutionStocks;
@@ -671,7 +671,7 @@ public class StoreStoreController implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("btp", BillType.StoreGrnBill);
 
-        grns = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        grns = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -687,7 +687,7 @@ public class StoreStoreController implements Serializable {
         hm.put("to", getToDate());
         hm.put("btp", BillType.StorePurchase);
         hm.put("class", BilledBill.class);
-        directPurchase = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        directPurchase = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -707,7 +707,7 @@ public class StoreStoreController implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
         hm.put("class", BilledBill.class);
-        pos = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        pos = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         for (BillItem t : pos) {
             //   t.setPharmaceuticalBillItem(getPoQty(t));
@@ -722,7 +722,7 @@ public class StoreStoreController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("bt", b);
 //
-//        return getPharmaceuticalBillItemFacade().findFirstBySQL(sql, hm);
+//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
 //    }
     private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"

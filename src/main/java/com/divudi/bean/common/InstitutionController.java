@@ -67,19 +67,20 @@ public class InstitutionController implements Serializable {
     List<Institution> institution;
     String selectText = "";
     private Boolean codeDisabled = false;
+    private int managaeInstitutionIndex;
 
     public String toAdminManageInstitutions() {
-        return "/admin/admin_institutions_index";
+        return "/admin/institutions/admin_institutions_index";
     }
 
     public String toListInstitutions() {
         fillItems();
-        return "/admin/institutions";
+        return "/admin/institutions/institutions";
     }
 
     public String toAddNewInstitution() {
         current = new Institution();
-        return "/admin/institution";
+        return "/admin/institutions/institution";
     }
 
     public String toEditInstitution() {
@@ -87,7 +88,7 @@ public class InstitutionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
-        return "/admin/institution";
+        return "/admin/institutions/institution";
     }
 
     public String deleteInstitution() {
@@ -150,7 +151,7 @@ public class InstitutionController implements Serializable {
         sql = "select c from Institution c "
                 + " where c.retired=false ";
         if (qry != null) {
-            sql += " and (upper(c.name) like :qry or upper(c.institutionCode) like :qry) ";
+            sql += " and ((c.name) like :qry or (c.institutionCode) like :qry) ";
             hm.put("qry", "%" + qry.toUpperCase() + "%");
         }
         if (types != null) {
@@ -159,7 +160,7 @@ public class InstitutionController implements Serializable {
             sql += "  and c.institutionType in :types";
         }
         sql += " order by c.name";
-        return getFacade().findBySQL(sql, hm);
+        return getFacade().findByJpql(sql, hm);
     }
 
     public List<Institution> getSuppliers() {
@@ -270,8 +271,8 @@ public class InstitutionController implements Serializable {
         Map m = new HashMap();
         m.put("n", name.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where upper(i.name) =:n and i.institutionType=:t";
-        Institution i = getFacade().findFirstBySQL(sql, m);
+        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
+        Institution i = getFacade().findFirstByJpql(sql, m);
         if (i == null) {
             i = new Institution();
             i.setName(name);
@@ -285,10 +286,34 @@ public class InstitutionController implements Serializable {
         }
         return i;
     }
+    
+    public Institution findAndSaveInstitutionByName(String name) {
+        if(name==null||name.trim().equals("")){
+            return null;
+        }
+        String sql;
+        Map m = new HashMap();
+        m.put("name", name);
+        m.put("ret", false);
+        sql = "select i "
+                + " from Institution i "
+                + " where i.name=:name"
+                + " and i.retired=:ret";
+        Institution i = getFacade().findFirstByJpql(sql, m);
+        if (i == null) {
+            i = new Institution();
+            i.setName(name);
+            getFacade().create(i);
+        } else {
+            i.setRetired(false);
+            getFacade().edit(i);
+        }
+        return i;
+    }
 
     private Boolean checkCodeExist() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        List<Institution> ins = getEjbFacade().findByJpql(sql);
         if (ins != null) {
             for (Institution i : ins) {
                 if (i.getCode() == null || i.getCode().trim().equals("")) {
@@ -305,7 +330,7 @@ public class InstitutionController implements Serializable {
 
     private Boolean checkCodeExistAgency() {
         String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionCode is not null ";
-        List<Institution> ins = getEjbFacade().findBySQL(sql);
+        List<Institution> ins = getEjbFacade().findByJpql(sql);
         if (ins != null) {
             for (Institution i : ins) {
                 if (i.getCode() == null || i.getCode().trim().equals("")) {
@@ -570,7 +595,7 @@ public class InstitutionController implements Serializable {
     public void fillItems() {
         String j;
         j = "select i from Institution i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public void formatAgentSerial() {
@@ -649,45 +674,15 @@ public class InstitutionController implements Serializable {
         this.agency = agency;
     }
 
-    @FacesConverter("institutionConverter")
-    public static class InstitutionConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            InstitutionController controller = (InstitutionController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "institutionController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Institution) {
-                Institution o = (Institution) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + InstitutionController.class.getName());
-            }
-        }
+    public int getManagaeInstitutionIndex() {
+        return managaeInstitutionIndex;
     }
+
+    public void setManagaeInstitutionIndex(int managaeInstitutionIndex) {
+        this.managaeInstitutionIndex = managaeInstitutionIndex;
+    }
+
+ 
 
     /**
      *

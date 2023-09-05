@@ -179,9 +179,9 @@ public class ChannelSearchController implements Serializable {
         m.put("class", BilledBill.class);
 
         if (getFromDate() != null && getToDate() != null) {
-            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            searchedBillSessions = getBillSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         } else {
-            searchedBillSessions = getBillSessionFacade().findBySQL(sql, m);
+            searchedBillSessions = getBillSessionFacade().findByJpql(sql, m);
         }
 
     }
@@ -199,7 +199,7 @@ public class ChannelSearchController implements Serializable {
                         + " bs.serialNo";
                 HashMap hh = new HashMap();
                 hh.put("ssDate", getDate());
-                billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+                billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
             }
         }
@@ -341,7 +341,7 @@ public class ChannelSearchController implements Serializable {
             cancelBillComponents(can, b);
 
             String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
 ////////////////////////
 
             cancelBillFee(can, b, tmp);
@@ -355,7 +355,7 @@ public class ChannelSearchController implements Serializable {
 
     private void cancelPaymentItems(Bill pb) {
         List<BillItem> pbis;
-        pbis = getBillItemFacede().findBySQL("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
+        pbis = getBillItemFacede().findByJpql("SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + pb.getId());
         for (BillItem pbi : pbis) {
             if (pbi.getPaidForBillFee() != null) {
                 pbi.getPaidForBillFee().setPaidValue(0.0);
@@ -366,7 +366,7 @@ public class ChannelSearchController implements Serializable {
 
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -426,7 +426,7 @@ public class ChannelSearchController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
@@ -441,7 +441,7 @@ public class ChannelSearchController implements Serializable {
                 + "  WHERE b.retired=false "
                 + " and b.bill=:b";
         hm.put("b", getBill());
-        billItems = getBillItemFacede().findBySQL(sql, hm);
+        billItems = getBillItemFacede().findByJpql(sql, hm);
 
     }
 

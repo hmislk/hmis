@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"                    
+                xmlns:ui="http://java.sun.com/jsf/facelets"                
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -21,7 +21,7 @@
                                          value="#{staffChangeController.staff}"
                                          completeMethod="#{staffController.completeStaffCode}"  
                                          var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                         converter="stfcon">   
+                                         >   
                             <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic(commonController.currentDateTime)}" />
                             <p:column headerText="Name">
                                 #{mys.person.name}

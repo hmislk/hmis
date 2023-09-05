@@ -15,13 +15,10 @@
 
                     <p:panel header="Auto ordering by Distributor" >
 
-                        <h:panelGrid columns="1" class="alignTop" >
-
-
-
-                            <h:panelGrid columns="3" class="alignTop" >
-
-                                <p:panel header="Ordering" >
+                       
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p:panel header="Ordering" class="w-100">
 
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="Supplier" ></h:outputLabel>
@@ -29,7 +26,7 @@
                                             completeMethod="#{institutionController.completeSuppliers}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" value="#{reorderController.institution}"
-                                            converter="institutionConverter" >
+                                             >
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Ordering Date" ></h:outputLabel>
@@ -51,7 +48,8 @@
                                     </h:panelGrid>
 
                                 </p:panel>
-
+                            </div>
+                            <div class="col-md-4">
                                 <p:panel header="Analysis" >
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="From" ></h:outputLabel>
@@ -82,7 +80,8 @@
                                     </h:panelGrid>
 
                                 </p:panel>
-
+                            </div>
+                            <div class="col-md-4">
                                 <p:panel >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Actions" ></h:outputLabel>
@@ -125,8 +124,10 @@
 
 
                                 </p:panel>
+                            </div>
+                        </div>
 
-                            </h:panelGrid>
+
 
 
 
@@ -149,8 +150,7 @@
                                     <p:ajax update="tbl"  />
                                 </p:selectBooleanButton>
                             </h:panelGrid>
-                        </h:panelGrid>
-
+                        
 
 
 

@@ -25,13 +25,13 @@
                         <f:facet name="header">
                             Select Department To Request For
                         </f:facet>
-                        <p:autoComplete converter="departmentConverter" value="#{transferRequestController.bill.toDepartment}" 
+                        <p:autoComplete  value="#{transferRequestController.bill.toDepartment}" 
                                         forceSelection="true"
                                         completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />                    
                     </p:panelGrid>
                     <p:panel header="Add Item ">
                         <p:autoComplete  value="#{transferRequestController.currentBillItem.item}"
-                                         forceSelection="true"  converter="itemcon"
+                                         forceSelection="true"  
                                          completeMethod="#{itemController.completeAmpItem}" 
                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             <p:column headerText="Item" >
@@ -44,7 +44,7 @@
                                 <p:outputLabel value=" X #{vt.dblValue}" 
                                                rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
                             </p:column>
-                            <f:ajax execute="@this" event="blur" render="#{p:component('tab')}" listener="#{transferRequestController.onEdit()}"/>
+                            <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{transferRequestController.onEdit()}"/>
                         </p:autoComplete>
                         <p:inputText autocomplete="off" value="#{transferRequestController.currentBillItem.tmpQty}"/>
                         <p:commandButton value="Add Item" action="#{transferRequestController.addItem}" ajax="false"/>

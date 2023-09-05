@@ -611,7 +611,7 @@ public class ChannelBillController implements Serializable {
                 + " and bf.billItem=:bt ";
         hm.put("bt", bs.getBillItem());
 
-        listBillFees = billFeeFacade.findBySQL(sql, hm);
+        listBillFees = billFeeFacade.findByJpql(sql, hm);
         billSession = bs;
 
         for (BillFee bf : billSession.getBill().getBillFees()) {
@@ -662,7 +662,7 @@ public class ChannelBillController implements Serializable {
         } else {
             sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBillSession().getBill().getPaidBill().getId();
         }
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
                 return true;
@@ -915,7 +915,7 @@ public class ChannelBillController implements Serializable {
 
         getBillItemFacade().create(b);
         String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-        List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
         cancelBillFee(can, b, tmp);
 
         return b;
@@ -1633,7 +1633,7 @@ public class ChannelBillController implements Serializable {
         hh.put("class", BilledBill.class);
         hh.put("ssDate", ss.getSessionDate());
         hh.put("ss", ss);
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE, 5);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE, 5);
 
         for (BillSession bs : billSessions) {
             if (errorCheckAfterSaveBill(bs.getBill())) {
@@ -1651,7 +1651,7 @@ public class ChannelBillController implements Serializable {
                 } else {
                     sql = " select bi from BillItem bi where "
                             + " bi.bill=:b ";
-                    bi = getBillItemFacade().findFirstBySQL(sql, m);
+                    bi = getBillItemFacade().findFirstByJpql(sql, m);
                 }
                 if (bi != null) {
                     bi.setRetired(true);
@@ -1670,7 +1670,7 @@ public class ChannelBillController implements Serializable {
                 sql = " select bf from BillFee bf where "
                         + " bf.bill=:b ";
 
-                BillFees = getBillFeeFacade().findBySQL(sql, m);
+                BillFees = getBillFeeFacade().findByJpql(sql, m);
                 if (!BillFees.isEmpty()) {
                     for (BillFee bf : BillFees) {
                         bf.setRetired(true);
@@ -1724,7 +1724,7 @@ public class ChannelBillController implements Serializable {
         hh.put("ss", billSession.getServiceSession().getSessionNumberGenerator());
         hh.put("num", billSession.getSerialNo());
 
-        List<BillSession> lgValue = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        List<BillSession> lgValue = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
         if (lgValue.size() > 1) {
             return true;
@@ -2252,7 +2252,7 @@ public class ChannelBillController implements Serializable {
         billFee = new ArrayList<>();
         if (billSession != null) {
             String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + billSession.getBill().getId();
-            billFee = getBillFeeFacade().findBySQL(sql);
+            billFee = getBillFeeFacade().findByJpql(sql);
         }
 
         return billFee;
@@ -2264,7 +2264,7 @@ public class ChannelBillController implements Serializable {
             if (billSession != null) {
                 //String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + billSession.getBill().getId();
                 String sql = "Select s From BillFee s where s.retired=false and s.bill.billedBill.id=" + billSession.getBill().getId();
-                refundBillFee = getBillFeeFacade().findBySQL(sql);
+                refundBillFee = getBillFeeFacade().findByJpql(sql);
             }
         }
         return refundBillFee;
@@ -2434,7 +2434,7 @@ public class ChannelBillController implements Serializable {
 
         m.put("ins", ins);
 
-        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findBySQL(sql, m, 5);
+        List<AgentReferenceBook> agentReferenceBooks = agentReferenceBookFacade.findByJpql(sql, m, 5);
         if (agentReferenceBooks.size() > 0) {
             ins.setAgentReferenceBooks(agentReferenceBooks);
         }

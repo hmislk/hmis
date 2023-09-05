@@ -45,14 +45,14 @@ public class GradeController implements Serializable {
     String selectText = "";
 
     public List<Grade> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Grade c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Grade c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<Grade> completeGrade(String qry) {
         List<Grade> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Grade c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Grade c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -153,7 +153,7 @@ public class GradeController implements Serializable {
                     + " from Grade g "
                     + " where g.retired=false "
                     + " order by g.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -201,43 +201,4 @@ public class GradeController implements Serializable {
         }
     }
 
-    @FacesConverter("gradeCon")
-    public static class GradeControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            GradeController controller = (GradeController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "gradeController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Grade) {
-                Grade o = (Grade) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + GradeController.class.getName());
-            }
-        }
-    }
 }

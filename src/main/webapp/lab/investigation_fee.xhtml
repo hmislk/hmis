@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/lab/administration.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
 
@@ -124,11 +124,11 @@
                                         <f:selectItems value="#{enumController.feeTypes}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />                                        
                                     </h:selectOneListbox>
                                     <h:outputText value="Speciality"/>
-                                    <p:autoComplete converter="specilityCon" forceSelection="true" id="cmbSpe" value="#{itemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  forceSelection="true" id="cmbSpe" value="#{itemFeeController.currentFee.speciality}" completeMethod="#{specialityController.completeSpeciality}" var="sp" itemLabel="#{sp.name}" itemValue="#{sp}" size="30"  style="width: 400px;">
                                         <f:ajax execute="cmbSpe" render="cmbDoc" event="select"/>
                                     </p:autoComplete>
                                     <h:outputText value="Staff"/>
-                                    <p:autoComplete converter="stfcon" forceSelection="true" id="cmbDoc" value="#{itemFeeController.currentFee.staff}" completeMethod="#{itemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
+                                    <p:autoComplete  forceSelection="true" id="cmbDoc" value="#{itemFeeController.currentFee.staff}" completeMethod="#{itemFeeController.completeStaff}" var="st" itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30"  style="width: 400px;">
                                         <f:ajax execute="cmbSpe" event="keypress"/>
                                     </p:autoComplete>
 

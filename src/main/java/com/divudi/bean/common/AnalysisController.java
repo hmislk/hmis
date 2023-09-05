@@ -94,7 +94,7 @@ public class AnalysisController implements Serializable {
                 + " and bi.bill.retired=:ret "
                 + " order by bi.item.name";
         m.put("ret", false);
-        return getItemFacade().findBySQL(j, m);
+        return getItemFacade().findByJpql(j, m);
     }
     
     
@@ -105,11 +105,11 @@ public class AnalysisController implements Serializable {
         j = "select distinct(bi.item) from BillItem bi "
                 + " where bi.retired=:ret "
                 + " and bi.bill.retired=:ret "
-                + " and lower(bi.item.name) like :name "
+                + " and (bi.item.name) like :name "
                 + " order by bi.item.name";
         m.put("ret", false);
         m.put("name", "%" + qry.toLowerCase() + "%");
-        return getItemFacade().findBySQL(j, m);
+        return getItemFacade().findByJpql(j, m);
     }
 
     public void createPharmacyBillItemSale() {
@@ -155,7 +155,7 @@ public class AnalysisController implements Serializable {
 
         j += " order by bi.item";
 
-        List<BillItem> billItems = getBillItemFacade().findBySQL(j, m);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(j, m);
 
         Row row1 = sheet1.createRow(0);
 

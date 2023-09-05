@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
                     <p:panel header="Search User Bills" >
@@ -48,7 +48,7 @@
 
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="User Name"/>
-                                    <p:autoComplete id="cmbUser" converter="webUs" 
+                                    <p:autoComplete id="cmbUser"  
                                                     forceSelection="true"
                                                     completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"

@@ -210,7 +210,7 @@ public class SurgeryBillController implements Serializable {
                 + " bf.billItem=:bItm ";
         HashMap hm = new HashMap();
         hm.put("bItm", billItem);
-        List<BillFee> lst = getBillFeeFacade().findBySQL(sql, hm);
+        List<BillFee> lst = getBillFeeFacade().findByJpql(sql, hm);
 
         if (lst.isEmpty()) {
             return new ArrayList<>();
@@ -369,7 +369,7 @@ public class SurgeryBillController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", b);
 
-        return getBillItemFacade().findBySQL(sql, hm);
+        return getBillItemFacade().findByJpql(sql, hm);
     }
 
     private boolean saveProfessionalBill() {
@@ -463,46 +463,46 @@ public class SurgeryBillController implements Serializable {
         return batchBill;
     }
 
-    private List<Bill> getBillsByForwardRef(Bill b) {
-        String sql = "Select bf from Bill bf where bf.cancelled=false and "
-                + " bf.retired=false and bf.forwardReferenceBill=:bill";
-        HashMap hm = new HashMap();
-        hm.put("bill", getBatchBill());
-        List<Bill> list = getBillFacade().findBySQL(sql, hm);
+//    private List<Bill> getBillsByForwardRef(Bill b) {
+//        String sql = "Select bf from Bill bf where bf.cancelled=false and "
+//                + " bf.retired=false and bf.forwardReferenceBill=:bill";
+//        HashMap hm = new HashMap();
+//        hm.put("bill", getBatchBill());
+//        List<Bill> list = getBillFacade().findByJpql(sql, hm);
+//
+//        if (list == null) {
+//            return new ArrayList<>();
+//        }
+//
+//        return list;
+//    }
 
-        if (list == null) {
-            return new ArrayList<>();
-        }
-
-        return list;
-    }
-
-    public void setBatchBill(Bill batchBill) {
-        makeNull();
-        this.batchBill = batchBill;
-        for (Bill b : getBillsByForwardRef(batchBill)) {
-            if (b.getSurgeryBillType() == SurgeryBillType.ProfessionalFee) {
-                // System.err.println(SurgeryBillType.ProfessionalFee);
-                setProfessionalBill(b);
-                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
-                setProEncounterComponents(enc);
-            }
-
-            if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
-                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
-                setTimedEncounterComponents(enc);
-            }
-
-            if (b.getSurgeryBillType() == SurgeryBillType.Service) {
-                departmentBillItems = getInwardBean().createDepartmentBillItems(batchBill.getPatientEncounter(), getBatchBill());
-            }
-
-            if (b.getSurgeryBillType() == SurgeryBillType.PharmacyItem) {
-                createIssueTable();
-            }
-
-        }
-    }
+//    public void setBatchBill(Bill batchBill) {
+//        makeNull();
+//        this.batchBill = batchBill;
+//        for (Bill b : getBillsByForwardRef(batchBill)) {
+//            if (b.getSurgeryBillType() == SurgeryBillType.ProfessionalFee) {
+//                // System.err.println(SurgeryBillType.ProfessionalFee);
+//                setProfessionalBill(b);
+//                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
+//                setProEncounterComponents(enc);
+//            }
+//
+//            if (b.getSurgeryBillType() == SurgeryBillType.TimedService) {
+//                List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
+//                setTimedEncounterComponents(enc);
+//            }
+//
+//            if (b.getSurgeryBillType() == SurgeryBillType.Service) {
+//                departmentBillItems = getInwardBean().createDepartmentBillItems(batchBill.getPatientEncounter(), getBatchBill());
+//            }
+//
+//            if (b.getSurgeryBillType() == SurgeryBillType.PharmacyItem) {
+//                createIssueTable();
+//            }
+//
+//        }
+//    }
 
     private List<BillItem> pharmacyIssues;
     List<BillItem> storeIssues;
@@ -536,7 +536,7 @@ public class SurgeryBillController implements Serializable {
         hm.put("btp", billType);
         hm.put("class", PreBill.class);
 
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql, hm);
 
         hm.clear();
         sql = "SELECT  b FROM BillItem b "
@@ -553,7 +553,7 @@ public class SurgeryBillController implements Serializable {
         hm.put("bil", getBatchBill());
 //        hm.put("pe", getBatchBill().getPatientEncounter());
 
-        List<BillItem> billItems1 = getBillItemFacade().findBySQL(sql, hm);
+        List<BillItem> billItems1 = getBillItemFacade().findByJpql(sql, hm);
 
         billItems.addAll(billItems1);
 

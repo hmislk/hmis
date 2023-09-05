@@ -8,125 +8,97 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Ordering Analysis" >
 
                         <h:panelGrid columns="1" class="alignTop" >
 
+                            <div class="row">
 
-
-                            <h:panelGrid columns="3" class="alignTop" >
-
-                                <p:panel header="Ordering" >
-
-                                    <h:panelGrid columns="2" >
-                                        <h:outputLabel value="Supplier" ></h:outputLabel>
-                                        <p:autoComplete 
-                                            completeMethod="#{institutionController.completeSupplier}" 
-                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{itemController.instituion}"
-                                            converter="institutionConverter" >
-                                        </p:autoComplete>
-
-                                        <h:outputLabel value="Ordering Date" ></h:outputLabel>
-                                        <p:calendar value="#{reorderController.orderingDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
-
-                                        <h:outputLabel value="Expected Delivery Date" ></h:outputLabel>
-                                        <p:calendar value="#{reorderController.expectedDeliveryDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
-
-                                        <h:outputLabel value="Next Delivery Date" ></h:outputLabel>
-                                        <p:calendar value="#{reorderController.nextDeliveryDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
-
-
-                                    </h:panelGrid>
-
-                                </p:panel>
-
-                                <p:panel header="Analysis" >
-                                    <h:panelGrid columns="2" >
-                                        <h:outputLabel value="From" ></h:outputLabel>
-                                        <p:calendar value="#{reorderController.fromDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
-
-                                        <h:outputLabel value="To" ></h:outputLabel>
-                                        <p:calendar value="#{reorderController.toDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
-                                        <h:outputLabel value="Bill types" ></h:outputLabel>
-                                        <p:selectManyMenu style="width: 300px;height: 150px;"
-                                                          value="#{reorderController.billTypes}" >
-                                            <f:selectItems value="#{enumController.pharmacyBillTypes}" ></f:selectItems>
-                                        </p:selectManyMenu>
-                                    </h:panelGrid>
-
-                                </p:panel>
-
-                                <p:panel >
-                                    <f:facet name="header" >
-                                        <h:outputLabel value="Actions" ></h:outputLabel>
-                                    </f:facet>
-                                    <p:panel >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Order Request" ></p:outputLabel>
-                                        </f:facet>
-                                        <h:panelGrid columns="3" >
-                                            <h:outputLabel value="For" ></h:outputLabel>
-                                            <p:selectOneMenu value="#{reorderController.department}" >
-                                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
-                                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
-                                            </p:selectOneMenu>
-                                            <p:commandButton ajax="false" value="Create" 
-                                                            action="#{reorderController.createPharmacyOrderRequest()}" ></p:commandButton>
-                                        </h:panelGrid>
-                                    </p:panel>
-                                    
-                                    <p:panel >
-                                        <f:facet name="header" >
-                                            <p:outputLabel value="Transfer Request" ></p:outputLabel>
-                                        </f:facet>
-                                        <h:panelGrid columns="2" >
+                                <div class="col-md-6">
+                                    <p:panel header="Analysis" class="w-100">
+                                        <h:panelGrid columns="1" class="w-100">
                                             <h:outputLabel value="From" ></h:outputLabel>
-                                            <p:selectOneMenu value="#{reorderController.fromDepartment}" >
-                                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
-                                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
-                                            </p:selectOneMenu>
+                                            <p:calendar value="#{reorderController.fromDate}"
+                                                        pattern="dd MMM yyyy" ></p:calendar>
+
                                             <h:outputLabel value="To" ></h:outputLabel>
-                                            <p:selectOneMenu value="#{reorderController.toDepartment}" >
-                                                <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
-                                                               itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
-                                            </p:selectOneMenu>
-                                            
-                                            <p:commandButton ajax="false" value="Create" 
-                                                            action="#{reorderController.createPharmacyTransferRequest()}" ></p:commandButton>
+                                            <p:calendar value="#{reorderController.toDate}"
+                                                        pattern="dd MMM yyyy" ></p:calendar>
+                                            <h:outputLabel value="Bill types" ></h:outputLabel>
+                                            <p:selectManyMenu
+                                                value="#{reorderController.billTypes}" >
+                                                <f:selectItems value="#{enumController.pharmacyBillTypes}" ></f:selectItems>
+                                            </p:selectManyMenu>
                                         </h:panelGrid>
+
+                                    </p:panel>  
+                                </div>
+                                <div class="col-md-6">
+                                    <p:panel header="Actions">
+
+                                        <p:panel header="Order Request" >
+
+                                            <h:panelGrid columns="3" class="w-100">
+                                                <h:outputLabel value="For" ></h:outputLabel>
+                                                <p:selectOneMenu value="#{reorderController.department}" >
+                                                    <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                                                   itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                                </p:selectOneMenu>
+                                                <p:commandButton ajax="false" value="Create" 
+                                                                 action="#{reorderController.createPharmacyOrderRequest()}" ></p:commandButton>
+                                            </h:panelGrid>
+                                        </p:panel>
+
+                                        <p:panel header="Transfer Request">
+                                            <h:panelGrid columns="2" >
+                                                <h:outputLabel value="From" ></h:outputLabel>
+                                                <p:selectOneMenu value="#{reorderController.fromDepartment}" >
+                                                    <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                                                   itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                                </p:selectOneMenu>
+                                                <h:outputLabel value="To" ></h:outputLabel>
+                                                <p:selectOneMenu value="#{reorderController.toDepartment}" >
+                                                    <f:selectItems value="#{departmentController.institutionDepatrments}" var="d"
+                                                                   itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                                </p:selectOneMenu>
+
+                                                <p:commandButton ajax="false" value="Create" 
+                                                                 action="#{reorderController.createPharmacyTransferRequest()}" ></p:commandButton>
+                                            </h:panelGrid>
+                                        </p:panel>
+
+
                                     </p:panel>
-
-
-                                </p:panel>
-
-                            </h:panelGrid>
+                                </div>
 
 
 
-                            <h:panelGrid columns="4" >
-                                <p:commandButton ajax="false" value="Fill Reorders"
-                                                actionListener="#{reorderController.fillReorders()}" ></p:commandButton>
-                                <p:commandButton ajax="false" value="Generate Reorders"
-                                                actionListener="#{reorderController.generateReorders()}" ></p:commandButton>
-                                <p:commandButton ajax="false" value="Save Reorders"
-                                                actionListener="#{reorderController.saveReorders()}" ></p:commandButton>
-                                <p:selectBooleanButton id="value2" value="#{reorderController.readOnly}" 
-                                                       onLabel="Make Editable" offLabel="Remove Editable" 
-                                                       onIcon="ui-icon-check" offIcon="ui-icon-close">
-                                    <p:ajax update="tbl"  />
-                                </p:selectBooleanButton>
-                            </h:panelGrid>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h:panelGrid columns="4" >
+                                        <p:commandButton ajax="false" value="Fill Reorders"
+                                                         actionListener="#{reorderController.fillReorders()}" ></p:commandButton>
+                                        <p:commandButton ajax="false" value="Generate Reorders"
+                                                         actionListener="#{reorderController.generateReorders()}" ></p:commandButton>
+                                        <p:commandButton ajax="false" value="Save Reorders"
+                                                         actionListener="#{reorderController.saveReorders()}" ></p:commandButton>
+                                        <p:selectBooleanButton id="value2" value="#{reorderController.readOnly}" 
+                                                               onLabel="Make Editable" offLabel="Remove Editable" 
+                                                               onIcon="ui-icon-check" offIcon="ui-icon-close">
+                                            <p:ajax update="tbl"  />
+                                        </p:selectBooleanButton>
+                                    </h:panelGrid>
+                                </div>
+                            </div>
+
+
                         </h:panelGrid>
 
 

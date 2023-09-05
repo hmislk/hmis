@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns="http://www.w3.org/1999/xhtml">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:outputStylesheet>
+                    /* Styles for screen display */
+                    .page {
+                    border: 1px solid #ddd;
+                    margin: 20px;
+                    padding: 20px;
+                    background-color: whitesmoke;
+                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
+                    }
+                    .d-flex {
+                    display: flex;
+                    }
+                    .flex-grow-1 {
+                    flex: 1;
+                    }
+                    .bill-item {
+                    page-break-after: always;
+                    }
+
+                    /* Styles for print */
+                    @media print {
+                    .bill-item {
+                    page-break-after: always;
+                    margin: 0px;
+                    padding: 0px
+                    }
+                    .page {
+                    border: none;
+                    background-color: transparent;
+                    box-shadow: none;
+                    margin: 0px;
+                    padding: 0px
+                    }
+                    }
+                </h:outputStylesheet>
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup
+                    rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}">
+                    <h:form>
+
+
+                        <div class="container-fluid" >
+                            <div class="row" >
+                                <div class="col-12" >
+                                    <p:commandButton value="Print" icon="ui-icon-print" >
+                                        <p:printer target="gpPosBill1" />
+                                    </p:commandButton>
+                                    <p:commandButton value="New OPD Bill" 
+                                                     ajax="false"
+                                                     action="#{opdBillController.navigateToNewOpdBill()}">
+                                    </p:commandButton>
+                                    <p:commandButton value="Patient Registration" 
+                                                     ajax="false"
+                                                     action="#{opdBillController.navigateToSearchPatients()}">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                            <div class="row" >
+                                <div class="col-6" >
+                                    <div class="d-flex justify-content-between">
+                                        <div class="flex-grow-1">
+                                            <h:panelGroup id="gpPosBill1" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="b">
+                                                    <div class="bill-item page">
+                                                        <h:outputText value="#{b.billPrint}" escape="false"></h:outputText>
+                                                        <script>
+                                                            $(document).ready(function () {
+                                                                JsBarcode("#barcode#{b.id}", "#{b.id}", {
+                                                                    format: "CODE128",
+                                                                    lineColor: "#000",
+                                                                    width: 2,
+                                                                    height: 100,
+                                                                    displayValue: true
+                                                                });
+                                                            });
+                                                        </script>
+                                                    </div>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+                                            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.3/dist/JsBarcode.all.min.js"></script>
+                                            <h:outputScript library="primefaces" name="jquery/jquery.js" target="head"/>
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6" >
+                                    <div class="w-100">
+                                        <div class="flex-grow-1">
+                                            <p:dataTable value="#{opdBillController.bills}" var="b" >
+                                                <p:column headerText="Bill No" >
+                                                    <h:outputText value="#{b.id}" ></h:outputText>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

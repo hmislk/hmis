@@ -50,7 +50,6 @@ import com.divudi.entity.Person;
 import com.divudi.entity.Staff;
 import com.divudi.entity.WebUser;
 import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BatchBillFacade;
 import com.divudi.facade.BillComponentFacade;
 import com.divudi.facade.BillFacade;
 import com.divudi.facade.BillFeeFacade;
@@ -134,8 +133,6 @@ public class CollectingCentreBillController implements Serializable {
     ChannelBillController channelBillController;
     @EJB
     StaffBean staffBean;
-    @EJB
-    private BatchBillFacade batchBillFacade;
     /**
      * Properties
      */
@@ -246,30 +243,30 @@ public class CollectingCentreBillController implements Serializable {
         this.selectedBills = selectedBills;
     }
 
-    public void calculateSelectedBillTotals() {
-        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
-        grosTotal = bt.getGrossTotal();
-        netTotal = bt.getNetTotal();
-        discount = bt.getDiscount();
-        vat = bt.getVat();
-        vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
-    }
+//    public void calculateSelectedBillTotals() {
+//        BillListWithTotals bt = billEjb.calculateBillTotals(selectedBills);
+//        grosTotal = bt.getGrossTotal();
+//        netTotal = bt.getNetTotal();
+//        discount = bt.getDiscount();
+//        vat = bt.getVat();
+//        vatPlusNetTotal = bt.getVat() + bt.getNetTotal();
+//    }
 
-    public void clear() {
-        opdBill = new BilledBill();
-        printPreview = false;
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTableByKeywordToPayBills();
-    }
+//    public void clear() {
+//        opdBill = new BilledBill();
+//        printPreview = false;
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTableByKeywordToPayBills();
+//    }
 
-    public void clearPharmacy() {
-        opdBill = new BilledBill();
-        printPreview = false;
-        opdPaymentCredit = 0.0;
-        comment = null;
-        searchController.createTablePharmacyCreditToPayBills();
-    }
+//    public void clearPharmacy() {
+//        opdBill = new BilledBill();
+//        printPreview = false;
+//        opdPaymentCredit = 0.0;
+//        comment = null;
+//        searchController.createTablePharmacyCreditToPayBills();
+//    }
 
     public void saveBillOPDCredit() {
 
@@ -319,12 +316,12 @@ public class CollectingCentreBillController implements Serializable {
         Payment p = createPayment(temp, getPaymentMethod());
 
         String sql = "Select bi From BillItem bi where bi.retired=false and bi.bill.id=" + opdBill.getId();
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql);
 
         for (BillItem bi : billItems) {
             sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 
-            List<BillFee> billFees = getBillFeeFacade().findBySQL(sql);
+            List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
 
             calculateBillfeePayments(billFees, p);
         }
@@ -419,7 +416,7 @@ public class CollectingCentreBillController implements Serializable {
 //        this.recurseCount = recurseCount;
 //    }
     public boolean findByFilter(String property, String value) {
-        String sql = "Select b From Bill b where b.retired=false and upper(b." + property + ") like '%" + value.toUpperCase() + " %'";
+        String sql = "Select b From Bill b where b.retired=false and (b." + property + ") like '%" + value.toUpperCase() + " %'";
         Bill b = getBillFacade().findFirstByJpql(sql);
         //System.err.println("SQL " + sql);
         //System.err.println("Bill " + b);
@@ -935,12 +932,12 @@ public class CollectingCentreBillController implements Serializable {
                 + " where b.retired = false "
                 + " and b.billType=:bt "
                 + " and b.institution=:ins "
-                + " and upper(b.referralNumber) =:rid ";
+                + " and (b.referralNumber) =:rid ";
         m.put("rid", referralId.toUpperCase());
         m.put("bt", BillType.CollectingCentreBill);
         m.put("ins", ins);
-        List<Bill> tempBills = getFacade().findBySQL(jpql, m);
-//        Bill b = getFacade().findFirstBySQL(jpql, m);
+        List<Bill> tempBills = getFacade().findByJpql(jpql, m);
+//        Bill b = getFacade().findFirstByJpql(jpql, m);
 //        //// // System.out.println(" Error find Number CheckTime 3 = " + new Date());
         if (tempBills == null || tempBills.isEmpty()) {
             return false;
@@ -1379,7 +1376,6 @@ public class CollectingCentreBillController implements Serializable {
             if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
-                        System.err.println("in");
                         //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
                         //// // System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
                         double d = (bf.getFeeValue() - bf.getSettleValue());
@@ -1388,7 +1384,6 @@ public class CollectingCentreBillController implements Serializable {
                         getBillFeeFacade().edit(bf);
                         reminingCashPaid -= d;
                     } else {
-                        System.err.println("IN");
                         bf.setSettleValue(bf.getSettleValue() + reminingCashPaid);
                         setBillFeePaymentAndPayment(reminingCashPaid, bf, p);
                         getBillFeeFacade().edit(bf);
@@ -1739,14 +1734,6 @@ public class CollectingCentreBillController implements Serializable {
 
     }
 
-    public BatchBillFacade getBatchBillFacade() {
-        return batchBillFacade;
-    }
-
-    public void setBatchBillFacade(BatchBillFacade batchBillFacade) {
-        this.batchBillFacade = batchBillFacade;
-    }
-
     public BillSearch getBillSearch() {
         return billSearch;
     }
@@ -1808,13 +1795,13 @@ public class CollectingCentreBillController implements Serializable {
 
         sql = "select p from BilledBill p where p.retired=false and "
                 + "p.cancelled=false and p.refunded=false and p.billType=:btp "
-                + " and (upper(p.patient.person.name)  "
-                + "like :q or upper(p.insId)  "
+                + " and ((p.patient.person.name)  "
+                + "like :q or (p.insId)  "
                 + "like :q) order by p.insId";
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
-        suggestions = getFacade().findBySQL(sql, hm);
+        suggestions = getFacade().findByJpql(sql, hm);
 
         return suggestions;
 

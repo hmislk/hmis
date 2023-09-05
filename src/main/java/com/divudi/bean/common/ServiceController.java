@@ -131,7 +131,7 @@ public class ServiceController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -143,27 +143,27 @@ public class ServiceController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<Service>();
         } else {
-            sql = "select c from Service c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            sql = "select c from Service c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
 
     public List<Service> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Service c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Service c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
 
     public List<Service> getRetiredSelectedItems() {
         if (selectRetiredText.trim().equals("")) {
-            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true order by c.name");
+            selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true order by c.name");
         } else {
-            selectedRetiredItems = getFacade().findBySQL("select c from Service c where c.retired=true and upper(c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
+            selectedRetiredItems = getFacade().findByJpql("select c from Service c where c.retired=true and (c.name) like '%" + getSelectRetiredText().toUpperCase() + "%' order by c.name");
         }
         return selectedRetiredItems;
     }
@@ -184,30 +184,6 @@ public class ServiceController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public void correctIx() {
-        List<Service> allItems = getEjbFacade().findAll();
-        for (Service i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Service> allItems = getEjbFacade().findAll();
-        for (Service i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
-
     public String getBulkText() {
 
         return bulkText;
@@ -218,9 +194,9 @@ public class ServiceController implements Serializable {
     }
 
     public List<Service> completeItem(String qry) {
-        List<Service> completeItems = getFacade().findBySQL("select c from Item c "
+        List<Service> completeItems = getFacade().findByJpql("select c from Item c "
                 + " where ( type(c) = Service or type(c) = Packege ) "
-                + " and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%'"
+                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
                 + "  order by c.name");
         return completeItems;
     }
@@ -434,7 +410,7 @@ public class ServiceController implements Serializable {
         HashMap hash = new HashMap();
         String sql = "select c from ItemFee c where c.retired = false and type(c.item) = :ser order by c.item.name";
         hash.put("ser", Service.class);
-        temp = getItemFeeFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
 
         if (temp == null) {
             return new ArrayList<ItemFee>();
@@ -453,7 +429,7 @@ public class ServiceController implements Serializable {
 
             String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
 
-            si.setItemFees(getItemFeeFacade().findBySQL(sql));
+            si.setItemFees(getItemFeeFacade().findByJpql(sql));
 
             temp.add(si);
         }
@@ -482,7 +458,7 @@ public class ServiceController implements Serializable {
 
     public void listDeletedServices() {
         String sql = "select c from Service c where c.retired=true order by c.category.name,c.department.name";
-        deletedServices = getFacade().findBySQL(sql);
+        deletedServices = getFacade().findByJpql(sql);
         if (deletedServices == null) {
             deletedServices = new ArrayList<>();
         }
@@ -509,7 +485,7 @@ public class ServiceController implements Serializable {
 
     public void fillItems() {
         String sql = "select c from Service c where c.retired=false order by c.category.name,c.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
         for (Service i : items) {
             List<ItemFee> tmp = getFees(i);
             for (ItemFee itf : tmp) {
@@ -526,10 +502,10 @@ public class ServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from Service c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from Service c where c.retired=false and upper(c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from Service c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
 
         if (items == null) {
             items = new ArrayList<Service>();
@@ -543,7 +519,7 @@ public class ServiceController implements Serializable {
             sql = "select c from Service c where c.retired=false order by c.category.name,c.name";
 
             //////// // System.out.println(sql);
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
 
             for (Service i : items) {
 
@@ -571,7 +547,7 @@ public class ServiceController implements Serializable {
     public List<ItemFee> getFees(Item i) {
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
 
-        return getItemFeeFacade().findBySQL(sql);
+        return getItemFeeFacade().findByJpql(sql);
     }
 
     public SpecialityFacade getSpecialityFacade() {
@@ -696,48 +672,6 @@ public class ServiceController implements Serializable {
         }
     }
 
-    @FacesConverter("serv")
-    public static class ServiceConverter implements Converter {
-
-        public ServiceConverter() {
-        }
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "serviceController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Service) {
-                Service o = (Service) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + ServiceController.class.getName());
-            }
-        }
-    }
 
     public CommonController getCommonController() {
         return commonController;

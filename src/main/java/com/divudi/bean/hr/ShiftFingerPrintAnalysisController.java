@@ -307,7 +307,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 //        HashMap hm = new HashMap();
 //        hm.put("stf", staffShift);
 //
-//        return (AdditionalForm) formFacade.findBySQL(sql, hm);
+//        return (AdditionalForm) formFacade.findByJpql(sql, hm);
 //    }
     private void fetchTimeFromAddiationalFrom(StaffShift ss, FingerPrintRecord fingerPrintRecordIn, FingerPrintRecord fingerPrintRecordOut, Set<FingerPrintRecord> fingerPrintRecords, HrForm additionalForm) {
 
@@ -623,7 +623,7 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("stf", staffShift);
-        List<Form> list = formFacade.findBySQL(sql, hm);
+        List<Form> list = formFacade.findByJpql(sql, hm);
 
         if (list == null) {
             return null;
@@ -635,7 +635,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
     }
 
     private void setShiftTableData(StaffShift ss) {
-        System.err.println("******** " + ss.getShift().getName() + ":::" + ss.getStaff().getPerson().getName());
         fetchAndSetStaffLeave(ss);
         fetchAndSetDayType(ss);
 
@@ -686,7 +685,6 @@ public class ShiftFingerPrintAnalysisController implements Serializable {
             list.add(fingerPrintRecordOut);
         }
 
-        System.err.println("2 " + fingerPrintRecordIn + " : " + fingerPrintRecordOut);
 
         FingerPrintRecord fpr = null;
         if (ss.getStartRecord() == null) {

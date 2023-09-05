@@ -469,7 +469,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
         temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
         int c = 0;
@@ -502,7 +502,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("bType1", BillType.OpdBill);
         temMap.put("bType2", BillType.InwardBill);
         temMap.put("ins", getSessionController().getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     private long getCount(Bill bill, Machine m, List<BillType> bts) {
@@ -517,7 +517,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bts", bts);
         temMap.put("ins", institution);
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -587,7 +587,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bts", bts);
         temMap.put("ins", institution);
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -618,7 +618,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCollectingIns());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -634,7 +634,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCreditCompany());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -658,7 +658,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("itm", item);
         temMap.put("billClass", bill.getClass());
         temMap.put("bTypes", Arrays.asList(bts));
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -713,7 +713,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -729,7 +729,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCollectingIns());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -878,7 +878,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -893,7 +893,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("ixtype", Investigation.class);
         temMap.put("ins", getSessionController().getInstitution());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return investigations;
     }
 
@@ -908,7 +908,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCollectingIns());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -925,7 +925,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.LabBill);
         temMap.put("col", getCreditCompany());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -949,7 +949,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ixtype", Investigation.class);
         temMap.put("bTypes", Arrays.asList(bts));
 
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return investigations;
     }
@@ -1017,7 +1017,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("ii", w);
 
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 
     }
@@ -1036,7 +1036,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("itm", w);
-        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         t.setBillItems(temps);
 
     }
@@ -1320,12 +1320,10 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
                 lastMachine = m;
                 row.setMachine(m);
                 row.setCountAndTotal(count, bt, classType, tot);
-                System.err.println("**1**");
                 //// // System.out.println("m.getName() = " + m.getName());
                 //// // System.out.println("bt = " + bt);
                 continue;
             }
-            System.err.println("*****");
             //// // System.out.println("m.getName() = " + m.getName());
             //// // System.out.println("bt = " + bt);
             //// // System.out.println("lastMachine.getName() = " + lastMachine.getName());
@@ -1548,7 +1546,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
-        investigations = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("investigations = " + investigations);
 
         return investigations;
@@ -1569,7 +1567,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //        temMap.put("ixtype", Investigation.class);
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", institution);
-        machines = machineFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        machines = machineFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("investigations = " + machines);
 
         return machines;
@@ -1590,7 +1588,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //        temMap.put("ixtype", Investigation.class);
         temMap.put("bts", Arrays.asList(bts));
         temMap.put("ins", institution);
-        machines = machineFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        machines = machineFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("investigations = " + machines);
 
         return machines;
@@ -1611,7 +1609,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", institution);
         temMap.put("ma", ma);
-        t = itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        t = itemFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return t;
     }
 
@@ -1630,7 +1628,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("bts", Arrays.asList(bts));
         temMap.put("ins", institution);
         temMap.put("ma", ma);
-        t = itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        t = itemFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return t;
     }
 

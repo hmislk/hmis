@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/emr/admin/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form  >
+
+                <p:focus id="selectFocus" context="gpSelect" />
+                <p:focus id="detailFocus" context="gpDetail" />
+                <p:panel header="Manage Vocabularies" >
+                    <div class="row" >
+                        <div class="col-md-5" >
+                            <h:panelGroup id="gpSelect" >
+                                <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
+                                    <p:commandButton id="btnAdd" 
+                                                     value="Add" 
+                                                     process="btnAdd"
+                                                     update="lstSelect txtName txtDes detailFocus"
+                                                     action="#{vocabularyController.prepareAdd()}" 
+                                                     class="w-100" >
+                                    </p:commandButton>
+                                    <p:commandButton id="btnDelete"
+                                                     onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                                 return false;" 
+                                                     class="w-100"
+                                                     ajax="false"
+                                                     action="#{vocabularyController.delete()}"  
+                                                     value="Delete"  >
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        value="Download as Excel" 
+                                        class="w-100"
+                                        ajax="false"
+                                        action="#{vocabularyController.downloadAsExcel}" />
+                                </h:panelGrid>
+
+                                <p:selectOneListbox  id="lstSelect"  
+                                                     filter="true"
+                                                     scrollHeight="500"
+                                                     filterMatchMode="contains"
+                                                     class="w-100 my-1"
+                                                     value="#{vocabularyController.current}" style="min-width: 223px">
+                                    <f:selectItems  value="#{vocabularyController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                    <f:ajax render="gpDetail" execute="lstSelect" >
+                                    </f:ajax>
+                                </p:selectOneListbox>
+
+                            </h:panelGroup>
+
+                        </div>
+                        <div class="col-md-7" >
+                            <h:panelGrid id="gpDetail" columns="1" class="w-100">
+                                <p:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                    <p:outputLabel id="lblName" value="Name"></p:outputLabel>
+                                    <p:inputText 
+                                        required="true"
+                                        autocomplete="off" 
+                                        id="txtName" 
+                                        class="w-100" 
+                                        value="#{vocabularyController.current.name}"  ></p:inputText>
+                                    <p:outputLabel id="lblDes" value="Descreption" ></p:outputLabel>
+                                    <p:inputTextarea id="txtDes"  
+                                                     class="w-100"  
+                                                     value="#{vocabularyController.current.description}"  >
+                                    </p:inputTextarea>
+                                </p:panelGrid>
+                                <h:panelGrid id="gpDetailButtons" columns="2">
+                                    <p:commandButton id="btnSave" 
+                                                     value="Save" 
+                                                     process="btnSave txtName txtDes"
+                                                     update="lstSelect msg selectFocus"
+                                                     action="#{vocabularyController.saveSelected()}" class="w-100">
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnSave"/>
+                                </h:panelGrid>
+                            </h:panelGrid>
+                        </div>
+                    </div>
+                    <div class="row" >
+                        <div class="col-md-12" >
+                            <p:growl id="msg"/>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+                </p:panel>
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

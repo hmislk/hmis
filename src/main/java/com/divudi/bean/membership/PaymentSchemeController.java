@@ -145,10 +145,10 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PaymentScheme c"
+        selectedItems = getFacade().findByJpql("select c from PaymentScheme c"
                 + " where c.retired=false "
                 + " and c.membershipScheme is null "
-                + " and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' "
+                + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
                 + " order by c.name");
         return selectedItems;
     }
@@ -299,7 +299,7 @@ public class PaymentSchemeController implements Serializable {
                 + " where  i.retired=false "
                 //+ " and i.membershipScheme is null "
                 + " order by i.orderNo, i.name";
-        items = getFacade().findBySQL(temSql);
+        items = getFacade().findByJpql(temSql);
     }
 
     public List<PaymentScheme> getPaymentSchemesForChannel() {
@@ -331,7 +331,7 @@ public class PaymentSchemeController implements Serializable {
 
         temSql += " order by i.orderNo, i.name";
 
-        return getFacade().findBySQL(temSql);
+        return getFacade().findByJpql(temSql);
     }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {
@@ -339,10 +339,10 @@ public class PaymentSchemeController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "select c from PaymentScheme c "
                 + " where c.retired=false "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -356,10 +356,10 @@ public class PaymentSchemeController implements Serializable {
         String sql = "select c from PaymentScheme c "
                 + " where c.retired=false "
                 + " and c.validForChanneling=true "
-                + " and upper(c.name) like :q "
+                + " and (c.name) like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        c = getFacade().findBySQL(sql, hm);
+        c = getFacade().findByJpql(sql, hm);
 
         if (c == null) {
             c = new ArrayList<>();
@@ -378,7 +378,7 @@ public class PaymentSchemeController implements Serializable {
         hm.put("mem", membershipScheme);
         hm.put("pay", paymentScheme);
 
-        allowedPaymentMethods = getAllowedPaymentMethodFacade().findBySQL(temSql, hm);
+        allowedPaymentMethods = getAllowedPaymentMethodFacade().findByJpql(temSql, hm);
     }
 
     public List<AllowedPaymentMethod> getAllowedPaymentMethods() {

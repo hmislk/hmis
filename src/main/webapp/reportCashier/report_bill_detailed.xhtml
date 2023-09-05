@@ -78,7 +78,7 @@
                         </p:calendar>
 
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                         value="#{commonReport.webUser}" ></p:autoComplete>

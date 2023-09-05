@@ -9,9 +9,9 @@
 
     <body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/lab/administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form id="form">
 
                     <p:panel header="Manage Investigation Report Items" >
@@ -77,7 +77,8 @@
 
 
                                 <p:commandButton id="btnMatch" value="Make All to Match Investigation" 
-                                                 ajax="false" action="#{investigationItemController.makeAllIxItemsToMachIxDetails}">
+                                                 ajax="false" 
+                                                 action="#{investigationItemController.makeAllIxItemsToMachIxDetails}">
                                 </p:commandButton>
                                 
                                 

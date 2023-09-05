@@ -33,7 +33,7 @@
                                                 <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
                                             </p:inputText>
 
-                                            <p:selectOneListbox converter="stfcon"   id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
+                                            <p:selectOneListbox    id="lstSelect"   value="#{staffController.current}" style="min-width: 223px; height: 300px;">
                                                 <f:selectItems  value="#{staffController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.person.name}(#{myItem.code})" ></f:selectItems>
                                                 <p:ajax event="change" process="lstSelect" update="gpDetail panelPrint" listener="#{staffController.changeStaff()}"/>                                        
                                             </p:selectOneListbox>
@@ -345,12 +345,6 @@
                                                     </p:outputLabel>
                                                     <p:separator/>
                                                     <p:separator/>
-                                                    <p:outputLabel  value="Editer" ></p:outputLabel>
-                                                    <p:outputLabel value="#{staffController.current.person.editer.webUserPerson.name}"  />
-                                                    <p:outputLabel  value="Created At" ></p:outputLabel>
-                                                    <p:outputLabel value="#{staffController.current.person.editedAt}" >
-                                                        <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
-                                                    </p:outputLabel>
                                                 </p:panelGrid>
                                             </p:tab>
                                         </p:tabView>

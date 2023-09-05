@@ -126,6 +126,7 @@ public enum Privileges {
     LabItems,
     LabItemFeeUpadate,
     LabItemFeeDelete,
+    LabPatientDetailsEdit,
     LabLists,
     LabSetUp,
     LabInwardBilling,
@@ -153,6 +154,7 @@ public enum Privileges {
     PharmacyOrderApproval,
     PharmacyOrderCancellation,
     PharmacySale,
+    PharmacySaleWithoutStock,
     PharmacySaleReprint,
     PharmacySaleCancel,
     PharmacySaleReturn,
@@ -380,7 +382,16 @@ public enum Privileges {
     //Administration
     SearchAll,
     ChangePreferece,
-    SendBulkSMS;
+    SendBulkSMS,
+    ClinicalAdministrationEditLetter,
+    ClinicalPatientAdd,
+    ClinicalPatientEdit,
+    ClinicalPatientCommentsView,
+    ClinicalPatientCommentsEdit,
+    ClinicalPatientNameChange,
+    ClinicalMembershipAdd,
+    ClinicalMembershipEdit,
+    ClinicalPatientPhoneNumberEdit,;
 
     public String getLabel() {
         switch (this) {
@@ -393,6 +404,30 @@ public enum Privileges {
             default:
                 return this.toString();
 
+        }
+    }
+
+    public boolean isFromDatabase() {
+        switch (this) {
+            case Opd:
+            case Pharmacy:
+            case Lab:
+            case Channelling:
+            case Admin:
+            case Theatre:
+            case Store:
+            case Hr:
+            case Inward:
+            case Payment:
+            case Reports:
+            case Clinical:
+            case MemberShip:
+            case Search:
+            case User:
+                
+                return false;
+            default:
+                return true;
         }
     }
 

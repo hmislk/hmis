@@ -203,7 +203,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         m.put("refBtp1", BillType.InwardBill);
         m.put("refBtp2", BillType.InwardProfessional);
 
-        billItems1 = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems1 = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPaying = 0.0;
         if (billItems1 == null) {
@@ -281,7 +281,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         m.put("refBtp1", BillType.InwardBill);
         m.put("refBtp2", BillType.InwardProfessional);
 
-        bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPaying = 0.0;
         if (bills == null) {
@@ -342,7 +342,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         m.put("refBtp1", BillType.InwardBill);
         m.put("refBtp2", BillType.InwardProfessional);
 
-        billsCan = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billsCan = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPayingCan = 0.0;
         if (billsCan == null) {
@@ -480,7 +480,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         temMap.put("refType", BillType.InwardBill);
         temMap.put("refType2", BillType.InwardProfessional);
 
-        docPayDischarged = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        docPayDischarged = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("docPayDischarged = " + docPayDischarged);
         return docPayDischarged;
     }
@@ -503,7 +503,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         temMap.put("refType", BillType.InwardBill);
         temMap.put("refType2", BillType.InwardProfessional);
 
-        docPayNotDischarged = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        docPayNotDischarged = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         ////// // System.out.println("docPayNotDischarged = " + docPayNotDischarged);
         return docPayNotDischarged;
 
@@ -558,7 +558,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
 
-        billFeeDueDischarged = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        billFeeDueDischarged = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return billFeeDueDischarged;
 
@@ -586,7 +586,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
 
-        billFeeDueNotDischarged = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        billFeeDueNotDischarged = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return billFeeDueNotDischarged;
 
@@ -616,32 +616,32 @@ public class InwardStaffPaymentBillController implements Serializable {
 ////                + " and bf.billItem.paidForBillFee.bill.patientEncounter.dateOfDischarge between :fromDate and :toDate ";
 //
 //        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-//            sql += " and  (upper(bf.bill.patient.person.name) like :patientName )";
+//            sql += " and  ((bf.bill.patient.person.name) like :patientName )";
 //            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-//            sql += " and  (upper(bf.bill.insId) like :billNo )";
+//            sql += " and  ((bf.bill.insId) like :billNo )";
 //            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-//            sql += " and  (upper(bf.feeValue) like :total )";
+//            sql += " and  ((bf.feeValue) like :total )";
 //            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
-//            sql += " and  (upper(bf.staff.speciality.name) like :special )";
+//            sql += " and  ((bf.staff.speciality.name) like :special )";
 //            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-//            sql += " and  (upper(bf.staff.person.name) like :staff )";
+//            sql += " and  ((bf.staff.person.name) like :staff )";
 //            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-//            sql += " and  (upper(bf.billItem.item.name) like :staff )";
+//            sql += " and  ((bf.billItem.item.name) like :staff )";
 //            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
 //        }
 //
@@ -651,7 +651,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 //        temMap.put("fromDate", getFromDate());
 //        temMap.put("btp", BillType.InwardBill);
 //
-//        bhtBillItemList = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        bhtBillItemList = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        return bhtBillItemList;
 //
@@ -675,32 +675,32 @@ public class InwardStaffPaymentBillController implements Serializable {
 ////            sql += " and bf.bill.createdAt between :fromDate and :toDate";
 ////        }
 //        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-//            sql += " and  (upper(bf.bill.patient.person.name) like :patientName )";
+//            sql += " and  ((bf.bill.patient.person.name) like :patientName )";
 //            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-//            sql += " and  (upper(bf.bill.insId) like :billNo )";
+//            sql += " and  ((bf.bill.insId) like :billNo )";
 //            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
-//            sql += " and  (upper(bf.feeValue) like :total )";
+//            sql += " and  ((bf.feeValue) like :total )";
 //            temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getSpeciality() != null && !getSearchKeyword().getSpeciality().trim().equals("")) {
-//            sql += " and  (upper(bf.staff.speciality.name) like :special )";
+//            sql += " and  ((bf.staff.speciality.name) like :special )";
 //            temMap.put("special", "%" + getSearchKeyword().getSpeciality().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getStaffName() != null && !getSearchKeyword().getStaffName().trim().equals("")) {
-//            sql += " and  (upper(bf.staff.person.name) like :staff )";
+//            sql += " and  ((bf.staff.person.name) like :staff )";
 //            temMap.put("staff", "%" + getSearchKeyword().getStaffName().trim().toUpperCase() + "%");
 //        }
 //
 //        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-//            sql += " and  (upper(bf.billItem.item.name) like :staff )";
+//            sql += " and  ((bf.billItem.item.name) like :staff )";
 //            temMap.put("staff", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
 //        }
 //
@@ -710,7 +710,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 //        temMap.put("fromDate", getFromDate());
 //        temMap.put("btp", BillType.InwardBill);
 //
-//        bhtBillItemList = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        bhtBillItemList = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        return bhtBillItemList;
 //
@@ -781,7 +781,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-            billComponents = getBillComponentFacade().findBySQL(sql);
+            billComponents = getBillComponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
@@ -794,7 +794,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         if (getCurrent() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<>();
                 }
@@ -856,12 +856,12 @@ public class InwardStaffPaymentBillController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (speciality != null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //   ////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -875,11 +875,11 @@ public class InwardStaffPaymentBillController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getReferringDoctorSpeciality() != null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
-                suggestions = getStaffFacade().findBySQL(sql, m);
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality=:rd order by p.person.name";
+                suggestions = getStaffFacade().findByJpql(sql, m);
             } else {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
-                suggestions = getStaffFacade().findBySQL(sql);
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                suggestions = getStaffFacade().findByJpql(sql);
             }
         }
         return suggestions;
@@ -925,7 +925,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         h.put("stf", currentStaff);
         h.put("btp", BillType.InwardBill);
         h.put("btp2", BillType.InwardProfessional);
-        dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
+        dueBillFees = getBillFeeFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
         List<BillFee> removeingBillFees = new ArrayList<>();
         for (BillFee bf : dueBillFees) {
             h = new HashMap();
@@ -935,7 +935,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                     + " and bi.bill.billType=:btp "
 //                    + " and bi.bill.toStaff=:stf "
                     + " and bi.referanceBillItem.id=" + bf.getBillItem().getId();
-            BillItem rbi = getBillItemFacade().findFirstBySQL(sql,h);
+            BillItem rbi = getBillItemFacade().findFirstByJpql(sql,h);
 
             if (rbi != null) {
                 removeingBillFees.add(bf);
@@ -1251,7 +1251,7 @@ public class InwardStaffPaymentBillController implements Serializable {
     public List<BillItem> getBillItems() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-            billItems = getBillItemFacade().findBySQL(sql);
+            billItems = getBillItemFacade().findByJpql(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }

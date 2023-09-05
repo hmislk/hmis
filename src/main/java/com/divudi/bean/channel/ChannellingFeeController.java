@@ -105,14 +105,14 @@ public class ChannellingFeeController implements Serializable {
         }
     }
 
-    public SessionNumberGenerator saveSessionNumber() {
-        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
-        sessionNumberGenerator.setSpeciality(speciality);
-        sessionNumberGenerator.setStaff(doctor);
-        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
-        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
-        return sessionNumberGenerator;
-    }
+//    public SessionNumberGenerator saveSessionNumber() {
+//        SessionNumberGenerator sessionNumberGenerator = new SessionNumberGenerator();
+//        sessionNumberGenerator.setSpeciality(speciality);
+//        sessionNumberGenerator.setStaff(doctor);
+//        sessionNumberGenerator.setName(doctor.getPerson().getName() + " " + serviceSession.getOriginatingSession().getName());
+//        sessionNumberGeneratorFacade.create(sessionNumberGenerator);
+//        return sessionNumberGenerator;
+//    }
 
     public void createAllFeesForServiceSession() {
         createAllFeesForServiceSessionWithoutScanning();
@@ -186,7 +186,7 @@ public class ChannellingFeeController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins order by d.name";
             Map m = new HashMap();
             m.put("ins", getFee().getInstitution());
-            departments = getDepartmentFacade().findBySQL(sql, m);
+            departments = getDepartmentFacade().findByJpql(sql, m);
         }
         return departments;
     }
@@ -199,12 +199,12 @@ public class ChannellingFeeController implements Serializable {
             Map m = new HashMap();
             m.put("qry", "%" + query.toUpperCase() + "%");
             if (getFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like :qry or upper(p.code) like :qry ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like :qry or (p.code) like :qry ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and (upper(p.person.name) like :qry or  upper(p.code) like :qry) order by p.person.name";
+                sql = "select p from Staff p where p.speciality=:spe and p.retired=false and ((p.person.name) like :qry or  (p.code) like :qry) order by p.person.name";
                 m.put("spe", getFee().getSpeciality());
             }
-            staffSuggestions = getStaffFacade().findBySQL(sql, m);
+            staffSuggestions = getStaffFacade().findByJpql(sql, m);
 
         }
         return staffSuggestions;
@@ -220,28 +220,28 @@ public class ChannellingFeeController implements Serializable {
             if (speciality == null) {
                 sql = "select p from Staff p "
                         + " where p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or upper(p.code) like :qry ) "
+                        + " and ((p.person.name) like :qry "
+                        + " or (p.code) like :qry ) "
                         + " order by p.person.name";
             } else {
                 sql = "select p from Staff p "
                         + " where p.speciality=:spe "
                         + " and p.retired=false "
-                        + " and (upper(p.person.name) like :qry "
-                        + " or  upper(p.code) like :qry) "
+                        + " and ((p.person.name) like :qry "
+                        + " or  (p.code) like :qry) "
                         + " order by p.person.name";
                 m.put("spe", speciality);
             }
-            doctors = getStaffFacade().findBySQL(sql, m);
+            doctors = getStaffFacade().findByJpql(sql, m);
         }
         return doctors;
     }
 
-    public void prepareAdd() {
-        ////// // System.out.println("prepairing to add");
-        fee = new ItemFee();
-        ////// // System.out.println("fee = " + fee);
-    }
+//    public void prepareAdd() {
+//        ////// // System.out.println("prepairing to add");
+//        fee = new ItemFee();
+//        ////// // System.out.println("fee = " + fee);
+//    }
 
     public void fillSessions() {
         String sql;
@@ -251,7 +251,7 @@ public class ChannellingFeeController implements Serializable {
                 + " and s.staff=:doc "
                 + " order by s.sessionWeekday, s.sessionAt";
         m.put("doc", doctor);
-        sessions = getServiceSessionFacade().findBySQL(sql, m);
+        sessions = getServiceSessionFacade().findByJpql(sql, m);
     }
 
     public void fillFees() {
@@ -262,7 +262,7 @@ public class ChannellingFeeController implements Serializable {
                 + " f.item=:ses "
                 + " order by f.id";
         m.put("ses", session);
-        fees = getItemFeeFacade().findBySQL(sql, m);
+        fees = getItemFeeFacade().findByJpql(sql, m);
     }
 
     public void saveCharge() {

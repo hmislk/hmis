@@ -67,7 +67,7 @@ public class DischargeController implements Serializable {
     private BillFacade billFacade;
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and c.discharged!=true and upper(c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or upper(c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
         return selectedItems;
     }
 
@@ -179,7 +179,7 @@ public class DischargeController implements Serializable {
         String sql = "SELECT pr FROM PatientRoom pr where pr.retired=false"
                 + " and pr.patientEncounter=:pe order by pr.createdAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -191,7 +191,7 @@ public class DischargeController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Admission i where i.retired=false and i.discharged=false order by i.bhtNo";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
             if (items == null) {
                 items = new ArrayList<Admission>();
             }
@@ -220,7 +220,7 @@ public class DischargeController implements Serializable {
         if (patientList == null) {
             String temSql;
             temSql = "SELECT i FROM Patient i where i.retired=false ";
-            patientList = getPatientFacade().findBySQL(temSql);
+            patientList = getPatientFacade().findByJpql(temSql);
         }
         return patientList;
     }

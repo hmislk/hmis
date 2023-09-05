@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Pharmacy Transfer Issue Summery Report" >
@@ -20,7 +20,7 @@
                             <h:outputLabel value="Transfer Issue From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>

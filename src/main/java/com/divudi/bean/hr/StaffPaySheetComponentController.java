@@ -99,7 +99,7 @@ public class StaffPaySheetComponentController implements Serializable {
 //        hm.put("tp", getCurrent().getPaysheetComponent());
 //        hm.put("st", getCurrent().getStaff());
 //        hm.put("cu", getCurrent().getToDate());
-//        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+//        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 //
 //        if (!tmp.isEmpty()) {
 //            UtilityController.addErrorMessage("There is already Component define for " + getCurrent().getStaff().getPerson().getNameWithTitle() + " for this date range u can edit or remove add new one ");
@@ -239,7 +239,7 @@ public class StaffPaySheetComponentController implements Serializable {
         }
 
         sql += " order by ss.staff.codeInterger";
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffPaysheetComponent> getItems() {
@@ -265,7 +265,7 @@ public class StaffPaySheetComponentController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
         hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
-        return getPaysheetComponentFacade().findBySQL(sql, hm);
+        return getPaysheetComponentFacade().findByJpql(sql, hm);
 
     }
 

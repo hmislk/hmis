@@ -88,7 +88,7 @@ public class RoomOccupancyController implements Serializable {
                 + " and pr.discharged=false "
                 + " order by pr.roomFacilityCharge.name";
 
-        patientRooms = getPatientRoomFacade().findBySQL(sql);
+        patientRooms = getPatientRoomFacade().findByJpql(sql);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Room Occupancy(/faces/inward/inward_room_occupancy.xhtml)");
 
@@ -104,7 +104,7 @@ public class RoomOccupancyController implements Serializable {
                 + " and rf.room.retired=false"
                 + " order by rf.name";
 
-        roomFacilityCharges = getRoomFacilityChargeFacade().findBySQL(sql);
+        roomFacilityCharges = getRoomFacilityChargeFacade().findByJpql(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Room Vacancy(/faces/inward/inward_room_occupancy.xhtml)");
     }
@@ -119,7 +119,7 @@ public class RoomOccupancyController implements Serializable {
                 + " and pr.discharged=false "
                 + " order by pr.roomFacilityCharge.name";
 
-        patientRooms = getPatientRoomFacade().findBySQL(sql);
+        patientRooms = getPatientRoomFacade().findByJpql(sql);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Room OccupancyAll( /faces/inward/inward_room_occupancy.xhtml)");
 

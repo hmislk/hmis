@@ -17,14 +17,14 @@
                     <p:panel header="Detailed BHT Issuing Bill Items" >
                         <h:panelGrid columns="2" >
                             <h:panelGrid columns="2" >
-                                <h:outputLabel value="Department" ></h:outputLabel>
+                                <p:outputLabel value="Department" ></p:outputLabel>
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                                 itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                value="#{mdInwardReportController.dept}" converter="departmentConverter" >
+                                                value="#{mdInwardReportController.dept}"  >
                                 </p:autoComplete>
-                                <h:outputLabel value="From" ></h:outputLabel>
+                                <p:outputLabel value="From" ></p:outputLabel>
                                 <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy" ></p:calendar>
-                                <h:outputLabel value="To" ></h:outputLabel>
+                                <p:outputLabel value="To" ></p:outputLabel>
                                 <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy" ></p:calendar>
                             </h:panelGrid>
 
@@ -34,8 +34,8 @@
                                 <p:commandButton value="Print" ajax="false" action="#"  >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
-                                    <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                                    <p:dataExporter type="xls" target="tbl" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>  
                             </p:panelGrid>
                         </h:panelGrid>
@@ -54,82 +54,82 @@
                                          rowsPerPageTemplate="20, 50, 100, 1000, 1500"
                                          >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Bht Issue Bill Item "/>
-                                    <h:outputLabel value="#{mdInwardReportController.dept.name}"/> 
+                                    <p:outputLabel value="Bht Issue Bill Item "/>
+                                    <p:outputLabel value="#{mdInwardReportController.dept.name}"/> 
 
-                                    <h:outputLabel value="From  "/>
-                                    <h:outputLabel value="#{mdInwardReportController.fromDate}">
+                                    <p:outputLabel value="From  "/>
+                                    <p:outputLabel value="#{mdInwardReportController.fromDate}">
                                         <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
-                                    </h:outputLabel>
-                                    <h:outputLabel value="-- To --"/>
-                                    <h:outputLabel value="#{mdInwardReportController.toDate}">
+                                    </p:outputLabel>
+                                    <p:outputLabel value="-- To --"/>
+                                    <p:outputLabel value="#{mdInwardReportController.toDate}">
                                         <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
-                                    </h:outputLabel>
+                                    </p:outputLabel>
 
                                 </f:facet>
 
                                 <p:column headerText="Bill No">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Bill No"/>
+                                        <p:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
+                                    <p:outputLabel value="#{i.bill.deptId}" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="BHT No">
                                     <f:facet name="header">
-                                        <h:outputLabel value="BHT No"/>
+                                        <p:outputLabel value="BHT No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.bill.patientEncounter.bhtNo}" ></h:outputLabel>
+                                    <p:outputLabel value="#{i.bill.patientEncounter.bhtNo}" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Date">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Date"/>
+                                        <p:outputLabel value="Date"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.bill.createdAt}"  >
+                                    <p:outputLabel value="#{i.bill.createdAt}"  >
                                         <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
-                                    </h:outputLabel>
+                                    </p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Item Descreption">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item Description"/>
+                                        <p:outputLabel value="Item Description"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.item.name}"  >                                      
-                                    </h:outputLabel>
+                                    <p:outputLabel value="#{i.item.name}"  >                                      
+                                    </p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Code">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Code"/>
+                                        <p:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <p:outputLabel value="#{i.item.code}" style="width: 100px!important;" ></p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Quantity" styleClass="averageNumericColumn">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Quantity"/>
+                                        <p:outputLabel value="Quantity"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
-                                    </h:outputLabel>
+                                    <p:outputLabel value="#{i.pharmaceuticalBillItem.qty}"  >
+                                    </p:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Cost Rate" styleClass="averageNumericColumn">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Cost Rate"/>
+                                        <p:outputLabel value="Cost Rate"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
+                                    <p:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>                                  
+                                    </p:outputLabel>                                  
                                 </p:column>
 
                                 <p:column headerText="Cost Value" styleClass="averageNumericColumn">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Cost Value"/>
+                                        <p:outputLabel value="Cost Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}"  >
+                                    <p:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>
+                                    </p:outputLabel>
 
                                 </p:column>
 
@@ -138,9 +138,9 @@
                                         <p:column colspan="7"/>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{mdInwardReportController.purchaseValue}" >
+                                                <p:outputLabel value="#{mdInwardReportController.purchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
+                                                </p:outputLabel>
                                             </f:facet>
                                         </p:column>                                        
                                     </p:row>

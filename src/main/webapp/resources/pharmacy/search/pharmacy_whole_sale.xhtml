@@ -20,7 +20,13 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
         </h:panelGrid>
-        <p:dataTable rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
+        
+          
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tbl" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
+        
+        <p:dataTable id="tbl" rowIndexVar="i"  value="#{searchController.bills}" var="bill" >
             <f:facet name="header">
                 <h:outputLabel value="Pharmacy Whole Sale Bill Search"/>
             </f:facet>

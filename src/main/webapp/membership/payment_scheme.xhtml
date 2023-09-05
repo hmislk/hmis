@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/admin_fees.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -18,17 +18,18 @@
 
 
 
-                <p:panel header="Manage Discount Scheme" >
-                    <h:panelGrid id ="gpVeda" columns="2" styleClass="alignTop">
-
-                        <h:panelGrid id="gpSelect" columns="1"  >
-                            <p:panel >
+                <p:panel header="Manage Discount Scheme" style="height: 1000px" >
+                    <h:panelGrid id ="gpVeda" columns="10" styleClass="alignTop">
+                        <div class="row"  style="height: 200px">
+                            <div class="col-md-7">
+                                <h:panelGrid id="gpSelect" columns="1"  >
+                            <p:panel style="width: 400px; height: 300px">
                                 <h:panelGrid id="gpSelectText" >
-                                    <h:selectOneListbox  id="lstSelect"   size="10" value="#{paymentSchemeController.current}" style="min-width: 223px">
+                                    <p:selectOneListbox  id="lstSelect"   class="w-100" scrollHeight="500" value="#{paymentSchemeController.current}" style="min-width: 350px">
                                         <f:selectItems  value="#{paymentSchemeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <f:ajax render="gpDetail" execute="lstSelect" >
                                         </f:ajax>
-                                    </h:selectOneListbox>
+                                    </p:selectOneListbox>
                                 </h:panelGrid>
                                 
                                 <h:panelGrid id="gpSelectButtons" columns="3"  >
@@ -45,24 +46,25 @@
                                 </h:panelGrid>
                             </p:panel>
                         </h:panelGrid  >
-
-                        <p:panel>
-                            <h:panelGrid id="gpDetail" columns="1">
+                            </div>
+                            <div class="col-md-5">
+                                <p:panel style="width: 600px;">
+                            <h:panelGrid id="gpDetail" columns="1" style="width: 700px;">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtName" value="#{paymentSchemeController.current.name}"  style="min-width: 300px"></h:inputText>
                                     <h:outputText id="lblPrintingName" value="Printing Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}"  ></h:inputText>
+                                    <h:inputText autocomplete="off" id="txtPrintingName" value="#{paymentSchemeController.current.printingName}"  style="min-width: 300px"></h:inputText>
                                     <h:outputText id="lblOrder" value="Order No" />
-                                    <h:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}"  />
+                                    <h:inputText autocomplete="off" id="txtOrder" value="#{paymentSchemeController.current.orderNo}" style="min-width: 300px" />
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Pharmacy" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" ></p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForPharmacy}" style="min-width: 300px"></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Billing" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" ></p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForBilledBills}" style="min-width: 300px"></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Cancellings and Refunds" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" ></p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForCrBills}" style="min-width: 300px"></p:selectBooleanCheckbox>
                                     <h:outputLabel rendered="#{paymentSchemeController.current!=null}"  value="Valid for Channeling" />
-                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}" ></p:selectBooleanCheckbox>
+                                    <p:selectBooleanCheckbox rendered="#{paymentSchemeController.current!=null}" value="#{paymentSchemeController.current.validForChanneling}" style="min-width: 300px"></p:selectBooleanCheckbox>
                                     <h:outputText value="Creater" ></h:outputText>
                                     <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
                                     <h:outputText value="Created At" ></h:outputText>
@@ -78,6 +80,11 @@
                                 </h:panelGrid>
                             </h:panelGrid>
                         </p:panel>
+                            </div>
+                        </div>
+                        
+
+                        
                     </h:panelGrid>
                 </p:panel>
             </h:form>

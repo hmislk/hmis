@@ -33,7 +33,7 @@
 
                         <h:outputLabel value="Doctor" ></h:outputLabel>
                         <p:autoComplete value="#{patientEncounterController.doctor}"
-                                        id="acStaff" converter="conDoc"
+                                        id="acStaff" 
                                         completeMethod="#{practiceBookingController.completeDoctorsOfSelectedSpeciality}"
                                         var="doc"
                                         itemLabel="#{doc.person.nameWithTitle}" itemValue="#{doc}"

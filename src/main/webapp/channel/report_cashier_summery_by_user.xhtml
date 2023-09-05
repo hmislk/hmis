@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"           
+                xmlns:p="http://primefaces.org/ui"       
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 >
@@ -28,7 +28,7 @@
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                         forceSelection="true"
                                         var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                         value="#{channelReportController.webUser}" ></p:autoComplete>

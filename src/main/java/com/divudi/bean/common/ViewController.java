@@ -17,6 +17,7 @@ import javax.inject.Named;
 public class ViewController  implements Serializable {
     
     private String previousPage;
+    private int manageFeeIndex;
 
     /**
      * Creates a new instance of ViewController
@@ -49,6 +50,14 @@ public class ViewController  implements Serializable {
             previousPage = "/index";
         }
         return previousPage;
+    }
+
+    public int getManageFeeIndex() {
+        return manageFeeIndex;
+    }
+
+    public void setManageFeeIndex(int manageFeeIndex) {
+        this.manageFeeIndex = manageFeeIndex;
     }
     
     

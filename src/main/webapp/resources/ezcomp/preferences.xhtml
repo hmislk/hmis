@@ -48,7 +48,8 @@
                 </p:row>
                 <p:row >
                     <p:column >
-                        <p:commandButton id="btnSave" ajax="false" value="Save" action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+                        <p:commandButton id="btnSave" ajax="false" value="Save" 
+                                         action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
                     </p:column>
                     <p:column >
                         <h:panelGroup>
@@ -72,6 +73,11 @@
                             <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
 
+                            <h:outputLabel value="Template Name" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.themeName}" />
+
+
                             <p:commandButton id="btnWeb" 
                                              ajax="false" 
                                              value="Save" 
@@ -86,7 +92,7 @@
                     <p:panel header="Pharmacy" >
                         <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Pharmacy Bill Footer" ></h:outputLabel>
-                            <p:inputTextarea value="#{sessionController.currentPreference.pharmacyBillFooter}" />
+                            <p:inputTextarea value="#{sessionController.currentPreference.pharmacyWholesaleBillTemplate}" />
                             <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -119,7 +125,7 @@
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.institutionRestrictedBilling}" ></h:selectBooleanCheckbox>
 
                             <h:outputLabel value="Print Labels for OPD Bills" ></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.printLabelForOPdBill}" ></h:selectBooleanCheckbox>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutReferralDetails}" ></h:selectBooleanCheckbox>
                             <h:outputLabel value="OPD Bill Paper" ></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.currentPreference.opdBillPaperType}" >
                                 <f:selectItem itemLabel="Please Select Paper Type" />
@@ -133,7 +139,7 @@
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
 
                             <h:outputLabel value="Opd Bill Without Logo"></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdPosBillWithoutLogo}"/>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.opdSettleWithoutCashTendered}"/>
 
                             <h:outputLabel value="Five Five Bill With Labels and Headings"></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
@@ -154,6 +160,7 @@
                             <h:panelGroup >
                                 <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
                                 Available Fields
+                                {id}<br/>
                                 {ins_id}<br/>
                                 {dept_id}<br/>
                                 {from_institution}<br/>
@@ -166,25 +173,25 @@
                                 {patient_address}<br/>
                                 {patient_phone}<br/>
                                 {patient_phn_number}<br/>
-                                {admission_number}
-                                {admission_date}
-
-                                {payment_method}
-                                {gross_total}
-                                {discount}
-                                {net_total}
-
+                                {admission_number}<br/>
+                                {admission_date}<br/>
+                                <br/>
+                                {payment_method}<br/>
+                                {gross_total}<br/>
+                                {discount}<br/>
+                                {net_total}<br/>
+                                <br/>
                                 {table_class}<br/>
                                 {table_style}<br/>
                                 {serial_class}<br/>
                                 {serial_style}<br/>
-
-                                {cancelled}
-                                {returned}
-
-                                {cashier_username}
-                                {bill_date}
-                                {bill_time}
+                                <br/>
+                                {cancelled}<br/>
+                                {returned}<br/>
+                                <br/>
+                                {cashier_username}<br/>
+                                {bill_date}<br/>
+                                {bill_time}<br/>
                             </h:panelGroup>
                             <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" />
 

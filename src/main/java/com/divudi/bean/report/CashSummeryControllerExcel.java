@@ -126,7 +126,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("bType", BillType.OpdBill);
         temMap.put("ins", getInstitution());
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -344,7 +344,7 @@ public class CashSummeryControllerExcel implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ins", getInstitution());
 
-        return getDepartmentFacade().findBySQL(sql, hm);
+        return getDepartmentFacade().findByJpql(sql, hm);
     }
 
     private double pharmacyTotal;
@@ -464,7 +464,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("type", PreBill.class);
         temMap.put("ins", getInstitution());
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return lstBills;
 
@@ -507,7 +507,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<BillFee> billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillFee> billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return billFees;
     }
@@ -541,7 +541,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ins", getInstitution());
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<BillsItems> getCreditCompanyCollection() {
@@ -563,7 +563,7 @@ public class CashSummeryControllerExcel implements Serializable {
             temMap.put("fromDate", getFromDate());
             temMap.put("toDate", getToDate());
             temMap.put("ins", getInstitution());
-            newB.setBillItems(getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP));
+            newB.setBillItems(getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP));
 
             billsItems.add(newB);
         }
@@ -630,7 +630,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("bTp", BillType.InwardPaymentBill);
         temMap.put("adm", admissionType);
         temMap.put("ins", getInstitution());
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public double getInwardProfTot(AdmissionType adt) {
@@ -645,7 +645,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("btp", BillType.InwardBill);
         temMap.put("admis", adt);
-        List<BillItem> tmp2 = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> tmp2 = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         for (BillItem b : tmp2) {
             tmp += b.getNetValue();
@@ -666,7 +666,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("btp", BillType.PaymentBill);
         temMap.put("ins", getInstitution());
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         Set<Department> depSet;
         depSet = new HashSet();
@@ -718,7 +718,7 @@ public class CashSummeryControllerExcel implements Serializable {
             temMap.put("fromDate", getFromDate());
             temMap.put("toDate", getToDate());
             temMap.put("ins", getInstitution());
-            nB.setBillItems(getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP));
+            nB.setBillItems(getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP));
 
             billsItems.add(nB);
         }
@@ -732,7 +732,7 @@ public class CashSummeryControllerExcel implements Serializable {
         h.put("bTp", BillType.CashRecieveBill);
         h.put("ins", getInstitution());
 
-        return getBillFacade().findBySQL(sql, h, TemporalType.DATE);
+        return getBillFacade().findByJpql(sql, h, TemporalType.DATE);
     }
 
     public Date getFromDate() {
@@ -775,7 +775,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
 
-        List<Department> tmp = getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Department> tmp = getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
     }
 
@@ -797,7 +797,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Category> tmp = getCategoryFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
 
     }
@@ -826,7 +826,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Category> tmp = getCategoryFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         return tmp;
 
     }
@@ -851,7 +851,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -876,7 +876,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -897,7 +897,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -936,7 +936,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("btp", BillType.OpdBill);
 
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -956,7 +956,7 @@ public class CashSummeryControllerExcel implements Serializable {
 //        temMap.put("pm2", PaymentMethod.Card);
 //        temMap.put("pm3", PaymentMethod.Cheque);
 //        temMap.put("bTp", BilledBill.class);
-//        List<BillItem> temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        for (BillItem b : temps) {
 //            billed++;
@@ -973,7 +973,7 @@ public class CashSummeryControllerExcel implements Serializable {
 //        temMap.put("pm2", PaymentMethod.Card);
 //        temMap.put("pm3", PaymentMethod.Cheque);
 //        temMap.put("bTp", CancelledBill.class);
-//        temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        for (BillItem b : temps) {
 //            cancelled++;
@@ -989,7 +989,7 @@ public class CashSummeryControllerExcel implements Serializable {
 //        temMap.put("pm2", PaymentMethod.Card);
 //        temMap.put("pm3", PaymentMethod.Cheque);
 //        temMap.put("bTp", RefundBill.class);
-//        temps = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+//        temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 //
 //        for (BillItem b : temps) {
 //            refunded++;
@@ -1217,7 +1217,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
         temMap.put("itm", getService());
-        List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -1251,7 +1251,7 @@ public class CashSummeryControllerExcel implements Serializable {
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
         temMap.put("itm", getService());
-        //     List<BillItem> tmp = getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        //     List<BillItem> tmp = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return getBillFeeFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 

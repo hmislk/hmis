@@ -146,7 +146,7 @@
                                         <h:outputLabel value="Department :" ></h:outputLabel>
                                         <p:autoComplete id="dep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.billSearch.department}" converter="departmentConverter"/>
+                                                        value="#{billSearch.billSearch.department}"/>
                                         <h:outputLabel value="Staff :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.staff.person.name}" ></h:outputLabel>
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
@@ -175,7 +175,7 @@
                                         <h:outputLabel value="To Department :" ></h:outputLabel>
                                         <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.billSearch.toDepartment}" converter="departmentConverter"/>
+                                                        value="#{billSearch.billSearch.toDepartment}"/>
                                         <h:outputLabel value="To Staff :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.toStaff.person.name}" ></h:outputLabel>
                                         <h:outputLabel value="From Institution :" ></h:outputLabel>
@@ -193,7 +193,7 @@
                                         <h:outputLabel value="From Department :" ></h:outputLabel>
                                         <p:autoComplete id="frmdep" completeMethod="#{departmentController.completeDept}" 
                                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                                        value="#{billSearch.billSearch.fromDepartment}" converter="departmentConverter"/>
+                                                        value="#{billSearch.billSearch.fromDepartment}"/>
                                         <h:outputLabel value="From Staff :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.fromStaff.person.name}" ></h:outputLabel>
                                         <h:outputLabel value="Company Name : " />  

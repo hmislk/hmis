@@ -78,7 +78,7 @@ public class SpecialityController implements Serializable {
                 jpql = "select s from Staff s where s.speciality=:sp";
                 m = new HashMap();
                 m.put("sp", s);
-                List<Staff> ss = getStaffFacade().findBySQL(jpql, m);
+                List<Staff> ss = getStaffFacade().findByJpql(jpql, m);
                 for (Staff st : ss) {
                     st.setSpeciality(ds);
                     getStaffFacade().edit(st);
@@ -108,7 +108,7 @@ public class SpecialityController implements Serializable {
                 jpql = "select s from Staff s where s.speciality=:sp";
                 m = new HashMap();
                 m.put("sp", s);
-                List<Staff> ss = getStaffFacade().findBySQL(jpql, m);
+                List<Staff> ss = getStaffFacade().findByJpql(jpql, m);
                 for (Staff st : ss) {
                     st.setSpeciality(ds);
                     getStaffFacade().edit(st);
@@ -126,10 +126,10 @@ public class SpecialityController implements Serializable {
         Map m = new HashMap();
         m.put("sc", DoctorSpeciality.class);
         sql = "select s from Speciality s where s.retired=false and type(s) <>:sc order by s.name";
-        speNoDoc = getFacade().findBySQL(sql, m);
+        speNoDoc = getFacade().findByJpql(sql, m);
 
         sql = "select s from Speciality s where s.retired=false and  type(s) =:sc order by s.name";
-        speDoc = getFacade().findBySQL(sql, m);
+        speDoc = getFacade().findByJpql(sql, m);
 
         specialities = new DualListModel<>(speNoDoc, speDoc);
 
@@ -137,22 +137,22 @@ public class SpecialityController implements Serializable {
     }
 
     public List<Speciality> completeSpeciality(String qry) {
-        selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
     
     public List<Speciality> completeDoctorSpeciality(String qry) {
         Map m=new HashMap();
         m.put("class", DoctorSpeciality.class);
-        selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and type(c)=:class and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name",m);
+        selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and type(c)=:class and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name",m);
         return selectedItems;
     }
 
     public List<Speciality> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Speciality c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Speciality c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
 
         return selectedItems;
@@ -249,7 +249,7 @@ public class SpecialityController implements Serializable {
             String temSql;
             temSql = "SELECT i FROM Speciality i where i.retired=false order by i.name";
             //////// // System.out.println("Sql for SpacilityController.getItems is " + temSql);
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }
@@ -271,46 +271,6 @@ public class SpecialityController implements Serializable {
      */
     @FacesConverter(forClass = Speciality.class)
     public static class SpecialityControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            SpecialityController controller = (SpecialityController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "specialityController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Speciality) {
-                Speciality o = (Speciality) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + SpecialityController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("specilityCon")
-    public static class SpecialityConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {

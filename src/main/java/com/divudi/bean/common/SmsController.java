@@ -9,6 +9,7 @@ import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.MessageType;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
 import com.divudi.facade.SmsFacade;
@@ -45,6 +46,9 @@ public class SmsController implements Serializable {
     @EJB
     SmsFacade smsFacade;
 
+    @EJB
+    SmsManagerEjb smsManager;
+
     @Inject
     SessionController sessionController;
     @Inject
@@ -55,6 +59,10 @@ public class SmsController implements Serializable {
 
     ReportKeyWord reportKeyWord;
 
+    private String number;
+    private String message;
+    private String messageOutput;
+
     /**
      * Creates a new instance of SmsController
      */
@@ -63,7 +71,7 @@ public class SmsController implements Serializable {
 
     public void sendSmsAwaitingToSendInDatabase() {
         String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
-        List<Sms> smses = getSmsFacade().findBySQL(j);
+        List<Sms> smses = getSmsFacade().findByJpql(j);
 //        if (false) {
 //            Sms e = new Sms();
 //            e.getSentSuccessfully();
@@ -140,7 +148,6 @@ public class SmsController implements Serializable {
         //// // System.out.println("number = " + number);
         //// // System.out.println("message = " + message);
         //// // System.out.println("username = " + username);
-
         Map m = new HashMap();
         m.put("userName", username);
         m.put("password", password);
@@ -164,7 +171,6 @@ public class SmsController implements Serializable {
         //// // System.out.println("number = " + number);
         //// // System.out.println("message = " + message);
         //// // System.out.println("username = " + username);
-
         Map m = new HashMap();
         m.put("userName", username);
         m.put("password", password);
@@ -215,6 +221,31 @@ public class SmsController implements Serializable {
 
     }
 
+    public void sendSmsForPatientReport() {
+        Date startTime = new Date();
+        Sms e = new Sms();
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setBill(null);
+        e.setPatientReport(null);
+        e.setPatientInvestigation(null);
+        e.setCreatedAt(new Date());
+        e.setCreater(sessionController.getLoggedUser());
+        e.setReceipientNumber(number);
+        e.setSendingMessage(message);
+        e.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        e.setInstitution(getSessionController().getInstitution());
+        e.setSentSuccessfully(false);
+        getSmsFacade().create(e);
+        smsManager.sendSms(e.getReceipientNumber(), e.getSendingMessage(),
+                e.getInstitution().getSmsSendingUsername(),
+                e.getInstitution().getSmsSendingPassword(),
+                e.getInstitution().getSmsSendingAlias());
+
+        UtilityController.addSuccessMessage("SMS Sent");
+
+    }
+
     public void createSmsTable() {
         long lng = getCommonFunctions().getDayCount(getReportKeyWord().getFromDate(), getReportKeyWord().getToDate());
 
@@ -249,7 +280,6 @@ public class SmsController implements Serializable {
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
 
-
         if (getReportKeyWord().isAdditionalDetails()) {
             List<Object[]> objects = getSmsFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
             long l = 0l;
@@ -267,7 +297,7 @@ public class SmsController implements Serializable {
             row.setCount(l);
             smsSummeryRows.add(row);
         } else {
-            smses = getSmsFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+            smses = getSmsFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         }
 
     }
@@ -286,6 +316,30 @@ public class SmsController implements Serializable {
 
     public void setCommonFunctions(CommonFunctions commonFunctions) {
         this.commonFunctions = commonFunctions;
+    }
+
+    public String getNumber() {
+        return number;
+    }
+
+    public void setNumber(String number) {
+        this.number = number;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessageOutput() {
+        return messageOutput;
+    }
+
+    public void setMessageOutput(String messageOutput) {
+        this.messageOutput = messageOutput;
     }
 
     public class SmsSummeryRow {

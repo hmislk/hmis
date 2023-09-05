@@ -96,7 +96,7 @@ public class ChannelBean {
         if (bs != null) {
             //String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + billSession.getBill().getId();
             String sql = "Select s From BillFee s where s.retired=false and s.bill.billedBill.id=" + bs.getBill().getId();
-            refundBillFee = getBillFeeFacade().findBySQL(sql);
+            refundBillFee = getBillFeeFacade().findByJpql(sql);
         }
 
         return refundBillFee;
@@ -106,7 +106,7 @@ public class ChannelBean {
         List<BillFee> billFee = new ArrayList<>();
         if (bs != null) {
             String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + bs.getBill().getId();
-            billFee = getBillFeeFacade().findBySQL(sql);
+            billFee = getBillFeeFacade().findByJpql(sql);
         }
 
         return billFee;
@@ -289,7 +289,7 @@ public class ChannelBean {
         HashMap hm = new HashMap();
         hm.put("dt", date);
         hm.put("st", staff);
-        ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstBySQL(slq, hm, TemporalType.DATE);
+        ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstByJpql(slq, hm, TemporalType.DATE);
 
         if (tmp != null) {
             return true;
@@ -550,13 +550,10 @@ public class ChannelBean {
         Date toDate = c.getTime();
         Integer tmp = 0;
         int rowIndex = 0;
-        System.err.println("Time 1 = " + new Date());
 
         createdSessions = fetchCreatedServiceSessions(s, new Date(), toDate);
 
-        System.err.println("Time 2 = " + new Date());
         getBookingController().calculateFeeBookingNew(createdSessions, channelBillController.getPaymentMethod());
-        System.err.println("Time 3 = " + new Date());
 
         Date end = new Date();
         double time = (start.getTime() - end.getTime()) / 1000;
@@ -784,7 +781,7 @@ public class ChannelBean {
         m.put("os", ss);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findFirstBySQL(sql, m, TemporalType.TIMESTAMP);
+            tmp = getServiceSessionFacade().findFirstByJpql(sql, m, TemporalType.TIMESTAMP);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -807,7 +804,7 @@ public class ChannelBean {
         m.put("staff", s);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 14);
+            tmp = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 14);
             //// // System.out.println("m = " + m);
         } catch (Exception e) {
             e.printStackTrace();

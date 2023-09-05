@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/membership/administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="OPD Membership Discount Matrix" id="reportPrint">
 
@@ -27,7 +27,6 @@
                                 <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
-                                                converter="categoryConverter"
                                                 var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
                                     <p:column headerText="Category">
                                         <h:outputLabel value="#{cat.name}"/>
@@ -88,7 +87,6 @@
                                           filterBy="#{a.category.name}" filterMatchMode="contains">
                                     <p:autoComplete forceSelection="true" value="#{a.category}"
                                                     completeMethod="#{categoryController.completeCategoryInvestigation}" 
-                                                    converter="categoryConverter"
                                                     var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
                                         <p:column>
                                             <h:outputLabel value="#{cat.name}"/>

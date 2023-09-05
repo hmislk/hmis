@@ -37,7 +37,7 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
         String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill=:b and p.billItem.retired=false";
         HashMap hm = new HashMap();
         hm.put("b", bill);
-        List<PharmaceuticalBillItem> btm = findBySQL(sql, hm);
+        List<PharmaceuticalBillItem> btm = findByJpql(sql, hm);
         return btm;
     }
 

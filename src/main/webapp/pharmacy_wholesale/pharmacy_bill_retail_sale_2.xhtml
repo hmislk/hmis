@@ -38,8 +38,10 @@
                                 <p:outputLabel value="#{pharmacyWholeSaleController2.errorMessage}" ></p:outputLabel>
                             </h:panelGroup>
                         </h:panelGroup>
-                        <h:panelGrid id="sale" columns="2" class="alignTop" >
-                            <p:panel >
+                        
+                             <div class="row">
+                            <div class="col-md-7">
+                                <p:panel >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Pharmacy Wholesale Bill" />
                                 </f:facet>
@@ -54,8 +56,7 @@
 
 
                                             <p:autoComplete accesskey="i"    id="acStock" 
-                                                            value="#{pharmacyWholeSaleController2.stock}" 
-                                                            converter="stockCon" 
+                                                            value="#{pharmacyWholeSaleController2.stock}"
                                                             completeMethod="#{pharmacyWholeSaleController2.completeAvailableStocksFromNameOrGeneric}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
@@ -281,11 +282,10 @@
                                 </p:panel> 
 
                             </p:panel>
-
-
-
-
-                            <p:panel>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <p:panel>
 
 
                                 <f:facet name="header" >
@@ -441,7 +441,6 @@
                                                                  completeMethod="#{institutionController.completeCreditCompany}" 
                                                                  var="myi" itemLabel="#{myi.name}" 
                                                                  itemValue="#{myi}"
-                                                                 converter="institutionConverter" 
                                                                  disabled="#{pharmacyWholeSaleController2.paymentMethod ne 'Credit' }">
 
                                                     <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
@@ -459,7 +458,7 @@
                                                                  var="mys" 
                                                                  itemLabel="#{mys.person.nameWithTitle}" 
                                                                  itemValue="#{mys}"
-                                                                 converter="stfcon" 
+                                                                  
                                                                  disabled="#{pharmacyWholeSaleController2.paymentMethod ne 'Credit' }">
                                                     <p:column headerText="Name" >
                                                         <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
@@ -494,8 +493,16 @@
 
 
                             </p:panel>
+                            </div>
+                        </div>
+                            
 
-                        </h:panelGrid>
+
+
+
+                            
+
+                       
                     </p:panel>
 
 

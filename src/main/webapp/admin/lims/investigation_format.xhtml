@@ -1,0 +1,680 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <body>
+
+        <ui:composition template="/admin/items/admin_items_index.xhtml">
+
+            <ui:define name="item">
+                <h:form id="form">
+                    <h:panelGrid columns="2" styleClass="alignTop" style="width: 25%;" >
+
+                        <h:panelGroup rendered="#{investigationItemController.editMode ne 'Move_Mode'}" >
+
+                            <p:panel header="Investigation"   >
+                                <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
+                                                value="#{investigationItemController.currentInvestigation}" 
+                                                completeMethod="#{investigationController.completeInvestigationsOfCurrentInstitution}" 
+                                                var="apt" itemLabel="#{apt.name}" 
+                                                itemValue="#{apt}" size="30" maxResults="10"  style="width: 400px;">
+                                    <p:column headerText="Name" >
+                                        <h:outputLabel value="#{apt.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code" >
+                                        <h:outputLabel value="#{apt.code}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Printing Name" >
+                                        <h:outputLabel value="#{apt.printName}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Fill Name" >
+                                        <h:outputLabel value="#{apt.fullName}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:ajax event="itemSelect" process="acPt" 
+                                            update=":#{p:resolveFirstComponentWithId('pPreview',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} :#{p:resolveFirstComponentWithId('pIx',view).clientId} "/>
+                                </p:autoComplete> 
+                                <p:panel header="Add New ..." >
+                                    <h:panelGrid columns="6" >
+                                        <p:commandButton id="btnToNewTestFirst" value="Test-1" oncomplete="PF('dlgTest').show();" 
+                                                         process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTestFirst()}"/>
+                                        <p:commandButton id="btnToNewTestOther" value="Tests-*" oncomplete="PF('dlgTest').show();" 
+                                                         process="@this" update="dlgTest" actionListener="#{investigationItemController.toAddNewTestOthers()}"/>
+                                        <p:commandButton ajax="false" value="Label" action="#{investigationItemController.addNewLabel()}"/>
+                                        <p:commandButton ajax="false"  value="Value" action="#{investigationItemController.addNewValue()}"/>
+                                        <p:commandButton ajax="false"  value="Calculation" action="#{investigationItemController.addNewCalculation()}"/>
+                                        <p:commandButton ajax="false"  value="Flag" action="#{investigationItemController.addNewFlag() }"/>
+                                    </h:panelGrid>
+                                </p:panel>
+
+
+                                <p:dialog id="dlgTest" header="Modal Dialog" widgetVar="dlgTest" modal="true" >
+                                    <p:commandButton ajax="false" value="Save" 
+                                                     action="#{investigationItemController.addNewTest()}" 
+                                                     ></p:commandButton>
+
+
+
+                                    <p:tabView >
+
+                                        <p:tab title="Basic Details" >
+
+                                            <h:panelGrid columns="2" >
+
+                                                <p:outputLabel value="Test Name" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.testName}"  ></p:inputText>
+
+                                                <p:outputLabel value="Test Unit" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.testUnit}" ></p:inputText>
+
+                                                <p:outputLabel value="Reference" ></p:outputLabel>
+                                                <p:textEditor  secure='false'  value="#{investigationItemController.testReferenceRange}" height="100" ></p:textEditor>
+
+                                                <p:outputLabel value="Comments" ></p:outputLabel>
+                                                <p:inputTextarea value="#{investigationItemController.testComments}" ></p:inputTextarea>
+
+
+
+                                                <p:outputLabel value="Test Component" ></p:outputLabel>
+                                                <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.investigationComponent}" >
+                                                    <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                </p:selectOneMenu>
+
+                                                <p:outputLabel value="Analyzer" ></p:outputLabel>
+                                                <p:selectOneMenu value="#{investigationItemController.machine}" >
+                                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                    <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                                </p:selectOneMenu>
+
+
+
+
+                                                <p:outputLabel value="Test" ></p:outputLabel>
+                                                <p:autoComplete value="#{investigationItemController.test}"
+                                                                completeMethod="#{itemController.completeMachineTests}"
+                                                                var="t" inputStyle="width:200px;"
+                                                                itemValue="#{t}"
+                                                                itemLabel="#{t.code}"
+                                                                >
+                                                    <p:column >
+                                                        <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                                    </p:column>
+                                                    <p:column >
+                                                        <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                                    </p:column>
+                                                </p:autoComplete>
+
+                                                <p:outputLabel value="Sample" ></p:outputLabel>
+                                                <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.sample}" >
+                                                    <f:selectItem itemLabel="Please select a sample"/>
+                                                    <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                </p:selectOneMenu>
+
+                                                <h:outputText value="Container / Tube" ></h:outputText>
+                                                <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.tube}" >
+                                                    <f:selectItem itemLabel="Please select a Tube"/>
+                                                    <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                                </p:selectOneMenu>
+
+                                            </h:panelGrid>
+                                            <h:panelGrid columns="10" >
+
+                                                <p:selectBooleanCheckbox value="#{investigationItemController.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{investigationItemController.withoutHeadings}" itemLabel="Without Headings" ></p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{investigationItemController.withoutComments}" itemLabel="Without Comments" ></p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportHeader}" itemLabel="Without Report Header" ></p:selectBooleanCheckbox>
+                                                <p:selectBooleanCheckbox value="#{investigationItemController.withoutReportEnd}" itemLabel="Without Report End" ></p:selectBooleanCheckbox>
+
+                                            </h:panelGrid>
+
+                                        </p:tab>
+
+                                        <p:tab title="Report Details" >
+                                            <h:panelGrid columns="2" >
+                                                <p:outputLabel value="Test Header Name" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.testHeaderName}" ></p:inputText>
+
+                                                <p:outputLabel value="Value Header Name" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.valueHeaderName}" ></p:inputText>
+
+                                                <p:outputLabel value="Unit Header Name" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.unitHeaderName}" ></p:inputText>
+
+                                                <p:outputLabel value="Referance Header Name" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.refHeaderName}" ></p:inputText>
+
+
+                                            </h:panelGrid>
+
+                                        </p:tab>
+
+                                        <p:tab title="Positioning Details" >
+                                            <h:panelGrid columns="2" >
+
+                                                <p:outputLabel value="Block Top" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riBlockTop}" ></p:inputText>
+
+                                                <p:outputLabel value="Block Left" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riBlockLeft}" ></p:inputText>
+
+                                                <p:outputLabel value="Value Left" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riValueLeft}" ></p:inputText>
+
+                                                <p:outputLabel value="Unit Left" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riUnitLeft}" ></p:inputText>
+
+                                                <p:outputLabel value="Reference Left" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riRefLeft}" ></p:inputText>
+
+                                                <p:outputLabel value="Column Gap" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riColGap}" ></p:inputText>
+
+                                                <p:outputLabel value="Row Gap" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riRowGap}" ></p:inputText>
+
+
+                                                <p:outputLabel value="Height" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riHeight}" ></p:inputText>
+
+                                            </h:panelGrid>
+
+                                        </p:tab>
+
+                                        <p:tab title="Font Details" >
+                                            <h:panelGrid columns="2" >
+
+                                                <p:outputLabel value="Font Family" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.cssFontFamily}" ></p:inputText>
+
+                                                <p:outputLabel value="Font Size" ></p:outputLabel>
+                                                <p:inputText value="#{investigationItemController.riFontSize}" ></p:inputText>
+
+
+
+                                                <h:outputText value="Font Style"/>
+                                                <p:selectOneMenu   value="#{investigationItemController.cssFontStyle}" >
+                                                    <f:selectItem itemLabel="Normal" itemValue="Normal"/>
+                                                    <f:selectItem itemLabel="Italic" itemValue="Italic"/>
+                                                    <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
+                                                </p:selectOneMenu>
+
+
+                                                <h:outputText value="Header Font Weight"/>
+                                                <p:selectOneMenu  value="#{investigationItemController.cssHeaderFontWeight}">
+                                                    <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
+                                                    <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
+                                                    <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
+                                                    <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
+                                                    <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
+                                                    <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
+                                                    <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
+                                                    <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
+                                                    <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
+                                                    <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
+                                                    <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
+                                                    <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
+                                                    <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
+                                                    <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                                </p:selectOneMenu>
+
+                                                <h:outputText value="Header Font Weight"/>
+                                                <p:selectOneMenu  value="#{investigationItemController.cssValueFontWeight}">
+                                                    <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
+                                                    <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
+                                                    <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
+                                                    <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
+                                                    <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
+                                                    <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
+                                                    <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
+                                                    <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
+                                                    <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
+                                                    <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
+                                                    <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
+                                                    <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
+                                                    <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
+                                                    <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                                </p:selectOneMenu>
+
+
+                                                <h:outputText value="Header Text Decoration"/>
+                                                <p:selectOneMenu value="#{investigationItemController.cssHeaderDecoration}">
+                                                    <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
+                                                    <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
+                                                    <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                                </p:selectOneMenu>
+
+                                                <h:outputText value="Value Text Decoration"/>
+                                                <p:selectOneMenu value="#{investigationItemController.cssValueDecoration}">
+                                                    <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
+                                                    <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
+                                                    <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                                </p:selectOneMenu>
+
+                                            </h:panelGrid>
+
+                                        </p:tab>
+
+
+                                    </p:tabView>
+                                </p:dialog>  
+
+                            </p:panel>
+
+                            <p:panel  header="Investigation Items List" id="pIx">
+                                <p:selectOneMenu  id="dtbItem" value="#{investigationItemController.current}" style="width: 270px;" >
+                                    <f:selectItem itemLabel="Select" />
+                                    <f:selectItems value="#{investigationItemController.userChangableItems}" var="ii" itemLabel="#{ii.name} - #{ii.ixItemType }" itemValue="#{ii}" />
+                                    <p:ajax  event="change" process="dtbItem" update=":#{p:resolveFirstComponentWithId('pDetails',view).clientId} "/>
+                                </p:selectOneMenu>
+                                <p:commandButton action="#{investigationItemController.removeItem()}" value="Remove" ajax="false"/>
+                            </p:panel>
+
+                            <p:panel  id="pDetails" >
+                                <f:facet name="header" >
+                                    <p:commandButton value="Save" action="#{investigationItemController.saveSelected()}" ajax="false" >
+                                    </p:commandButton>
+                                </f:facet>
+
+
+                                <p:accordionPanel >
+                                    <p:tab title="Item Details">
+                                        <p:panelGrid style="width: 95%;" >
+                                            <p:row >
+                                                <p:column >
+                                                    <h:outputText value="Name"   />
+                                                </p:column>
+                                                <p:column colspan="4" >
+                                                    <p:inputText style="min-width: 400px!important;" autocomplete="off" id="lblIiName" value="#{investigationItemController.current.name}" >
+                                                    </p:inputText>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row >
+                                                <p:column >
+                                                    <h:outputText value="Type"/>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:selectOneMenu id="cmbItemType" value="#{investigationItemController.current.ixItemType}" >
+                                                        <f:selectItem itemLabel="Please select" />
+                                                        <f:selectItem itemLabel="Label" itemValue="Label"/>
+                                                        <f:selectItem itemLabel="Value" itemValue="Value"/>
+                                                        <f:selectItem itemLabel="Calculation" itemValue="Calculation"/>
+                                                        <f:selectItem itemLabel="Flag" itemValue="Flag"/>
+                                                        <f:selectItem itemLabel="List" itemValue="List"/>
+                                                        <f:selectItem itemLabel="Dynamic Label" itemValue="DynamicLabel"/>
+                                                        <f:selectItem itemLabel="Investigation" itemValue="Investigation"/>
+                                                        <f:selectItem itemLabel="Template" itemValue="Template"/>
+                                                        <f:selectItem itemLabel="Antibiotic" itemValue="AntibioticList"/>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:spacer height="1" width="5"></p:spacer>
+                                                </p:column>
+                                                <p:column >
+                                                    <h:outputText value="Value Type"/>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:selectOneMenu id="cmbValueType" value="#{investigationItemController.current.ixItemValueType}"  >
+                                                        <f:selectItem itemLabel="Please select" />
+                                                        <f:selectItems value="#{enumController.investigationItemValueTypes}" ></f:selectItems>
+                                                    </p:selectOneMenu>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row >
+                                                <p:column colspan="3" >
+                                                    <p:outputLabel value="Contents" ></p:outputLabel>
+                                                </p:column>
+                                                <p:column colspan="2" >
+                                                    <p:commandLink value="Editor" onclick="PF('dlgContents').show();"  >
+                                                    </p:commandLink>
+                                                    <p:dialog widgetVar="dlgContents" id="dlgContents" modal="1" >
+                                                        <p:commandButton process="lblIiText" update="txtContents" value="Save" 
+                                                                         oncomplete="PF('dlgContents').hide()" 
+                                                                         ></p:commandButton>
+                                                        <p:textEditor   height="600" id="lblIiText"  secure='false' 
+                                                                        value="#{investigationItemController.current.htmltext}" >
+
+                                                        </p:textEditor >
+
+                                                    </p:dialog>
+                                                </p:column>
+                                            </p:row>
+                                            <p:row >
+                                                <p:column colspan="5" >
+                                                    <p:inputTextarea id="txtContents" style="width: 95%; height: 60px;" scrollHeight="60"
+                                                                     autoResize="false"       value="#{investigationItemController.current.htmltext}" >
+                                                        <p:ajax event="blur" process="txtContents" update="dlgContents" ></p:ajax>
+                                                    </p:inputTextarea>
+                                                </p:column>
+                                            </p:row>
+                                        </p:panelGrid>
+                                    </p:tab>
+
+
+
+                                    <p:tab title="Positioning" >
+                                        <h:panelGrid  columns="11">
+                                            <h:outputText value="Left" />
+                                            <p:inputText style="width: 50px;" maxlength="2" autocomplete="off" id="txtLeft" value="#{investigationItemController.current.riLeft}"/>
+                                            <div style="min-width: 20px;"></div>
+                                            <h:outputText value="Top"/>
+                                            <p:inputText  style="width: 50px;" maxlength="2" autocomplete="off" id="txtTop" value="#{investigationItemController.current.riTop}"/>
+                                            <div style="min-width: 20px;"></div>
+                                            <h:outputText value="Width"/>
+                                            <p:inputText  style="width: 50px;" maxlength="2" autocomplete="off" id="txtWidth" value="#{investigationItemController.current.riWidth}" />
+                                            <div style="min-width: 20px;"></div>
+                                            <h:outputText value="Height"/>
+                                            <p:inputText  style="width: 50px;" maxlength="2" autocomplete="off" id="txtHeight" value="#{investigationItemController.current.riHeight}"/>
+
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="5" >
+
+                                            <h:outputText value="Text-Align"/>
+                                            <p:selectOneMenu  id="cmbTxtAlign" value="#{investigationItemController.current.cssTextAlign}"  >
+                                                <f:selectItem itemLabel="Left" itemValue="Left"/>
+                                                <f:selectItem itemLabel="Right" itemValue="Right"/>
+                                                <f:selectItem itemLabel="Center" itemValue="Center"/>
+                                                <f:selectItem itemLabel="Justify" itemValue="Justify"/>
+                                                <f:selectItem itemLabel="Inherit" itemValue="Inherit"/>
+                                            </p:selectOneMenu>
+
+                                            <h:outputText value="Vertical-Align" style="vertical-align: "/>
+                                            <p:selectOneMenu  id="cmbTxtVerticalAlign" value="#{investigationItemController.current.cssVerticalAlign}"  >
+                                                <f:selectItems value="#{enumController.cssVerticalAlign}" ></f:selectItems>
+                                            </p:selectOneMenu>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+
+
+                                    <p:tab title="Font" >
+                                        <h:panelGrid  columns="5">
+
+                                            <h:outputText value="Font Family"/>
+                                            <p:inputText autocomplete="off" id="txtFontFamily" value="#{investigationItemController.current.cssFontFamily}"/>
+                                            <div style="min-width: 20px;"></div>
+
+                                            <h:outputText value="Font Size"/>
+                                            <p:inputText style="width: 50px;" autocomplete="off" id="txtFontSize" value="#{investigationItemController.current.riFontSize}"/>
+
+                                        </h:panelGrid>
+                                        <h:panelGrid  columns="5">
+                                            <h:outputText value="Font Style"/>
+                                            <p:selectOneMenu  id="cmbPos" value="#{investigationItemController.current.cssFontStyle}" >
+                                                <f:selectItem itemLabel="Normal" itemValue="Normal"/>
+                                                <f:selectItem itemLabel="Italic" itemValue="Italic"/>
+                                                <f:selectItem itemLabel="Oblique" itemValue="Oblique"/>               
+                                            </p:selectOneMenu>
+                                            <div style="min-width: 20px;"></div>
+
+                                            <h:outputText value="Font Weight"/>
+                                            <p:selectOneMenu id="txtFontWeight" value="#{investigationItemController.current.cssFontWeight}">
+                                                <f:selectItem itemValue="normal" itemLabel="Normal" ></f:selectItem>
+                                                <f:selectItem itemValue="bold"  itemLabel="bold" ></f:selectItem>
+                                                <f:selectItem itemValue="bolder"  itemLabel="bolder" ></f:selectItem>
+                                                <f:selectItem itemValue="initial"  itemLabel="initial" ></f:selectItem>
+                                                <f:selectItem itemValue="lighter"  itemLabel="lighter" ></f:selectItem>
+                                                <f:selectItem itemValue="100"  itemLabel="100" ></f:selectItem>
+                                                <f:selectItem itemValue="200"  itemLabel="200" ></f:selectItem>
+                                                <f:selectItem itemValue="300"  itemLabel="300" ></f:selectItem>
+                                                <f:selectItem itemValue="400"  itemLabel="400" ></f:selectItem>
+                                                <f:selectItem itemValue="500"  itemLabel="500" ></f:selectItem>
+                                                <f:selectItem itemValue="600"  itemLabel="600" ></f:selectItem>
+                                                <f:selectItem itemValue="700"  itemLabel="700" ></f:selectItem>
+                                                <f:selectItem itemValue="800"  itemLabel="800" ></f:selectItem>
+                                                <f:selectItem itemValue="900"  itemLabel="900" ></f:selectItem>
+                                            </p:selectOneMenu>
+
+
+                                            <h:outputText value="Text Decoration"/>
+                                            <p:selectOneMenu id="txtFontDec" value="#{investigationItemController.current.cssTextDecoration}">
+                                                <f:selectItem itemValue="none" itemLabel="none" ></f:selectItem>
+                                                <f:selectItem itemValue="underline"  itemLabel="underline" ></f:selectItem>
+                                                <f:selectItem itemValue="overline"  itemLabel="overline" ></f:selectItem>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Automation" >
+                                        <h:panelGrid  columns="2">
+                                            <h:outputText value="Automated"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.automated}" itemLabel="Automated" ></p:selectBooleanCheckbox>
+
+
+
+                                            <p:outputLabel value="Test Component" ></p:outputLabel>
+                                            <p:selectOneMenu id="cmbTestComponent"  value="#{investigationItemController.current.sampleComponent}" >
+                                                <f:selectItems value="#{investigationItemController.currentReportComponants}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </p:selectOneMenu>
+
+                                            <h:outputText value="Machine"/>
+                                            <p:selectOneMenu value="#{investigationItemController.current.machine}" >
+                                                <f:selectItem itemLabel="Select" ></f:selectItem>
+                                                <f:selectItems value="#{machineController.institutionMachines}" ></f:selectItems>
+                                            </p:selectOneMenu>
+
+                                            <h:outputText value="Test"/>
+                                            <p:autoComplete value="#{investigationItemController.current.test}"
+                                                            completeMethod="#{itemController.completeMachineTests}"
+                                                            var="t" inputStyle="width:200px;"
+                                                            itemValue="#{t}"
+                                                            itemLabel="#{t.code}"
+                                                            >
+                                                <p:column >
+                                                    <p:outputLabel value="#{t.code}" ></p:outputLabel>
+                                                </p:column>
+                                                <p:column >
+                                                    <p:outputLabel value="#{t.name}" ></p:outputLabel>
+                                                </p:column>
+                                            </p:autoComplete>
+
+                                            <h:outputText value="Result Code"/>
+                                            <p:inputText value="#{investigationItemController.current.resultCode}" ></p:inputText>
+
+                                            <p:outputLabel value="Sample" ></p:outputLabel>
+                                            <p:selectOneMenu id="cmbSample"  value="#{investigationItemController.current.sample}" >
+                                                <f:selectItem itemLabel="Please select a sample"/>
+                                                <f:selectItems value="#{sampleController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </p:selectOneMenu>
+
+                                            <h:outputText value="Container / Tube" ></h:outputText>
+                                            <p:selectOneMenu id="cmbTube"  value="#{investigationItemController.current.tube}" >
+                                                <f:selectItem itemLabel="Please select a Tube"/>
+                                                <f:selectItems value="#{investigationTubeController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
+                                            </p:selectOneMenu>
+
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Value" >
+                                        <h:panelGrid  columns="2">
+                                            <h:outputText value="Absolute Low Value"/>
+                                            <p:inputText value="#{investigationItemController.current.absoluteLowValue}" ></p:inputText>
+
+                                            <h:outputText value="Absolute High Value"/>
+                                            <p:inputText value="#{investigationItemController.current.absoluteHighValue}" ></p:inputText>
+
+                                            <h:outputText value="Can NOT approve if Value is Empty"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.canNotApproveIfValueIsEmpty}" ></p:selectBooleanCheckbox>
+
+                                            <h:outputText value="Message to Display if value if Empty"/>
+                                            <p:inputText value="#{investigationItemController.current.emptyValueWarning}" ></p:inputText>
+
+                                            <h:outputText value="Can NOT approve if Value is below the absolute low value"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.canNotApproveIfValueIsBelowAbsoluteLowValue}" ></p:selectBooleanCheckbox>
+
+                                            <h:outputText value="Message to Display if value if below the absolute low value"/>
+                                            <p:inputText value="#{investigationItemController.current.belowAbsoluteWarning}" ></p:inputText>
+
+                                            <h:outputText value="Can NOT approve if Value is above the absolute high value"/>
+                                            <p:selectBooleanCheckbox value="#{investigationItemController.current.canNotApproveIfValueIsAboveAbsoluteHighValue}" ></p:selectBooleanCheckbox>
+
+                                            <h:outputText value="Message to Display if value if above the absolute high value"/>
+                                            <p:inputText value="#{investigationItemController.current.aboveAbsoluteWarning}" ></p:inputText>
+
+                                            <h:outputText value="Format String"/>
+                                            <p:inputText autocomplete="off" id="txtFormat" value="#{investigationItemController.current.formatString}"/>
+
+                                            <h:outputText value="Perfix"/>
+                                            <p:inputText autocomplete="off" id="txtPrefix" value="#{investigationItemController.current.formatPrefix}"/>
+
+                                            <h:outputText value="Suffix"/>
+                                            <p:inputText autocomplete="off" id="txtSuffix" value="#{investigationItemController.current.formatSuffix}"/>
+                                        </h:panelGrid>
+                                    </p:tab>
+
+                                    <p:tab title="Developer" >
+                                        <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
+                                        </p:dialog>
+                                        <p:outputLabel value="ID : " ></p:outputLabel>
+                                        <p:inputText value="#{investigationItemController.current.id}"/>
+
+                                        <p:commandButton value="Download" ajax="false" onclick="PrimeFaces.monitorDownload(start, stop);" icon="ui-icon-arrowthick-1-s">
+                                            <p:fileDownload value="#{investigationItemController.downloadingFile}" />
+                                        </p:commandButton>
+
+
+                                        <script type="text/javascript">
+                                            function start() {
+                                                PF('statusDialog').show();
+                                            }
+
+                                            function stop() {
+                                                PF('statusDialog').hide();
+                                            }
+                                        </script>
+                                    </p:tab>
+                                </p:accordionPanel>
+
+
+
+                            </p:panel>
+                        </h:panelGroup>
+
+
+                        <p:panel id="pPreview"   >
+
+                            <p:tooltip for="btnModes" >
+                                <p>
+                                    <b>
+                                        Press Following Keys for Making Changes
+                                    </b>
+                                    <br/>
+                                    Up Arrow &#09;	-&#09;	Move Up <br/>
+                                    Down Arrow&#09;	-&#09;	Move Down<br/>
+                                    Left Arrow&#09;	-&#09;	Move Left<br/>
+                                    Right Arrow&#09;	-&#09;	Move Right<br/>
+                                    d&#09;&#09;		-&#09;       delete<br/>
+                                    b&#09;&#09;		-&#09;	bold<br/>
+                                    i&#09;&#09;		-&#09;	italic<br/>
+                                    n&#09;&#09;		-&#09;	remove bold and italic<br/>
+                                    r&#09;&#09;		-&#09;	align right<br/>
+                                    l&#09;&#09;		-&#09;	align left<br/>
+                                    c&#09;&#09;               -&#09;	align centre<br/>
+                                    j&#09;&#09;		-&#09;	justified<br/>
+                                    g&#09;&#09;		-&#09;	grow font<br/>
+                                    s&#09;&#09;		-&#09;	shrink font<br/>
+                                    w&#09;&#09;		-&#09;	widen<br/>
+                                    o&#09;&#09;		-&#09;	narrower<br/>
+                                    t&#09;&#09;		-&#09;	taller<br/>
+                                    h&#09;&#09;		-&#09;	shorter<br/>
+                                </p>
+                            </p:tooltip>
+
+                            <p:selectOneButton id="btnModes" value="#{investigationItemController.editMode}" >
+                                <f:selectItem itemLabel="View Mode" itemValue="View_Mode" ></f:selectItem>
+                                <f:selectItem itemLabel="Edit Mode" itemValue="Edit_mode" ></f:selectItem>
+                                <f:selectItem id="btnMoveMode" itemLabel="Move Mode" itemValue="Move_Mode" ></f:selectItem>
+                                <p:ajax process="btnModes"  update="@all" ></p:ajax>
+                            </p:selectOneButton>
+
+                            <h:panelGroup id="divPrint" >
+
+
+                                <div style="border: 1px solid black; margin: 0px; padding: 0px;background-color: white!important;width:21.0cm!important; height: 29.7cm!important; position: relative; " >
+                                    <ez:common_report commonReportFormat="#{investigationItemController.currentInvestigation.reportFormat}"/>
+
+
+
+                                    <ui:repeat value="#{investigationItemController.items}" var="myIi" >
+                                        <h:panelGroup id="gpIi" rendered="#{myIi.retired ne true and  myIi.ixItemType ne 'Investigation'}">
+
+                                            <div style="#{myIi.outerCssStyle};background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'}; border: 1px solid lightblue; " >
+                                                <h:outputLabel id="lblViewModeIi" 
+                                                               rendered="#{investigationItemController.editMode eq 'View_Mode'}"  value="#{myIi.htmltext}" 
+                                                               style="#{myIi.innerCssStyle}; color: black;" 
+                                                               escape="false" ></h:outputLabel> 
+
+                                                <p:tooltip for="lblViewModeIi" rendered="#{myIi.investigationItemValues.size() ne 0}" >
+                                                    <table>
+                                                        <ui:repeat value="#{myIi.investigationItemValues}" var="iiv" >
+                                                            <tr>
+                                                                <td>
+                                                                    <h:outputLabel value= "#{iiv.name}" escape="false" ></h:outputLabel>
+                                                                </td>
+                                                            </tr>
+                                                        </ui:repeat>
+                                                    </table>
+
+                                                </p:tooltip>
+
+                                                <p:inputText id="txtEditIi" 
+                                                             rendered="#{investigationItemController.editMode eq 'Edit_mode'}"  
+                                                             value="#{myIi.htmltext}" 
+                                                             style="#{myIi.innerCssStyle}; border: 1px solid brown;background-color: bisque;vertical-align: top!important; overflow: scroll!important; background-color: #{myIi.ixItemType eq 'Value' ? 'lightgreen':'lightyellow'};"  >
+                                                    <f:ajax event="focus" execute="@this" listener="#{investigationItemController.makeThisCurrent(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId} "  ></f:ajax>
+                                                    <f:ajax event="blur" execute="@this" listener="#{investigationItemController.saveIiOnAjax(myIi)}" render=":#{p:resolveFirstComponentWithId('dtbItem',view).clientId} :#{p:resolveFirstComponentWithId('pDetails',view).clientId}"></f:ajax>
+                                                </p:inputText>
+
+
+                                                <h:inputText id="txtMove"
+                                                             style="#{myIi.innerCssStyle}; margin: auto; border: 1px solid red;color: yellow;background-color: yellow;"
+                                                             onkeydown="document.getElementById('#{keyCode.clientId}').value = event.keyCode" 
+                                                             rendered="#{investigationItemController.editMode eq 'Move_Mode'}" >
+                                                    <f:ajax event="keyup" execute="@this keyCode" 
+                                                            listener="#{investigationItemController.ajaxIiKeydownListner(myIi)}" 
+                                                            render="gpIi :#{p:resolveFirstComponentWithId('pDetails',view).clientId} moveFocus "/>
+                                                </h:inputText>
+
+                                                <p:watermark value="#{myIi.htmltext}" for="txtMove" ></p:watermark>
+
+
+                                                <h:inputHidden id="keyCode" binding="#{keyCode}" 
+                                                               value="#{investigationItemController.keyCode}">
+                                                </h:inputHidden>
+                                                <p:focus id="moveFocus" for="txtMove" ></p:focus>
+                                            </div>
+                                        </h:panelGroup>
+
+                                    </ui:repeat>
+                                </div>
+
+                            </h:panelGroup>
+
+                        </p:panel>
+
+                    </h:panelGrid>
+                    <h1>#{investigationItemController.currentInvestigation.reportFormat}</h1>
+                </h:form>
+
+                <h:form enctype="multipart/form-data">
+                    <p:panel header="Upload Format" >
+                        <p:fileUpload value="#{investigationItemController.file}" mode="simple"  />
+                        <p:commandButton value="Submit" ajax="false" action="#{investigationItemController.upload}"  />
+                    </p:panel>
+                </h:form>
+
+                <h:form >
+                    <p:panel header="Correct Format from Old Databases" >
+                        <p:commandButton ajax="false" action="#{reportItemController.intFromCss()}" value="Error Correction of Ctt to Int" ></p:commandButton>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+        </ui:composition>
+
+    </body>
+</html>

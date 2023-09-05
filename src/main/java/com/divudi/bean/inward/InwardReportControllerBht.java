@@ -627,7 +627,7 @@ public class InwardReportControllerBht implements Serializable {
         m.put("bty", BillType.CashRecieveBill);
         m.put("bhtno", pe);
 
-        creditPayment = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        creditPayment = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return creditPayment;
 
@@ -645,7 +645,7 @@ public class InwardReportControllerBht implements Serializable {
         m.put("bty", BillType.InwardPaymentBill);
         m.put("bhtno", pe);
 
-        paidbyPatientBillList = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        paidbyPatientBillList = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return paidbyPatientBillList;
 
@@ -943,7 +943,7 @@ public class InwardReportControllerBht implements Serializable {
         m.put("fd", getReportKeyWord().getFromDate());
         m.put("td", getReportKeyWord().getToDate());
 
-        patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        patientRooms = patientRoomFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

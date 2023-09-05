@@ -13,14 +13,14 @@
             <h:form  >
                 <h:panelGrid columns="2">
                     <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                    <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}"
+                    <p:autoComplete  completeMethod="#{webUserController.completeUser}"
                                      styleClass="noPrintButton"
                                     forceSelection="true"
                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                     value="#{sessionController.webUser}" ></p:autoComplete>
                     <h:outputLabel value="Current Drawer"/>
                     <p:autoComplete value="#{sessionController.webUser.drawer}"
-                                    forceSelection="true" converter="drawerCon"
+                                    forceSelection="true" 
                                     completeMethod="#{drawerController.completeDrawer}" var="s"
                                     itemLabel="#{s.name}" itemValue="#{s}" ></p:autoComplete>
 

@@ -26,10 +26,9 @@
 
                     <p:panel rendered="#{!pharmacySaleController.billPreview}"  >
 
-
-                        <h:panelGrid id="sale" columns="2" class="alignTop" >
-
-                            <p:panel style="background-color: grey;" >
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel style="background-color: grey;" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Pharmacy Retail Bill" />
                                 </f:facet>
@@ -53,7 +52,6 @@
                                             </style>
                                             <p:autoComplete accesskey="i"    id="acStock" 
                                                             value="#{pharmacySaleController.stock}" 
-                                                            converter="stockCon" 
                                                             completeMethod="#{pharmacySaleController.completeAvailableStocksFromNameOrGeneric}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
@@ -280,8 +278,10 @@
                                 </p:panel> 
 
                             </p:panel>
-
-                            <p:panel>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                 <p:panel>
 
 
                                 <f:facet name="header" >
@@ -458,8 +458,8 @@
 
 
                             </p:panel>
-
-                        </h:panelGrid>
+                            </div>
+                        </div>
 
                     </p:panel>
 

@@ -71,11 +71,11 @@ public class StaffShiftController implements Serializable {
         HashMap hm = new HashMap();
         String sql = "select c from StaffShift c "
                 + " where c.retired=false "
-                + " and (upper(c.shift.name) like :q "
-                + " or upper(c.staff.person.name) like :q)"
+                + " and ((c.shift.name) like :q "
+                + " or (c.staff.person.name) like :q)"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        lst = ejbFacade.findBySQL(sql, hm);
+        lst = ejbFacade.findByJpql(sql, hm);
         //   ////// // System.out.println("lst = " + lst);
         return lst;
     }
@@ -87,7 +87,7 @@ public class StaffShiftController implements Serializable {
                 + " where c.retired=false "
                 + " and c.dayOfWeek is null "
                 + " and c.shiftDate is not null ";
-        lst = ejbFacade.findBySQL(sql);
+        lst = ejbFacade.findByJpql(sql);
 
         if (lst == null) {
             return;
@@ -110,7 +110,7 @@ public class StaffShiftController implements Serializable {
                 + " where c.retired=false "
                 + " and c.shiftStartTime is not null"
                 + " and c.shiftEndTime is not null ";
-        lst = ejbFacade.findBySQL(sql);
+        lst = ejbFacade.findByJpql(sql);
 
         if (lst == null) {
             return;
@@ -153,8 +153,8 @@ public class StaffShiftController implements Serializable {
                 + " and c.retired=false "
                 + " and c.shiftDate= :dt "
                 //                + " and c.staff.roster=:rs"
-                + " and (upper(c.shift.name) like :q "
-                + " or upper(c.staff.person.name) like :q)"
+                + " and ((c.shift.name) like :q "
+                + " or (c.staff.person.name) like :q)"
                 + " and s.retired=false "
                 + " and (s.fromDate >= c.shiftDate "
                 + " and s.toDate <= c.shiftDate)";
@@ -162,7 +162,7 @@ public class StaffShiftController implements Serializable {
         hm.put("dt", date);
 //        hm.put("rs", getReportKeyWord().getRoster());
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
 
         return staffShifts;
     }
@@ -170,7 +170,7 @@ public class StaffShiftController implements Serializable {
     public void updateStaffShiftWithoutRoster() {
 
         String sql = "Select s from StaffShift s where s.roster is null and s.staff.roster is not null order by s.id desc";
-        List<StaffShift> lststaffShifts = ejbFacade.findBySQL(sql);
+        List<StaffShift> lststaffShifts = ejbFacade.findByJpql(sql);
         for (StaffShift ss : lststaffShifts) {
             if (ss.getRoster() == null) {
                 if (ss.getStaff().getRoster() != null) {
@@ -238,7 +238,7 @@ public class StaffShiftController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
 
@@ -259,7 +259,7 @@ public class StaffShiftController implements Serializable {
 //        m.put("fd", fromDate);
 //        m.put("td", toDate);
 //
-//        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+//        staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 //
 //    }
     public void createStaffShiftTablebyShiftDate() {
@@ -299,7 +299,7 @@ public class StaffShiftController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        staffShifts = getEjbFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
 
@@ -324,7 +324,7 @@ public class StaffShiftController implements Serializable {
         hm.put("sh", getReportKeyWord().getShift());
         hm.put("stf", getReportKeyWord().getStaff());
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void makeNull() {
@@ -462,46 +462,7 @@ public class StaffShiftController implements Serializable {
     /**
      *
      */
-    @FacesConverter("staffShiftConverter")
-    public static class StaffShiftConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffShiftController controller = (StaffShiftController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "staffShiftController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof StaffShift) {
-                StaffShift o = (StaffShift) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffShiftController.class.getName());
-            }
-        }
-    }
-
+    
     public CommonController getCommonController() {
         return commonController;
     }

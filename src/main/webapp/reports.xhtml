@@ -41,11 +41,11 @@
                                         <p:outputLabel value="Bill Number"></p:outputLabel>
                                         <p:inputText value="#{sessionController.billNo}" style="width: 150px; margin-left: 20px;"  ></p:inputText>
                                         <p:outputLabel value="Phone Number"></p:outputLabel>
-                                        <p:inputMask mask="999-9999999" id="txtNewPtPhone" 
+                                        <p:inputText  id="txtNewPtPhone" 
                                                      autocomplete="off" maxlength="11" 
                                                      value="#{sessionController.phoneNo}"
                                                      style="width: 150px;  margin-left: 20px;">
-                                        </p:inputMask>
+                                        </p:inputText>
                                         <p:outputLabel></p:outputLabel>
                                         <h:commandButton class ="button" value= "View Reports" action="#{searchController.fillUserPatientReport}" ></h:commandButton>
                                     </h:panelGrid>

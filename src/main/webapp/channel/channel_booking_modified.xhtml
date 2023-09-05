@@ -25,7 +25,7 @@
                         <tr>
                             <td>
                                 <h:panelGrid columns="1">
-                                    <p:selectOneListbox converter="specilityCon" 
+                                    <p:selectOneListbox  
                                                         id="acSpeciality" 
                                                         value="#{bookingController.speciality}" 
                                                         style="height: 300px; width: 200px; padding: 0px; margin: 0px;">
@@ -51,7 +51,7 @@
                         <tr>
                             <td>
                                 <h:panelGrid columns="1">
-                                    <p:selectOneListbox  converter="stfcon" value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
+                                    <p:selectOneListbox   value="#{bookingController.staff}" style="height: 300px; width: 200px; padding: 2px; margin: auto;" >
                                         <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                                         <p:ajax  event="click" process="@this scStaff" update=":#{p:resolveFirstComponentWithId('schedule',view).clientId}"  
                                                  listener="#{bookingController.generateSessions}"/>
@@ -225,8 +225,8 @@
                                 </p:inputText>
 
                                 <h:outputLabel value="Phone"/>
-                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
-                                </p:inputMask>
+                                <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBillController.newPatient.person.phone}">
+                                </p:inputText>
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu id="txtNewSex"  value="#{channelBillController.newPatient.person.sex}" style="width: 200px;">
                                     <f:selectItem itemLabel="Select Sex"/>

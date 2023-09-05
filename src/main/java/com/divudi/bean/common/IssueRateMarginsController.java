@@ -194,7 +194,7 @@ public class IssueRateMarginsController implements Serializable {
         sql = "select m from IssueRateMargins m "
                 + " where m.retired=false ";
 
-        items = ejbFacade.findBySQL(sql);
+        items = ejbFacade.findByJpql(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Issue to units/Unit issue margin(/faces/store/issue_rate_margin_manager.xhtml)");
     }
@@ -210,7 +210,7 @@ public class IssueRateMarginsController implements Serializable {
         m.put("td", toDepartment);
         m.put("fi", fromInstitution);
         m.put("ti", toInstitution);
-        current = getFacade().findFirstBySQL(sql, m);
+        current = getFacade().findFirstByJpql(sql, m);
         if (current == null) {
             current = new IssueRateMargins();
             current.setFromDepartment(fromDepartment);
@@ -284,46 +284,7 @@ public class IssueRateMarginsController implements Serializable {
     /**
      *
      */
-    @FacesConverter("issueRateMarginConverter")
-    public static class IssueRateMarginsConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            IssueRateMarginsController controller = (IssueRateMarginsController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "issueRateMarginController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof IssueRateMargins) {
-                IssueRateMargins o = (IssueRateMargins) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + IssueRateMarginsController.class.getName());
-            }
-        }
-    }
-
+    
     public CommonController getCommonController() {
         return commonController;
     }

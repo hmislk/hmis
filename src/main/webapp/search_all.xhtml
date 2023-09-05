@@ -65,11 +65,15 @@
 
                         </f:facet>
 
-                        <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
+                        <p:dataTable rowIndexVar="i" 
+                                     id="tblBills" 
+                                     value="#{searchController.bills}" var="bill"  style="min-width: 100%;"  >
                             <p:column headerText="No" styleClass="alignTop">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
-
+                            <p:column headerText="ID" >                              
+                                <h:outputLabel  value="#{bill.insId}" ></h:outputLabel>                                    
+                            </p:column> 
                             <p:column headerText="Bill No(Instiution Id)" >                              
                                 <h:outputLabel  value="#{bill.insId}" ></h:outputLabel>                                    
                             </p:column>       
