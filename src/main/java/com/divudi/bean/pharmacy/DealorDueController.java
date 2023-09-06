@@ -282,7 +282,7 @@ public class DealorDueController implements Serializable {
         hm.put("cc", getInstitution());
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp", BillType.OpdBill);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 

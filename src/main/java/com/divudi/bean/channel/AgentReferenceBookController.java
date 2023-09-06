@@ -180,7 +180,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("fd", frmDate);
         m.put("td", toDate);
 
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void bulkDeleteChannelBooks() {
@@ -301,7 +301,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("rb", bookEnum);
         m.put("ins", getAgentReferenceBook().getInstitution());
         
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP,10);
+        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.TIMESTAMP,10);
     }
 
     public AgentReferenceBook getAgentReferenceBook() {

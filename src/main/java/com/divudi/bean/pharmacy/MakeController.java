@@ -91,7 +91,7 @@ public class MakeController implements Serializable {
         if (items == null) {
             String jpql;
             jpql = "Select m from Make m where m.retired=false order by m.name";
-            items = getFacade().findBySQL(jpql);
+            items = getFacade().findByJpql(jpql);
         }
         return items;
     }

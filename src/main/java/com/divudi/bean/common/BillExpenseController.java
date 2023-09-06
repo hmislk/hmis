@@ -60,22 +60,22 @@ public class BillExpenseController implements Serializable {
 //        } else {
 //            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
 //            //////// // System.out.println(sql);
-//            suggestions = getFacade().findBySQL(sql);
+//            suggestions = getFacade().findByJpql(sql);
 //        }
 //        return suggestions;
 //    }
 
     public List<BillExpense> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from BillExpense c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from BillExpense c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from BillExpense c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from BillExpense c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
 
 //    public List<BillExpense> completeItem(String qry) {
-//        List<BillExpense> completeItems = getFacade().findBySQL("select c from Item c "
+//        List<BillExpense> completeItems = getFacade().findByJpql("select c from Item c "
 //                + " where ( type(c) = BillExpense or type(c) = Packege ) "
 //                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
 //                + "  order by c.name");
@@ -164,7 +164,7 @@ public class BillExpenseController implements Serializable {
 
     public List<BillExpense> getItems() {
         String sql = "select c from BillExpense c where c.retired=false order by c.category.name,c.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
         if (items == null) {
             items = new ArrayList<>();
         }

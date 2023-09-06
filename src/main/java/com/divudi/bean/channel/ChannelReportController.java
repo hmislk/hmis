@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -30,6 +31,7 @@ import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.Area;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -70,9 +72,12 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 @Named
 @SessionScoped
@@ -165,6 +170,9 @@ public class ChannelReportController implements Serializable {
     ///////////
     @EJB
     private ChannelBean channelBean;
+    
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
     @Inject
     SessionController sessionController;
     @Inject
@@ -592,7 +600,7 @@ public class ChannelReportController implements Serializable {
         hm.put("to", getToDate());
         hm.put("class", bill.getClass());
 
-        return billSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billSessionFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> createBillSessionQueryAgregation(Bill bill, PaymentEnum paymentEnum, DateEnum dateEnum, ReportKeyWord reportKeyWord) {
@@ -1109,7 +1117,7 @@ public class ChannelReportController implements Serializable {
         hm.put("class", BilledBill.class);
         hm.put("fd", getFromDate());
         hm.put("td", getToDate());
-        billedBills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        billedBills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Channeling/Reports/Income report/Bill report/Bill detail summery(/faces/channel/channel_report_by_bill_class.xhtml)");
 
@@ -1210,7 +1218,7 @@ public class ChannelReportController implements Serializable {
         hm.put("class", bill.getClass());
         hm.put("fd", getFromDate());
         hm.put("td", getToDate());
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -1272,7 +1280,7 @@ public class ChannelReportController implements Serializable {
         temMap.put("bill", billClass.getClass());
 
         sql += " order by b.insId ";
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1418,7 +1426,7 @@ public class ChannelReportController implements Serializable {
         hm.put("dep", dep);
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     BillsTotals billedBillList;
@@ -1426,6 +1434,26 @@ public class ChannelReportController implements Serializable {
     BillsTotals refundBillList;
 
     public void createChannelCashierBillList() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        auditEvent.setEventTrigger("createChannelCashierBillList()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         getBilledBillList().setBills(createUserBills(new BilledBill(), getWebUser(), getDepartment()));
         getCanceledBillList().setBills(createUserBills(new CancelledBill(), getWebUser(), getDepartment()));
@@ -1452,6 +1480,11 @@ public class ChannelReportController implements Serializable {
         getRefundBillList().setCheque(calTotal(new RefundBill(), getWebUser(), getDepartment(), PaymentMethod.Cheque));
 
         createSummary();
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     private List<String1Value1> channelSummary;
@@ -1548,7 +1581,7 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by b.insId ";
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1703,7 +1736,7 @@ public class ChannelReportController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", bts);
         temMap.put("ins", sessionController.getInstitution());
-        cashiers = getWebUserFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        cashiers = getWebUserFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (cashiers == null) {
             cashiers = new ArrayList<>();
         }
@@ -1840,7 +1873,7 @@ public class ChannelReportController implements Serializable {
         m.put("ft", fts);
         m.put("bt", bts);
 
-        billFeeList = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billFeeList = getBillFeeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return billFeeList;
     }
@@ -1917,7 +1950,7 @@ public class ChannelReportController implements Serializable {
         m.put("ft", feeType);
         m.put("bt", bts);
 
-        billFeeList = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billFeeList = getBillFeeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return billFeeList;
     }
@@ -2116,7 +2149,7 @@ public class ChannelReportController implements Serializable {
         m.put("bt", bt);
 //        m.put("fn", "Scan Fee");
 
-        List<Bill> b = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> b = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         double d = 0;
 
         for (Bill b1 : b) {
@@ -2187,7 +2220,7 @@ public class ChannelReportController implements Serializable {
         m.put("bt", bt);
 //        m.put("fn", "Scan Fee");
 
-        List<Bill> b = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> b = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         double[] d = new double[4];
         d[0] = 0.0;
         d[1] = 0.0;
@@ -2660,7 +2693,7 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
         hm.put("st", stf);
 
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<DoctorPaymentSummeryRowSub> getDoctorPaymentSummeryRowSubsBySession(List<BillType> bts, BillType bt, Staff staff, Date fd, Date td) {
@@ -2771,7 +2804,7 @@ public class ChannelReportController implements Serializable {
             hm.put("td", td);
         }
 
-        return serviceSessionFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return serviceSessionFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -2833,7 +2866,7 @@ public class ChannelReportController implements Serializable {
         hm.put("bts", bts);
         hm.put("st", stf);
 
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void createAbsentPatientTable() {
@@ -2861,7 +2894,7 @@ public class ChannelReportController implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        List<Bill> b = getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> b = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         doctorFeeTotal = getStaffFeeTotal(b);
 
@@ -2926,7 +2959,7 @@ public class ChannelReportController implements Serializable {
         hm.put("toDate", td);
         hm.put("bts", bts);
 
-        return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return staffFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<Staff> getChannelUnPaidStaffbyClassType(List<BillType> bts, Date fd, Date td) {
@@ -2947,7 +2980,7 @@ public class ChannelReportController implements Serializable {
         hm.put("toDate", td);
         hm.put("bts", bts);
 
-        return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return staffFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void createAllChannelBillReportByCreatedDate() {
@@ -3015,7 +3048,34 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAllOPDBillReportForVat() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createAllOPDBillReportForVat()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         channelBills = new ArrayList<>();
 
         BillType[] billTypes = {BillType.OpdBill};
@@ -3028,7 +3088,13 @@ public class ChannelReportController implements Serializable {
         channelTotal.setNetTotal(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, true, false));
         channelTotal.setVat(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, false, true));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD/Summery/6) Bill Lists/3)opd Vat(reportCashier/report_opd_bills_for_vat.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD/Summery/6) Bill Lists/3)opd Vat(reportCashier/report_opd_bills_for_vat.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+       
     }
 
     public void createAllChannelBillReport(boolean createdDate) {
@@ -3105,7 +3171,7 @@ public class ChannelReportController implements Serializable {
         hm.put("fDate", fd);
         hm.put("tDate", td);
 
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -3141,7 +3207,7 @@ public class ChannelReportController implements Serializable {
         hm.put("fDate", fd);
         hm.put("tDate", td);
 
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -3278,7 +3344,7 @@ public class ChannelReportController implements Serializable {
         hm.put("fd", fd);
         hm.put("td", td);
 
-        return staffFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return staffFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public void createStaffBookingTable() {
@@ -3332,7 +3398,7 @@ public class ChannelReportController implements Serializable {
         hm.put("fDate", fd);
         hm.put("tDate", td);
 
-        return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -3882,7 +3948,7 @@ public class ChannelReportController implements Serializable {
         hm.put("fDate", getFromDate());
         hm.put("tDate", getToDate());
 
-        channelBills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        channelBills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -3947,7 +4013,7 @@ public class ChannelReportController implements Serializable {
         hm.put("td", getToDate());
 
         if (!createdDate) {
-            List<Bill> bills = billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+            List<Bill> bills = billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
             List<Bill> rangeBills = new ArrayList<>();
             for (Bill b : bills) {
 //                //// // System.out.println("b.getSingleBillSession().getSessionDate() = " + b.getSingleBillSession().getSessionDate());
@@ -3977,7 +4043,7 @@ public class ChannelReportController implements Serializable {
             }
             return rangeBills;
         } else {
-            return billFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+            return billFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         }
 
     }
@@ -4330,7 +4396,7 @@ public class ChannelReportController implements Serializable {
         bts.add(BillType.ChannelOnCall);
         bts.add(BillType.ChannelStaff);
         hh.put("tbs", bts);
-        nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+        nurseViewSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
     }
 
@@ -4355,7 +4421,7 @@ public class ChannelReportController implements Serializable {
         bts.add(BillType.ChannelOnCall);
         bts.add(BillType.ChannelStaff);
         hh.put("tbs", bts);
-        nurseViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.TIMESTAMP);
+        nurseViewSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
     }
 
@@ -4379,7 +4445,7 @@ public class ChannelReportController implements Serializable {
             bts.add(BillType.ChannelStaff);
             hh.put("tbs", bts);
             hh.put("class", BilledBill.class);
-            doctorViewSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+            doctorViewSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
             netTotal = 0.0;
             grantNetTotal = 0.0;
             //Totals
@@ -4396,7 +4462,7 @@ public class ChannelReportController implements Serializable {
             bts2.add(BillType.ChannelOnCall);
             bts2.add(BillType.ChannelStaff);
             h.put("tbs", bts2);
-            List<BillSession> list = getBillSessionFacade().findBySQL(sql, h, TemporalType.DATE);
+            List<BillSession> list = getBillSessionFacade().findByJpql(sql, h, TemporalType.DATE);
 
             for (BillSession bs : list) {
                 if (bs.getBill().getBalance() == 0.0) {
@@ -4433,7 +4499,7 @@ public class ChannelReportController implements Serializable {
             bts.add(BillType.ChannelCash);
             bts.add(BillType.ChannelOnCall);
             hh.put("tbs", bts);
-            billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+            billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
         }
         return billSessions;
     }
@@ -4445,7 +4511,7 @@ public class ChannelReportController implements Serializable {
         String sql = "Select bs.bill From BillSession bs where bs.bill.staff is not null and bs.retired=false and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
         hh.put("ssDate", Calendar.getInstance().getTime());
-        List<Bill> bills = getBillFacade().findBySQL(sql, hh, TemporalType.DATE);
+        List<Bill> bills = getBillFacade().findByJpql(sql, hh, TemporalType.DATE);
 
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
@@ -4508,7 +4574,7 @@ public class ChannelReportController implements Serializable {
         String sql = "Select bs.bill From BillSession bs where bs.bill.staff is not null and bs.retired=false and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
         hh.put("ssDate", Calendar.getInstance().getTime());
-        List<Bill> bills = getBillFacade().findBySQL(sql, hh, TemporalType.DATE);
+        List<Bill> bills = getBillFacade().findByJpql(sql, hh, TemporalType.DATE);
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
@@ -4598,7 +4664,7 @@ public class ChannelReportController implements Serializable {
         m.put("fd", commonFunctions.getStartOfDay());
         m.put("td", commonFunctions.getEndOfDay());
 
-        arrivalRecords = arrivalRecordFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        arrivalRecords = arrivalRecordFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -4620,7 +4686,7 @@ public class ChannelReportController implements Serializable {
         sql += " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<Bill> bills = getBillFacade().findByJpql(sql, m, TemporalType.DATE);
         if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            //// // System.out.println("getReportKeyWord().getString() = " + getReportKeyWord().getString());
             if (getReportKeyWord().getString().equals("0")) {
@@ -4716,8 +4782,8 @@ public class ChannelReportController implements Serializable {
 
     public void createDailyDoctorAnalysis() {
         HashMap m = new HashMap();
-        String sql;
-        sql = "Select new com.divudi.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
+        String jpql;
+        jpql = "Select new com.divudi.data.DoctorDayChannelCount(bs.bill.staff, bs.sessionDate , count(bs) )"
                 + " From BillSession bs "
                 + " where bs.bill.staff is not null "
                 + " and bs.retired=false "
@@ -4725,7 +4791,7 @@ public class ChannelReportController implements Serializable {
                 + " group by bs.bill.staff, bs.sessionDate";
         m.put("ssFromDate", fromDate);
         m.put("ssToDate", toDate);
-        doctorDayChannelCounts = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        doctorDayChannelCounts = getBillFacade().findByJpql(jpql, m, TemporalType.DATE);
     }
 
     public void createDailyDoctorAnalysisDisplay() {
@@ -4739,7 +4805,7 @@ public class ChannelReportController implements Serializable {
                 + " group by bs.sessionDate, bs.bill.staff";
         m.put("ssFromDate", fromDate);
         m.put("ssToDate", toDate);
-        List<DoctorDayChannelCount> t = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<DoctorDayChannelCount> t = getBillFacade().findByJpql(sql, m, TemporalType.DATE);
         weekdayDisplays = new ArrayList<>();
         for (DoctorDayChannelCount c : t) {
             boolean found = false;
@@ -4793,7 +4859,7 @@ public class ChannelReportController implements Serializable {
         sql += " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", Calendar.getInstance().getTime());
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<Bill> bills = getBillFacade().findByJpql(sql, m, TemporalType.DATE);
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
@@ -4846,7 +4912,7 @@ public class ChannelReportController implements Serializable {
                 + " order by bs.bill.staff.person.name ";
 
         m.put("ssDate", date);
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<Bill> bills = getBillFacade().findByJpql(sql, m, TemporalType.DATE);
         Set<Staff> consultant = new HashSet();
         for (Bill b : bills) {
             consultant.add(b.getStaff());
@@ -4902,7 +4968,7 @@ public class ChannelReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        List<Staff> staffs = staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Staff> staffs = staffFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         BillType[] types = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent};
 
@@ -4945,7 +5011,7 @@ public class ChannelReportController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        List<Staff> staffs = staffFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Staff> staffs = staffFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         BillType[] types = {BillType.ChannelCash, BillType.ChannelPaid, BillType.ChannelAgent};
 
@@ -5014,7 +5080,7 @@ public class ChannelReportController implements Serializable {
         m.put("bts", Arrays.asList(new BillType[]{BillType.ChannelCash, BillType.ChannelPaid}));
         m.put("ssDate", getDate());
         m.put("class", BilledBill.class);
-        billSessions = getBillSessionFacade().findBySQL(sql, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(sql, m, TemporalType.DATE);
         calTotalBS(billSessions);
 
     }
@@ -5121,7 +5187,7 @@ public class ChannelReportController implements Serializable {
         m.put("td", td);
         m.put("s", s);
         m.put("bts", billTypes);
-        bfs = getBillFeeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, max);
+        bfs = getBillFeeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, max);
         double d = 0.0;
         for (BillFee bf : bfs) {
             d += bf.getFeeValue();
@@ -5136,7 +5202,7 @@ public class ChannelReportController implements Serializable {
             String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate";
             HashMap hh = new HashMap();
             hh.put("ssDate", serviceSession.getSessionAt());
-            billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+            billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
             for (BillSession bs : billSessions) {
                 bs.setDoctorFee(getChannelBean().getChannelFee(bs, FeeType.Staff));
@@ -5160,7 +5226,7 @@ public class ChannelReportController implements Serializable {
             String sql = "Select bs From BillSession bs where bs.retired=false and bs.serviceSession.id=" + serviceSession.getId() + " and bs.sessionDate= :ssDate";
             HashMap hh = new HashMap();
             hh.put("ssDate", serviceSession.getSessionAt());
-            billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+            billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
             for (BillSession bs : billSessions) {
                 bs.setDoctorFee(getChannelBean().getChannelFee(bs, FeeType.Staff));
@@ -5184,7 +5250,7 @@ public class ChannelReportController implements Serializable {
         String sql = "Select bs From BillSession bs where bs.retired=false and bs.sessionDate= :ssDate";
         HashMap hh = new HashMap();
         hh.put("ssDate", Calendar.getInstance().getTime());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
         for (BillSession bs : billSessions) {
             bs.setDoctorFee(getChannelBean().getChannelFee(bs, FeeType.Staff));
@@ -5228,7 +5294,7 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by ah.createdAt ";
 
-        agentHistorys = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        agentHistorys = getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -5271,7 +5337,7 @@ public class ChannelReportController implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
 
-        channelBills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        channelBills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         for (Bill b : channelBills) {
             if (b.getPaymentMethod() == PaymentMethod.Cash && (b instanceof CancelledBill || b instanceof RefundBill)) {
                 b.setStaffFee(0);
@@ -5395,7 +5461,7 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by ah.createdAt ";
 
-        return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -5425,7 +5491,7 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by ah.bill.fromInstitution.name ,ah.createdAt ";
 
-        return getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -5460,7 +5526,7 @@ public class ChannelReportController implements Serializable {
 
         sql += " order by ah.bill.billClassType, ah.createdAt ";
 
-        ahs = getAgentHistoryFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        ahs = getAgentHistoryFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return ahs;
 
@@ -5527,7 +5593,7 @@ public class ChannelReportController implements Serializable {
         m.put("staff", s);
         m.put("class", ServiceSession.class);
 
-        return serviceSessionFacade.findBySQL(sql, m, TemporalType.DATE);
+        return serviceSessionFacade.findByJpql(sql, m, TemporalType.DATE);
     }
 
     //created a meathod which use above methods
@@ -5687,7 +5753,7 @@ public class ChannelReportController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        channelBills = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        channelBills = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         for (Bill b : channelBills) {
             grantNetTotal += b.getNetTotal() + b.getVat();
@@ -5727,7 +5793,7 @@ public class ChannelReportController implements Serializable {
             depBills.add(db);
         }
 
-//        objects=getBillFacade().findObjectsArrayBySQL(sql, m, TemporalType.TIMESTAMP);
+//        objects=getBillFacade().findObjectsArrayByJpql(sql, m, TemporalType.TIMESTAMP);
 //        //// // System.out.println("objects.size() = " + objects.size());
     }
 
@@ -5750,7 +5816,7 @@ public class ChannelReportController implements Serializable {
         m.put("bank", i);
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return bills;
     }

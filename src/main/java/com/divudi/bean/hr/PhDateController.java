@@ -62,7 +62,7 @@ public class PhDateController implements Serializable {
     public List<PhDate> completePhDate(String qry) {
         List<PhDate> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from PhDate c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from PhDate c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -113,7 +113,7 @@ public class PhDateController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("dtd", d);
 
-        Object obj = ejbFacade.findFirstObjectBySQL(sql, hm, TemporalType.DATE);
+        Object obj = ejbFacade.findFirstObjectByJpql(sql, hm, TemporalType.DATE);
 
         return obj != null ? (DayType) obj : null;
 
@@ -200,7 +200,7 @@ public class PhDateController implements Serializable {
                     + " from PhDate j "
                     + " where j.retired=false "
                     + " order by j.phDate desc";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

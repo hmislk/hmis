@@ -145,7 +145,7 @@ public class PaymentSchemeController implements Serializable {
     }
 
     public List<PaymentScheme> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PaymentScheme c"
+        selectedItems = getFacade().findByJpql("select c from PaymentScheme c"
                 + " where c.retired=false "
                 + " and c.membershipScheme is null "
                 + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' "
@@ -299,7 +299,7 @@ public class PaymentSchemeController implements Serializable {
                 + " where  i.retired=false "
                 //+ " and i.membershipScheme is null "
                 + " order by i.orderNo, i.name";
-        items = getFacade().findBySQL(temSql);
+        items = getFacade().findByJpql(temSql);
     }
 
     public List<PaymentScheme> getPaymentSchemesForChannel() {
@@ -331,7 +331,7 @@ public class PaymentSchemeController implements Serializable {
 
         temSql += " order by i.orderNo, i.name";
 
-        return getFacade().findBySQL(temSql);
+        return getFacade().findByJpql(temSql);
     }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {

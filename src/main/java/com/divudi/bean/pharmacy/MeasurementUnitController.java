@@ -58,11 +58,12 @@ public class MeasurementUnitController implements Serializable {
     
     public String navigateToAddMeasurementUnit(){
         current = new MeasurementUnit();
-        return "/emr/admin/unit";
+        return "/pharmacy/admin/unit";
     }
     
     public String navigateToListAllMeasurementUnit(){
-        return "/emr/admin/units";
+        
+        return "/pharmacy/admin/units";
     }
 
     public String navigateToEditMeasurementUnit(){
@@ -70,7 +71,7 @@ public class MeasurementUnitController implements Serializable {
             JsfUtil.addErrorMessage("Nothing");
             return "";
         }
-        return "/emr/admin/unit";
+        return "/pharmacy/admin/unit";
     }
     
     public void fillAllUnits() {
@@ -168,8 +169,8 @@ public class MeasurementUnitController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
-        recreateModel();
-        getItems();
+        allUnits = null;
+        getAllUnits();
     }
 
     public void setSelectText(String selectText) {

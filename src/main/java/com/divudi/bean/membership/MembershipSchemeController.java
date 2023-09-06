@@ -97,7 +97,7 @@ public class MembershipSchemeController implements Serializable {
     }
 
     public List<MembershipScheme> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from MembershipScheme c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from MembershipScheme c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

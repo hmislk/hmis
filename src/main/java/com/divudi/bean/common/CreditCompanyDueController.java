@@ -756,7 +756,7 @@ public class CreditCompanyDueController implements Serializable {
 
         m.put("fd", fromDate);
         m.put("td", toDate);
-        patientEncounters = patientEncounterFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        patientEncounters = patientEncounterFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         if (patientEncounters == null) {
             return;
@@ -880,7 +880,7 @@ public class CreditCompanyDueController implements Serializable {
         hm.put("cc", getInstitution());
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp", BillType.OpdBill);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 

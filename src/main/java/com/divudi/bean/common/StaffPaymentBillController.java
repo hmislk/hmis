@@ -106,7 +106,7 @@ public class StaffPaymentBillController implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-            billComponents = getBillComponentFacade().findBySQL(sql);
+            billComponents = getBillComponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<>();
             }
@@ -120,7 +120,7 @@ public class StaffPaymentBillController implements Serializable {
         if (getCurrent() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<>();
                 }
@@ -208,7 +208,7 @@ public class StaffPaymentBillController implements Serializable {
         }
         //////// // System.out.println(sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getStaffFacade().findBySQL(sql, hm, 20);
+        suggestions = getStaffFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
     }
@@ -253,7 +253,7 @@ public class StaffPaymentBillController implements Serializable {
             h.put("btp", BillType.OpdBill);
             h.put("btpc", BillType.CollectingCentreBill);
 
-            dueBillFees = getBillFeeFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
+            dueBillFees = getBillFeeFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
 
             List<BillFee> removeingBillFees = new ArrayList<>();
             for (BillFee bf : dueBillFees) {
@@ -355,7 +355,7 @@ public class StaffPaymentBillController implements Serializable {
     }
 
     public List<Bill> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Bill c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Bill c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -674,7 +674,7 @@ public class StaffPaymentBillController implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        dueBillFeeReport = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         //////// // System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
@@ -701,7 +701,7 @@ public class StaffPaymentBillController implements Serializable {
         temMap.put("btp", BillType.ChannelPaid);
         temMap.put("btp2", BillType.ChannelCredit);
 
-        dueBillFeeReport = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        dueBillFeeReport = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         //////// // System.out.println(dueBillFeeReport.size());
 
         if (dueBillFeeReport == null) {
@@ -718,7 +718,7 @@ public class StaffPaymentBillController implements Serializable {
     public List<BillItem> getBillItems() {
         if (getCurrent() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getCurrent().getId();
-            billItems = getBillItemFacade().findBySQL(sql);
+            billItems = getBillItemFacade().findByJpql(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }

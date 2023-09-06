@@ -92,7 +92,7 @@ public class VocabularyController implements Serializable {
     
     public List<Vocabulary> completeVocabulary(String qry) {
         List<Vocabulary> c;
-        c = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        c = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         if (c == null) {
             c = new ArrayList<>();
         }
@@ -100,7 +100,7 @@ public class VocabularyController implements Serializable {
     }
 
     public List<Vocabulary> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Vocabulary c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Vocabulary c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -192,7 +192,7 @@ public class VocabularyController implements Serializable {
         if (items == null) {
             String j ;
             j="select v from Vocabulary v where v.retired=false order by v.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

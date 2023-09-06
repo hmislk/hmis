@@ -48,7 +48,7 @@ public class ManufacturerController implements Serializable {
 
     public List<Institution> completeManu(String qry) {
         if (qry != null) {
-            institutionList = getFacade().findBySQL("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            institutionList = getFacade().findByJpql("select c from Institution c where c.institutionType=com.divudi.data.InstitutionType.Manufacturer and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (institutionList == null) {
             institutionList = new ArrayList<>();
@@ -143,7 +143,7 @@ public class ManufacturerController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Manufacturer order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

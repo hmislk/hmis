@@ -184,7 +184,7 @@ public class MetadataSuperCategoryController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM MetadataSuperCategory i where i.retired=false order by i.name";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }

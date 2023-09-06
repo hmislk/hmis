@@ -275,7 +275,7 @@ public class IncomeExpensessBillController implements Serializable {
         List<BillItem> billItems = new ArrayList<>();
         if (getBill() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billItems = getBillItemFacade().findBySQL(sql);
+            billItems = getBillItemFacade().findByJpql(sql);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }

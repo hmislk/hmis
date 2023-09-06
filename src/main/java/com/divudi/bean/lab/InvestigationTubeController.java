@@ -12,8 +12,11 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
 import com.divudi.entity.lab.InvestigationTube;
 import com.divudi.facade.InvestigationTubeFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -36,28 +39,37 @@ public class InvestigationTubeController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+
     @EJB
     private InvestigationTubeFacade ejbFacade;
-    List<InvestigationTube> selectedItems;
+
     private InvestigationTube current;
     private List<InvestigationTube> items = null;
-    String selectText = "";
 
-    public List<InvestigationTube> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from InvestigationTube c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        return selectedItems;
+    public String navigateToAddTube() {
+        current = new InvestigationTube();
+        return "/admin/lims/tube";
+    }
+
+    public InvestigationTube getAnyTube(){
+        return getItems().get(0);
+    }
+    
+    public String navigateToEditTube() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        return "/admin/lims/tube";
+    }
+
+    public String navigateToListTubes() {
+        getItems();
+        return "/admin/lims/tube_list";
     }
 
     public void prepareAdd() {
         current = new InvestigationTube();
-    }
-
-    public void setSelectedItems(List<InvestigationTube> selectedItems) {
-        this.selectedItems = selectedItems;
-    }
-
-    public String getSelectText() {
-        return selectText;
     }
 
     private void recreateModel() {
@@ -65,13 +77,12 @@ public class InvestigationTubeController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
+            current.setCreater(sessionController.getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
@@ -79,24 +90,8 @@ public class InvestigationTubeController implements Serializable {
         getItems();
     }
 
-    public void setSelectText(String selectText) {
-        this.selectText = selectText;
-    }
-
     public InvestigationTubeFacade getEjbFacade() {
         return ejbFacade;
-    }
-
-    public void setEjbFacade(InvestigationTubeFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
-    public SessionController getSessionController() {
-        return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 
     public InvestigationTubeController() {
@@ -110,21 +105,18 @@ public class InvestigationTubeController implements Serializable {
         this.current = current;
     }
 
-    public void delete() {
-
+    public String delete() {
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
+            current.setRetirer(sessionController.getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
         recreateModel();
-        getItems();
-        current = null;
-        getCurrent();
+        return navigateToListTubes();
     }
 
     private InvestigationTubeFacade getFacade() {
@@ -133,10 +125,19 @@ public class InvestigationTubeController implements Serializable {
 
     public List<InvestigationTube> getItems() {
         if (items == null) {
-            //TODO
-            items = getFacade().findAll();
+            items = fillItems();
         }
         return items;
+    }
+
+    private List<InvestigationTube> fillItems() {
+        String jpql = "select c "
+                + " from InvestigationTube c "
+                + " where c.retired=:ret "
+                + " order by c.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getFacade().findByJpql(jpql, m);
     }
 
     /**

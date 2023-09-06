@@ -158,7 +158,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("stf", getCurrentLeaveForm().getStaff());
         hm.put("f", getCurrentLeaveForm().getFromDate());
         hm.put("t", getCurrentLeaveForm().getToDate());
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<StaffShift> getStaffShiftsLie() {
@@ -204,7 +204,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
             hm.put("to", getReportKeyWord().getTo());
         }
 
-        staffShifts = staffShiftFacade.findBySQL(sql, hm, 10);
+        staffShifts = staffShiftFacade.findByJpql(sql, hm, 10);
     }
 
     public FinalVariables getFinalVariables() {
@@ -483,7 +483,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         hm.put("dt", date);
         hm.put("st", staff);
 
-        return staffShiftFacade.findBySQL(sql, hm, TemporalType.DATE);
+        return staffShiftFacade.findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public void addLeaveDataToStaffShift(Date date, Staff staff, LeaveType ltp) {
@@ -622,7 +622,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -673,7 +673,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Leave(/faces/hr/hr_staff_leave_edit_search.xhtml)");
 
@@ -754,7 +754,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        staffLeaves = getStaffLeaveFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        staffLeaves = getStaffLeaveFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/HR edit/Edit Shift(/faces/hr/hr_shift_staff_edit_search.xhtml)");
 
@@ -798,7 +798,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -827,7 +827,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -866,7 +866,7 @@ public class StaffLeaveApplicationFormController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        leaveForms = getLeaveFormFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        leaveForms = getLeaveFormFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

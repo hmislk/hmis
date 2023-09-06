@@ -136,7 +136,7 @@ public class VtmInVmpController implements Serializable {
                     + " from VtmsVmps v "
                     + " where v.retired=false "
                     + " order by v.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

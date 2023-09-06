@@ -39,7 +39,7 @@ public  class FeeController implements Serializable {
     String selectText = "";
 
     public List<Fee> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Fee c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Fee c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 

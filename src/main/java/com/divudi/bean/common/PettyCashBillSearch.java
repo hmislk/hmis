@@ -226,7 +226,7 @@ public class PettyCashBillSearch implements Serializable {
 
     private boolean checkPaid() {
         String sql = "SELECT bf FROM BillFee bf where bf.retired=false and bf.bill.id=" + getBill().getId();
-        List<BillFee> tempFe = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> tempFe = getBillFeeFacade().findByJpql(sql);
 
         for (BillFee f : tempFe) {
             if (f.getPaidValue() != 0.0) {
@@ -411,14 +411,14 @@ public class PettyCashBillSearch implements Serializable {
                     temMap.put("toDate", getToDate());
                     temMap.put("fromDate", getFromDate());
                     temMap.put("type", BillType.PaymentBill);
-                    bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
+                    bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
                 } else {
                     sql = "select b from BilledBill b where b.retired=false and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
                     temMap.put("toDate", getToDate());
                     temMap.put("fromDate", getFromDate());
                     temMap.put("type", BillType.PaymentBill);
-                    bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
+                    bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
                 }
                 if (bills == null) {
                     bills = new ArrayList<Bill>();
@@ -493,7 +493,7 @@ public class PettyCashBillSearch implements Serializable {
     public List<BillItem> getBillItems() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billItems = getBillItemFacede().findBySQL(sql);
+            billItems = getBillItemFacede().findByJpql(sql);
             //////// // System.out.println("sql for bill item search is " + sql);
             //////// // System.out.println("results for bill item search is " + billItems);
             if (billItems == null) {
@@ -507,7 +507,7 @@ public class PettyCashBillSearch implements Serializable {
     public List<BillComponent> getBillComponents() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillComponent b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billComponents = getBillCommponentFacade().findBySQL(sql);
+            billComponents = getBillCommponentFacade().findByJpql(sql);
             if (billComponents == null) {
                 billComponents = new ArrayList<BillComponent>();
             }
@@ -519,7 +519,7 @@ public class PettyCashBillSearch implements Serializable {
         if (getBill() != null) {
             if (billFees == null) {
                 String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-                billFees = getBillFeeFacade().findBySQL(sql);
+                billFees = getBillFeeFacade().findByJpql(sql);
                 if (billFees == null) {
                     billFees = new ArrayList<BillFee>();
                 }
@@ -532,7 +532,7 @@ public class PettyCashBillSearch implements Serializable {
     public List<BillFee> getPayingBillFees() {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillFee b WHERE b.retired=false and b.bill.id=" + getBill().getId();
-            billFees = getBillFeeFacade().findBySQL(sql);
+            billFees = getBillFeeFacade().findByJpql(sql);
             if (billFees == null) {
                 billFees = new ArrayList<BillFee>();
             }

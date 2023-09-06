@@ -55,7 +55,7 @@ public class StoreItemCategoryController implements Serializable {
         String sql = "select c from StoreItemCategory c where "
                 + " c.retired=false and ((c.name) like :n) order by c.name";
 
-        a = getFacade().findBySQL(sql, m, 20);
+        a = getFacade().findByJpql(sql, m, 20);
         //////// // System.out.println("a size is " + a.size());
 
         if (a == null) {
@@ -71,7 +71,7 @@ public class StoreItemCategoryController implements Serializable {
         String sql = "select c from AssetCategory c where "
                 + " c.retired=false and ((c.name) like :n) order by c.name";
 
-        a = getAssetCategoryFacade().findBySQL(sql, m, 20);
+        a = getAssetCategoryFacade().findByJpql(sql, m, 20);
         //////// // System.out.println("a size is " + a.size());
 
         if (a == null) {
@@ -166,7 +166,7 @@ public class StoreItemCategoryController implements Serializable {
         if (items == null) {
             String j;
             j = "select c from StoreItemCategory c where c.retired=false order by c.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

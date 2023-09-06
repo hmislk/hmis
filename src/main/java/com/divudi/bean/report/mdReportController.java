@@ -169,7 +169,7 @@ public class mdReportController implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("ins", getSessionController().getInstitution());
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<>();
 
@@ -312,7 +312,7 @@ public class mdReportController implements Serializable {
 
         }
 
-        tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (tmp == null) {
             tmp = new ArrayList<>();
@@ -366,7 +366,7 @@ public class mdReportController implements Serializable {
 
         }
 
-        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -427,7 +427,7 @@ public class mdReportController implements Serializable {
             temMap.put("pm", getPaymentMethod());
         }
 
-        List<BillFee> billFees = getBillFeeFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<BillFee> billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
 //        for (BillFee b : billFees) {
 //            if (b.getStaff() != null) {

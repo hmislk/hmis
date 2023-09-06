@@ -56,7 +56,22 @@ public class DepartmentController implements Serializable {
     public void fillItems() {
         String j;
         j = "select i from Department i where i.retired=false order by i.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
+    }
+    
+    public List<Department> getInsDepartments(Institution currentInstituion) {
+        List<Department> currentInsDepartments = new ArrayList<>();
+        if (currentInstituion == null) {
+            return currentInsDepartments;
+        }
+        Map m = new HashMap();
+        m.put("ins", currentInstituion);
+        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
+        currentInsDepartments = getFacade().findByJpql(sql,m);
+        if (currentInsDepartments == null) {
+            currentInsDepartments = new ArrayList<>();
+        }
+        return currentInsDepartments;
     }
 
     public String toListDepartments() {
@@ -118,7 +133,7 @@ public class DepartmentController implements Serializable {
     public void fillSearchItems() {
         if (selectText == null || selectText.trim().equals("")) {
             String sql = "Select d from Department d where d.retired=false order by d.name";
-            searchItems = getFacade().findBySQL(sql);
+            searchItems = getFacade().findByJpql(sql);
             if (searchItems != null && !searchItems.isEmpty()) {
                 current = searchItems.get(0);
             } else {
@@ -142,7 +157,7 @@ public class DepartmentController implements Serializable {
             String sql = "Select d From Department d "
                     + " where d.retired=false "
                     + " and d.institution.id=" + getSessionController().getInstitution().getId();
-            items = getFacade().findBySQL(sql);
+            items = getFacade().findByJpql(sql);
         } else {
             String sql = "Select d From Department d "
                     + " where d.retired=false"
@@ -158,7 +173,7 @@ public class DepartmentController implements Serializable {
         List<Department> departments;
         String sql = "Select d From Department d "
                 + " where d.retired=false ";
-        departments = getFacade().findBySQL(sql);
+        departments = getFacade().findByJpql(sql);
         return departments;
     }
 
@@ -205,7 +220,7 @@ public class DepartmentController implements Serializable {
     public List<Department> getLogedDepartments() {
 
         String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getSessionController().getInstitution().getId();
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
 
         return items;
     }
@@ -215,7 +230,7 @@ public class DepartmentController implements Serializable {
     }
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -256,6 +271,37 @@ public class DepartmentController implements Serializable {
                 + " and (c.name) like :q"
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
+        departmentList = getFacade().findByJpql(sql, hm);
+
+        return departmentList;
+    }
+
+    public List<Department> completeDeptWithIns(String qry) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        Institution selectedInstitution = (Institution) UIComponent.getCurrentComponent(context).getAttributes().get("selectedInstitution");
+        String sql;
+        HashMap<String, Object> hm = new HashMap<>();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        hm.put("ins", selectedInstitution);
+        departmentList = getFacade().findByJpql(sql, hm);
+        return departmentList;
+    }
+
+    public List<Department> completeDept(String qry, Institution ins) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and (c.name) like :q "
+                + " and c.institution=:ins "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        hm.put("ins", ins);
         departmentList = getFacade().findByJpql(sql, hm);
 
         return departmentList;
@@ -358,7 +404,7 @@ public class DepartmentController implements Serializable {
         if (m == null) {
             m = new HashMap();
         }
-        return getFacade().findBySQL(jpql, m, t);
+        return getFacade().findByJpql(jpql, m, t);
     }
 
     public List<Department> getInstitutionDepatrments(Institution ins, boolean includeAllInstitutionDepartmentsIfInstitutionIsNull, DepartmentType departmentType) {
@@ -487,9 +533,9 @@ public class DepartmentController implements Serializable {
         if (dep == null) {
             return;
         }
-        if(dep.getId()==null){
-             getFacade().create(dep);
-        }else{
+        if (dep.getId() == null) {
+            getFacade().create(dep);
+        } else {
             getFacade().edit(dep);
         }
     }
@@ -500,7 +546,6 @@ public class DepartmentController implements Serializable {
     /**
      *
      */
-
     @FacesConverter(forClass = Department.class)
     public static class DepartmentConverter implements Converter {
 

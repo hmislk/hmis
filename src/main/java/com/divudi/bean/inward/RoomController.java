@@ -44,7 +44,7 @@ public class RoomController implements Serializable {
     String selectText = "";
 
     public List<Room> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Room c where c.retired=false  and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Room c where c.retired=false  and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -137,7 +137,7 @@ public class RoomController implements Serializable {
     public List<Room> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Room i where i.retired=false  order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

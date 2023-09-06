@@ -52,7 +52,7 @@ public class WebUserRoleController implements Serializable {
     }
 
     public List<WebUserRole> getCircularEditorRoles() {
-        circularEditorRoles = getFacade().findBySQL("Select d From WebUserRole d where d.name = 'circular_viewer' or d.name = 'circular_adder' or d.name = 'circular_editor' ");
+        circularEditorRoles = getFacade().findByJpql("Select d From WebUserRole d where d.name = 'circular_viewer' or d.name = 'circular_adder' or d.name = 'circular_editor' ");
         return circularEditorRoles;
     }
 
@@ -61,7 +61,7 @@ public class WebUserRoleController implements Serializable {
     }
 
     public List<WebUserRole> getCircularAdderRoles() {
-        circularAdderRoles = getFacade().findBySQL("Select d From WebUserRole d where d.name = 'circular_viewer' or d.name = 'circular_adder' ");
+        circularAdderRoles = getFacade().findByJpql("Select d From WebUserRole d where d.name = 'circular_viewer' or d.name = 'circular_adder' ");
         return circularAdderRoles;
     }
 
@@ -70,7 +70,7 @@ public class WebUserRoleController implements Serializable {
     }
 
     public List<WebUserRole> getCircularViewerRoles() {
-        circularViewerRoles = getFacade().findBySQL("Select d From WebUserRole d where d.name = 'circular_viewer'");
+        circularViewerRoles = getFacade().findByJpql("Select d From WebUserRole d where d.name = 'circular_viewer'");
         return circularViewerRoles;
     }
 
@@ -106,7 +106,7 @@ public class WebUserRoleController implements Serializable {
     }
 
     public List<WebUserRole> getAdminRoles() {
-        adminRoles = getFacade().findBySQL("Select d From WebUserRole d");
+        adminRoles = getFacade().findByJpql("Select d From WebUserRole d");
         //////// // System.out.println("Count of admins roles is " + adminRoles.size());
         return adminRoles;
     }
@@ -131,7 +131,7 @@ public class WebUserRoleController implements Serializable {
         if (items == null) {
             String j;
             j="select r from WebUserRole r where r.retired=false order byr.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

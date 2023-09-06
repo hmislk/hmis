@@ -162,7 +162,7 @@ public class ChannelSessionWizard implements Serializable {
         } else {
             if (getCurrentStaff() != null) {
                 sql = "select p from ServiceSession p where p.retired=false and p.name like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
-                suggestions = getServiceSessionFacade().findBySQL(sql);
+                suggestions = getServiceSessionFacade().findByJpql(sql);
             } else {
                 suggestions = new ArrayList<ServiceSession>();
             }
@@ -183,7 +183,7 @@ public class ChannelSessionWizard implements Serializable {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }

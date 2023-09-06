@@ -205,7 +205,7 @@ public class PracticeBookingController implements Serializable {
         List<Doctor> docs;
         if (speciality == null) {
             sql = "select d from Doctor d where d.retired=false order by d.person.name";
-            docs = getDoctorFacade().findBySQL(sql);
+            docs = getDoctorFacade().findByJpql(sql);
         } else {
             sql = "select d from Doctor d where d.retired=false and d.speciality=:sp order by d.person.name";
             m.put("sp", speciality);
@@ -476,7 +476,7 @@ public class PracticeBookingController implements Serializable {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -491,7 +491,7 @@ public class PracticeBookingController implements Serializable {
             sql = "select p from Doctor p where p.retired=false order by p.person.name";
         }
         //////// // System.out.println(sql);
-        suggestions = getStaffFacade().findBySQL(sql);
+        suggestions = getStaffFacade().findByJpql(sql);
 
         return suggestions;
     }
@@ -530,7 +530,7 @@ public class PracticeBookingController implements Serializable {
                 try {
                     //////// // System.out.println("staff is " + staff);
                     sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getDoctor().getId() + " order by s.sessionWeekday";
-                    List<ServiceSession> tmp = getServiceSessionFacade().findBySQL(sql);
+                    List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql);
                     //////// // System.out.println("tmp is " + tmp.size());
                     if (!tmp.isEmpty()) {
                         serviceSessions = getChannelBean().setSessionAt(tmp);
@@ -566,7 +566,7 @@ public class PracticeBookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("ss", getSelectedServiceSession());
-        billSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
     }
 
     public void listCompleteAndToCompleteBillSessions() {
@@ -596,7 +596,7 @@ public class PracticeBookingController implements Serializable {
         hh.put("ssDate", sessionDate);
         PatientEncounter pe = new PatientEncounter();
 //        pe.getBillSession().getSessionDate();
-        encounters = patientEncounterFacade.findBySQL(sql, hh, TemporalType.DATE);
+        encounters = patientEncounterFacade.findByJpql(sql, hh, TemporalType.DATE);
         
         commonController.printReportDetails(fromDate, toDate, startTime, "EHR/Reports/Daily visits/(/faces/clinical/report_queue.xhtml)");
     }
@@ -627,7 +627,7 @@ public class PracticeBookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("ss", getSelectedServiceSession());
-        completedSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        completedSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
     }
 
     public void listToCompleteBillSessions() {
@@ -637,7 +637,7 @@ public class PracticeBookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("ssDate", sessionDate);
         hh.put("ss", getSelectedServiceSession());
-        toCompleteSessions = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        toCompleteSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
     }
 
     public List<BillSession> getBillSessions() {

@@ -1322,7 +1322,7 @@ public class BookKeepingSummery implements Serializable {
         hm.put("ins", institution);
         hm.put("dep", getSessionController().getDepartment());
 
-        List<Item> itm = itemfacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Item> itm = itemfacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
 //        for (Item it : itm) {
 //            ////// // System.out.println("item" + it.getName());
@@ -1379,7 +1379,7 @@ public class BookKeepingSummery implements Serializable {
             sql += " and bf.bill.refunded=false ";
         }
 
-        List<Item> itm = itemfacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Item> itm = itemfacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return itm;
 
@@ -1542,7 +1542,7 @@ public class BookKeepingSummery implements Serializable {
             sql += " and b.refunded=false ";
         }
 
-        List<Bill> value = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> value = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return value;
 
@@ -3303,7 +3303,7 @@ public class BookKeepingSummery implements Serializable {
 //        temMap.put("pms", paymentMethods);
 
         double d = 0.0;
-        List<BillFee> bfs = getBillFeeFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        List<BillFee> bfs = getBillFeeFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         for (BillFee bf : bfs) {
             d += bf.getFeeVat();
         }
@@ -4761,7 +4761,7 @@ public class BookKeepingSummery implements Serializable {
         m.put("bTp", BillType.OpdBill);
         m.put("pms", paymentMethods);
 
-        cats = categoryFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        cats = categoryFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return cats;
     }
@@ -4790,7 +4790,7 @@ public class BookKeepingSummery implements Serializable {
         m.put("bTp", BillType.OpdBill);
         m.put("pms", paymentMethods);
 
-        cats = categoryFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        cats = categoryFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return cats;
     }

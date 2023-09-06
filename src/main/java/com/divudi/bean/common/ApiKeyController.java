@@ -66,7 +66,7 @@ public class ApiKeyController implements Serializable {
         Map m = new HashMap();
         m.put("wu", sessionController.getLoggedUser());
         m.put("ed", new Date());
-        items = getFacade().findBySQL(j, m, TemporalType.DATE);
+        items = getFacade().findByJpql(j, m, TemporalType.DATE);
     }
     
     public ApiKey findApiKey(String keyValue) {

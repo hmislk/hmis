@@ -124,7 +124,7 @@ public class BillEjb implements Serializable {
             sql += " and (bi.item.department=:idep ) ";
             temMap.put("idep", itemDepartment);
         }
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<PatientInvestigation> getPatientInvestigations(Item item, Date fromDate,
@@ -175,7 +175,7 @@ public class BillEjb implements Serializable {
             sql += " and (bi.item.department=:idep ) ";
             temMap.put("idep", itemDepartment);
         }
-        return piFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return piFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Item> getItemsInBills(Date fromDate,
@@ -232,7 +232,7 @@ public class BillEjb implements Serializable {
             sql += " and type(bi.item) in :ics ";
             temMap.put("ics", ics);
         }
-        return itemFacade.findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return itemFacade.findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public BillListWithTotals findBillsAndTotals(Date fromDate, Date toDate, BillType[] billTypes,
@@ -332,7 +332,7 @@ public class BillEjb implements Serializable {
         ////// // System.out.println("before r");
         BillListWithTotals r = new BillListWithTotals();
         ////// // System.out.println("r = " + r);
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         ////// // System.out.println("r = " + r);
         r.setBills(bills);
 
