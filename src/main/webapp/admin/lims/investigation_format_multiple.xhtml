@@ -9,7 +9,7 @@
 
     <h:body>
 
-        <ui:composition template="/lab/administration.xhtml">
+        <ui:composition template="/admin/lims/index.xhtml">
 
             <ui:define name="subcontent">
                 <h:form id="form">
@@ -19,6 +19,10 @@
                             <p:panel header="Investigation">
                                 <f:facet name="header" >
                                     <h:outputText value="Investigation" ></h:outputText>
+                                    <p:commandButton 
+                                        value="Back" 
+                                        action="/admin/lims/investigation" ajax="false" ></p:commandButton>
+
                                 </f:facet>
                                 <h:panelGrid columns="1" >
                                     <p:panelGrid columns="1">
