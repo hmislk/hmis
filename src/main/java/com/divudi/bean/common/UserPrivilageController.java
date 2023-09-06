@@ -15,11 +15,11 @@ import com.divudi.entity.WebUserPrivilege;
 import com.divudi.facade.WebUserPrivilegeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -28,11 +28,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.model.TreeNode;
 
-//import org.primefaces.examples.domain.Document;  
-//import org.primefaces.model;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, PGIM Trainee for MSc(Biomedical
@@ -42,23 +39,21 @@ import org.primefaces.model.TreeNode;
 @SessionScoped
 public class UserPrivilageController implements Serializable {
 
-    private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
     @EJB
     private WebUserPrivilegeFacade ejbFacade;
+
+    private static final long serialVersionUID = 1L;
+
     private List<WebUserPrivilege> selectedItems;
-    private WebUserPrivilege current;
     private WebUser currentWebUser;
-    private List<WebUserPrivilege> items = null;
-    //private Privileges currentPrivileges;
-    private TreeNode root;
+
     private TreeNode[] selectedNodes;
-    private List<Privileges> privilegeList;
+    private TreeNode rootTreeNode;
 
     private TreeNode createTreeNode() {
         TreeNode tmproot = new PrivilageNode("Root", null);
-
         TreeNode node0 = new PrivilageNode("OPD", tmproot);
         TreeNode node00 = new PrivilageNode("Billing Menu", node0, Privileges.Opd);
         TreeNode node01 = new PrivilageNode("Bill", node0, Privileges.OpdBilling);
@@ -467,15 +462,11 @@ public class UserPrivilageController implements Serializable {
     }
 
     public UserPrivilageController() {
-        root = createTreeNode();
     }
 
-    public TreeNode getRoot2() {
-        return root;
-    }
-
-    public void setRoot2(TreeNode root2) {
-        this.root = root2;
+    @PostConstruct
+    public void init() {
+        rootTreeNode = createTreeNode();
     }
 
     public TreeNode[] getSelectedNodes() {
@@ -486,214 +477,167 @@ public class UserPrivilageController implements Serializable {
         this.selectedNodes = selectedNodes;
     }
 
-    private void removeAllPrivilages() {
-        String sql = "SELECT i FROM WebUserPrivilege i where i.webUser.id= " + getCurrentWebUser().getId();
-        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql);
-
-        for (WebUserPrivilege wb : tmp) {
-            wb.setRetired(true);
-            getEjbFacade().edit(wb);
-        }
-
-    }
-
     public void savePrivileges() {
         if (currentWebUser == null) {
             UtilityController.addErrorMessage("Please select a user");
             return;
         }
-        if (selectedNodes != null && selectedNodes.length > 0) {
-            removeAllPrivilages();
-            for (TreeNode node : selectedNodes) {
-                Privileges p;
-                p = ((PrivilageNode) node).getP();
-                addSinglePrivilege(p);
-            }
-        }
-        getItems();
-    }
-
-    public void addSinglePrivilege(Privileges p) {
-        if (p == null) {
-            return;
-        }
-        WebUserPrivilege wup;
-        Map m = new HashMap();
-        m.put("wup", p);
-        String sql = "SELECT i FROM WebUserPrivilege i where i.retired=false and i.webUser.id= " + getCurrentWebUser().getId() + " and i.privilege=:wup ";
-        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql, m, TemporalType.DATE);
-
-        if (tmp == null || tmp.isEmpty()) {
-            wup = new WebUserPrivilege();
-            wup.setCreater(getSessionController().getLoggedUser());
-            wup.setCreatedAt(Calendar.getInstance().getTime());
-            wup.setPrivilege(p);
-            wup.setWebUser(getCurrentWebUser());
-            getFacade().create(wup);
-        }
-
-//        for (WebUserPrivilege wu : tmpNode) {
-//            wu.setRetired(false);
-//        }
-    }
-
-    public void remove() {
-        if (getCurrent() == null) {
-            UtilityController.addErrorMessage("Select Privilage");
-            return;
-        }
-
-        getCurrent().setRetired(true);
-
-        getFacade().edit(getCurrent());
-    }
-
-    private void recreateModel() {
-        items = null;
+        saveWebUserPrivileges();
     }
 
     public WebUserPrivilegeFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(WebUserPrivilegeFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
+    public List<TreeNode> collectNodes(TreeNode node) {
+        List<TreeNode> nodeList = new ArrayList<>();
+        collectNodesHelper(node, nodeList);
+        return nodeList;
     }
 
-    public SessionController getSessionController() {
-        return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
-    }
-
-    public WebUserPrivilege getCurrent() {
-        if (current == null) {
-            current = new WebUserPrivilege();
-
+    private void collectNodesHelper(TreeNode node, List<TreeNode> nodeList) {
+        if (node == null) {
+            return;
         }
-        return current;
-    }
-
-    public void setCurrent(WebUserPrivilege current) {
-        this.current = current;
-    }
-
-    public void delete() {
-
-        if (current != null) {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            UtilityController.addSuccessMessage("Deleted Successfully");
-        } else {
-            UtilityController.addSuccessMessage("Nothing to Delete");
-        }
-        recreateModel();
-        getItems();
-        current = null;
-        getCurrent();
-    }
-
-    private WebUserPrivilegeFacade getFacade() {
-        return ejbFacade;
-    }
-    private TreeNode tmpNode;
-
-    private void unselectNode() {
-        for (Object objectN : root.getChildren()) {
-            TreeNode n = (TreeNode) objectN;
-            n.setSelected(false);
-            for (Object objectN1 : n.getChildren()) {
-                TreeNode n1 = (TreeNode) objectN1;
-                n1.setSelected(false);
-                for (Object objectN2 : n1.getChildren()) {
-                    TreeNode n2 = (TreeNode) objectN2;
-                    n2.setSelected(false);
-                }
+        nodeList.add(node);
+        for (Object object : node.getChildren()) {
+            if (object instanceof TreeNode) {
+                TreeNode child = (TreeNode) object;
+                collectNodesHelper(child, nodeList);
             }
         }
-        tmpNode = root;
     }
 
-    public List<WebUserPrivilege> getItems() {
-        if (getCurrentWebUser() == null) {
-            root = createTreeNode();
-            tmpNode = root;
-            return new ArrayList<>();
-
+    public void markWebUserPrivileges() {
+        List<WebUserPrivilege> wups = new ArrayList<>();
+        if (currentWebUser != null) {
+            String j = "SELECT i "
+                    + " FROM WebUserPrivilege i "
+                    + " where i.webUser=:wu ";
+            Map m = new HashMap();
+            m.put("wu", currentWebUser);
+            wups = getEjbFacade().findByJpql(j, m);
         }
-
-        String sql = "SELECT i FROM WebUserPrivilege i where i.retired=false and i.webUser.id= " + getCurrentWebUser().getId() + " order by i.webUser.webUserPerson.name";
-        items = getEjbFacade().findBySQL(sql);
-        if (items == null) {
-            items = new ArrayList<>();
-            root = createTreeNode();
-            tmpNode = root;
-            return items;
-        }
-
-        root = createTreeNode();
-        for (WebUserPrivilege wup : items) {
-            for (Object objectN : root.getChildren()) {
-                TreeNode n = (TreeNode) objectN;
-                if (wup.getPrivilege() == ((PrivilageNode) n).getP()) {
-                    n.setSelected(true);
+        List<TreeNode> tmpAllNodes = collectNodes(rootTreeNode);
+        for (TreeNode ttn : tmpAllNodes) {
+            if (!ttn.isLeaf()) {
+                continue;
+            }
+            PrivilageNode tpn = null;
+            if (ttn instanceof PrivilageNode) {
+                tpn = (PrivilageNode) ttn;
+            }
+            if (tpn == null) {
+                continue;
+            }
+            Privileges tp = null;
+            if (tpn.getP() == null) {
+                continue;
+            }
+            tp = tpn.getP();
+            for (WebUserPrivilege twup : wups) {
+                if (twup.getPrivilege() == null) {
+                    continue;
                 }
-                for (Object objectN1 : n.getChildren()) {
-                    TreeNode n1 = (TreeNode) objectN1;
-                    if (wup.getPrivilege() == ((PrivilageNode) n1).getP()) {
-                        n1.setSelected(true);
-                    }
-                    for (Object objectN2 : n1.getChildren()) {
-                        TreeNode n2 = (TreeNode) objectN2;
-                        if (wup.getPrivilege() == ((PrivilageNode) n2).getP()) {
-                            n2.setSelected(true);
-                        }
+                if (twup.getPrivilege().equals(tp)) {
+                    if (!twup.isRetired()) {
+                        ttn.setSelected(true);
                     }
                 }
             }
         }
-
-        tmpNode = root;
-        return items;
+        markParentNodes(rootTreeNode);
     }
 
-//    public void markTreeNode(Privileges p, TreeNode n) {
-//        if (p == null) {
-//            return;
-//        }
-//        n.setSelected(false);
-//        Map m = new HashMap();
-//        m.put("wup", p);
-//        String sql = "SELECT i FROM WebUserPrivilege i where i.webUser.id= " + getCurrentWebUser().getId() + " and i.privilege=:wup ";
-//        List<WebUserPrivilege> tmp = getEjbFacade().findBySQL(sql, m, TemporalType.DATE);
-//        if (tmp == null || tmp.isEmpty()) {
-//            for (WebUserPrivilege wu : tmp) {
-//                if (!wu.isRetired()) {
-//                    n.setSelected(true);
-//                }
-//            }
-//        }
-//    }
+    private boolean markParentNodes(TreeNode node) {
+        if (node.isLeaf()) {
+            return node.isSelected();
+        }
+
+        boolean allChildrenSelected = true;
+        for (Object object : node.getChildren()) {
+            if (object instanceof TreeNode) {
+                TreeNode child = (TreeNode) object;
+                boolean childSelected = markParentNodes(child);
+                if (!childSelected) {
+                    allChildrenSelected = false;
+                }
+            }
+        }
+
+        node.setSelected(allChildrenSelected);
+        return allChildrenSelected;
+    }
+
+    public void saveWebUserPrivileges() {
+        List<WebUserPrivilege> wups = new ArrayList<>();
+        List<WebUserPrivilege> nwups = new ArrayList<>();
+        if (currentWebUser != null) {
+            String j = "SELECT i "
+                    + " FROM WebUserPrivilege i "
+                    + " where i.webUser=:wu ";
+            Map m = new HashMap();
+            m.put("wu", currentWebUser);
+            wups = getEjbFacade().findByJpql(j, m);
+        }
+        List<TreeNode> tmpAllNodes = collectNodes(rootTreeNode);
+        for (TreeNode ttn : tmpAllNodes) {
+            if (!ttn.isLeaf()) {
+                continue;
+            }
+            PrivilageNode tpn = null;
+            if (ttn instanceof PrivilageNode) {
+                tpn = (PrivilageNode) ttn;
+            }
+            if (tpn == null) {
+                continue;
+            }
+            Privileges tp = null;
+            if (tpn.getP() == null) {
+                continue;
+            }
+            boolean needToCreateNew = true;
+            tp = tpn.getP();
+            WebUserPrivilege correctWup = null;
+            for (WebUserPrivilege twup : wups) {
+                if (twup.getPrivilege() == null) {
+                    continue;
+                }
+                if (twup.getPrivilege().equals(tp)) {
+                    correctWup = twup;
+                }
+            }
+            if (ttn.isSelected()) {
+                if (correctWup != null) {
+                    correctWup.setRetired(false);
+                    needToCreateNew = false;
+                }
+            } else {
+                needToCreateNew = false;
+                if (correctWup != null) {
+                    correctWup.setRetired(true);
+                    needToCreateNew = false;
+                }
+            }
+            if (needToCreateNew) {
+                WebUserPrivilege nwup = new WebUserPrivilege();
+                nwup.setWebUser(currentWebUser);
+                nwup.setPrivilege(tp);
+                nwup.setCreatedAt(new Date());
+                nwup.setCreater(sessionController.getLoggedUser());
+                nwups.add(nwup);
+            }
+        }
+        getFacade().batchCreate(nwups);
+        getFacade().batchEdit(wups);
+    }
+
     public WebUser getCurrentWebUser() {
         return currentWebUser;
     }
 
     public void setCurrentWebUser(WebUser currentWebUser) {
         this.currentWebUser = currentWebUser;
-        tmpNode = null;
-    }
-
-    public List<Privileges> getPrivilegeList() {
-        return privilegeList;
-    }
-
-    public void setPrivilegeList(List<Privileges> privilegeList) {
-        this.privilegeList = privilegeList;
-
     }
 
     public List<WebUserPrivilege> getSelectedItems() {
@@ -704,24 +648,20 @@ public class UserPrivilageController implements Serializable {
         this.selectedItems = selectedItems;
     }
 
-    public TreeNode getTmp() {
-        getItems();
-        return tmpNode;
+    public TreeNode getRootTreeNode() {
+        return rootTreeNode;
     }
 
-    public void setTmp(TreeNode tmp) {
-        this.tmpNode = tmp;
+    public void setRootTreeNode(TreeNode tmp) {
+        this.rootTreeNode = tmp;
     }
 
-    public TreeNode getRoot() {
-        return root;
+    public void createSelectedPrivilegesForUser() {
+        markWebUserPrivileges();
     }
 
-    public void setRoot(TreeNode root) {
-        this.root = root;
-    }
-
-    void createSelectedPrivilegesForUser() {
+    private WebUserPrivilegeFacade getFacade() {
+        return ejbFacade;
 
     }
 

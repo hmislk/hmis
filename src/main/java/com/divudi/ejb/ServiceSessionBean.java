@@ -134,7 +134,7 @@ public class ServiceSessionBean {
         Map m = new HashMap();
         m.put("catId", c.getId());
         m.put("sd", d);
-        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(s, m, TemporalType.DATE);
         return billSessions;
     }
 
@@ -149,7 +149,7 @@ public class ServiceSessionBean {
         Map m = new HashMap();
         m.put("item", i);
         m.put("sd", d);
-        billSessions = getBillSessionFacade().findBySQL(s, m, TemporalType.DATE);
+        billSessions = getBillSessionFacade().findByJpql(s, m, TemporalType.DATE);
         return billSessions;
     }
 
@@ -254,7 +254,7 @@ public class ServiceSessionBean {
         hh.put("class", BilledBill.class);
         hh.put("ss", serviceSession.getSessionNumberGenerator());
 
-        List<BillSession> lgValue = getBillSessionFacade().findBySQL(sql, hh, TemporalType.DATE);
+        List<BillSession> lgValue = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("hh = " + hh);
         ////// // System.out.println("lgValue.size() = " + lgValue.size());

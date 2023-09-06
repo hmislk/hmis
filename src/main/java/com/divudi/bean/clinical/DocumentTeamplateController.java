@@ -60,7 +60,7 @@ public class DocumentTeamplateController implements Serializable {
                 + " and c.name like :n "
                 + " and c.symanticType=:t "
                 + " order by c.name";
-        c = getFacade().findBySQL(sql, m, 10);
+        c = getFacade().findByJpql(sql, m, 10);
         if (c == null) {
             c = new ArrayList<>();
         }

@@ -276,7 +276,7 @@ public class ApiInward {
                 + " and pe.discharged!=true "
                 + " order by pe.id desc";
         m.put("class", Admission.class);
-        suggestions = getPatientEncounterFacade().findBySQL(sql, m, 20);
+        suggestions = getPatientEncounterFacade().findByJpql(sql, m, 20);
 //        //// // System.out.println("1.suggestions.size() = " + suggestions.size());
 
         sql = "select pe from PatientEncounter pe where pe.retired=false "
@@ -288,7 +288,7 @@ public class ApiInward {
                 + " order by pe.id desc";
 
         m.put("d", 0.1);
-        List<PatientEncounter> temps = getPatientEncounterFacade().findBySQL(sql, m, 20);
+        List<PatientEncounter> temps = getPatientEncounterFacade().findByJpql(sql, m, 20);
 //        //// // System.out.println("temps.size() = " + temps.size());
         List<PatientEncounter> removeTemps = new ArrayList<>();
         for (PatientEncounter p : temps) {

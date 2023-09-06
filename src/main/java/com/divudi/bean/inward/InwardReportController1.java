@@ -304,7 +304,7 @@ public class InwardReportController1 implements Serializable {
         hm.put("cat", roomCategory);
         hm.put("fromDate", fromDate);
         hm.put("toDate", toDate);
-        return patientRoomFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return patientRoomFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -695,7 +695,7 @@ public class InwardReportController1 implements Serializable {
         hm.put("fd", fromDate);
         hm.put("td", toDate);
 
-        List<PatientEncounter> list = patientEncounterFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<PatientEncounter> list = patientEncounterFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         for (PatientEncounter patientEncounter : list) {
             Bill finalBill = inwardBeanController.fetchFinalBill(patientEncounter);
             if (finalBill == null) {
@@ -1110,7 +1110,7 @@ public class InwardReportController1 implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 
-        billItems = BillItemFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         totalBhtCreditPayments();
         
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Reports/BHT payment(/faces/credit/inward_bht_credit_payment_report.xhtml)");
@@ -1189,7 +1189,7 @@ public class InwardReportController1 implements Serializable {
         hm.put("frm", getFromDate());
         hm.put("to", getToDate());
 
-        billItems = BillItemFacade.findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        billItems = BillItemFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         totalOfOpdCreditPayments();
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Payments/Receieve/Credit Company/Reports/OPD payment(/faces/credit/opd_credit_payment_report.xhtml)");
@@ -1316,7 +1316,7 @@ public class InwardReportController1 implements Serializable {
 
         sql += " order by bi.bill.patientEncounter.bhtNo ,bi.inwardChargeType";
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         Double[] dbl = fetchFinalBillTotals();
 
@@ -1667,7 +1667,7 @@ public class InwardReportController1 implements Serializable {
             m.put("crdcom", institution);
         }
 
-        paidbyPatient = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        paidbyPatient = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalofCreatePaidByPatient();
 
     }
@@ -1733,7 +1733,7 @@ public class InwardReportController1 implements Serializable {
             m.put("crdcom", institution);
         }
 
-        billItems = BillItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = BillItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalofCreateCreditPayment();
 
     }
@@ -1809,7 +1809,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql = sql + " order by bf.bill.patientEncounter.bhtNo";
-        billFees = billFeeFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getBhtNo();
@@ -1880,7 +1880,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql = sql + " order by bf.bill.patientEncounter.bhtNo";
-        billFees = billFeeFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billFees = billFeeFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getBhtNo();
@@ -2023,7 +2023,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql += " order by bf.patientEncounter.bhtNo";
-        patientRooms = patientRoomFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        patientRooms = patientRoomFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getBhtNo();
@@ -2073,7 +2073,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql += " order by bi.bill.patientEncounter.bhtNo";
-        billItemAdimissionFee = BillItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItemAdimissionFee = BillItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalOfProcessInwardChargesAdmissionFee();
 
 //        PatientEncounter pe = new PatientEncounter();
@@ -2155,7 +2155,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql += " order by bi.bill.patientEncounter.bhtNo";
-        billItemMediciene = BillItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItemMediciene = BillItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalOfProcessInwardChargesMediceine();
 
 //        PatientEncounter pe = new PatientEncounter();
@@ -2237,7 +2237,7 @@ public class InwardReportController1 implements Serializable {
         }
 
         sql += " order by bi.bill.patientEncounter.bhtNo";
-        billItemGeneralIssuing = BillItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItemGeneralIssuing = BillItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         totalOfProcessInwardChargesIssuing();
 
 //        PatientEncounter pe = new PatientEncounter();
@@ -2319,7 +2319,7 @@ public class InwardReportController1 implements Serializable {
         sql += " order by bi.bill.patientEncounter.bhtNo";
         ////// // System.out.println("m = " + m);
         ////// // System.out.println("sql = " + sql);
-        billItemOutSide = BillItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItemOutSide = BillItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
         ////// // System.out.println("billItemOutSide = " + billItemOutSide);
         totalOfProcessInwardChargesOutSideCharges();
 

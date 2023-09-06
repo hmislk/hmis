@@ -182,7 +182,7 @@ public class QuickBookReportController implements Serializable {
         m.put("toDate", td);
         m.put("fromDate", fd);
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return tmp;
@@ -211,7 +211,7 @@ public class QuickBookReportController implements Serializable {
         m.put("toDate", td);
         m.put("fromDate", fd);
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return tmp;
@@ -238,7 +238,7 @@ public class QuickBookReportController implements Serializable {
         m.put("fromDate", fd);
         m.put("typ", Investigation.class);
 
-        List<Item> tmp = getItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return tmp;
@@ -1963,7 +1963,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("bts", bts);
         temMap.put("pms", paymentMethods);
 
-        List<Bill> bills = getBillFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
@@ -2159,7 +2159,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pm", PaymentMethod.Credit);
 
 
-        creditCompanies = getInstitutionFacade().findBySQL(jpql, temMap, TemporalType.TIMESTAMP);
+        creditCompanies = getInstitutionFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
         return creditCompanies;
     }
 
@@ -2182,7 +2182,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("d", dep);
         temMap.put("ins", ins);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -2201,7 +2201,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("btps", billTypes);
         temMap.put("ins", ins);
 
-        return getDepartmentFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getDepartmentFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -2242,7 +2242,7 @@ public class QuickBookReportController implements Serializable {
         m.put("td", getCommonFunctions().getEndOfDay(td));
         m.put("billType", BillType.InwardFinalBill);
 
-        pes = getPatientEncounterFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 
         return pes;

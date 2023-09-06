@@ -772,7 +772,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean checkUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (getSecurityController().matchPassword(passord, u.getWebUserPassword())) {
@@ -855,7 +855,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     public void decryptAllUsers() {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u";
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         int i = 1;
         for (WebUser u : allUsers) {
             try {
@@ -1172,7 +1172,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean canLogToDept(WebUser e, Department d) {
         String sql;
         sql = "select wd from WebUserDepartment wd where wd.retired=false and wd.webUser.id=" + e.getId() + " and wd.department.id = " + d.getId();
-        return !getWebUserDepartmentFacade().findBySQL(sql).isEmpty();
+        return !getWebUserDepartmentFacade().findByJpql(sql).isEmpty();
     }
 
     private List<Department> listLoggableDepts(WebUser e) {
@@ -1467,7 +1467,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             String sql;
             sql = "select w from WebUserPrivilege w where w.retired=false and w.webUser.id = " + getLoggedUser().getId();
             //////// // System.out.println("5");
-            userPrivilages = getWebUserPrivilegeFacade().findBySQL(sql);
+            userPrivilages = getWebUserPrivilegeFacade().findByJpql(sql);
         }
         if (userPrivilages == null) {
             userPrivilages = new ArrayList<>();

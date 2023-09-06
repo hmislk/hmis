@@ -578,12 +578,12 @@ public class PatientController implements Serializable {
 
     public void listAllPatients() {
         String j = "select p from Patient p where p.retired=false order by p.person.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public void listAllMembers() {
         String j = "select p from Patient p where p.retired=false and p.person.membershipScheme is not null order by p.person.name";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public void changeMembershipOfSelectedPersons() {
@@ -1017,7 +1017,7 @@ public class PatientController implements Serializable {
                     + "  order by p.person.name";
             hm.put("q", "%" + query.toUpperCase() + "%");
             //////System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, hm, 20);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
     }
@@ -1040,7 +1040,7 @@ public class PatientController implements Serializable {
                 + " or (p.phn) like :q) ";
         sql += " order by p.person.name";
         hm.put("q", "%" + query.toUpperCase() + "%");
-        patientList = getFacade().findBySQL(sql, hm, 20);
+        patientList = getFacade().findByJpql(sql, hm, 20);
         commonController.printReportDetails(null, null, startTime, "Autocomplet Patient Search");
         return patientList;
     }
@@ -1056,7 +1056,7 @@ public class PatientController implements Serializable {
 
         sql = "select count(p) FROM Patient p where p.code is not null";
 
-        long lng = getEjbFacade().countBySql(sql);
+        long lng = getEjbFacade().countByJpql(sql);
         lng++;
         String str = "";
         str += lng;
@@ -1160,8 +1160,6 @@ public class PatientController implements Serializable {
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().create(getCurrent().getPerson());
         } else {
-//            getCurrent().getPerson().setEditedAt(Calendar.getInstance().getTime());
-//            getCurrent().getPerson().setEditer(getSessionController().getLoggedUser());
             getPersonFacade().edit(getCurrent().getPerson());
         }
         if (getCurrent().getId() == null) {
@@ -1170,13 +1168,11 @@ public class PatientController implements Serializable {
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved as a new patient successfully.");
         } else {
-//            getCurrent().setEditedAt(Calendar.getInstance().getTime());
-//            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
             UtilityController.addSuccessMessage("Updated the patient details successfully.");
         }
-        getPersonFacade().flush();
-        getFacade().flush();
+//        getPersonFacade().flush();
+//        getFacade().flush();
     }
 
     public void createPatientList() {
@@ -1201,7 +1197,7 @@ public class PatientController implements Serializable {
             }
             m.put("code", "");
             sql += " order by p.code ";
-            patientList = getFacade().findBySQL(sql, m, getReportKeyWord().getNumOfRows());
+            patientList = getFacade().findByJpql(sql, m, getReportKeyWord().getNumOfRows());
             for (Patient p : patientList) {
                 if (p.getCreatedAt() != null) {
                     m = new HashMap();
@@ -1233,7 +1229,7 @@ public class PatientController implements Serializable {
                 sql += " where p.retired=true ";
             }
             sql += " order by p.createdAt desc ";
-            patientList = getFacade().findBySQL(sql, getReportKeyWord().getNumOfRows());
+            patientList = getFacade().findByJpql(sql, getReportKeyWord().getNumOfRows());
         }
 
     }
@@ -1333,7 +1329,7 @@ public class PatientController implements Serializable {
     public void fillAllPatients() {
         String sql;
         sql = "select p from Patient p where p.retired = false order by p.person.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public List<Patient> getItemsByDob() {

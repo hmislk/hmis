@@ -196,11 +196,11 @@ public class Lims {
 
         // Fetch necessary data
         WebUser requestSendingUser = findRequestSendingUser(username, password);
-//        System.out.println("requestSendingUser = " + requestSendingUser);
+        System.out.println("requestSendingUser = " + requestSendingUser);
         List<Bill> patientBills = getPatientBillsForId(billId, requestSendingUser);
-//        System.out.println("patientBills = " + patientBills);
+        System.out.println("patientBills = " + patientBills);
         List<PatientSample> ptSamples = getPatientSamplesForBillId(patientBills, requestSendingUser);
-//        System.out.println("ptSamples = " + ptSamples);
+
         // Check if necessary data is present
         if (requestSendingUser == null) {
             return constructErrorJson(1, "Username / password mismatch.", billId);
@@ -211,6 +211,7 @@ public class Lims {
         if (ptSamples == null || ptSamples.isEmpty()) {
             return constructErrorJson(2, "Error in Sample Generation. Please check investigation settings.", billId);
         }
+        System.out.println("ptSamples = " + ptSamples.size());
 
         Set<Long> uniqueIds = new HashSet<>();
         JSONArray array = new JSONArray();
@@ -386,6 +387,7 @@ public class Lims {
     }
 
     public List<PatientSample> prepareSampleCollectionByBillsForRequestss(List<Bill> bills, WebUser wu) {
+        System.out.println("prepareSampleCollectionByBillsForRequestss");
         String j = "";
         Map m;
         Map<Long, PatientSample> rPatientSamplesMap = new HashMap<>();
@@ -393,6 +395,8 @@ public class Lims {
         if (bills == null) {
             return null;
         }
+
+        System.out.println("bills = " + bills.size());
 
         for (Bill b : bills) {
             m = new HashMap();
@@ -403,9 +407,21 @@ public class Lims {
                     + " and pi.billItem.bill=:bill";
             List<PatientInvestigation> pis = patientInvestigationFacade.findByJpql(j, m);
 
+            if (pis == null) {
+                return null;
+            }
+
+            System.out.println("pis = " + pis.size());
+
             for (PatientInvestigation ptix : pis) {
 
                 Investigation ix = ptix.getInvestigation();
+
+                if (ix == null) {
+                    continue;
+                }
+
+                System.out.println("ix = " + ix.getName());
 
                 ptix.setCollected(true);
                 ptix.setSampleCollecter(wu);
@@ -416,7 +432,15 @@ public class Lims {
 
                 List<InvestigationItem> ixis = getItems(ix);
 
+                if (ixis == null) {
+                    continue;
+                }
+
+                System.out.println("ixis = " + ixis.size());
+
                 for (InvestigationItem ixi : ixis) {
+
+                    System.out.println("ixi = " + ixi.getName());
 
                     if (ixi.getIxItemType() == InvestigationItemType.Value) {
 
@@ -436,24 +460,33 @@ public class Lims {
 //                                + " and ps.collected=:ca
                         m = new HashMap();
                         m.put("tube", ixi.getTube());
+                        System.out.println("Tube: " + ixi.getTube().getName());
 
                         m.put("sample", ixi.getSample());
+                        System.out.println("Sample: " + ixi.getSample().getName());
+
                         m.put("machine", ixi.getMachine());
+                        System.out.println("Machine: " + ixi.getMachine().getName());
+
                         m.put("pt", b.getPatient());
+                        System.out.println("Patient: " + b.getPatient().getPerson().getName());
+
                         m.put("bill", b);
+                        System.out.println("Bill: " + b);
 //                        m.put("ca", false);
                         if (ix.isHasMoreThanOneComponant()) {
+                            System.out.println("ix.isHasMoreThanOneComponant() = " + ix.isHasMoreThanOneComponant());
                             j += " and ps.investigationComponant=:sc ";
                             m.put("sc", ixi.getSampleComponent());
+                            System.out.println("ixi.getSampleComponent() = " + ixi.getSampleComponent());
                         }
 
                         PatientSample pts = patientSampleFacade.findFirstByJpql(j, m);
+                        System.out.println("pts = " + pts);
                         if (pts == null) {
                             pts = new PatientSample();
+
                             pts.setTube(ixi.getTube());
-                            if (ixi.getSample() == null || ixi.getSample().getName() == null || ixi.getSample().getName().trim().equals("")) {
-                                continue;
-                            }
                             pts.setSample(ixi.getSample());
                             if (ix.isHasMoreThanOneComponant()) {
                                 pts.setInvestigationComponant(ixi.getSampleComponent());
@@ -461,6 +494,7 @@ public class Lims {
                             pts.setMachine(ixi.getMachine());
                             pts.setPatient(b.getPatient());
                             pts.setBill(b);
+
                             pts.setSampleDepartment(wu.getDepartment());
                             pts.setSampleInstitution(wu.getInstitution());
                             pts.setSampleCollecter(wu);
@@ -487,7 +521,25 @@ public class Lims {
                         m.put("pt", b.getPatient());
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
+                        m.put("pts", pts);
+                        System.out.println("Pts: " + pts);
+
+                        m.put("bill", b);
+                        System.out.println("Bill: " + b);
+
+                        m.put("pt", b.getPatient());
+                        System.out.println("Patient: " + b.getPatient());
+
+                        m.put("ptix", ptix);
+                        System.out.println("Ptix: " + ptix);
+
+                        m.put("ixc", ixi.getSampleComponent());
+                        System.out.println("Sample Component: " + ixi.getSampleComponent());
+
                         ptsc = patientSampleComponantFacade.findFirstByJpql(j, m);
+                        
+                        System.out.println("ptsc = " + ptsc);
+                        
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);

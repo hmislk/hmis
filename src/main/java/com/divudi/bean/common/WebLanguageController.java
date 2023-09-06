@@ -258,7 +258,7 @@ public class WebLanguageController implements Serializable {
                 + " from WebLanguage a "
                 + " where a.retired=false "
                 + " order by a.orderNo";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public List<WebLanguage> getItems() {

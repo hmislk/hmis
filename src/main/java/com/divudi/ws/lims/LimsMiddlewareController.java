@@ -187,7 +187,6 @@ public class LimsMiddlewareController {
         }
     }
 
-  
     private String msgFromSysmex(String msg) {
         return extractDataFromSysMexTypeA(msg);
     }
@@ -367,10 +366,10 @@ public class LimsMiddlewareController {
     }
 
     public String sendACK_R22ForoulR22(String oulR22Message) {
-        System.out.println("sendACK_R22ForoulR22");
+        System.out.println("Formulating a ACK_R22 For received oulR22");
         boolean success;
         List<MyTestResult> myResults = getResultsFromOUL_R22Message(oulR22Message);
-        System.out.println("myResults = " + myResults.size());
+        System.out.println("Number of Results in the Message " + myResults.size());
         success = addResultsFromMyResults(myResults);
         System.out.println("success = " + success);
         HapiContext hapiContext = new DefaultHapiContext();
@@ -462,6 +461,7 @@ public class LimsMiddlewareController {
     }
 
     private boolean addResultsFromMyResults(List<MyTestResult> mrs) {
+        System.out.println("Adding Results extracted from Messge to LIMS");
         boolean ok = true;
         for (MyTestResult mr : mrs) {
             boolean thisOk = addResultToReport(mr.getSampleId(), mr.getTestStr(), mr.getResult(), mr.getUnit(), mr.getError());
@@ -475,7 +475,7 @@ public class LimsMiddlewareController {
     }
 
     private boolean addResultToReport(String sampleId, String testStr, String result, String unit, String error) {
-        System.out.println("addResultToReport");
+        System.out.println("Adding Individual Result To Report");
         boolean temFlag = false;
         Long sid;
         try {
@@ -483,46 +483,52 @@ public class LimsMiddlewareController {
         } catch (NumberFormatException e) {
             sid = 0l;
         }
-        System.out.println("sid = " + sid);
+        System.out.println("Sample ID = " + sid);
         PatientSample ps = patientSampleFromId(sid);
-        System.out.println("ps = " + ps);
+        System.out.println("Patient Sample = " + ps);
         if (ps == null) {
             return temFlag;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        System.out.println("pscs = " + pscs);
+        System.out.println("Patient Sample Component = " + pscs);
         if (pscs == null) {
             return temFlag;
         }
         List<PatientInvestigation> ptixs = getPatientInvestigations(pscs);
-        System.out.println("ptixs = " + ptixs);
+        System.out.println("Patient Investigations = " + ptixs);
         if (ptixs == null || ptixs.isEmpty()) {
             return temFlag;
         }
         for (PatientInvestigation pi : ptixs) {
-            System.out.println("pi = " + pi);
+            System.out.println("Patient Investigation = " + pi);
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
+            System.out.println("Previous Unapproved Report = " + tpr);
             if (tpr == null) {
                 tpr = createNewPatientReport(pi, pi.getInvestigation());
             }
             prs.add(tpr);
 
             for (PatientReport rtpr : prs) {
-                System.out.println("rtpr = " + rtpr);
+                System.out.println("Patient Report = " + rtpr);
                 for (PatientReportItemValue priv : rtpr.getPatientReportItemValues()) {
+                    System.out.println("Patient Report Item Value = " + priv);
                     if (priv.getInvestigationItem() != null && priv.getInvestigationItem().getTest() != null
                             && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Value) {
                         String test;
                         test = priv.getInvestigationItem().getResultCode();
-                        System.out.println("test = " + test);
+                        System.out.println("Test Result Code from LIMS = " + test);
                         if (test == null || test.trim().equals("")) {
                             test = priv.getInvestigationItem().getTest().getCode().toUpperCase();
+                            System.out.println("Test Code from Test = " + test);
                         }
-
-                        if (test.toLowerCase().equals(testStr.toLowerCase())) {
+                        System.out.println("Test Name from LIMS = " + test);
+                        System.out.println("Test Name from HL7 Msg = " + testStr);
+                        if (test.equalsIgnoreCase(testStr)) {
+                            System.out.println("ps.getInvestigationComponant() = " + ps.getInvestigationComponant());
+                            System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
                             if (ps.getInvestigationComponant() == null || priv.getInvestigationItem().getSampleComponent() == null) {
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
@@ -533,6 +539,7 @@ public class LimsMiddlewareController {
                                 priv.setDoubleValue(dbl);
                                 temFlag = true;
                             } else if (priv.getInvestigationItem().getSampleComponent().equals(ps.getInvestigationComponant())) {
+                                System.out.println("priv.getInvestigationItem().getSampleComponent() = " + priv.getInvestigationItem().getSampleComponent());
                                 priv.setStrValue(result);
                                 Double dbl = 0d;
                                 try {
@@ -542,6 +549,7 @@ public class LimsMiddlewareController {
                                 priv.setDoubleValue(dbl);
                                 temFlag = true;
                             } else {
+                                System.out.println("Else");
                             }
                         }
                     }
@@ -558,13 +566,13 @@ public class LimsMiddlewareController {
 
     public List<MyTestResult> getResultsFromOUL_R22Message(String message) {
         System.err.println("getResultsFromOUL_R22Message");
-        System.out.println("message = " + message);
-        System.out.println("message Length = " + message.length());
-        System.out.println("message Type = " + HL7Utils.findMessageType(message));
+//        System.out.println("message = " + message);
+//        System.out.println("message Length = " + message.length());
+//        System.out.println("message Type = " + HL7Utils.findMessageType(message));
 
         List<MyTestResult> results = new ArrayList<>();
         String[] segments = message.split("\\r");
-        System.out.println("segments Length = " + segments.length);
+//        System.out.println("segments Length = " + segments.length);
 
         String sampleId = null;
 
@@ -573,22 +581,22 @@ public class LimsMiddlewareController {
                 String[] fields = segments[i].split("\\|");
                 String temSampleId = fields[2];
                 sampleId = extractNumber(temSampleId);
-                System.out.println("Sample ID: " + sampleId);
+                System.out.println("Sample ID from HL7 Message = " + sampleId);
             } else if (segments[i].startsWith("OBX")) {
                 String[] fields = segments[i].split("\\|");
 
                 if (fields.length > 14) { //Ensure there are enough fields before trying to access them
                     String[] testDetails = fields[3].split("\\^");
                     String testCode = testDetails[0];
-                    System.out.println("testCode = " + testCode);
+                    System.out.println("Test Code from HL7 Message = " + testCode);
                     String result = fields[5];
-                    System.out.println("result = " + result);
+                    System.out.println("Results extracted from HL7 Message = " + result);
                     String unit = fields[6];
-                    System.out.println("unit = " + unit);
+                    System.out.println("Unit extracted from HL7 Message= " + unit);
                     String error = null;
                     if (fields.length > 15) {
                         error = fields[15];
-                        System.out.println("error = " + error);
+                        System.out.println("Error in Extracing the message. Field Length is more than 15." + error);
                     }
 
                     MyTestResult testResult = new MyTestResult(sampleId, testCode, result, unit, error);
@@ -812,7 +820,7 @@ public class LimsMiddlewareController {
 
         long ageInDays = com.divudi.java.CommonFunctions.calculateAgeInDays(p.getPerson().getDob(), Calendar.getInstance().getTime());
         sql = "select f from InvestigationItemValueFlag f where  f.fromAge < " + ageInDays + " and f.toAge > " + ageInDays + " and f.investigationItemOfLabelType.id = " + ii.getId();
-        List<InvestigationItemValueFlag> fs = iivfFacade.findBySQL(sql);
+        List<InvestigationItemValueFlag> fs = iivfFacade.findByJpql(sql);
         for (InvestigationItemValueFlag f : fs) {
             if (f.getSex() == p.getPerson().getSex()) {
                 dl = f.getFlagMessage();

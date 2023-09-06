@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/lims/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+
+    <ui:define name="subcontent">
+        <h:panelGroup rendered="true" >
+            <h:form id="frm">
+
+                <p:panel header="Report Template Availability">
+
+                    <p:commandButton ajax="false" 
+                                     value="List Report Template Availability"  
+                                     action="#{investigationMonthSummeryOwnControllerSession.createInvestigationExistTable}"
+                                     styleClass="noPrintButton" style="float: right;" />
+
+                    <p:commandButton value="Download" ajax="false" styleClass="noPrintButton" style="float: right;" >
+                        <p:dataExporter type="xlsx" target="tbl" fileName="Investigation_exist"/>
+                    </p:commandButton>
+
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:printer target="panelPrint" />
+                    </p:commandButton>
+
+
+
+                    <p:dataTable id="tbl" 
+                                 value="#{investigationMonthSummeryOwnControllerSession.items}" 
+                                 var="c" 
+                                 rowIndexVar="i"
+                                 rows="10"
+                                 paginator="true" paginatorPosition="both"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                 rowsPerPageTemplate="5,10,{ShowAll|'All'}">
+
+                        <f:facet name="header" >
+                            <h:outputLabel value="Investigation Exist Report"/>
+                        </f:facet>
+
+                        <p:column headerText="ID" 
+                                  sortBy="#{c.investigation.id}" 
+                                  filterBy="#{c.investigation.id}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="ID"/>
+                            </f:facet>
+
+                            <h:outputLabel value="#{c.investigation.id}"  />
+
+                        </p:column>
+
+                        <p:column headerText="Name" 
+                                  sortBy="#{c.investigation.name}" 
+                                  filterBy="#{c.investigation.name}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Name"/>
+                            </f:facet>
+
+                            <h:outputLabel value="#{c.investigation.name}"  />
+
+                        </p:column>
+                        <p:column headerText="Department" 
+                                  sortBy="#{c.investigation.name}" 
+                                  filterBy="#{c.investigation.name}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
+                                <h:outputLabel value="Department"/>
+                            </f:facet>
+
+                            <h:outputLabel value="#{c.investigation.department.name}"  />
+
+                        </p:column>
+                        <p:column headerText="Template Available" 
+                                  sortBy="#{c.b}" 
+                                  filterBy="#{c.b}"
+                                  filterMatchMode="contains" style="text-align: center;">
+                            <h:outputLabel value="Available" rendered="#{c.b eq 'true'}" style="color: green;"/>
+                            <h:outputLabel value="Not-Available" rendered="#{c.b eq 'false'}" style="color: red;"/>
+                        </p:column>
+
+
+                    </p:dataTable>
+
+                </p:panel>        
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

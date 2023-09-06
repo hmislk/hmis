@@ -340,7 +340,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.membershipScheme is not null "
                 + " order by a.membershipScheme.name,a.category.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
     
     
@@ -622,7 +622,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
         return "/membership/membership_scheme_discount_opd_by_department";
 
     }
@@ -634,7 +634,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public void fillMatricesForChannellingMembershipsForItemsDepartments() {
@@ -644,7 +644,7 @@ public class OpdMemberShipDiscountController implements Serializable {
                 + " where a.retired=false "
                 + " and a.category is null"
                 + " order by a.membershipScheme.name,a.department.name";
-        items = getFacade().findBySQL(sql);
+        items = getFacade().findByJpql(sql);
     }
 
     public void createItemsDepartmentsPaymentScheme() {

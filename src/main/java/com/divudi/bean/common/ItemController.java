@@ -394,7 +394,7 @@ public class ItemController implements Serializable {
 
     public void addSampleComponentsForAllInvestigationsWithoutSampleComponents() {
         String j = "select ix from Investigation ix ";
-        List<Item> ixs = getFacade().findBySQL(j);
+        List<Item> ixs = getFacade().findByJpql(j);
         for (Item ix : ixs) {
             if (ix instanceof Investigation) {
                 Investigation tix = (Investigation) ix;
@@ -727,7 +727,7 @@ public class ItemController implements Serializable {
             hm.put("ins", getInstituion());
             hm.put("q", "%" + query + "%");
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, hm, 20);
+            suggestions = getFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
 
@@ -777,9 +777,9 @@ public class ItemController implements Serializable {
             sql += " order by c.name";
 
             if (count != 0) {
-                lst = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, count);
+                lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, count);
             } else {
-                lst = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+                lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
             }
         }
         return lst;
@@ -841,7 +841,7 @@ public class ItemController implements Serializable {
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
 
@@ -866,7 +866,7 @@ public class ItemController implements Serializable {
             tmpMap.put("dep", DepartmentType.Store);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("str", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
 
@@ -994,7 +994,7 @@ public class ItemController implements Serializable {
         tmpMap.put("amp", Amp.class);
         tmpMap.put("dep", DepartmentType.Store);
 
-        suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP);
+        suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
 
         return suggestions;
 
@@ -1016,7 +1016,7 @@ public class ItemController implements Serializable {
 //////// // System.out.println(sql);
             tmpMap.put("amp", Amp.class);
             tmpMap.put("ampp", Ampp.class);
-            suggestions = getFacade().findBySQL(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
 
@@ -1033,7 +1033,7 @@ public class ItemController implements Serializable {
                     + "and type(c)=Packege "
                     + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
 
@@ -1049,7 +1049,7 @@ public class ItemController implements Serializable {
 
         hm.put("cls", Service.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
 
@@ -1065,7 +1065,7 @@ public class ItemController implements Serializable {
 
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getFacade().findBySQL(sql, hm, 20);
+        suggestions = getFacade().findByJpql(sql, hm, 20);
 
         return suggestions;
 
@@ -1084,7 +1084,7 @@ public class ItemController implements Serializable {
         hm.put("cls", Investigation.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("ins", sessionController.getLoggedUser().getInstitution());
-        lst = getFacade().findBySQL(sql, hm, 20);
+        lst = getFacade().findByJpql(sql, hm, 20);
         return lst;
     }
 
@@ -1101,7 +1101,7 @@ public class ItemController implements Serializable {
         hm.put("ftp", FeeType.Staff);
         hm.put("cls", Service.class);
         hm.put("q", "%" + query.toUpperCase() + "%");
-        lst = getFacade().findBySQL(sql, hm, 20);
+        lst = getFacade().findByJpql(sql, hm, 20);
         return lst;
     }
 
@@ -1116,7 +1116,7 @@ public class ItemController implements Serializable {
                     + "and type(c)=MedicalPackage "
                     + "and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
 
@@ -1145,7 +1145,7 @@ public class ItemController implements Serializable {
             m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m, 20);
+            suggestions = getFacade().findByJpql(sql, m, 20);
         }
         return suggestions;
     }
@@ -1172,7 +1172,7 @@ public class ItemController implements Serializable {
             m.put("the", TheatreService.class);
             m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m, 20);
+            suggestions = getFacade().findByJpql(sql, m, 20);
         }
         return suggestions;
     }
@@ -1209,7 +1209,7 @@ public class ItemController implements Serializable {
         m.put("inv", Investigation.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
-        return getFacade().findBySQL(sql, m, 20);
+        return getFacade().findByJpql(sql, m, 20);
 
     }
 
@@ -1237,7 +1237,7 @@ public class ItemController implements Serializable {
         m.put("inward", InwardService.class);
         m.put("q", "%" + query.toUpperCase() + "%");
 
-        return getFacade().findBySQL(sql, m, 20);
+        return getFacade().findByJpql(sql, m, 20);
 
     }
 
@@ -1298,7 +1298,7 @@ public class ItemController implements Serializable {
 
     public void makeItemsAsActiveOrInactiveByRetiredStatus() {
         String j = "select i from Item i";
-        List<Item> tis = getFacade().findBySQL(j);
+        List<Item> tis = getFacade().findByJpql(j);
         for (Item i : tis) {
             if (i.isRetired()) {
                 i.setInactive(true);
@@ -1311,7 +1311,7 @@ public class ItemController implements Serializable {
 
     public void toggleItemIctiveInactiveState() {
         String j = "select i from Item i";
-        List<Item> tis = getFacade().findBySQL(j);
+        List<Item> tis = getFacade().findByJpql(j);
         for (Item i : tis) {
             if (i.isInactive()) {
                 i.setInactive(false);
@@ -1356,7 +1356,7 @@ public class ItemController implements Serializable {
 
 //        //// // System.out.println(sql);
 //        //// // System.out.println("m = " + m);
-        mySuggestions = getFacade().findBySQL(sql, m, 20);
+        mySuggestions = getFacade().findByJpql(sql, m, 20);
 //        //// // System.out.println("mySuggestions = " + mySuggestions);
         return mySuggestions;
     }
@@ -1382,7 +1382,7 @@ public class ItemController implements Serializable {
             m.put("inv", Investigation.class);
             m.put("q", "%" + query.toUpperCase() + "%");
             //    //////// // System.out.println(sql);
-            mySuggestions = getFacade().findBySQL(sql, m, 20);
+            mySuggestions = getFacade().findByJpql(sql, m, 20);
         }
         return mySuggestions;
     }
@@ -1395,7 +1395,7 @@ public class ItemController implements Serializable {
         } else {
             sql = "select c from Item c where c.institution.id = " + getSessionController().getInstitution().getId() + " and c.retired=false and type(c)!=Packege and type(c)!=TimedItem and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql);
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -1612,7 +1612,7 @@ public class ItemController implements Serializable {
         temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
         h.put("t1", Investigation.class);
         h.put("t2", Service.class);
-        items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        items = getFacade().findByJpql(temSql, h, TemporalType.TIME);
     }
 
     public List<Item> getInwardItems() {
@@ -1620,7 +1620,7 @@ public class ItemController implements Serializable {
         HashMap h = new HashMap();
         temSql = "SELECT i FROM Item i where type(i)=:t1 and i.retired=false order by i.department.name";
         h.put("t1", InwardService.class);
-        items = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+        items = getFacade().findByJpql(temSql, h, TemporalType.TIME);
         return items;
     }
 
@@ -1803,7 +1803,7 @@ public class ItemController implements Serializable {
             temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
             h.put("t1", Investigation.class);
             h.put("t2", Service.class);
-            investigationsAndServices = getFacade().findBySQL(temSql, h, TemporalType.TIME);
+            investigationsAndServices = getFacade().findByJpql(temSql, h, TemporalType.TIME);
         }
         return investigationsAndServices;
     }

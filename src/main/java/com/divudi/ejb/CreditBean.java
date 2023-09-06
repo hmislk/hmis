@@ -64,7 +64,7 @@ public class CreditBean {
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp", billType);
         hm.put("val", 0.1);
-        List<Bill> bills = getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return bills;
     }
@@ -94,7 +94,7 @@ public class CreditBean {
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tps", billTypes);
         hm.put("val", 0.1);
-        List<Bill> bills = getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Bill> bills = getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return bills;
     }
@@ -125,7 +125,7 @@ public class CreditBean {
         hm.put("tp", billType);
         hm.put("val", 0.1);
         hm.put("cla", BilledBill.class);
-        List<BillItem> billItems = getBillItemFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<BillItem> billItems = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return billItems;
     }
@@ -155,7 +155,7 @@ public class CreditBean {
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp", billType);
         hm.put("val", 0.1);
-        List<Institution> setIns = getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Institution> setIns = getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return setIns;
     }
@@ -186,7 +186,7 @@ public class CreditBean {
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tps", billTypes);
         hm.put("val", 0.1);
-        List<Institution> setIns = getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Institution> setIns = getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return setIns;
     }
@@ -217,7 +217,7 @@ public class CreditBean {
         hm.put("pm", paymentMethod);
         hm.put("ins", institution);
         hm.put("val", 0.01);
-        List<PatientEncounter> lst = getPatientEncounterFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<PatientEncounter> lst = getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return lst;
     }
@@ -245,7 +245,7 @@ public class CreditBean {
         hm = new HashMap();
         hm.put("val", 0.1);
         hm.put("pm", paymentMethod);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<Institution> getCreditInstitutionByPatientEncounter(Date fromDate, Date toDate, PaymentMethod paymentMethod, boolean lessThan) {
@@ -274,7 +274,7 @@ public class CreditBean {
         hm.put("to", toDate);
         hm.put("pm", paymentMethod);
         hm.put("val", 0.01);
-        List<Institution> setIns = getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        List<Institution> setIns = getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         return setIns;
     }
@@ -379,7 +379,7 @@ public class CreditBean {
         hm.put("to", toDate);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -400,7 +400,7 @@ public class CreditBean {
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -431,7 +431,7 @@ public class CreditBean {
         hm.put("refBill", refBill);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.DATE);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.DATE);
     }
 
     public List<Institution> getDealorFromBills(List<BillType> billTypes) {
@@ -448,7 +448,7 @@ public class CreditBean {
         hm.put("val", 0.1);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -472,7 +472,7 @@ public class CreditBean {
         hm.put("val", 0.1);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp1", BillType.OpdBill);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<Institution> getCreditCompanyFromBillsPharmacy(boolean lessThan) {
@@ -496,7 +496,7 @@ public class CreditBean {
         hm.put("val", 0.1);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp1", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<Institution> getDealorFromReturnBills() {
@@ -513,7 +513,7 @@ public class CreditBean {
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp1", BillType.PharmacyGrnReturn);
         hm.put("tp2", BillType.PurchaseReturn);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -530,7 +530,7 @@ public class CreditBean {
         hm = new HashMap();
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -550,7 +550,7 @@ public class CreditBean {
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -575,7 +575,7 @@ public class CreditBean {
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tp1", BillType.OpdBill);
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -601,7 +601,7 @@ public class CreditBean {
         hm.put("ins", institution);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("tps", Arrays.asList(new BillType[]{BillType.PharmacyWholeSale, BillType.PharmacySale}));
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -628,7 +628,7 @@ public class CreditBean {
         hm.put("val", 0.1);
         hm.put("ins", institution);
         hm.put("pm", paymentMethod);
-        return getPatientEncounterFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getPatientEncounterFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
     }
 
     public List<Institution> getDealorFromBills(Date frmDate, Date toDate, List<BillType> billTypes) {
@@ -648,7 +648,7 @@ public class CreditBean {
         hm.put("val", 0.1);
         hm.put("pm", PaymentMethod.Credit);
         hm.put("bts", billTypes);
-        return getInstitutionFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getInstitutionFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 

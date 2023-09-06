@@ -96,7 +96,7 @@ public class ChannelBean {
         if (bs != null) {
             //String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + billSession.getBill().getId();
             String sql = "Select s From BillFee s where s.retired=false and s.bill.billedBill.id=" + bs.getBill().getId();
-            refundBillFee = getBillFeeFacade().findBySQL(sql);
+            refundBillFee = getBillFeeFacade().findByJpql(sql);
         }
 
         return refundBillFee;
@@ -106,7 +106,7 @@ public class ChannelBean {
         List<BillFee> billFee = new ArrayList<>();
         if (bs != null) {
             String sql = "Select s From BillFee s where s.retired=false and s.bill.id=" + bs.getBill().getId();
-            billFee = getBillFeeFacade().findBySQL(sql);
+            billFee = getBillFeeFacade().findByJpql(sql);
         }
 
         return billFee;
@@ -804,7 +804,7 @@ public class ChannelBean {
         m.put("staff", s);
         m.put("class", ServiceSession.class);
         try {
-            tmp = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP, 14);
+            tmp = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 14);
             //// // System.out.println("m = " + m);
         } catch (Exception e) {
             e.printStackTrace();

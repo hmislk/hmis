@@ -227,7 +227,7 @@ public class PharmacySaleReport1 implements Serializable {
         sql = "select i from Bill i where i.referenceBill.department=:d  "                
                 + " and i.billType=:btp and type(i)=:class and"
                 + " i.createdAt between :fd and :td order by i.deptId ";
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 

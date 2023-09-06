@@ -52,19 +52,28 @@
 
                         <div class="container-fluid" >
                             <div class="row" >
-                                <div class="col-12" >
-                                    <p:commandButton value="Print" icon="ui-icon-print" >
+                                <div class="col-12">
+                                    <p:commandButton value="Print" icon="fa fa-print" style="margin-right: 10px;">
                                         <p:printer target="gpPosBill1" />
                                     </p:commandButton>
+
+                                    <p:commandButton value="Patient Lookup &amp; Registration" 
+                                                     icon="fa fa-user-check" 
+                                                     ajax="false"
+                                                     action="#{opdBillController.navigateToSearchPatients()}" 
+                                                     style="margin-right: 10px;">
+                                    </p:commandButton>
+
                                     <p:commandButton value="New OPD Bill" 
+                                                     icon="fa fa-file-medical" 
                                                      ajax="false"
-                                                     action="#{opdBillController.navigateToNewOpdBill()}">
+                                                     action="#{opdBillController.navigateToNewOpdBill()}" 
+                                                     style="margin-right: 10px;">
                                     </p:commandButton>
-                                    <p:commandButton value="Patient Registration" 
-                                                     ajax="false"
-                                                     action="#{opdBillController.navigateToSearchPatients()}">
-                                    </p:commandButton>
+
+                                   
                                 </div>
+
                             </div>
                             <div class="row" >
                                 <div class="col-6" >

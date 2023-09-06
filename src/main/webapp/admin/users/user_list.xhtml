@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body >
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('AdminManagingUsers') and !sessionController.firstLogin }" >
+                    <h:outputText value="You are NOT authorized"/>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <h:form  >
+                        <div class="container-fluid p-2" >
+                            <div class="row" >
+                                <div class="col-md-9" >
+                                    <ui:insert name="users" >
+                                        <p:dataTable id="lstSelect" 
+                                                     value="#{webUserController.webUseLights}" 
+                                                     var="u"
+                                                     rowKey="#{u.id}"
+                                                     selection="#{webUserController.selectedLight}" 
+                                                     rows="10" 
+                                                     selectionMode="single"
+                                                     paginator="true"
+                                                     paginatorAlwaysVisible="false"
+                                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                                     rowsPerPageTemplate="10,50,100,500"
+                                                     >
+                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('actions',view).clientId}" ></p:ajax>
+                                            <p:column headerText="User Name" 
+                                                      sortBy="#{u.userName}" 
+                                                      filterBy="#{u.userName}"
+                                                      filterMatchMode="contains">
+                                                <h:outputText value="#{u.userName}"/>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </ui:insert>
+                                </div>
+                                <h:panelGroup id="actions" class="col-md-3 col-md-3 d-flex flex-column" >
+                                    <p:commandButton   
+                                        ajax="false" 
+                                        disabled="#{webUserController.selected == null}"  
+                                        value="Remove" 
+                                        class="m-1"
+                                        onclick="if (!confirm('Are you sure you want to Remove User?'))
+                                                    return false;" 
+                                        action="#{webUserController.removeUser}">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"  
+                                        value="Manage User" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToEditUser()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"  
+                                        value="Manage Password" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToEditPasswordByAdmin()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Staff" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToManageStaff()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Privileges" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToManagePrivileges()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage User Departments" 
+                                        class="m-1"
+                                        action="#{webUserController.navigateToManageDepartments()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"  
+                                        class="m-1"
+                                        value="Manage User Payment Schemes" 
+                                        action="#{webUserController.navigateToManagePaymentSchemes()}"
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Signature" 
+                                        class="m-1"
+                                        action="#{webUserController.toManageSignature()}" 
+                                        ajax="false" />
+                                    <p:commandButton 
+                                        disabled="#{webUserController.selected == null}"    
+                                        value="Manage Dashboards" 
+                                        action="#{webUserController.toManageDashboards()}" 
+                                        ajax="false"
+                                        class="m-1"/>
+
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

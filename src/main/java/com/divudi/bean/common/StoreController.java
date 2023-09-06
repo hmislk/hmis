@@ -49,7 +49,7 @@ public class StoreController implements Serializable {
     StockFacade stockFacade;
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -102,7 +102,7 @@ public class StoreController implements Serializable {
                 + " and ((i.itemBatch.item.name) like :n  or "
                 + " (i.itemBatch.item.code) like :n  or  "
                 + " (i.itemBatch.item.barcode) like :n ) ";
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         return items;
     }
@@ -124,7 +124,7 @@ public class StoreController implements Serializable {
                 + " (i.itemBatch.item.code) like :n  or  "
                 + " (i.itemBatch.item.barcode) like :n ) "
                 + " order by i.stock desc ";
-        items = getStockFacade().findBySQL(sql, m, 40);
+        items = getStockFacade().findByJpql(sql, m, 40);
 
         return items;
     }
@@ -196,7 +196,7 @@ public class StoreController implements Serializable {
     public List<Department> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Store order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

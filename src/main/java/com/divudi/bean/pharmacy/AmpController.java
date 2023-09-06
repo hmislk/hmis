@@ -430,9 +430,9 @@ public class AmpController implements Serializable {
 
     public List<Amp> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Amp c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false order by c.name");
         } else {
-            selectedItems = getFacade().findBySQL("select c from Amp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -443,7 +443,7 @@ public class AmpController implements Serializable {
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Amp c where "
+            a = getFacade().findByJpql("select c from Amp c where "
                     + " c.retired=false and (c.departmentType!=:dep or c.departmentType is null) "
                     + " and ((c.name) like :n or (c.code)  "
                     + "like :n or (c.barcode) like :n) order by c.name", m, 30);
@@ -462,7 +462,7 @@ public class AmpController implements Serializable {
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
-            ampList = getFacade().findBySQL("select c from Amp c where "
+            ampList = getFacade().findByJpql("select c from Amp c where "
                     + " c.retired=false and"
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
@@ -498,7 +498,7 @@ public class AmpController implements Serializable {
         m.put("n", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
         if (qry != null) {
-            vmps = getVmpFacade().findBySQL("select c from Vmp c where "
+            vmps = getVmpFacade().findByJpql("select c from Vmp c where "
                     + " c.retired=false and"
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
@@ -518,7 +518,7 @@ public class AmpController implements Serializable {
 //        m.put("n", "%" + qry + "%");
 //        m.put("dep", DepartmentType.Store);
 //        if (qry != null) {
-//            ampList = getFacade().findBySQL("select c from Amp c where "
+//            ampList = getFacade().findByJpql("select c from Amp c where "
 //                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
 //                    + "((c.code) like :n ) order by c.code", m, 30);
 //            //////// // System.out.println("a size is " + a.size());
@@ -541,7 +541,7 @@ public class AmpController implements Serializable {
 //        //   ////// // System.out.println("m = " + m);
 //
 //        if (qry != null) {
-//            ampList = getFacade().findBySQL(sql, m, 30);
+//            ampList = getFacade().findByJpql(sql, m, 30);
 //            //   ////// // System.out.println("a = " + a);
 //            //////// // System.out.println("a size is " + a.size());
 //        }
@@ -819,7 +819,7 @@ public class AmpController implements Serializable {
         List<Amp> lst;
         String sql;
         sql = "select a from Amp a where a.retired=false and length(a.code) > 5";
-        lst = getFacade().findBySQL(sql);
+        lst = getFacade().findByJpql(sql);
         return lst;
     }
 

@@ -257,7 +257,7 @@ public class StockHistoryRecorder {
                 + " and fc.validFrom=:ed "
                 + " and fc.done!=true ";
         m.put("ed", getCommonFunctions().getEndOfDay(new Date()));
-        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<FeeChange> changes = getFeeChangeFacade().findByJpql(sql, m, TemporalType.DATE);
         return changes;
     }
 

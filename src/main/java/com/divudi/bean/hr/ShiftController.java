@@ -264,7 +264,7 @@ public class ShiftController implements Serializable {
 
         sql += " order by s.roster.name ";
 
-        shiftList = getFacade().findBySQL(sql);
+        shiftList = getFacade().findByJpql(sql);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "HR/Reports/Shift/Entered shift report(/faces/hr/hr_shift_report.xhtml)");
     }

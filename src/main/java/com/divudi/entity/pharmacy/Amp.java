@@ -20,10 +20,12 @@ public class Amp extends PharmaceuticalItem implements Serializable {
     @ManyToOne
     private Atm atm;
 
+    @Override
     public Vmp getVmp() {
         return vmp;
     }
 
+    @Override
     public void setVmp(Vmp vmp) {
         this.vmp = vmp;
     }

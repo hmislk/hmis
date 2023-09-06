@@ -110,13 +110,13 @@ public class AgencyController implements Serializable {
                     + " or ((p.institutionCode) like '%" + query.toUpperCase() + "%') ) "
                     + " order by p.name";
             //////// // System.out.println(sql);
-            suggestions = getFacade().findBySQL(sql, m, 20);
+            suggestions = getFacade().findByJpql(sql, m, 20);
         }
         return suggestions;
     }
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -207,7 +207,7 @@ public class AgencyController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Agency order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

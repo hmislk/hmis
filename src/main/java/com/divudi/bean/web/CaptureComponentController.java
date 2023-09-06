@@ -148,7 +148,7 @@ public class CaptureComponentController implements Serializable {
 
         String jpql = "select c "
                 + " from CaptureComponent c";
-        items = facade.findBySQL(jpql);
+        items = facade.findByJpql(jpql);
 
     }
 
@@ -156,7 +156,7 @@ public class CaptureComponentController implements Serializable {
         List<DesignComponent> designComponents;
         String jpql = "select d "
                 + " from DesignComponent d";
-        designComponents = designComponentFacade.findBySQL(jpql);
+        designComponents = designComponentFacade.findByJpql(jpql);
 
         return designComponents;
     }

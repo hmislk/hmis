@@ -70,7 +70,7 @@ public class PackageItemController implements Serializable {
             temSql = "SELECT i FROM Item i where (type(i)=:t1 or type(i)=:t2 ) and i.retired=false order by i.department.name";
             h.put("t1", Investigation.class);
             h.put("t2", Service.class);
-            serviceItems = getItemFacade().findBySQL(temSql, h, TemporalType.TIME);
+            serviceItems = getItemFacade().findByJpql(temSql, h, TemporalType.TIME);
 
         }
 
@@ -259,7 +259,7 @@ public class PackageItemController implements Serializable {
         String temSql;
         if (getCurrentPackege() != null) {
             temSql = "SELECT i FROM PackageItem i where i.retired=false and i.packege.id = " + getCurrentPackege().getId();
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         } else {
             items = null;
         }
@@ -408,7 +408,7 @@ public class PackageItemController implements Serializable {
     public List<PackageFee> getCharges() {
         if (getCurrent() != null && getCurrent().getId() != null) {
             String temp = "SELECT  p from PackageFee p where p.retired=false and p.item.id=" + getCurrent().getItem().getId() + "and p.packege.id=" + getCurrentPackege().getId();
-            charges = getPackageFeeFacade().findBySQL(temp);
+            charges = getPackageFeeFacade().findByJpql(temp);
         }
         if (charges == null) {
             charges = new ArrayList<PackageFee>();

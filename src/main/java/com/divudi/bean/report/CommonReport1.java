@@ -4,6 +4,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.data.BillClassType;
@@ -13,6 +14,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.dataStructure.BillsTotals;
 import com.divudi.data.table.String1Value1;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillFee;
 import com.divudi.entity.BillItem;
@@ -41,9 +43,12 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -57,6 +62,7 @@ public class CommonReport1 implements Serializable {
     SessionController sessionController;
     @Inject
     CommonController commonController;
+    @Inject AuditEventApplicationController auditEventApplicationController;
     ///////////////////
     @EJB
     private BillFacade billFacade;
@@ -229,7 +235,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("toDate", getToDate());
         temMap.put("bTp", BillType.OpdBill);
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<Bill>();
         }
@@ -254,7 +260,7 @@ public class CommonReport1 implements Serializable {
             temMap.put("col", getCollectingIns());
         }
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<Bill>();
         }
@@ -428,7 +434,7 @@ public class CommonReport1 implements Serializable {
         m.put("toDate", getToDate());
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("temMap = " + temMap);
-        referralBillItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        referralBillItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
         for (BillItem bi : referralBillItems) {
@@ -481,7 +487,7 @@ public class CommonReport1 implements Serializable {
         ////// // System.out.println("sql = " + sql);
         ////// // System.out.println("temMap = " + temMap);
 //        referralBillItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-        bill = billFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bill = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         biledBillsTotal = 0.0;
         for (Bill bilst : bill) {
@@ -786,7 +792,7 @@ public class CommonReport1 implements Serializable {
             sql = "SELECT b FROM BilledBill b WHERE b.retired=false and  b.billType =:bType and b.institution=:ins and b.collectingCentre=:col and b.createdAt between :fromDate and :toDate  order by b.collectingCentre.name";
             temMap.put("col", getCollectingIns());
         }
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<Bill>();
         }
@@ -816,7 +822,7 @@ public class CommonReport1 implements Serializable {
                 + "  and b.creditCompany=:col and b.createdAt between :fromDate and :toDate "
                 + "order by b.creditCompany.name";
 
-        tmp = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        tmp = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         if (tmp == null) {
             tmp = new ArrayList<>();
         }
@@ -900,7 +906,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("web", webUser);
         temMap.put("ins", getSessionController().getInstitution());
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -916,7 +922,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
 
 //        checkOtherInstiution
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -938,7 +944,7 @@ public class CommonReport1 implements Serializable {
             institution = b.getInstitution();
         }
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -960,7 +966,7 @@ public class CommonReport1 implements Serializable {
             temMap.put("ins", ins);
         }
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -974,7 +980,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("btp", billType);
         temMap.put("web", webUser);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1315,7 +1321,7 @@ public class CommonReport1 implements Serializable {
         temMap.put("ins", getSessionController().getInstitution());
         temMap.put("bill", billClass.getClass());
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1343,7 +1349,7 @@ public class CommonReport1 implements Serializable {
         m.put("btp", BillType.StoreGrnBill);
         m.put("dt", dt);
 
-        bs = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        bs = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         return bs;
     }
@@ -1871,7 +1877,36 @@ public class CommonReport1 implements Serializable {
     }
 
     public void createOpdBillList() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createOpdBillList()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+ 
 
 //        if (paymentScheme == null) {
 //            JsfUtil.addErrorMessage("Please Select Payment Scheme");
@@ -1884,7 +1919,12 @@ public class CommonReport1 implements Serializable {
         cancelBillsTotal = fetchBillsTotal(new CancelledBill(), BillType.OpdBill, paymentScheme);
         refundBillsTotal = fetchBillsTotal(new RefundBill(), BillType.OpdBill, paymentScheme);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, " List of bills raised(/reportCashier/report_opd_bill_payment_sheame.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     public List<Bill> fetchBills(Bill b, BillType billType, PaymentScheme ps) {
@@ -1913,7 +1953,7 @@ public class CommonReport1 implements Serializable {
         m.put("ins", getSessionController().getInstitution());
         m.put("class", b.getClass());
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public double fetchBillsTotal(Bill b, BillType billType, PaymentScheme ps) {
@@ -2022,7 +2062,7 @@ public class CommonReport1 implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
 
-        return getBillFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> getLabBillItemsOwnBilled() {
@@ -2060,7 +2100,7 @@ public class CommonReport1 implements Serializable {
         // tm.put("ins", getSessionController().getInstitution());
         tm.put("dep", getDepartment());
 
-        return getBillItemFacade().findBySQL(sql, tm, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, tm, TemporalType.TIMESTAMP);
     }
 
     public void getLabBillsOwnBilledTotals() {

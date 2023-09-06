@@ -60,7 +60,7 @@ public class InvestigationValidatorComponentController implements Serializable {
         String sql;
         sql = "select i from InvestigationValidator i where "
                 + " i.retired=false ";
-        investigationItemValidators = getInvestigationItemValidatorFacade().findBySQL(sql);
+        investigationItemValidators = getInvestigationItemValidatorFacade().findByJpql(sql);
     }
 
     public void setCurrentInvestigation(Investigation currentInvestigation) {

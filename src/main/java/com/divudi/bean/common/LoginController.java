@@ -78,7 +78,7 @@ public class LoginController implements Serializable {
     
     public String navigateToViewLogins(){
         fillLogins();
-        return "/admin/users/admin_view_logins";
+        return "/admin/users/user_logins";
     }
 
     public void fillLogins() {
@@ -87,7 +87,7 @@ public class LoginController implements Serializable {
         m.put("fromDate", getFromDate());
         m.put("toDate", getToDate());
         sql = "select l from Logins l where l.logedAt between :fromDate and :toDate or l.logoutAt between :fromDate and :toDate  order by l.logedAt, l.logoutAt";
-        logins = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        logins = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<Logins> getLogins() {

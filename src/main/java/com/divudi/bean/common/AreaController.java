@@ -143,7 +143,7 @@ public class AreaController implements Serializable {
                     + " from Area a "
                     + " where a.retired=false "
                     + " order by a.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
