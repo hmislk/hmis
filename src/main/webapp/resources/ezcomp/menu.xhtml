@@ -27,7 +27,11 @@
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
                     rendered="#{webUserController.hasPrivilege('Opd')}">
-                    <p:menuitem ajax="false" action="#{opdBillController.navigateToSearchPatients()}" value="Patient Registration" icon="fa fa-user-plus" rendered="true" />
+                    <p:menuitem ajax="false" 
+                                action="#{opdBillController.navigateToSearchPatients()}" 
+                                value="Patient Lookup &amp; Registration" 
+                                icon="fa fa-user-plus" 
+                                rendered="true" />
 
                     <p:submenu 
                         id="smOpdBilling"
