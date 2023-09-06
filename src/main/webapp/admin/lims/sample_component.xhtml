@@ -7,7 +7,7 @@
 
     <body>
 
-        <ui:composition template="/lab/administration.xhtml">
+        <ui:composition template="/admin/lims/index.xhtml">
 
             <ui:define name="subcontent">
 
@@ -23,7 +23,7 @@
                             <p:commandButton ajax="false" 
                                              action="#{itemController.addSampleComponentsForAllInvestigationsWithoutSampleComponents}"
                                              value="Add Sample Components for All Investigations" ></p:commandButton>
-                            
+
                             <p:spacer height="1" width="300" ></p:spacer>
                             <p:commandButton ajax="false" action="/lab/administration" value="Back" ></p:commandButton>
                         </h:panelGrid>
@@ -38,7 +38,7 @@
 
                                     <p:outputLabel value="Name" ></p:outputLabel>
                                     <p:inputText value="#{itemController.sampleComponent.name}" ></p:inputText>
-                                   
+
                                 </h:panelGrid>
                             </p:panel>
                         </p:dialog>

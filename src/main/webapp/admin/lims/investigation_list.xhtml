@@ -57,7 +57,7 @@
                             <f:facet name="header">
                                 <h:outputText value="Actions"/>
                             </f:facet>
-                            <p:commandButton value="Edit" action="#{investigationController.navigateToViewInvestigationForAdmin()}">
+                            <p:commandButton value="Manage" action="#{investigationController.navigateToManageInvestigation()}">
                                 <f:setPropertyActionListener value="#{item}" target="#{investigationController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                             <p:commandButton value="Delete" 

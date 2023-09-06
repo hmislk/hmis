@@ -245,12 +245,21 @@ public class InvestigationController implements Serializable {
         return "/lab/flags";
     }
 
+    @Deprecated
     public String navigateToViewInvestigationForAdmin() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
             return "";
         }
         return "/admin/lims/investigation_single";
+    }
+    
+    public String navigateToManageInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return "";
+        }
+        return "/admin/lims/investigation";
     }
 
     public String navigateToListInvestigationsForAdmin() {
@@ -494,7 +503,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
         }
-        return "/lab/pathology_format";
+        return "/admin/lims/pathology_format";
     }
 
     public String navigateToManageCalculations() {
