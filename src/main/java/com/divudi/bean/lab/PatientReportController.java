@@ -274,7 +274,7 @@ public class PatientReportController implements Serializable {
             }
 
             String html = "<html>";
-            html += "<body>";
+            html += "<h:body>";
             html += "<div id=\"divReport\"  style=\"width:21cm;height: 28cm; position: relative;\">";
 
             for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
@@ -371,7 +371,7 @@ public class PatientReportController implements Serializable {
             }
 
             html += "</div>";
-            html += "</body>";
+            html += "</h:body>";
             html += "</html>";
 
             FileWriter writer = new FileWriter(file);
@@ -1018,7 +1018,7 @@ public class PatientReportController implements Serializable {
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + "</title>"
                 + "</head>"
-                + "<body>";
+                + "<h:body>";
         b += "<p>Dear " + r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + ",<br/>";
         b += "Your " + r.getPatientInvestigation().getInvestigation().getName() + " is ready.<br/></p>";
         b += "<table>"
@@ -1098,7 +1098,7 @@ public class PatientReportController implements Serializable {
                 + "<br/>"
                 + "</p>";
 
-        b += "</body></html>";
+        b += "</h:body></html>";
         return b;
     }
 
@@ -1110,7 +1110,7 @@ public class PatientReportController implements Serializable {
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + "</title>"
                 + "</head>"
-                + "<body>";
+                + "<h:body>";
         b += "<p>The Following Report's approval was cancelled. </p><br/>";
         b += "<p>Patient Name : " + r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle() + "</p><br/>";
         b += "<p>Investigation Name : " + r.getPatientInvestigation().getInvestigation().getName() + " </p><br/>";
@@ -1197,7 +1197,7 @@ public class PatientReportController implements Serializable {
                 + "<br/>"
                 + "</p>";
 
-        b += "</body></html>";
+        b += "</h:body></html>";
         return b;
     }
 
