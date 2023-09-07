@@ -140,7 +140,7 @@ public class ItemController implements Serializable {
    
 
     public String toManageItemdIndex() {
-        return "/admin/items/admin_items_index";
+        return "/admin/items/index";
     }
 
     public String toListInvestigations() {
