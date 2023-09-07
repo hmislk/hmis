@@ -1548,7 +1548,7 @@ public class BillSearch implements Serializable {
                             + getBill().getInsId()
                             + "</title>"
                             + "</head>"
-                            + "<body>";
+                            + "<h:body>";
                     tb += "<p>";
                     tb += "Bill No : " + getBill().getInsId() + "<br/>";
                     tb += "Bill Date : " + getBill().getBillDate() + "<br/>";
@@ -1585,7 +1585,7 @@ public class BillSearch implements Serializable {
                             + "<br/>"
                             + "</p>";
 
-                    tb += "</body></html>";
+                    tb += "</h:body></html>";
 
                     e.setMessageBody((tb));
 
