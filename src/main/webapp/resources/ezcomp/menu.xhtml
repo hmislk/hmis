@@ -896,6 +896,14 @@
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
                     <p:menuitem  
+                        rendered="#{webUserController.hasPrivilege('InwardAdministration')}"
+                        ajax="false"  
+                        action="/inward/inward_administration" 
+                        value="Manage Inpatient Services" 
+                        icon="fa fa-bed" >
+                    </p:menuitem>
+               
+                    <p:menuitem  
                         ajax="false"  
                         action="#{pharmacyController.navigateToManagePharmaceuticals}" 
                         value="Manage Pharmaceuticals" 
@@ -906,7 +914,7 @@
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 
                         value="Manage Pricing" 
-                       icon="fa fa-tag"
+                        icon="fa fa-tag"
                         rendered="#{webUserController.hasPrivilege('AdminPrices')}" >
                     </p:menuitem>
                     <p:menuitem  
