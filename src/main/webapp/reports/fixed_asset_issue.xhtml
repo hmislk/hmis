@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Employee Asset Issue(Pending/Returned)" class="w-100">
+                    <p:panel header="Fixed Asset Issue" class="w-100">
                         <h:panelGrid columns="5" class="w-100">
                             <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
                             <p:selectOneMenu value="#{institutionController.current.institutionType}" id="institutionMenu" required="true">
@@ -19,21 +19,27 @@
                                 <f:selectItems value="#{institutionController.institutionTypes}"/>
                             </p:selectOneMenu>
                             <p:spacer/>
-                            <p:outputLabel value="Report Type"></p:outputLabel>
+                            <p:outputLabel value="Sub Category"></p:outputLabel>
                             <p:selectOneMenu>
-                                <f:selectItem itemValue="All Issues" itemLabel="All Issues" />
-                                <f:selectItem itemValue="Pending Issues" itemLabel="Pending Issues" />
-                                <f:selectItem itemValue="Returned Issues" itemLabel="Returned Issues" />
+                                <f:selectItem itemLabel="Select Sub category"/>
                             </p:selectOneMenu>
+                            
 
-
-
-                            <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />                                      
+                            <p:outputLabel value="Asset"></p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Asset"/>
+                            </p:selectOneMenu>
                             <p:spacer/>
-                            <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />       
-
+                            <p:outputLabel value="Store" for="departmentMenu"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportsStock.department.name}" id="departmentMenu" required="true">
+                                <f:selectItem itemLabel="Select Department Type"/>
+                                <f:selectItems value="#{departmentController.current.departmentType}"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Vendor"></p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="Select Vendor"/>
+                            </p:selectOneMenu>
                         </h:panelGrid>
 
                     </p:panel>
