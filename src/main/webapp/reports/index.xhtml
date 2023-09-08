@@ -20,17 +20,17 @@
                                 <p:tab title="Asset Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="Asset Register" 
-                                                           action="/reports/asset_register" />
+                                                           action="#{reportController.navigateToAssetRegister()}" />
                                         <p:commandButton   class="w-100" ajax="false" value="PO Status Report" 
-                                                           action="/reports/po_status_report" />
-                                        <p:commandButton   class="w-100" ajax="false" value="Employee Asset Issue" action="/reports/employee_asset_issue" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Fixed Asset Issue" action="/reports/fixed_asset_issue" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="List Investigation Categories" action="#{investigationCategoryController.navigateToListInvestigationCategories()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Manage Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Upload Investigations" action="#{investigationCategoryController.navigateToInvestigationFormat()}" />
+                                                           action="#{reportController.navigateToPoStatusReport()}" />
+                                        <p:commandButton   class="w-100" ajax="false" value="Employee Asset Issue" action="#{reportController.navigateToEmployeeAssetIssue()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Fixed Asset Issue" action="#{reportController.navigateToFixedAssetIssue()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Warranty Expire Report" action="#{reportController.navigateToAssetWarentyExpireReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset GRN Report" action="#{investigationCategoryController.navigateToAssetGrnReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Transfer Report" action="#{investigationCategoryController.navigateToAssetTransferReport()}" />
                                     </div>
                                 </p:tab>
-                                <p:tab title="Manage Services">
+                                <p:tab title="Cafe and Kitchen Reports">
                                     <div class="d-grid gap-2">
 
 
@@ -54,13 +54,13 @@
 
                                     </div>
                                 </p:tab>
-                                <p:tab title="Reports">
+                                <p:tab title="Cashier Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="Item List"
                                                            action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
                                     </div>
                                 </p:tab>
-                                <p:tab title="Manage Metadata">
+                                <p:tab title="Collection Center Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
                                         <p:commandButton   class="w-100"  ajax="false" value="Forms" action="#{investigationCategoryController.navigateToFormFormatCategory()}" ></p:commandButton>
@@ -68,7 +68,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
                                     </div>
                                 </p:tab>
-                                <p:tab title="Bulk Transactions">
+                                <p:tab title="Dashboard">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
@@ -78,7 +78,7 @@
 
                                     </div>
                                 </p:tab>
-                                <p:tab title="Setup">
+                                <p:tab title="Financial Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton  class="w-100" 
                                                           ajax="false" 
@@ -95,6 +95,30 @@
 
 
                                     </div>
+                                </p:tab>
+                                
+                                <p:tab title="HR Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
+                                
+                                <p:tab title="Inpatient Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
+                                
+                                <p:tab title="Inventory Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
+                                
+                                <p:tab title="Laboratary Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
+                                
+                                <p:tab title="Management Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
+                                
+                                <p:tab title="Salary Reports">
+                                    <div class="d-grid gap-2"></div>
                                 </p:tab>
                             </p:accordionPanel>
 
