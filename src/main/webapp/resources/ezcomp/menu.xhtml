@@ -823,7 +823,8 @@
                 <p:submenu  icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
-                                 rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
+                                 rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>  
+                    <p:menuitem  ajax="false"  action="/reports/index" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                                            
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                     <p:menuitem  ajax="false"  action="/reportIncome/report_income" value="Income Report"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/revenue_reports/index" value="Revenue Reports"  ></p:menuitem>
@@ -896,6 +897,14 @@
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
                     <p:menuitem  
+                        rendered="#{webUserController.hasPrivilege('InwardAdministration')}"
+                        ajax="false"  
+                        action="/inward/inward_administration" 
+                        value="Manage Inpatient Services" 
+                        icon="fa fa-bed" >
+                    </p:menuitem>
+               
+                    <p:menuitem  
                         ajax="false"  
                         action="#{pharmacyController.navigateToManagePharmaceuticals}" 
                         value="Manage Pharmaceuticals" 
@@ -906,7 +915,7 @@
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 
                         value="Manage Pricing" 
-                       icon="fa fa-tag"
+                        icon="fa fa-tag"
                         rendered="#{webUserController.hasPrivilege('AdminPrices')}" >
                     </p:menuitem>
                     <p:menuitem  
