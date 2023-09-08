@@ -110,6 +110,9 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToEmployeeAssetIssue() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
         return "/reports/employee_asset_issue";
     }
 

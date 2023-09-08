@@ -14,9 +14,10 @@
                     <p:panel header="Employee Asset Issue(Pending/Returned)" class="w-100">
                         <h:panelGrid columns="5" class="w-100">
                             <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
-                            <p:selectOneMenu value="#{institutionController.current.institutionType}" id="institutionMenu" required="true">
+                            <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
                                 <f:selectItem itemLabel="Select Institution Type"/>
-                                <f:selectItems value="#{institutionController.institutionTypes}"/>
+                                <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                
                             </p:selectOneMenu>
                             <p:spacer/>
                             <p:outputLabel value="Report Type"></p:outputLabel>
@@ -35,6 +36,73 @@
                             <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />       
 
                         </h:panelGrid>
+                    <br />
+                        
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Employee Asset Issue Report" />                                
+                            </f:facet>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Sub Category" >
+                                    </p:outputLabel>
+                                </f:facet>
+
+                              
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Serial No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Issue Document No" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Issue Document Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Expected Return Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Actual Return Date" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Remarks" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            
+                        </p:dataTable>
 
                     </p:panel>
                 </h:form>
