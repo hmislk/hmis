@@ -20,81 +20,122 @@
                                 <p:tab title="Asset Reports">
                                     <div class="d-grid gap-2">
                                         <p:commandButton   class="w-100"  ajax="false" value="Asset Register" 
-                                                           action="/reports/asset_register" />
+                                                           action="#{reportController.navigateToAssetRegister()}" />
                                         <p:commandButton   class="w-100" ajax="false" value="PO Status Report" 
-                                                           action="/reports/po_status_report" />
-                                        <p:commandButton   class="w-100" ajax="false" value="Employee Asset Issue" action="/reports/employee_asset_issue" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Add Investigation Category" action="#{investigationCategoryController.navigateToAddInvestigationCategory()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="List Investigation Categories" action="#{investigationCategoryController.navigateToListInvestigationCategories()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Manage Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Upload Investigations" action="#{investigationCategoryController.navigateToInvestigationFormat()}" />
+                                                           action="#{reportController.navigateToPoStatusReport()}" />
+                                        <p:commandButton   class="w-100" ajax="false" value="Employee Asset Issue" action="#{reportController.navigateToEmployeeAssetIssue()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Fixed Asset Issue" action="#{reportController.navigateToFixedAssetIssue()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Warranty Expire Report" action="#{reportController.navigateToAssetWarentyExpireReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset GRN Report" action="#{investigationCategoryController.navigateToAssetGrnReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Transfer Report" action="#{investigationCategoryController.navigateToAssetTransferReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Item Loacation History" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset AMC Expiry" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Warranty Expiry" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="AMC" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Work Order" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Preventive Maintenance" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Modality Down Time" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Disposal Report (Sale Disposal, Write-off)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Purchase Rate movement" />
                                     </div>
                                 </p:tab>
-                                <p:tab title="Manage Services">
+                                <p:tab title="Cafe and Kitchen Reports">
                                     <div class="d-grid gap-2">
 
 
-                                        <p:commandButton   class="w-100"  ajax="false" value="Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Service Categories" action="#{investigationCategoryController.navigateToOpdServiceCategory}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Service Subcategories" action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Service" action="#{investigationCategoryController.navigateToOpdService()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Inward Service" action="#{investigationCategoryController.navigateToInwardService()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Theatre Service" action="#{investigationCategoryController.navigateToTheatreService()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bill Expenses" action="#{investigationCategoryController.navigateToBillExpenses()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Café Discount" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Café Sale"  />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Café Expiry" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Café Consumption " />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Cafe Inward Patient Sale" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Inward Service" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Theatre Service" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bill Expenses" />
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Cashier Reports">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="All Cashier Summery" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Shift End Summery" ></p:commandButton>
 
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Collection Center Reports">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Reports Print" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Balance" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Receipt" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Bill Wise Detail" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Wise Invoice List" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Statement "></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Wise Summary" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Test Wise  Count" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Route Analysis" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collction Centre Book" ></p:commandButton>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collction Centre Book Wise Detail" ></p:commandButton>
 
-                                        <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Dashboard">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Dashboard" />
 
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Financial Reports">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Daily return" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Income Category Wise Summery (Daily Return Summery)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="IP Income Category Wise Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Service Category Wise Bill Details" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Professional Fees Payment" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Discount" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Outside Payments" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Wise Income" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Invoice and Receipt Report (Serial Wise)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Pharmacy Sale (OP/IP)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Debtor Settlement" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Debtor Balance Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="OPD and Inward Due " />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Debtor Age Anlysis" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Petty Cash Payment" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="WHT" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Bill Wise Item Movement" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Debtor Settlement" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Professional Payment" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Welfare" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Profit Matrix" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Package Report" />
+
+                                        <p:commandButton   class="w-100"  ajax="false" value="Debtor Analysis" />
+
 
 
                                     </div>
                                 </p:tab>
-                                <p:tab title="Reports">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="Item List"
-                                                           action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
-                                    </div>
+
+                                <p:tab title="HR Reports">
+                                    <div class="d-grid gap-2"></div>
                                 </p:tab>
-                                <p:tab title="Manage Metadata">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Forms" action="#{investigationCategoryController.navigateToFormFormatCategory()}" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Form Format" action="#{investigationCategoryController.navigateToFormFormat()}" ></p:commandButton>
-                                        <p:commandButton   class="w-100"  ajax="false" value="Categories" action="#{investigationCategoryController.navigateToMetaDataSuperCategory()}" ></p:commandButton>
-                                    </div>
+
+                                <p:tab title="Inpatient Reports">
+                                    <div class="d-grid gap-2"></div>
                                 </p:tab>
-                                <p:tab title="Bulk Transactions">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Investigations" action="#{investigationCategoryController.navigateToInvestigationBulkUnDelete()}" />
-
-                                    </div>
+                                <p:tab title="Inventory Reports">
+                                    <div class="d-grid gap-2"></div>
                                 </p:tab>
-                                <p:tab title="Setup">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  class="w-100" 
-                                                          ajax="false" 
-                                                          value="Create New Items for New Institution" 
-                                                          action="create_items_for_new_institution" 
-                                                          />
 
+                                <p:tab title="Laboratary Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
 
-                                        <p:commandButton  class="w-100" 
-                                                          ajax="false" 
-                                                          value="Create New Items by Excel Upload" 
-                                                          action="create_items_for_new_institution" 
-                                                          />
+                                <p:tab title="Management Reports">
+                                    <div class="d-grid gap-2"></div>
+                                </p:tab>
 
-
-                                    </div>
+                                <p:tab title="Salary Reports">
+                                    <div class="d-grid gap-2"></div>
                                 </p:tab>
                             </p:accordionPanel>
 

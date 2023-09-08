@@ -21,18 +21,19 @@
                             <p:spacer/>
                             <p:outputLabel value="Report Type"></p:outputLabel>
                             <p:selectOneMenu>
-                                <f:selectItems value="All Issues"/>
-                                <f:selectItems value="Pending Issues"/>
-                                <f:selectItems value="Returned Issues"/>
+                                <f:selectItem itemValue="All Issues" itemLabel="All Issues" />
+                                <f:selectItem itemValue="Pending Issues" itemLabel="Pending Issues" />
+                                <f:selectItem itemValue="Returned Issues" itemLabel="Returned Issues" />
                             </p:selectOneMenu>
-                            
+
+
 
                             <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
                             <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />                                      
                             <p:spacer/>
                             <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
                             <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />       
-                            
+
                         </h:panelGrid>
 
                     </p:panel>
