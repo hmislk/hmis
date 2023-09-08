@@ -102,10 +102,18 @@ public class ReportController implements Serializable {
     }
 
     public String navigateToAssetRegister() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+  
         return "/reports/asset_register";
     }
 
     public String navigateToPoStatusReport() {
+         if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+  
         return "/reports/po_status_report";
     }
 
