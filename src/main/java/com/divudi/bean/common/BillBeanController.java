@@ -2421,7 +2421,7 @@ public class BillBeanController implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-            dbl[3] = 0.0;
+//            dbl[3] = 0.0;
             return dbl;
         }
 

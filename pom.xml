@@ -177,7 +177,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20180813</version>
+            <version>20230618</version>
         </dependency>
 
         <!-- Flying Saucer (for PDF rendering) -->
@@ -187,19 +187,6 @@
             <version>9.0.9</version>
         </dependency>
 
-        <!-- QR Code Generation -->
-        <dependency>
-            <groupId>net.glxn</groupId>
-            <artifactId>qrgen</artifactId>
-            <version>1.4</version>
-        </dependency>
-
-        <!-- Barcode Generation -->
-        <dependency>
-            <groupId>net.sf.barcode4j</groupId>
-            <artifactId>barcode4j-light</artifactId>
-            <version>2.0</version>
-        </dependency>
 
         <!-- HAPI FHIR -->
         <dependency>
@@ -240,24 +227,13 @@
             <version>7.0</version>
         </dependency>
 
-        <!-- Unirest for HTTP requests -->
-        <dependency>
-            <groupId>com.mashape.unirest</groupId>
-            <artifactId>unirest-java</artifactId>
-            <version>1.4.6</version>
-        </dependency>
-
         <!-- Other Dependencies -->
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>mail</artifactId>
-            <version>1.4</version>
+            <version>1.4.7</version>
         </dependency>
-        <dependency>
-            <groupId>xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.2.2</version>
-        </dependency>
+
     </dependencies>
 
     
@@ -271,7 +247,7 @@
                     <source>11</source>
                     <target>11</target>
                     <compilerArguments>
-                        <endorseddirs></endorseddirs>
+                        <endorseddirs>${endorsed.dir}</endorseddirs>
                     </compilerArguments>
                 </configuration>
             </plugin>

@@ -13,45 +13,47 @@
                     <p:panel header="Manage Items/Services" rendered="true">
                         <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}" >
                             <p:ajax process="@this" ></p:ajax>
-                            <p:tab title="Manage Investigations">
-                                <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Add Investigation" 
-                                                       action="#{investigationController.navigateToAddInvestigationForAdmin()}" />
-                                    <p:commandButton   class="w-100" ajax="false" value="List Investigation" 
-                                                       action="#{investigationController.navigateToListInvestigationsForAdmin()}" />
-                                    <p:commandButton   class="w-100" ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Add Investigation Category" action="#{investigationCategoryController.navigateToAddInvestigationCategory()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="List Investigation Categories" action="#{investigationCategoryController.navigateToListInvestigationCategories()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Manage Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Upload Investigations" action="#{investigationCategoryController.navigateToInvestigationFormat()}" />
-                                </div>
-                            </p:tab>
                             <p:tab title="Manage Services">
                                 <div class="d-grid gap-2">
-                                    <p:commandButton   class="w-100"  ajax="false" value="Investigations" action="#{investigationCategoryController.navigateToInvestigations()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Investigation Fees" action="#{investigationCategoryController.navigateToInvestigationFees()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Service Categories" action="#{investigationCategoryController.navigateToOpdServiceCategory}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Service Subcategories" action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Service" action="#{investigationCategoryController.navigateToOpdService()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Inward Service" action="#{investigationCategoryController.navigateToInwardService()}" />
-                                    <p:commandButton   class="w-100"  ajax="false" value="Theatre Service" action="#{investigationCategoryController.navigateToTheatreService()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Service Categories" 
+                                        action="#{investigationCategoryController.navigateToOpdServiceCategory}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Service Subcategories" 
+                                        action="#{investigationCategoryController.navigateToOpdServiceSubCategory}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="OPD Service" 
+                                        action="#{investigationCategoryController.navigateToOpdService()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Inward Service" 
+                                        action="#{investigationCategoryController.navigateToInwardService()}" />
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Theatre Service" action="#{investigationCategoryController.navigateToTheatreService()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bill Expenses" action="#{investigationCategoryController.navigateToBillExpenses()}" />
 
-
-                                    <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
 
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
-
-                                </div>
-                            </p:tab>
-                            <p:tab title="Reports">
-                                <div class="d-grid gap-2">
                                     <p:commandButton   class="w-100"  ajax="false" value="Item List"
                                                        action="#{itemController.navigateToListAllItems()}" ></p:commandButton>
+                                </div>
+                            </p:tab>
+                            <p:tab title="Metadata">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Manage Metadata">
@@ -64,6 +66,12 @@
                             </p:tab>
                             <p:tab title="Bulk Transactions">
                                 <div class="d-grid gap-2">
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="OPD Service Upload" 
+                                        action="/admin/items/opd_service_upload" />
+                                    
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
@@ -75,17 +83,17 @@
                             <p:tab title="Setup">
                                 <div class="d-grid gap-2">
                                     <p:commandButton  class="w-100" 
-                                                     ajax="false" 
-                                                     value="Create New Items for New Institution" 
-                                                     action="create_items_for_new_institution" 
-                                                     />
+                                                      ajax="false" 
+                                                      value="Create New Items for New Institution" 
+                                                      action="create_items_for_new_institution" 
+                                                      />
 
 
                                     <p:commandButton  class="w-100" 
-                                                     ajax="false" 
-                                                     value="Create New Items by Excel Upload" 
-                                                     action="create_items_for_new_institution" 
-                                                     />
+                                                      ajax="false" 
+                                                      value="Create New Items by Excel Upload" 
+                                                      action="/admin/items/create_items_for_new_institution" 
+                                                      />
 
 
                                 </div>
@@ -97,7 +105,7 @@
             </div>
             <div class="col-md-9" >
                 <ui:insert name="item" >
-                    
+
                 </ui:insert>
             </div>
 
