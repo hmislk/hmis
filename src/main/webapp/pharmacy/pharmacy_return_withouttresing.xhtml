@@ -31,13 +31,13 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="Return without Traising" />
 
-                                        <p:autoComplete converter="institutionConverter"
-                                                        completeMethod="#{institutionController.completeSupplier}" 
-                                                        styleClass="noPrintButton"
-                                                        forceSelection="true"
-                                                        var="w" itemLabel="#{w.name}" itemValue="#{w}"
-                                                        value="#{pharmacyReturnwithouttresing.toInstitution}" 
-                                                        id="acDept">
+                                        <p:autoComplete 
+                                            completeMethod="#{institutionController.completeSuppliers}" 
+                                            styleClass="noPrintButton"
+                                            forceSelection="true"
+                                            var="w" itemLabel="#{w.name}" itemValue="#{w}"
+                                            value="#{pharmacyReturnwithouttresing.toInstitution}" 
+                                            id="acDept">
                                             <p:column>
                                                 <h:outputLabel value="#{w.name}"></h:outputLabel>
                                             </p:column>
