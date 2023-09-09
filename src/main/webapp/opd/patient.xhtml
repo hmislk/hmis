@@ -24,9 +24,9 @@
                             <div class="col-md-8" >
                                 <p:panelGrid columns="2" class="w-100 table table-striped" >
                                     <f:facet name="header" >
-                                        <h:commandButton value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" ></h:commandButton>
-                                        <h:commandButton value="Search" action="#{opdBillController.navigateToSearchPatients()}" ></h:commandButton>
-                                        <h:commandButton value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}" ></h:commandButton>
+                                        <p:commandButton value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2" ></p:commandButton>
+                                        <p:commandButton value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2" ></p:commandButton>
+                                        <p:commandButton value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2" ></p:commandButton>
                                     </f:facet>
 
 
@@ -84,13 +84,16 @@
 
                                 </p:panelGrid>
                             </div>
-                            <div class="col-md-4" >
+                            <div  class="col-md-4 d-flex flex-column  gap-2" >
                                 <p:commandButton value="OPD Bill" 
                                                  action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
-                                                 ajax="false" 
+                                                 ajax="false"
+                                                 class="w-100"
                                                  styleClass="mx-2">
                                 </p:commandButton>
-                                <p:commandButton value="OPD Bill for Cashier" action="#{patientController.navigateToOpdBillFromOpdPatient()}" ajax="false" styleClass="mx-2">
+                                <p:commandButton value="OPD Bill for Cashier"
+                                                 class="w-100"
+                                                 action="#{patientController.navigateToOpdBillFromOpdPatient()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="Accept Payments" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>

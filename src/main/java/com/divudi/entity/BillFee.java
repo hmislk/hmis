@@ -80,7 +80,7 @@ public class BillFee implements Serializable {
     double feeValue = 0.0;
     @Transient
     private double absoluteFeeValue;
-    Double feeGrossValue;
+    private Double feeGrossValue;
     double feeDiscount;
     double feeVat;
     double feeVatPlusValue;
