@@ -8,15 +8,22 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.data.BillType;
+import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.dataStructure.ServiceFee;
+import com.divudi.data.inward.InwardChargeType;
+import com.divudi.entity.Category;
 import com.divudi.entity.Department;
+import com.divudi.entity.Fee;
+import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Service;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
+import com.divudi.facade.FeeFacade;
 import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.ServiceCategoryFacade;
 import com.divudi.facade.ServiceFacade;
@@ -37,11 +44,19 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import org.primefaces.model.file.UploadedFile;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -66,6 +81,11 @@ public class ServiceController implements Serializable {
     private ServiceSubCategoryFacade serviceSubCategoryFacade;
     @EJB
     private CategoryFacade categoryFacade;
+    @EJB
+    private FeeFacade feeFacade;
+    @EJB
+    private ItemFeeFacade itemFeeFacade;
+
     List<Service> selectedItems;
     List<Service> selectedRetiredItems;
     private Service current;
@@ -80,6 +100,11 @@ public class ServiceController implements Serializable {
     @EJB
     private DepartmentFacade departmentFacade;
     List<Service> itemsToRemove;
+    private UploadedFile file;
+    private Institution institution;
+    private Department department;
+    private Category category;
+    private InwardChargeType inwardChargeType;
 
     public List<Service> getItemsToRemove() {
         return itemsToRemove;
@@ -242,7 +267,7 @@ public class ServiceController implements Serializable {
 
         items = null;
         filterItem = null;
-        
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Reports/Check Entered Data/Service/Service list search(/faces/dataAdmin/opd_service_department_list.xhtml)");
     }
 
@@ -254,8 +279,37 @@ public class ServiceController implements Serializable {
         return false;
     }
 
-    public void saveSelected() {
+    /**
+     * Generates a shortened code for a given name.
+     *
+     * @param name The full name of the service, item, or product.
+     * @return A shortened code for the name.
+     */
+    private String generateShortCode(String name) {
+        // Initialize the code as an empty string.
+        String code = "";
 
+        // Split the name into words using space as the delimiter.
+        String[] words = name.split(" ");
+
+        // If there's only one word, take the first three letters as the code.
+        if (words.length == 1 && words[0].length() >= 3) {
+            code = words[0].substring(0, 3).toLowerCase();
+        } else {
+            // If there are multiple words, take the first letter of each word as the code.
+            for (String word : words) {
+                if (!word.isEmpty()) {
+                    code += word.charAt(0);
+                }
+            }
+            // Make the code lowercase for simplicity.
+            code = code.toLowerCase();
+        }
+
+        return code;
+    }
+
+    public void saveSelected() {
         if (getCurrent().getDepartment() == null) {
             UtilityController.addErrorMessage("Please Select Department");
             return;
@@ -263,6 +317,19 @@ public class ServiceController implements Serializable {
         if (getCurrent().getInwardChargeType() == null) {
             UtilityController.addErrorMessage("Please Select Inward Charge type");
             return;
+        }
+        if (getCurrent().getName() == null || getCurrent().getName().isEmpty()) {
+            UtilityController.addErrorMessage("Please Enter a name");
+        } else {
+            if (getCurrent().getFullName() == null) {
+                getCurrent().setFullName(getCurrent().getName());
+            }
+            if (getCurrent().getPrintName() == null) {
+                getCurrent().setPrintName(getCurrent().getName());
+            }
+            if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
+                getCurrent().setCode(generateShortCode(getCurrent().getName()));
+            }
         }
 
 //        if (errorCheck()) {
@@ -402,8 +469,6 @@ public class ServiceController implements Serializable {
     private ServiceFacade getFacade() {
         return ejbFacade;
     }
-    @EJB
-    private ItemFeeFacade itemFeeFacade;
 
     public List<ItemFee> getItemFee() {
         List<ItemFee> temp;
@@ -481,6 +546,97 @@ public class ServiceController implements Serializable {
             fillItems();
         }
         return items;
+    }
+
+    /**
+     * Handles the uploaded Excel file and extracts data from columns A and B.
+     *
+     * @return Map with name (from column A) as key and price (from column B) as
+     * value.
+     */
+    public void uploadOpdItemNamesAndFee() {
+        Map<String, Double> resultMap = new HashMap<>();
+
+        if (file != null) {
+            try ( InputStream input = file.getInputStream()) {
+                Workbook workbook = new XSSFWorkbook(input);
+                Sheet sheet = workbook.getSheetAt(0);
+                for (Row row : sheet) {
+                    if (row.getRowNum() == 0) { // skip the title row
+                        continue;
+                    }
+
+                    Cell nameCell = row.getCell(0);
+                    Cell priceCell = row.getCell(1);
+
+                    if (nameCell != null && priceCell != null) {
+                        String name = nameCell.getStringCellValue();
+                        Double price = priceCell.getNumericCellValue();
+                        resultMap.put(name, price);
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        addItemsAndFees(resultMap);
+    }
+
+    public void addItemsAndFees(Map<String, Double> resultMap) {
+        Department dept = getDepartment();
+        Institution ins = getInstitution();
+        Category cat = getCategory();
+        InwardChargeType ic = getInwardChargeType();
+
+        for (Map.Entry<String, Double> entry : resultMap.entrySet()) {
+            String name = entry.getKey();
+            Double fee = entry.getValue();
+            Item item = addItem(name, fee, dept, ins, cat, ic);
+            addFee(item, fee);
+        }
+    }
+
+    private Service addItem(String name, Double fee, Department dept, Institution ins, Category cat, InwardChargeType ic) {
+        Service i = new Service();
+        i.setName(name);
+        i.setFullName(name);
+        i.setPrintName(name);
+        i.setInwardChargeType(ic);
+        i.setCreatedAt(new Date());
+        i.setCreater(sessionController.getLoggedUser());
+        i.setCategory(cat);
+        i.setDblValue(fee);
+        i.setDepartment(dept);
+        i.setInstitution(ins);
+        i.setDepartmentType(DepartmentType.Opd);
+        i.setDiscountAllowed(true);
+        i.setForBillType(BillType.OpdBill);
+        i.setUserChangable(true);
+        i.setTotalForForeigner(fee);
+        i.setTotal(fee);
+        i.setTotalFee(0);
+        i.setTotalFfee(fee);
+        ejbFacade.create(i);
+        return i;
+    }
+
+    private void addFee(Item item, Double fee) {
+        ItemFee f = new ItemFee();
+        f.setItem(item);
+        f.setFee(fee);
+        f.setFeeType(FeeType.Service);
+        f.setCode("hospital_fee");
+        f.setCreatedAt(new Date());
+        f.setCreater(sessionController.getLoggedUser());
+        f.setDepartment(item.getDepartment());
+        f.setInstitution(item.getInstitution());
+        f.setDiscountAllowed(true);
+        f.setFfee(fee);
+        f.setHospitalFee(fee);
+        f.setHospitalFfee(fee);
+        f.setName("Hospital Fee");
+        itemFeeFacade.create(f);
     }
 
     public void fillItems() {
@@ -606,6 +762,15 @@ public class ServiceController implements Serializable {
         return itemFeeFacade;
     }
 
+    // Getter and setter for file
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
+    }
+
     public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
         this.itemFeeFacade = itemFeeFacade;
     }
@@ -624,6 +789,46 @@ public class ServiceController implements Serializable {
 
     public void setFilterItem(List<Service> filterItem) {
         this.filterItem = filterItem;
+    }
+
+    public FeeFacade getFeeFacade() {
+        return feeFacade;
+    }
+
+    public void setFeeFacade(FeeFacade feeFacade) {
+        this.feeFacade = feeFacade;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public InwardChargeType getInwardChargeType() {
+        return inwardChargeType;
+    }
+
+    public void setInwardChargeType(InwardChargeType inwardChargeType) {
+        this.inwardChargeType = inwardChargeType;
     }
 
     /**
@@ -672,7 +877,6 @@ public class ServiceController implements Serializable {
         }
     }
 
-
     public CommonController getCommonController() {
         return commonController;
     }
@@ -680,6 +884,5 @@ public class ServiceController implements Serializable {
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
     }
-    
-    
+
 }
