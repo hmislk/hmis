@@ -21,5 +21,6 @@ Any value defined here will override the pom.xml file value but is only applicab
         <org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_j2eeVersion>1.8-web</org-netbeans-modules-maven-j2ee.netbeans_2e_hint_2e_j2eeVersion>
         <netbeans.compile.on.save>none</netbeans.compile.on.save>
         <org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_deploy_2e_on_2e_save>
+        <org-netbeans-modules-maven-j2ee.netbeans_2e_copy_2e_static_2e_resources_2e_on_2e_save>false</org-netbeans-modules-maven-j2ee.netbeans_2e_copy_2e_static_2e_resources_2e_on_2e_save>
     </properties>
 </project-shared-configuration>

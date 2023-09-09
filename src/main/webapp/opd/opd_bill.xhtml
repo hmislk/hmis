@@ -177,7 +177,7 @@
                                                                  value="Add" 
                                                                  action="#{opdBillController.addToBill()}"  
                                                                  class="form-control btn-primary"  >
-                                                    <f:ajax execute="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems" render="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  pIxAdd" />
+                                                    <f:ajax execute="txtQty acIx btnAddIx :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pay',view).clientId} panelBillItems" render="focusIx tblBillItem  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} acIx pIxAdd" />
                                                 </h:commandButton>
                                             </div>
                                         </div>

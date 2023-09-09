@@ -6,24 +6,31 @@ Open Source Hospital Management Information System
 
 ## Description
 
-This is a comprehensive Hospital Information Management System that is knowingly used by more than 40 health care institutions for up to 8 years successfully. It has several modules that support most of the workflows of a modern hospital. Most of the differences in the requirements of different hospitals can be achieved through configuration. The system has given priority to user-friendliness and speed of the system rather than the fancy decoration of the user interfaces loaded with colours and graphics. It has been tested extensively in production since 2015.
+Introducing our Hospital Information Management System, a trusted solution that has been actively serving over 40 healthcare institutions since its inception in 2004. This comprehensive system offers a suite of modules tailored to support the multifaceted workflows of contemporary hospitals. Its adaptability ensures that variances in institutional requirements are easily addressed through configuration.
 
-The main strength of the system is the Object Oriented Design. The design is simple as it could be, yet very robust and flexible to address diverse and complex business worlflows in the healcare domain.
+From the outset, the system has consistently prioritised user-friendliness and operational speed over ornate user interfaces. In 2015, a significant evolution took place with the introduction of a multi-site architecture, further enhancing its reliability and scalability.
 
-The system is mainly designed using Object Oriented Principles. The system design has always followed well tested and recognized data models like dm+d of NHS, UK. The system design is so robust and optimized so that it can easily accommodate new extensions for emerging requirements.
+A cornerstone of this system is its Object-Oriented Design, which strikes a balance between simplicity and robustness. This design approach ensures flexibility, making it adept at navigating the intricate and varied business workflows inherent to the healthcare sector.
 
-Java Enterprise Edition is used to develop the web application and RESTful server. The database management system can be selected on preferences of the implementing team, but MySQL or MariaDB is recommended. The technologies used with JavaEE include JSF, JPA and PrimeFaces. The lab middleware is developed with C#. The standalone applications consume RESTful services are developed using JavaSE.
+The system's architecture leans heavily on Object-Oriented Principles, consistently aligning with tried-and-true data models, such as the dm+d of NHS, UK. This alignment guarantees a design that's not only robust and optimised but also primed for seamless integration of future extensions to meet emerging needs.
+
+Developed using Java Enterprise Edition, the system offers both a web application and a RESTful server. While the choice of database management system rests with the implementing team, MySQL or MariaDB comes highly recommended. Complementing JavaEE are technologies like JSF, JPA, and PrimeFaces. The lab middleware is crafted in C#, and standalone applications, which leverage RESTful services, are built using JavaSE.
 
 ## History
 
-Dr M H B Ariyaratne is a medical doctor who developed an Electronic Medical Record (EMR) System for his general practice in 2004 using Microsoft Visual Basic 6 and MS-Access. Doctors who have seen this EMR requested him to give the system for them to use. AS more doctors used the EMR, their requirements were discussed and incorporated into the system systematically. Some of the doctors who were using the EMR were having clinical laboratories, medical channelling centres and hospitals. Then the system was added new modules to cover new requirements. In 2012, a new JavaEE based system was initiated as an Open Source Initiative hosted in GitHub under the MIT license. The students of Sri Lanka Institute of Advanced Technical Education at Labuduwa, Galle, were allocated during their training for The Higher National Diploma in Information Technology (HNDIT) programme facilitated by Mr Mr.K.M.G.T.R. Waidyarathne, a lecturer from the Department Of Information Technology. Some of the students continued to support the project after their graduation under financial support by Dr M H B Ariyaratne. Commercial support was made available for installations, user training, maintenance, cloud hosting and troubleshooting.  
+In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an Electronic Medical Record (EMR) System tailored for his general practice. Utilising Microsoft Visual Basic 6 and MS-Access, this system caught the attention of fellow doctors, leading to widespread adoption. As its user base grew, so did its features, evolving through collaborative discussions and feedback.
+
+Recognising the diverse needs of its users, which included clinical laboratories, medical channelling centres, and hospitals, the system expanded with additional modules to cater to these requirements.
+
+By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This project was fortunate to receive the dedicated support of students from the Sri Lanka Institute of Advanced Technical Education in Labuduwa, Galle. These students, as part of their Higher National Diploma in Information Technology (HNDIT) programme, contributed under the guidance of Mr. K.M.G.T.R. Waidyarathne, a lecturer from the Department Of Information Technology. Post-graduation, several students remained involved, continuing their support with financial backing from Dr. M H B Ariyaratne.
+
+To further enhance the system's reach and reliability, commercial support was introduced, offering services such as installations, user training, maintenance, cloud hosting, and troubleshooting. 
 
 ## Functionality
 * Electronic Medical Record System / EMR
-* Electronic Health Record System / EHR
 * Pharmacy Information Management System / Medical Logistics Information Management
 * Laboratory Information Management System / LIMS / LIS
-* Admission , Discharge and Transfer System
+* Admission, Discharge and Transfer System
 * Inpatient Management System
 * Theatre Management System
 * Appointment Management System
@@ -34,22 +41,18 @@ Dr M H B Ariyaratne is a medical doctor who developed an Electronic Medical Reco
 * Fleet Management System
 * Linan Management System
 * Inventory Management System
-* Assests and Consumable Management System
+* Assets and Consumable Management System
 
 
 ## Installation
 
-The installation is very easy for testing. Clone the project using Netbeans and configure a new database. Running the project will lead to an administer page to add an institution, department and a user. Configuration of hardware, operating system and GlassFish are discussed in detail in The Installation Manual.
+The installation is very easy for testing. In a development setting, simply clone the project using Netbeans and configure a blank data source in the application server. Running the project will lead to an administrator page to add an institution, department and user. Production environment configurations, hardware and system requirements are discussed in detail in The wiki section.
 
 ## Usage
 
 The features available to different roles of the users are stated in detail in the User Manual.
 
-## Contributing 
-
-* Dr M H B Ariyaratne - Initiated the Project, Main System Architect
-* Mr.K.M.G.T.R. Waidyarathne - Project Management
-* Main Contributors for the Design
+## User Requirements 
 * Dr M H B Ariyaratne
 * Dr Jagath Samarasekara
 * Dr Krishantha Widisingha
@@ -62,11 +65,11 @@ The features available to different roles of the users are stated in detail in t
 * Dr K M P Keerthi
 * Dr Anura Krishantha
 
-## Main Software Developers
-
+## Contributing 
+* Dr M H B Ariyaratne - Initiated the Project, Product owner, System Architect, Lead Developer since 2004 to date
+* Mr.K.M.G.T.R. Waidyarathne - Project Management from 2013 to date
 * Mr Dushan Madhuranga
 * Mr Lahiru Madhushanka
-* Dr M H B Ariyaratne
 * Mr A C M Safrin
 * Mr K Pasan Anuradha
 * Mr Rohan Jayasundara
@@ -89,7 +92,7 @@ The features available to different roles of the users are stated in detail in t
 * Ms D W C Piumini
 
 ## Credits 
-Our contributors and Open Source Community for their knowledge and time. Healthcare Institutions provided financial supporters are listed below.
+Our contributors and Open Source Community for their knowledge and time. Healthcare Institutions that provided financial supporters are listed below.
 
 * Ruhunu MediHospital, Hambanthota  - 2012 Up to date
 * Arogya Hospital, Tangalle - 2014 Up to date
@@ -139,4 +142,3 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 
 ## License
 AGPL License details are attached as the LICENSE.md
-WE have used HTML5UP template and its license is available under the respective folder.
