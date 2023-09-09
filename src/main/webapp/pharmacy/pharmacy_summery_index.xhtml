@@ -33,18 +33,18 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false"  style="text-align: left"
                                                              value="1) All Department Sale Summary " 
-                                                             action="pharmacy_report_summery"/>                                    
+                                                             action="#{commonReport.navigateToPharmacyReportSummary()}"/>                                    
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2)Sale Summary - By Bill Type"
-                                                             action="pharmacy_report_sale_by_date_summery.xhtml"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummary()}"
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3)Sale Summary - By Paymentmethod "
-                                                             action="pharmacy_report_sale_by_date_summery_payment_method.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethod()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>   
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="4) Sale Summary - By Paymentmethod(By Bill) "
-                                                             action="pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethodByBill}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                         </div>
                                     </p:tab>  
@@ -52,36 +52,36 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="1) Sale Detail - By Bill " 
-                                                             action="pharmacy_report_sale_by_date_detail.xhtml"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetail()}"
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2) Sale Detail - By Bill Items" 
-                                                             action="pharmacy_report_sale_by_billItems.xhtml"
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByBillItems()}"
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3) Sale Detail -By Discount Scheme"
-                                                             action="pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="4) Sale Summary By Discount Scheme Summary"
-                                                             action="pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentScheme1()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false"  style="text-align: left"
                                                              value="5) Sale Detail - By Paymentmethod"
-                                                             action="pharmacy_report_sale_by_date_detail_payment_method.xhtml" 
+                                                             action="#{commonReport.navigateToPharmacyReportSaleByDateDetailByPaymentMethod()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                         </div>
                                     </p:tab>  
                                     <p:tab title="4) GRN">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="1) GRN Summary" action="pharmacy_report_grn_detail.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="1) GRN Summary" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetail()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="2) GRN Summary By Supplier" action="pharmacy_report_grn_detail_by_supplier.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="2) GRN Summary By Supplier" action="#{pharmacySaleReport.navigatePharmacyReportGrnDetailBySupplier()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="3) GRN Bill Item Report" action="/pharmacy/pharmacy_report_grn_billitem.xhtml" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
+                                                             value="3) GRN Bill Item Report" action="#{pharmacySaleReport.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReport.makeNull}"></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="4) GRN Registory" action="/pharmacy/pharmacy_report_grn_registory.xhtml" ></p:commandButton>
+                                                             value="4) GRN Registory" action="#{pharmacySaleReport.navigatePharmacyReportGrnRegistory()}" ></p:commandButton>
                                         </div>
                                     </p:tab>  
                                     <p:tab title="5) Purchase">

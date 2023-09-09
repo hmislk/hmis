@@ -9,10 +9,9 @@
   </persistence-unit>
   <persistence-unit name="hmisAuditPU" transaction-type="JTA">
     <jta-data-source>jdbc/horizonaudit</jta-data-source>
-    <class>com.divudi.entity.AuditEvent</class>
-    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
     <properties>
-      <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
+      <!--<property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>-->
     </properties>
   </persistence-unit>
 </persistence>

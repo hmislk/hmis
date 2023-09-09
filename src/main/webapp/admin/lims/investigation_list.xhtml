@@ -7,8 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <h:body>
-        <ui:composition template="/admin/items/admin_items_index.xhtml">
-            <ui:define name="item">
+        <ui:composition template="/admin/lims/index.xhtml">
+            <ui:define name="subcontent">
 
                 <h:form>
                     <p:dataTable value="#{investigationController.items}" var="item"
@@ -57,7 +57,7 @@
                             <f:facet name="header">
                                 <h:outputText value="Actions"/>
                             </f:facet>
-                            <p:commandButton value="Edit" action="#{investigationController.navigateToViewInvestigationForAdmin()}">
+                            <p:commandButton value="Manage" action="#{investigationController.navigateToManageInvestigation()}">
                                 <f:setPropertyActionListener value="#{item}" target="#{investigationController.current}" ></f:setPropertyActionListener>
                             </p:commandButton>
                             <p:commandButton value="Delete" 
