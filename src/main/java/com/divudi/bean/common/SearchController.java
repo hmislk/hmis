@@ -5815,6 +5815,20 @@ public class SearchController implements Serializable {
             return "";
         }
     }
+    
+    public String viewOPDBillById(Long billId) {
+        if (billId == null) {
+            return null;
+        }
+        Bill tb = getBillFacade().find(billId);
+        if (tb == null) {
+            return null;
+        }
+        bill=tb;
+        return "/bill_reprint";
+    }
+    
+   
 
     public void createTableCashIn() {
         bills = null;
