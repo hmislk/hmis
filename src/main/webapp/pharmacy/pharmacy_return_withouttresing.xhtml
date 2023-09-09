@@ -56,7 +56,6 @@
                                         <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
                                         <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                         value="#{pharmacyReturnwithouttresing.stock}" 
-                                                        converter="stockCon" 
                                                         completeMethod="#{pharmacyReturnwithouttresing.completeAvailableStocks}" 
                                                         var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                         style="width: 50px!important;">
