@@ -245,12 +245,21 @@ public class InvestigationController implements Serializable {
         return "/lab/flags";
     }
 
+    @Deprecated
     public String navigateToViewInvestigationForAdmin() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
             return "";
         }
-        return "/admin/items/investigation_single";
+        return "/admin/lims/investigation_single";
+    }
+    
+    public String navigateToManageInvestigation() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return "";
+        }
+        return "/admin/lims/investigation";
     }
 
     public String navigateToListInvestigationsForAdmin() {
@@ -454,7 +463,7 @@ public class InvestigationController implements Serializable {
         }
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
 
-        return "/lab/investigation_values";
+        return "/admin/lims/investigation_values";
     }
 
     public String toLoadParentInvestigation() {
@@ -494,7 +503,7 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Please select investigation");
             return "";
         }
-        return "/lab/pathology_format";
+        return "/admin/lims/pathology_format";
     }
 
     public String navigateToManageCalculations() {
@@ -510,7 +519,7 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         ixCalController.setIx((Investigation) current.getReportedAs());
-        return "/lab/calculation";
+        return "/admin/lims/calculation";
     }
 
     public String navigateToReplaceableInvestigations() {
@@ -526,7 +535,7 @@ public class InvestigationController implements Serializable {
             current.setReportedAs(current);
         }
         itemForItemController.setParentItem(current);
-        return "/lab/replaceable_ix";
+        return "/admin/lims/replaceable_ix";
     }
 
     public String navigateToManageFees() {
@@ -540,7 +549,7 @@ public class InvestigationController implements Serializable {
         }
         itemFeeManager.setItem(current);
         itemFeeManager.fillFees();
-        return "/lab/manage_fees";
+        return "/admin/lims/manage_fees";
     }
 
     public void listDeletedIxs() {
@@ -1207,12 +1216,12 @@ public class InvestigationController implements Serializable {
         if (institution == null) {
             institution = getSessionController().getLoggedUser().getInstitution();
         }
-        return "/lab/investigation";
+        return "/admin/lims/investigation";
     }
 
     public String navigateToListInvestigation() {
         listAllIxs();
-        return "/lab/investigation_list";
+        return "/admin/lims/investigation_list";
     }
 
     public void prepareAdd() {

@@ -186,11 +186,11 @@ public class InvestigationCategoryController implements Serializable {
     }
 
     public String navigateToInvestigations() {
-        return "/admin/items/investigation.xhtml";
+        return "/admin/lims/manage_investigation.xhtml";
     }
 
     public String navigateToInvestigationFees() {
-        return "/admin/items/investigation_fee.xhtml";
+        return "/admin/lims/investigation_fee.xhtml";
     }
 
     public String navigateToOpdServiceCategory() {

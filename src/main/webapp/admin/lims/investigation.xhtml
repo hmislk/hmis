@@ -201,7 +201,71 @@
                                 </p:panelGrid>
 
                             </p:tab>
+                            <p:tab title="Manage" >
+                                <h:panelGrid columns="1" >
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToEditFormatSingle()}" 
+                                        value="Manage Format - Single Item" ></p:commandButton>
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToEditFormatMultiple()}" 
+                                        value="Manage Format - All Items" ></p:commandButton>
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToManageCalculations()}" 
+                                        value="Manage Calculations" ></p:commandButton>
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToReplaceableInvestigations()}" 
+                                        value="Manage Replaceable Investigations" ></p:commandButton>
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToManageReportComponents()}" 
+                                        value="Manage Format Componants"
+                                        ></p:commandButton>
 
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        disabled="#{!webUserController.hasPrivilege('AdminPrices')}"
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToManageFees()}"
+                                        value="Prices" ></p:commandButton>
+
+
+                                    <p:commandButton 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        value="Manage Valuesets" 
+                                        action="#{investigationController.navigateToManageValueSetsForAdmin()}" />
+
+
+
+                                    <p:commandButton class="w-100" ajax="false" value="Flags" action="/lab/flags" />
+                                    <p:commandButton class="w-100" ajax="false" value="Calculations" action="/lab/calculation" />
+                                    <p:commandButton class="w-100" ajax="false" value="Dynamic Labels" action="/lab/dynamic_labels" />
+                                    <p:commandButton class="w-100" ajax="false" value="Validators" action="/lab/investigation_value_component" />
+                                    
+
+
+                                    <p:commandButton
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.toLoadParentInvestigation()}" 
+                                        value="Load Parent Investigation" ></p:commandButton>
+                                    <p:commandButton                                                 
+                                        class="w-100" 
+                                        ajax="false" 
+                                        action="#{investigationController.navigateToListInvestigation()}" 
+                                        value="List of Investigations"
+                                        ></p:commandButton>
+                                </h:panelGrid>
+                            </p:tab>
                         </p:tabView>
 
 

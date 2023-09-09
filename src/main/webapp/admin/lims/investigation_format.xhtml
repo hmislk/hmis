@@ -9,14 +9,16 @@
 
     <body>
 
-        <ui:composition template="/admin/items/admin_items_index.xhtml">
+        <ui:composition template="/admin/lims/index.xhtml">
 
-            <ui:define name="item">
+            <ui:define name="subcontent">
                 <h:form id="form">
                     <h:panelGrid columns="2" styleClass="alignTop" style="width: 25%;" >
 
                         <h:panelGroup rendered="#{investigationItemController.editMode ne 'Move_Mode'}" >
-
+                            <p:commandButton 
+                                value="Back" 
+                                action="/admin/lims/investigation" ajax="false" ></p:commandButton>
                             <p:panel header="Investigation"   >
                                 <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"
                                                 value="#{investigationItemController.currentInvestigation}" 
