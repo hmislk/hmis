@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/pricing/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="subcontent">
+        <h:panelGroup>
+            <h:form>
+                <p:growl />
+
+                <p:panel header="Add Investigation to Package" styleClass="panel-margin">
+
+                    <h:panelGrid columns="2" styleClass="panel-grid-margin">
+                        <h:selectOneListbox id="lstSelect" size="10" value="#{packageItemController.currentPackege}" style="min-width: 223px">
+                            <f:selectItems value="#{packageNameController.withoutInativeItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                            <f:ajax render="gpDetail" execute="lstSelect" />
+                        </h:selectOneListbox>
+                        
+                        <h:panelGroup>
+                            <h:outputLabel for="packageItem" value="Available Items" styleClass="label-style" />
+                            <h:selectOneListbox size="10" id="packageItem" value="#{packageItemController.current}" style="max-width: 400px;">
+                                <f:selectItems value="#{packageItemController.items}" var="myPis" itemLabel="#{myPis.item.name}" itemValue="#{myPis}" />
+                            </h:selectOneListbox>
+                        </h:panelGroup>
+                    </h:panelGrid>
+
+                    <h:panelGroup styleClass="button-group">
+                        <h:commandButton value="Add" action="#{packageItemController.addToPackage()}" styleClass="button-spacing p-button-success" />
+                        <h:commandButton value="Remove" action="#{packageItemController.removeFromPackage()}" styleClass="button-spacing p-button-danger" />
+                    </h:panelGroup>
+
+                    <p:dataTable value="#{packageItemController.serviceItems}" var="i" scrollable="true" rowKey="#{i.id}" scrollHeight="150" selectionMode="single" selection="#{packageItemController.currentItem}" filteredValue="#{packageItemController.filteredItems}" style="max-width: 1000px;">
+                        <p:column headerText="Department" filterBy="#{i.department.name}" filterMatchMode="contains">
+                            #{i.department.name}
+                        </p:column>
+                        <p:column headerText="Parent Category" filterBy="#{i.category.parentCategory.name}" filterMatchMode="contains">
+                            #{i.category.parentCategory.name}
+                        </p:column>
+                        <p:column headerText="Category" filterBy="#{i.category.name}" filterMatchMode="contains">
+                            #{i.category.name}
+                        </p:column>
+                        <p:column headerText="Item" filterBy="#{i.name}" filterMatchMode="contains">
+                            #{i.name}
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

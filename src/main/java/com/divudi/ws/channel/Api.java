@@ -137,7 +137,7 @@ public class Api {
     @Produces("application/json")
     public String getJson() {
         //TODO return proper representation object
-        return "<html><body><h1>Hello, World!!</body></h1></html>";
+        return "<html><h:body><h1>Hello, World!!</h:body></h1></html>";
     }
 
     @GET
@@ -145,7 +145,7 @@ public class Api {
     @Produces("text/html")
     public String getJson2() {
         //TODO return proper representation object
-        return "<html><body><h1>Hello, World 2!!</body></h1></html>";
+        return "<html><h:body><h1>Hello, World 2!!</h:body></h1></html>";
     }
 
     @GET

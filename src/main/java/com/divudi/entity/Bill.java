@@ -384,10 +384,10 @@ public class Bill implements Serializable {
         }
 
         billPrint = billPrint.replaceAll("\\{id\\}", this.getIdStr());
-        
+
         String tmpBarcode = "<img id=\"barcode" + this.getId() + "\"/>";
         billPrint = billPrint.replaceAll("\\{barcode\\}", tmpBarcode);
-    
+
         billPrint = billPrint.replaceAll("\\{ins\\_id\\}", this.getInsId());
         billPrint = billPrint.replaceAll("\\{dept\\_id\\}", this.getDeptId());
 
@@ -432,9 +432,9 @@ public class Bill implements Serializable {
             DateFormat longTimeFormatter = new SimpleDateFormat(longTimeFormat);
             DateFormat shortDateTimeFormatter = new SimpleDateFormat(shortDateTimeFormat);
 
-            billPrint = billPrint.replaceAll("\\{paid\\_date\\}", shortDateFormatter.format(tmpPaidAt));
-            billPrint = billPrint.replaceAll("\\{paid\\_time\\}", shortTimeFormatter.format(tmpPaidAt));
-            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\}", shortDateTimeFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\}", longDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_time\\}", longDateFormatter.format(tmpPaidAt));
+            billPrint = billPrint.replaceAll("\\{paid\\_date\\_time\\}", longDateFormatter.format(tmpPaidAt));
 
             billPrint = billPrint.replaceAll("\\{paid\\_date\\_short\\}", shortDateFormatter.format(tmpPaidAt));
             billPrint = billPrint.replaceAll("\\{paid\\_time\\_short\\}", shortTimeFormatter.format(tmpPaidAt));
@@ -454,9 +454,9 @@ public class Bill implements Serializable {
             DateFormat longTimeFormatter = new SimpleDateFormat(longTimeFormat);
             DateFormat shortDateTimeFormatter = new SimpleDateFormat(shortDateTimeFormat);
 
-            billPrint = billPrint.replaceAll("\\{bill\\_date\\}", shortDateFormatter.format(createdDateTimeTmp));
-            billPrint = billPrint.replaceAll("\\{bill\\_time\\}", shortTimeFormatter.format(createdDateTimeTmp));
-            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\}", shortDateTimeFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\}", longDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_time\\}", longDateFormatter.format(createdDateTimeTmp));
+            billPrint = billPrint.replaceAll("\\{bill\\_date\\_time\\}", longDateFormatter.format(createdDateTimeTmp));
 
             billPrint = billPrint.replaceAll("\\{bill\\_date\\_short\\}", shortDateFormatter.format(createdDateTimeTmp));
             billPrint = billPrint.replaceAll("\\{bill\\_time\\_short\\}", shortTimeFormatter.format(createdDateTimeTmp));
@@ -468,73 +468,77 @@ public class Bill implements Serializable {
         }
 
         if (this.getInstitution() != null) {
-            billPrint = billPrint.replaceAll("\\{institution\\_name\\}", this.getInstitution().getName());
-            billPrint = billPrint.replaceAll("\\{institution\\_address\\}", this.getInstitution().getAddress());
-            billPrint = billPrint.replaceAll("\\{institution\\_phone\\}", this.getInstitution().getPhone());
-            billPrint = billPrint.replaceAll("\\{institution\\_email\\}", this.getInstitution().getEmail());
-            billPrint = billPrint.replaceAll("\\{institution\\_website\\}", this.getInstitution().getWeb());
+            billPrint = billPrint.replaceAll("\\{institution\\_name\\}", safeReplace(this.getInstitution().getName()));
+            billPrint = billPrint.replaceAll("\\{institution\\_address\\}", safeReplace(this.getInstitution().getAddress()));
+            billPrint = billPrint.replaceAll("\\{institution\\_phone\\}", safeReplace(this.getInstitution().getPhone()));
+            billPrint = billPrint.replaceAll("\\{institution\\_email\\}", safeReplace(this.getInstitution().getEmail()));
+            billPrint = billPrint.replaceAll("\\{institution\\_website\\}",safeReplace( this.getInstitution().getWeb()));
         }
 
         if (this.getDepartment() != null) {
-            billPrint = billPrint.replaceAll("\\{department\\_name\\}", this.getDepartment().getName());
-            billPrint = billPrint.replaceAll("\\{department\\_address\\}", this.getDepartment().getAddress());
-            billPrint = billPrint.replaceAll("\\{department\\_phone\\}", this.getDepartment().getTelephone1());
-            billPrint = billPrint.replaceAll("\\{department\\_email\\}", this.getDepartment().getEmail());
+            billPrint = billPrint.replaceAll("\\{department\\_name\\}", safeReplace(this.getDepartment().getName()));
+            billPrint = billPrint.replaceAll("\\{department\\_address\\}",safeReplace( this.getDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{department\\_phone\\}", safeReplace(this.getDepartment().getTelephone1()));
+            billPrint = billPrint.replaceAll("\\{department\\_email\\}", safeReplace(this.getDepartment().getEmail()));
         }
 
         if (this.getFromInstitution() != null) {
-            billPrint = billPrint.replaceAll("\\{from\\_institution\\_name\\}", this.getFromInstitution().getName());
-            billPrint = billPrint.replaceAll("\\{from\\_institution\\_address\\}", this.getFromInstitution().getAddress());
-            billPrint = billPrint.replaceAll("\\{from\\_institution\\_phone\\}", this.getFromInstitution().getPhone());
-            billPrint = billPrint.replaceAll("\\{from\\_institution\\_email\\}", this.getFromInstitution().getEmail());
-            billPrint = billPrint.replaceAll("\\{from\\_institution\\}", this.getFromInstitution().getName());
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_name\\}", safeReplace(this.getFromInstitution().getName()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_address\\}", safeReplace(this.getFromInstitution().getAddress()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_phone\\}", safeReplace(this.getFromInstitution().getPhone()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\_email\\}", safeReplace(this.getFromInstitution().getEmail()));
+            billPrint = billPrint.replaceAll("\\{from\\_institution\\}", safeReplace(this.getFromInstitution().getName()));
         }
 
         if (this.getFromDepartment() != null) {
-            billPrint = billPrint.replaceAll("\\{from\\_department\\_name\\}", this.getFromDepartment().getName());
-            billPrint = billPrint.replaceAll("\\{from\\_department\\_address\\}", this.getFromDepartment().getAddress());
-            billPrint = billPrint.replaceAll("\\{from\\_department\\_phone\\}", this.getFromDepartment().getTelephone1());
-            billPrint = billPrint.replaceAll("\\{from\\_department\\_email\\}", this.getFromDepartment().getEmail());
-            billPrint = billPrint.replaceAll("\\{from\\_department\\}", this.getDepartment().getName());
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_name\\}", safeReplace(this.getFromDepartment().getName()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_address\\}", safeReplace(this.getFromDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_phone\\}", safeReplace(this.getFromDepartment().getTelephone1()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\_email\\}", safeReplace(this.getFromDepartment().getEmail()));
+            billPrint = billPrint.replaceAll("\\{from\\_department\\}", safeReplace(this.getDepartment().getName()));
         }
 
         if (this.getToInstitution() != null) {
-            billPrint = billPrint.replaceAll("\\{to\\_institution\\_name\\}", this.getToInstitution().getName());
-            billPrint = billPrint.replaceAll("\\{to\\_institution\\_address\\}", this.getToInstitution().getAddress());
-            billPrint = billPrint.replaceAll("\\{to\\_institution\\_phone\\}", this.getToInstitution().getPhone());
-            billPrint = billPrint.replaceAll("\\{to\\_institution\\_email\\}", this.getToInstitution().getEmail());
-            billPrint = billPrint.replaceAll("\\{to\\_institution\\}", this.getToInstitution().getName());
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_name\\}", safeReplace(this.getToInstitution().getName()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_address\\}", safeReplace(this.getToInstitution().getAddress()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_phone\\}", safeReplace(this.getToInstitution().getPhone()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\_email\\}", safeReplace(this.getToInstitution().getEmail()));
+            billPrint = billPrint.replaceAll("\\{to\\_institution\\}", safeReplace(this.getToInstitution().getName()));
         }
 
         if (this.getToDepartment() != null) {
-            billPrint = billPrint.replaceAll("\\{to\\_department\\_name\\}", this.getToDepartment().getName());
-            billPrint = billPrint.replaceAll("\\{to\\_department\\_address\\}", this.getToDepartment().getAddress());
-            billPrint = billPrint.replaceAll("\\{to\\_department\\_phone\\}", this.getToDepartment().getTelephone1());
-            billPrint = billPrint.replaceAll("\\{to\\_department\\_email\\}", this.getToDepartment().getEmail());
-            billPrint = billPrint.replaceAll("\\{to\\_department\\}", this.getToDepartment().getName());
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_name\\}", safeReplace(this.getToDepartment().getName()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_address\\}", safeReplace(this.getToDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_phone\\}", safeReplace(this.getToDepartment().getTelephone1()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\_email\\}", safeReplace(this.getToDepartment().getEmail()));
+            billPrint = billPrint.replaceAll("\\{to\\_department\\}", safeReplace(this.getToDepartment().getName()));
         }
 
         if (this.getCreater() != null) {
-            billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_username\\}", this.getCreater().getName());
+            billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_username\\}",safeReplace( this.getCreater().getName()));
 
             if (this.getCreater().getWebUserPerson() != null) {
-                billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_name\\}", this.getCreater().getWebUserPerson().getName());
-                billPrint = billPrint.replaceAll("\\{Bill Raised Details\\}", this.getCreater().getWebUserPerson().getName());
+                billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_name\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
+                billPrint = billPrint.replaceAll("\\{Bill Raised Details\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
             }
 
-            billPrint = billPrint.replaceAll("\\{cashier\\_user\\_name\\}", this.getCreater().getName());
+            billPrint = billPrint.replaceAll("\\{cashier\\_user\\_name\\}", safeReplace(this.getCreater().getName()));
 
             if (this.getCreater().getWebUserPerson() != null) {
-                billPrint = billPrint.replaceAll("\\{cashier\\_name\\}", this.getCreater().getWebUserPerson().getName());
+                billPrint = billPrint.replaceAll("\\{cashier\\_name\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
             }
 
-            billPrint = billPrint.replaceAll("\\{cashier\\_code\\}", this.getCreater().getCode());
+            billPrint = billPrint.replaceAll("\\{cashier\\_code\\}", safeReplace(this.getCreater().getCode()));
         }
 
         billPrint = billPrint.replaceAll("\\{item\\_qty\\_rate\\_value\\_table\\}", convertBillItemsToItemQtyRateValueTable(billItems));
         billPrint = billPrint.replaceAll("\\{item\\_value\\_table\\}", convertBillItemsToItemValueTable(billItems));
-        billPrint = billPrint.replaceAll("\\{item\\_rate\\_qty\\_newline\\_value\\_table\\}", this.getIdStr());
+        billPrint = billPrint.replaceAll("\\{item\\_rate\\_qty\\_newline\\_value\\_table\\}", safeReplace(this.getIdStr()));
 
+    }
+
+    private String safeReplace(String value) {
+        return value != null ? value : "";
     }
 
     private String convertBillItemsToItemQtyRateValueTable(List<BillItem> bis) {
@@ -574,8 +578,7 @@ public class Bill implements Serializable {
 
         return str.toString();
     }
-    
-    
+
     private String convertBillItemsToItemValueTable(List<BillItem> bis) {
         DecimalFormat df = new DecimalFormat("#,##0.00");
         StringBuilder str = new StringBuilder();
