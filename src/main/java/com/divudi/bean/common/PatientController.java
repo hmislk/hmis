@@ -126,6 +126,7 @@ public class PatientController implements Serializable {
      */
     private static final long serialVersionUID = 1L;
     private Patient current;
+    Long patientId;
     private Person familyMember;
     private List<Person> familyMembers;
     Family currentFamily;
@@ -333,6 +334,19 @@ public class PatientController implements Serializable {
     }
 
     public String navigateToOpdPatientEdit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return "/opd/patient_edit";
+    }
+    
+    public String navigateToOpdPatientEditFromId() {
+        if(patientId==null){
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        current = getFacade().find(patientId);
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
@@ -778,6 +792,8 @@ public class PatientController implements Serializable {
         patientSelected();
         return "/emr/patient_basic_info";
     }
+    
+    
 
     public String toPatientFromSearchPatientsProfile() {
         if (current == null) {
@@ -1790,6 +1806,16 @@ public class PatientController implements Serializable {
         this.currentRelation = currentRelation;
     }
 
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
+    
+    
     /**
      *
      * Set all Patients to null

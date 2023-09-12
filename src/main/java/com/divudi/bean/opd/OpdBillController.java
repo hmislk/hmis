@@ -58,6 +58,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public class OpdBillController implements Serializable {
      * EJBs
      */
     @EJB
-    BillNumberGenerator billNumberGenerator;
+    private BillNumberGenerator billNumberGenerator;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -107,33 +108,48 @@ public class OpdBillController implements Serializable {
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
-    BillEjb billEjb;
+    private BillEjb billEjb;
     @EJB
-    PaymentFacade PaymentFacade;
+    private PaymentFacade PaymentFacade;
     @EJB
-    BillFeePaymentFacade billFeePaymentFacade;
+    private BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+    @EJB
+    private CommonFunctions commonFunctions;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private PatientFacade patientFacade;
+    @EJB
+    private BillComponentFacade billComponentFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
     /**
      * Controllers
      */
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
     @Inject
-    CommonController commonController;
+    private CommonController commonController;
     @Inject
-    PaymentSchemeController paymentSchemeController;
+    private PaymentSchemeController paymentSchemeController;
     @Inject
-    ApplicationController applicationController;
+    private ApplicationController applicationController;
     @Inject
     private EnumController enumController;
     @Inject
-    CollectingCentreBillController collectingCentreBillController;
+    private CollectingCentreBillController collectingCentreBillController;
     @Inject
-    PriceMatrixController priceMatrixController;
+    private PriceMatrixController priceMatrixController;
     @Inject
-    PatientController patientController;
+    private PatientController patientController;
     @Inject
-    AuditEventApplicationController auditEventApplicationController;
-
+    private AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    private BillBeanController billBean;
+    @Inject
+    private SearchController searchController;
     /**
      * Class Variables
      */
@@ -143,46 +159,67 @@ public class OpdBillController implements Serializable {
     private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
-    String referralId;
+    private String referralId;
     private Institution creditCompany;
     private Institution collectingCentre;
     private Staff staff;
-    Staff toStaff;
+    private Staff toStaff;
     private double total;
     private double discount;
     private double vat;
     private double netTotal;
-    double netPlusVat;
+    private double netPlusVat;
     private double cashPaid;
     private double cashBalance;
-    double cashRemain = cashPaid;
-    private BillItem currentBillItem;
-    //Bill Items
-    private List<BillComponent> lstBillComponents;
-    private List<BillFee> lstBillFees;
-    private List<BillItem> lstBillItems;
-    private List<BillEntry> lstBillEntries;
+    private double cashRemain = cashPaid;
+    private BillType billType;
+
+    private Double grosTotal;
+    private boolean foreigner = false;
+    private Date sessionDate;
+    private String strTenderedValue;
+    private PaymentMethodData paymentMethodData;
     private Integer index;
-    boolean fromOpdEncounter = false;
-    String opdEncounterComments = "";
-    int patientSearchTab = 0;
-    String comment;
-    double opdPaymentCredit;
-    BilledBill opdBill;
-    Date fromDate;
-    Date toDate;
-    Department department;
-    Institution institution;
-    Category category;
-    //Print Last Bill
-    Bill billPrint;
-    List<Bill> billsPrint;
-    private List<BillComponent> lstBillComponentsPrint;
-    private List<BillFee> lstBillFeesPrint;
-    private List<BillItem> lstBillItemsPrint;
-    private List<BillEntry> lstBillEntriesPrint;
-    BillType billType;
+    private boolean fromOpdEncounter = false;
+    private String opdEncounterComments = "";
+    private int patientSearchTab = 0;
+    private String comment;
+    private double opdPaymentCredit;
+    private Date fromDate;
+    private Date toDate;
+    private Department department;
+    private Institution institution;
+    private Category category;
     private SearchKeyword searchKeyword;
+
+    //Print Last Bill
+    private Bill bill;
+    private Bill billPrint;
+
+    private List<Bill> bills;
+    private List<Bill> selectedBills;
+
+    private BilledBill opdBill;
+    private BillItem currentBillItem;
+
+    private List<BillComponent> lstBillComponents;
+    private List<BillComponent> lstBillComponentsPrint;
+
+    private List<BillFee> lstBillFees;
+    private List<BillFee> lstBillFeesPrint;
+
+    private List<BillItem> lstBillItems;
+    private List<BillItem> lstBillItemsPrint;
+
+    private List<BillEntry> lstBillEntries;
+    private List<Bill> billsPrint;
+
+    private List<BillEntry> lstBillEntriesPrint;
+
+    private List<BillLight> billLights;
+    private BillLight billLight;
+
+    private Long billId;
 
     /**
      *
@@ -195,17 +232,26 @@ public class OpdBillController implements Serializable {
     }
 
     public void searchDepartmentOpdBillLights() {
+        System.out.println("searchDepartmentOpdBillLights");
         Date startTime = new Date();
-//        fillBills(BillType.OpdBill, null, sessionController.getDepartment());
+        billLights = searchController.listBillsLights(
+                BillType.OpdBill,
+                sessionController.getInstitution(),
+                sessionController.getDepartment(),
+                searchKeyword,
+                getFromDate(),
+                getToDate());
+        System.out.println("billLights = " + billLights.size());
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
-    
-    public String viewOPDBillById(Long billId) {
+
+    public String viewOPDBillById() {
         if (billId == null) {
             return null;
         }
         Bill tb = getFacade().find(billId);
         if (tb == null) {
+            JsfUtil.addErrorMessage("No Bill");
             return null;
         }
         Long batchBillId = null;
@@ -217,13 +263,15 @@ public class OpdBillController implements Serializable {
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
         }
-        if(batchBillId==null) return null;
+        if (batchBillId == null) {
+            return null;
+        }
         String jpql;
         Map m = new HashMap();
         jpql = "select b "
                 + " from Bill b"
                 + " where b.backwardReferenceBill.id=:id";
-        bills= getFacade().findByJpql(jpql, m);
+        bills = getFacade().findByJpql(jpql, m);
         return "/opd/opd_bill_print";
     }
 
@@ -247,33 +295,6 @@ public class OpdBillController implements Serializable {
     public void setCashRemain(double cashRemain) {
         this.cashRemain = cashRemain;
     }
-
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CommonFunctions commonFunctions;
-    @EJB
-    private PersonFacade personFacade;
-    @EJB
-    private PatientFacade patientFacade;
-    @EJB
-    private BillComponentFacade billComponentFacade;
-    @EJB
-    private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    List<Bill> bills;
-    List<Bill> selectedBills;
-    Double grosTotal;
-    Bill bill;
-    boolean foreigner = false;
-    Date sessionDate;
-    String strTenderedValue;
-    private PaymentMethodData paymentMethodData;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
-
-    @Inject
-    SearchController searchController;
 
     public String toAddNewCollectingCentre() {
         return "/admin/institutions/collecting_centre";
@@ -2671,11 +2692,38 @@ public class OpdBillController implements Serializable {
     }
 
     public SearchKeyword getSearchKeyword() {
+        if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
+        }
         return searchKeyword;
     }
 
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
+
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
+    }
+
+    public BillLight getBillLight() {
+        return billLight;
+    }
+
+    public void setBillLight(BillLight billLight) {
+        this.billLight = billLight;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     /**
@@ -2736,7 +2784,5 @@ public class OpdBillController implements Serializable {
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
     }
-    
-    
 
 }
