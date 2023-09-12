@@ -45,9 +45,8 @@
 
                                     <h:outputLabel value="Type Patient Name or BHT : "/>
                                     <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
-                                                    
                                                     value="#{billBhtController.patientEncounter}" 
-                                                    completeMethod="#{admissionController.completePatient}"
+                                                    completeMethod="#{admissionController.completeBht}"
                                                     var="apt2" itemLabel="#{apt2.bhtNo}"
                                                     itemValue="#{apt2}" size="30"  style="width: 400px;" >
                                         <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
@@ -86,10 +85,8 @@
                                                 <h:outputLabel value="#{cat.parentCategory.name}"/>
                                             </p:column> 
                                             <p:column headerText="TYPE">
-                                                <h:outputLabel value="Parent Category" 
-                                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                                <h:outputLabel value="Child Category" 
-                                                               rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+                                                <h:outputLabel value="Parent Category" />
+                                                <h:outputLabel value="Child Category" />
                                             </p:column> 
                                         </p:autoComplete>
 
