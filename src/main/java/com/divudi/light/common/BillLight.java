@@ -7,6 +7,7 @@ import java.util.Date;
  * @author Senula Nanayakkara
  */
 public class BillLight {
+
     private Long id;
     private String billNo;
     private Date billDate;
@@ -18,6 +19,7 @@ public class BillLight {
     private Double grossValue;
     private Double discount;
     private Double netValue;
+    private Long patientId;
 
     public BillLight() {
     }
@@ -36,7 +38,20 @@ public class BillLight {
         this.netValue = netValue;
     }
     
-   
+    public BillLight(Long id, String billNo, Date billDate, String institutionName, String departmentName, String userName, String patientName, String patientPhone, Double grossValue, Double discount, Double netValue, Long patientId) {
+        this.id = id;
+        this.billNo = billNo;
+        this.billDate = billDate;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.userName = userName;
+        this.patientName = patientName;
+        this.patientPhone = patientPhone;
+        this.grossValue = grossValue;
+        this.discount = discount;
+        this.netValue = netValue;
+        this.patientId = patientId;
+    }
 
     public Long getId() {
         return id;
@@ -125,8 +140,13 @@ public class BillLight {
     public void setNetValue(Double netValue) {
         this.netValue = netValue;
     }
-    
-    
-    
-    
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
 }

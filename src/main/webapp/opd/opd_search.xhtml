@@ -1,0 +1,162 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+
+
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="OPD BILL SEARCH "/>                          
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form d-flex flex-column" >
+                                    <h:outputLabel value="From Date"/>
+                                    <p:calendar id="fromDate" value="#{opdBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">      
+                                    </p:calendar>
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+                                    <h:outputLabel value="To Date"/>
+                                    <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">                                                                              
+                                    </p:calendar>
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+                                    <p:inputText placeholder="Bill No" autocomplete="off" class="w-100"
+                                                 value="#{opdBillController.searchKeyword.billNo}" />
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+                                    <p:inputText placeholder="Name" class="form-control"
+                                                 autocomplete="off" 
+                                                 value="#{opdBillController.searchKeyword.patientName}" />
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+                                    <p:inputText placeholder="Phone" class="form-control"
+                                                 autocomplete="off"  
+                                                 value="#{opdBillController.searchKeyword.patientPhone}" />
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+                                    <p:inputText placeholder="Total" class="form-control"
+                                                 autocomplete="off"  
+                                                 value="#{opdBillController.searchKeyword.total}"
+                                                 />
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+
+                                    <p:inputText placeholder="Net Total"   class="form-control"
+                                                 autocomplete="off"
+                                                 value="#{opdBillController.searchKeyword.netTotal}"/>
+                                    <p:spacer height="10" width="5" ></p:spacer>
+
+
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton 
+                                            id="btnSearch" 
+                                            ajax="false" 
+                                            value="Search" 
+                                            action="#{opdBillController.searchDepartmentOpdBillLights}" class="w-100"/>
+                                        <p:commandButton id="btnExcel" ajax="false" value="Download" class="w-100">
+                                            <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-10">
+                                <p:defaultCommand target="btnSearch" />
+                                <p:dataTable rowIndexVar="i" id="tblBills" value="#{opdBillController.billLights}" 
+                                             var="bill"  
+                                             style="min-width: 100%;"  
+                                             rows ="10"
+                                             paginator="true"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             rowsPerPageTemplate="5,10,25,50"
+                                             >
+                                    <p:column headerText="No" filterBy="#{bill.id}" filterMatchMode="contains"
+                                              sortBy="#{bill.id}"
+                                              styleClass="alignTop" width="15">
+                                        <h:outputLabel value="#{bill.id}"/>
+                                    </p:column>
+                                    <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}" >                                
+                                        <p:commandLink id="billNo" ajax="false" value="#{bill.billNo}" action="#{opdBillController.viewOPDBillById}">
+                                            <f:setPropertyActionListener value="#{bill.id}" target="#{opdBillController.billId}"/>
+                                        </p:commandLink>
+                                    </p:column>
+
+                                    <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
+                                        <p:outputLabel id="billTime" value="#{bill.billDate}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
+                                        </p:outputLabel>
+                                    </p:column>
+
+
+                                    <p:column headerText="Billed For" sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}" filterMatchMode="contains" >                                
+                                        <h:outputLabel id="insDep" value="#{bill.departmentName}" />
+                                    </p:column>
+                                    <p:column headerText="Billed At"  sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}"  >                                
+                                        <h:outputLabel value="#{bill.departmentName}" />
+                                    </p:column>
+                                    <p:column headerText="Billed by"  sortBy="#{bill.userName}" filterBy="#{bill.userName}" >
+                                        <h:outputLabel value="#{bill.userName}" >                                      
+                                        </h:outputLabel>
+
+
+                                    </p:column>    
+                                    <p:column headerText="Client"  sortBy="#{bill.patientName}" filterBy="#{bill.patientName}" >                               
+                                        <h:panelGroup id="pt">
+                                            <h:commandLink  value="#{bill.patientName}" action="#{patientController.navigateToOpdPatientEditFromId()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                                <f:setPropertyActionListener value="#{bill.patientId}" target="#{patientController.patientId}"/>
+                                            </h:commandLink>
+                                            <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
+                                            </h:outputLabel>
+                                           ID :  #{bill.patientId}.
+                                        </h:panelGroup>
+
+                                    </p:column>
+                                    <p:column headerText="Phone"  sortBy="#{bill.patientPhone}" filterBy="#{bill.patientPhone}" >                              
+                                        <h:outputLabel value="#{bill.patientPhone}" />
+                                    </p:column>
+
+
+
+                                    <!--                                    <p:column headerText="Payment" rendered="false" >                                
+                                                                            <h:outputLabel value="#{bill.paymentMethod}" /><br/>
+                                                                            <h:outputLabel value="#{bill.paymentScheme.name}" />
+                                                                        </p:column>-->
+                                    <p:column headerText="Gross Value" sortBy="#{bill.grossValue}" styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bill.grossValue}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Discount" sortBy="#{bill.discount}" styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Net Value" sortBy="#{bill.netValue}" styleClass="averageNumericColumn">
+                                        <h:outputLabel value="#{bill.netValue}" >
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>                         
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>
