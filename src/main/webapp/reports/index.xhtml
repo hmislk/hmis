@@ -26,8 +26,8 @@
                                         <p:commandButton   class="w-100" ajax="false" value="Employee Asset Issue" action="#{reportController.navigateToEmployeeAssetIssue()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Fixed Asset Issue" action="#{reportController.navigateToFixedAssetIssue()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Asset Warranty Expire Report" action="#{reportController.navigateToAssetWarentyExpireReport()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Asset GRN Report" action="#{investigationCategoryController.navigateToAssetGrnReport()}" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Transfer Report" action="#{investigationCategoryController.navigateToAssetTransferReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset GRN Report" action="#{reportController.navigateToAssetGrnReport()}" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Asset Transfer Report" action="#{reportController.navigateToAssetTransferReport()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Item Loacation History" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Asset AMC Expiry" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Asset Warranty Expiry" />
@@ -151,23 +151,102 @@
                                 </p:tab>
 
                                 <p:tab title="Inpatient Reports">
-                                    <div class="d-grid gap-2"></div>
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Admission and Discharge" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="IP Unsettled Invoices" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Room Change" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Admission Category Wise Admission" />
+                                    </div>
                                 </p:tab>
 
                                 <p:tab title="Inventory Reports">
-                                    <div class="d-grid gap-2"></div>
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Closing Stock" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Consumtion" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Stock Transfers" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Cost Of Good Sold" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Good in Transit" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="GRN Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Batch Wise Stock" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Slow/Fast/None Movement Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Before Stock Taking" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="After Stock Taking" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Stock Leger" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Expiry Item Report" />
+                                    </div>
                                 </p:tab>
 
                                 <p:tab title="Laboratary Reports">
-                                    <div class="d-grid gap-2"></div>
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Collection Center Statement" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time Details" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Sample Carrier" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Organism Antibiotic Sensitivity" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Investigation Wise Research" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Annual Test Statistics" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="External Laboratary Work load" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Summary" />
+                                    </div>
                                 </p:tab>
 
                                 <p:tab title="Management Reports">
-                                    <div class="d-grid gap-2"></div>
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Room Occupancy" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Surgery Survey" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Surgery Status" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Surgery Cost Estimation" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Duration Service Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Pharmacy Department Wise Sale Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Referring Doctor Wise Revenue" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="OT Room Wise Sergery Count" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Surgery Count(Surgery Wise)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Surgery Count(Doctor Wise)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Surgery Count(Type)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Admission Count(Consultant Wise)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Admission Count(Payment Type Wise)" />
+                                    </div>
+                                </p:tab>
+
+                                <p:tab title="QB Import Reports">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="QB Import Report" />
+                                    </div>
                                 </p:tab>
 
                                 <p:tab title="Salary Reports">
-                                    <div class="d-grid gap-2"></div>
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="All Staff Salary Summary" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Payroll" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Payroll(Accountant)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Payroll(By Department, By Roster)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Payroll(Selected Staff)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Over Time" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="No Pay and Salary Allowance Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Paysheet Component List" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Payment To Bank(Slip)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Payment To Bank(Pay Fast)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Component" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Component(Bank Wise)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Component(Between To Salary Cycles)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="EPF" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="ETF" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="EPF/ETF Upload Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Generate Or Not Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Generate Or Delete Detail Report" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Garduity" />
+                                        
+
+                                    </div>
+                                </p:tab>
+
+                                <p:tab title="Statistics Reports">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton   class="w-100"  ajax="false" value="Patient Journey" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Patient Ledger" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Speciality Wise Demographic Data" />
+                                    </div>
                                 </p:tab>
                                 
                                 <p:tab title="Statistics Reports">
