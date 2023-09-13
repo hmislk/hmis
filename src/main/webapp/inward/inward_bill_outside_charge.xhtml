@@ -60,27 +60,13 @@
 
                         <div class="col-6">
                             <p:panel header="Charge Detail">
-
-
-                                <div class="row">
-                                    <div class="col-4">
-                                        <h:outputLabel value="Inward Charge Type"/>
-                                    </div>
-                                    <div class="col-8">
-                                        <div>
-                                            <p:selectOneMenu class="" value="#{inwardAdditionalChargeController.inwardChargeType}" >
-                                                <f:selectItem itemLabel="Please select Charge"/>
-                                                <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                            </p:selectOneMenu>
-                                        </div>
-                                    </div>
+                                <h:outputLabel value="Inward Charge Type"/>
+                                <div>
+                                    <p:selectOneMenu class="" value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                        <f:selectItem itemLabel="Please select Charge"/>
+                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                    </p:selectOneMenu>
                                 </div>
-
-
-
-
-
-
                                 <h:outputLabel value="From Institution"/>
 
                                 <p:autoComplete forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
@@ -98,8 +84,6 @@
                                 <p:inputText autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
                                 <p:outputLabel value="Description"/>
                                 <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}"/>
-
-
                             </p:panel>
                         </div>
 
