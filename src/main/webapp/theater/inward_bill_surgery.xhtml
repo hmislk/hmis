@@ -17,13 +17,12 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputLabel value="Total Value : "/>
-                        <h:outputLabel value="#{surgeryBillController.batchBill.total}"/>
-                        <p:commandButton value="Clear All" ajax="false"
+                        <h:outputLabel value="#{surgeryBillController.batchBill.total}" class="m-2" />
+                        <p:commandButton value="Clear All" ajax="false" class="m-2"
                                         action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
-                        <p:commandButton value="Save Surgery Detail" ajax="false" 
-                                        action="#{surgeryBillController.save()}" 
+                        <p:commandButton value="Save Surgery Detail" ajax="false" class="m-2" action="#{surgeryBillController.save()}" 
                                          disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
-                        <p:commandButton value="Print" ajax="false" action="#"  >
+                        <p:commandButton value="Print" ajax="false" class="m-2" action="#"  >
                             <p:printer target="panThe" ></p:printer>
                         </p:commandButton>
 
@@ -36,10 +35,10 @@
                 <p:panel id="panThe" >
                     <p:panel > 
                         <f:facet name="header">
-                            <h:outputLabel value="Surgery &amp; BHT Detail"/>
+                            <h:outputLabel value="Surgery &amp; BHT Details"/>
                         </f:facet>
-                        <h:panelGrid columns="2">
-                            <p:panel>
+                        <h:panelGrid columns="2" >
+                            <p:panel >
                                 <h:outputLabel value="Type Patient Name or BHT : "/>
                                 <p:autoComplete  forceSelection="true" 
                                                  value="#{surgeryBillController.batchBill.patientEncounter}" 

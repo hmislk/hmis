@@ -14,13 +14,13 @@
 
 
     <ui:define name="content">
-        <h:panelGroup >
+        <h:panelGroup id="panSearch2">
             <h:form  >
 
-                <p:panel header="Edit BHT Details" >
+                <p:panel header="Edit BHT Details" >                   
 
                     <div class="row" >                       
-                        <div class="col-12 bg-danger" >
+                        <div class="col-12" >
                             <p:autoComplete converter="dis" widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{bhtEditController.current}"
                                             completeMethod="#{bhtEditController.completePatient}" 
@@ -47,19 +47,22 @@
                             </p:commandButton>
                         </div>                          
                     </div>
+                    <br></br>
+                    <br></br>
 
 
                     <div class="row">
                         <div class="col-6">
                             <p:panel header="Admission">
-                                <p:panelGrid columns="7" >
+                                <p:panelGrid columns="4" >
                                     <p:outputLabel  value="Date of Admission"  />
-                                    <p:spacer height="1" width="10"></p:spacer>
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:outputLabel  value="BHT No(full)"  />
-                                    <p:spacer height="1" width="10"></p:spacer>
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:outputLabel  value="Local/Foreigner"  />
-                                    <p:spacer height="1" width="10"></p:spacer>
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:outputLabel  value="Claimable/Non-Claimable"  />
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
 
 
 
@@ -68,47 +71,21 @@
                                     </p:calendar>
 
 
-                                    <p:spacer height="1" width="10"></p:spacer>
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:inputText value="#{bhtEditController.current.bhtNo}" ></p:inputText>
 
-                                    <p:spacer height="1" width="10"></p:spacer>
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.foriegner}"
                                                              itemLabel="Foreigner"/>
 
-                                    <p:spacer height="1" width="10"></p:spacer>
+<!--                                    <p:spacer height="1" width="10"></p:spacer>-->
                                     <p:selectBooleanCheckbox value="#{bhtEditController.current.claimable}" 
                                                              itemLabel="Claimable"/>
                                 </p:panelGrid>
 
-
-
-
-
-                            </p:panel>
-                            <p:panel header="Detail">  
-
-                                <in:inputPatientDetail_1 patient="#{bhtEditController.current.patient}"/>
-
-                            </p:panel>
-                            <p:panel header="Room Detail">
-                                <p:dataTable value="#{bhtEditController.patientRoom}" var="rm">
-                                    <p:column headerText="Room Name">
-                                        #{rm.roomFacilityCharge.name}
-                                    </p:column>      
-                                    <p:column headerText="Admitted At">
-                                        #{rm.admittedAt}
-                                    </p:column>     
-                                    <p:column headerText="Admitted By">
-                                        #{rm.addmittedBy.webUserPerson.name}
-                                    </p:column> 
-                                    <p:column headerText="Discharged At">
-                                        #{rm.dischargedAt}
-                                    </p:column>     
-                                    <p:column headerText="Discharge By">
-                                        #{rm.dischargedBy}
-                                    </p:column> 
-                                </p:dataTable>
-                            </p:panel>
+                            </p:panel>                           
+                            
+                            
                         </div>
 
                         <div class="col-6">
@@ -149,7 +126,48 @@
                                 </h:panelGroup>
 
                             </p:panel>
-                            <p:panel header="Gardian Detal">
+                            
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Details" >  
+
+                                <in:inputPatientDetail_1 patient="#{bhtEditController.current.patient}"/>
+
+                            </p:panel>
+                            
+                        </div>
+                        
+                        <div class="col-6">
+                            <p:panel header="Room Details">
+                                <p:dataTable value="#{bhtEditController.patientRoom}" var="rm">
+                                    <p:column headerText="Room Name">
+                                        #{rm.roomFacilityCharge.name}
+                                    </p:column>      
+                                    <p:column headerText="Admitted At">
+                                        #{rm.admittedAt}
+                                    </p:column>     
+                                    <p:column headerText="Admitted By">
+                                        #{rm.addmittedBy.webUserPerson.name}
+                                    </p:column> 
+                                    <p:column headerText="Discharged At">
+                                        #{rm.dischargedAt}
+                                    </p:column>     
+                                    <p:column headerText="Discharge By">
+                                        #{rm.dischargedBy}
+                                    </p:column> 
+                                </p:dataTable>
+                            </p:panel>
+                            
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Guardian Details">
                                 <h:panelGrid columns="2">
                                     <p:outputLabel   value="Name:" />
                                     <p:inputText autocomplete="off"  value="#{bhtEditController.current.guardian.name}" />
@@ -163,7 +181,10 @@
                                     <p:inputText autocomplete="off" value="#{bhtEditController.current.guardian.address}" />
                                 </h:panelGrid>
                             </p:panel>
-                            <p:panel header="Cancel Admission" style="height: 1150px;">
+                        </div>
+                        
+                        <div class="col-6">
+                            <p:panel header="Cancel Admission">
                             <p:inputTextarea value="#{bhtEditController.comment}" id="com" style="margin-top: 20px;margin-left: 110px;float: top;">
                             </p:inputTextarea>
 
@@ -173,24 +194,6 @@
                         </p:panel>
                         </div>
                     </div>
-
-
-                    <h:panelGrid id="panSearch2" columns="2" style="min-width: 100%;" >
-                        <p:panel>                                
-
-
-
-
-
-
-
-
-                            
-
-                        </p:panel>
-                        
-
-                    </h:panelGrid>
 
                 </p:panel>
 
