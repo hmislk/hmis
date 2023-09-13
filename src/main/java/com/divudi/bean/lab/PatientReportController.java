@@ -22,14 +22,12 @@ import com.divudi.entity.AppEmail;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
-import com.divudi.entity.lab.CommonReportItem;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.IxCal;
 import com.divudi.entity.lab.PatientInvestigation;
 import com.divudi.entity.lab.PatientReport;
 import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.ReportItem;
 import com.divudi.entity.lab.TestFlag;
 import com.divudi.facade.EmailFacade;
 import com.divudi.facade.IxCalFacade;
@@ -43,7 +41,6 @@ import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -96,7 +93,6 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.servlet.http.HttpSession;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 /**
  *
@@ -265,134 +261,7 @@ public class PatientReportController implements Serializable {
 
     }
 
-    @Deprecated
-    public void createHtmlFile() {
-        try {
-            File file = new File("/tmp/report" + getCurrentPatientReport().getId() + ".html");
-            if (file.createNewFile()) {
-            } else {
-            }
-
-            String html = "<html>";
-            html += "<h:body>";
-            html += "<div id=\"divReport\"  style=\"width:21cm;height: 28cm; position: relative;\">";
-
-            for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
-                html += "<div style=\"" + v.getInvestigationItem().getCssStyle() + "; position:absolute;\">";
-
-                String val = "";
-
-                if (v.getInvestigationItem().isRetired()) {
-                    continue;
-                }
-
-                OUTER:
-                switch (v.getInvestigationItem().getIxItemType()) {
-                    case Value:
-                        if (null == v.getInvestigationItem().getIxItemValueType()) {
-                            val = v.getStrValue();
-                            break OUTER;
-                        } else {
-                            switch (v.getInvestigationItem().getIxItemValueType()) {
-                                case Memo:
-                                    val = v.getLobValue();
-                                    break;
-                                case Double:
-                                    val = v.getDoubleValue() + "";
-                                    break;
-                                default:
-                                    val = v.getStrValue();
-                                    break;
-                            }
-                        }
-                        break;
-                    case Template:
-                        val = v.getLobValue();
-                    case DynamicLabel:
-                    case Flag:
-                        val = v.getStrValue();
-                        break;
-                    case Calculation:
-                        val = v.getDoubleValue() + "";
-                        break;
-                }
-                if (val != null) {
-                    val = val.trim().replaceAll(" +", " ");
-                    html += StringEscapeUtils.escapeHtml4(val);
-                }
-                html += "</div>";
-            }
-
-            for (ReportItem v : getCurrentPatientReport().getItem().getReportItems()) {
-                if (v.isRetired() == false && v.getIxItemType() == InvestigationItemType.Label) {
-                    html += "<div style=\" " + v.getCssStyle() + "; position:absolute; \">";
-                    String ev = StringEscapeUtils.escapeHtml4(v.getHtmltext());
-                    html += ev;
-                    html += "</div>";
-                }
-            }
-
-            List<CommonReportItem> cris = commonReportItemController.listCommonRportItems(getCurrentPatientReport().getTransInvestigation().getReportFormat());
-
-            for (CommonReportItem v : cris) {
-                if (v.isRetired() == false) {
-                    html += "<div style=\" " + v.getOuterCssStyle() + "; position:absolute; \">";
-                    String ev = "";
-                    if (v.getIxItemType() == InvestigationItemType.Label) {
-                        ev = v.getName();
-                    } else {
-
-                        if (v.getReportItemType() != null) {
-                            switch (v.getReportItemType()) {
-                                case PatientName:
-                                case NameInFull:
-                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNameWithTitle();
-                                    break;
-                                case PatientAge:
-                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAge();
-                                    break;
-                                case PatientAgeOnBillDate:
-                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getAgeOnBilledDate(getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getCreatedAt());
-                                    break;
-                                case PatientSex:
-                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
-                                    break;
-                                case Phone:
-                                    ev = getCurrentPatientReport().getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getPhone();
-                                    break;
-                            }
-                        }
-                    }
-                    ev = ev.trim().replaceAll(" +", " ");
-                    ev = StringEscapeUtils.escapeHtml4(ev);
-                    html += ev;
-                    html += "</div>";
-                }
-            }
-
-            html += "</div>";
-            html += "</h:body>";
-            html += "</html>";
-
-            FileWriter writer = new FileWriter(file);
-
-            writer.write(html);
-            writer.close();
-
-            final ITextRenderer iTextRenderer = new ITextRenderer();
-
-            iTextRenderer.setDocument("/tmp/report" + getCurrentPatientReport().getId() + ".html");
-            iTextRenderer.layout();
-
-            final FileOutputStream fileOutputStream
-                    = new FileOutputStream(new File("/tmp/report" + getCurrentPatientReport().getId() + ".pdf"));
-
-            iTextRenderer.createPDF(fileOutputStream);
-            fileOutputStream.close();
-
-        } catch (IOException | DocumentException ex) {
-        }
-    }
+   
 
     public void sendEmail() {
 
