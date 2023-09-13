@@ -17,7 +17,6 @@
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">     
                 <p:panel rendered="#{!billBhtController.printPreview}">
-
                     <div class="d-flex">
                         <p:commandButton class="m-2" id="btnSettle" value="Settle" 
                                          action="#{billBhtController.settleBill}" 
@@ -28,9 +27,6 @@
                         <p:commandButton class="m-2" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
                         <p:commandButton class="m-2" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
                     </div>
-
-
-
                     <div class="row w-100">
                         <div class="col-6">
                             <div class="mb-2">

@@ -70,6 +70,8 @@ public class AdmissionController implements Serializable {
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
+    private PatientEncounterFacade patientEncounterFacade;
+    @EJB
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
@@ -99,8 +101,7 @@ public class AdmissionController implements Serializable {
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
     private PaymentMethodData paymentMethodData;
-    @EJB
-    PatientEncounterFacade patientEncounterFacade;
+    
 
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
@@ -396,6 +397,22 @@ public class AdmissionController implements Serializable {
             sql = "select p from Admission p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
             ////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, 20);
+        }
+        if (suggestions == null) {
+            suggestions = new ArrayList<>();
+        }
+        return suggestions;
+    }
+    
+    public List<PatientEncounter> completePatientEncounter(String query) {
+        List<PatientEncounter> suggestions;
+        String sql;
+        if (query == null || query.trim().equals("")) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select p from PatientEncounter p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
+            ////// // System.out.println(sql);
+            suggestions = patientEncounterFacade.findByJpql(sql, 20);
         }
         if (suggestions == null) {
             suggestions = new ArrayList<>();

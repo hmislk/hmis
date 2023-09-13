@@ -9,13 +9,12 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -57,6 +56,7 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.util.JsfUtil;
+import com.divudi.light.common.BillLight;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -71,10 +71,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -96,7 +93,7 @@ public class OpdBillController implements Serializable {
      * EJBs
      */
     @EJB
-    BillNumberGenerator billNumberGenerator;
+    private BillNumberGenerator billNumberGenerator;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -106,33 +103,48 @@ public class OpdBillController implements Serializable {
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
     @EJB
-    BillEjb billEjb;
+    private BillEjb billEjb;
     @EJB
-    PaymentFacade PaymentFacade;
+    private PaymentFacade paymentFacade;
     @EJB
-    BillFeePaymentFacade billFeePaymentFacade;
+    private BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    private CashTransactionBean cashTransactionBean;
+    @EJB
+    private CommonFunctions commonFunctions;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private PatientFacade patientFacade;
+    @EJB
+    private BillComponentFacade billComponentFacade;
+    @EJB
+    private BillFeeFacade billFeeFacade;
     /**
      * Controllers
      */
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
     @Inject
-    CommonController commonController;
+    private CommonController commonController;
     @Inject
-    PaymentSchemeController paymentSchemeController;
+    private PaymentSchemeController paymentSchemeController;
     @Inject
-    ApplicationController applicationController;
+    private ApplicationController applicationController;
     @Inject
     private EnumController enumController;
     @Inject
-    CollectingCentreBillController collectingCentreBillController;
+    private CollectingCentreBillController collectingCentreBillController;
     @Inject
-    PriceMatrixController priceMatrixController;
+    private PriceMatrixController priceMatrixController;
     @Inject
-    PatientController patientController;
+    private PatientController patientController;
     @Inject
-    AuditEventApplicationController auditEventApplicationController;
-
+    private AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    private BillBeanController billBean;
+    @Inject
+    private SearchController searchController;
     /**
      * Class Variables
      */
@@ -142,45 +154,68 @@ public class OpdBillController implements Serializable {
     private Patient patient;
     private Doctor referredBy;
     private Institution referredByInstitution;
-    String referralId;
+    private String referralId;
     private Institution creditCompany;
     private Institution collectingCentre;
     private Staff staff;
-    Staff toStaff;
+    private Staff toStaff;
     private double total;
     private double discount;
     private double vat;
     private double netTotal;
-    double netPlusVat;
+    private double netPlusVat;
     private double cashPaid;
     private double cashBalance;
-    double cashRemain = cashPaid;
-    private BillItem currentBillItem;
-    //Bill Items
-    private List<BillComponent> lstBillComponents;
-    private List<BillFee> lstBillFees;
-    private List<BillItem> lstBillItems;
-    private List<BillEntry> lstBillEntries;
+    private double cashRemain = cashPaid;
+    private BillType billType;
+
+    private Double grosTotal;
+    private boolean foreigner = false;
+    private Date sessionDate;
+    private String strTenderedValue;
+    private PaymentMethodData paymentMethodData;
     private Integer index;
-    boolean fromOpdEncounter = false;
-    String opdEncounterComments = "";
-    int patientSearchTab = 0;
-    String comment;
-    double opdPaymentCredit;
-    BilledBill opdBill;
-    Date fromDate;
-    Date toDate;
-    Department department;
-    Institution institution;
-    Category category;
+    private boolean fromOpdEncounter = false;
+    private String opdEncounterComments = "";
+    private int patientSearchTab = 0;
+    private String comment;
+    private double opdPaymentCredit;
+    private Date fromDate;
+    private Date toDate;
+    private Department department;
+    private Institution institution;
+    private Category category;
+    private SearchKeyword searchKeyword;
+
     //Print Last Bill
-    Bill billPrint;
-    List<Bill> billsPrint;
+    private Bill bill;
+    private Bill batchBill;
+    private Bill billPrint;
+
+    private List<Bill> bills;
+    private List<Bill> selectedBills;
+
+    private BilledBill opdBill;
+    private BillItem currentBillItem;
+
+    private List<BillComponent> lstBillComponents;
     private List<BillComponent> lstBillComponentsPrint;
+
+    private List<BillFee> lstBillFees;
     private List<BillFee> lstBillFeesPrint;
+
+    private List<BillItem> lstBillItems;
     private List<BillItem> lstBillItemsPrint;
+
+    private List<BillEntry> lstBillEntries;
+    private List<Bill> billsPrint;
+
     private List<BillEntry> lstBillEntriesPrint;
-    BillType billType;
+
+    private List<BillLight> billLights;
+    private BillLight billLight;
+
+    private Long billId;
 
     /**
      *
@@ -190,6 +225,80 @@ public class OpdBillController implements Serializable {
     public String navigateToSearchPatients() {
         patientController.setSearchedPatients(null);
         return "/opd/patient_search";
+    }
+
+    public String navigateToSearchOpdBills(){
+        batchBill=null;
+        bills=null;
+        return "/opd/opd_bill_search?faces-redirect=true";
+    }
+    
+    public void searchDepartmentOpdBillLights() {
+        System.out.println("searchDepartmentOpdBillLights");
+        Date startTime = new Date();
+        billLights = searchController.listBillsLights(
+                BillType.OpdBill,
+                sessionController.getInstitution(),
+                sessionController.getDepartment(),
+                searchKeyword,
+                getFromDate(),
+                getToDate());
+        System.out.println("billLights = " + billLights.size());
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
+    }
+
+    public String navigateToViewOpdBillByBillLight() {
+        System.out.println("navigateToViewOpdBillByBillLight");
+        System.out.println("billLight = " + billLight);
+        if (billLight == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+        System.out.println("billLight.getId() = " + billLight.getId());
+        if (billLight.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+
+        Bill tb = getFacade().find(billLight.getId());
+        System.out.println("tb = " + tb);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return null;
+        }
+        System.out.println("tb.getBillType() = " + tb.getBillType());
+        if(tb.getBillType()==null){
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
+        if (tb.getBillType() != BillType.OpdBill) {
+            JsfUtil.addErrorMessage("Please Search Again and View Bill");
+            bills = new ArrayList<>();
+            return "";
+        }
+        
+        Long batchBillId = null;
+        
+        
+        if (tb.getBackwardReferenceBill() != null) {
+            batchBillId = tb.getBackwardReferenceBill().getId();
+        }
+        System.out.println("batchBillId = " + batchBillId);
+        if (batchBillId == null) {
+            JsfUtil.addErrorMessage("No Batch Bill");
+            return null;
+        }
+        batchBill = billFacade.find(batchBillId);
+        System.out.println("batchBill = " + batchBill);
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select b "
+                + " from Bill b"
+                + " where b.backwardReferenceBill.id=:id";
+        m.put("id", batchBillId);
+        bills = getFacade().findByJpql(jpql, m);
+        System.out.println("bills = " + bills);
+        return "/opd/opd_bill_print";
     }
 
     /**
@@ -212,33 +321,6 @@ public class OpdBillController implements Serializable {
     public void setCashRemain(double cashRemain) {
         this.cashRemain = cashRemain;
     }
-
-    @Inject
-    private BillBeanController billBean;
-    @EJB
-    CommonFunctions commonFunctions;
-    @EJB
-    private PersonFacade personFacade;
-    @EJB
-    private PatientFacade patientFacade;
-    @EJB
-    private BillComponentFacade billComponentFacade;
-    @EJB
-    private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    List<Bill> bills;
-    List<Bill> selectedBills;
-    Double grosTotal;
-    Bill bill;
-    boolean foreigner = false;
-    Date sessionDate;
-    String strTenderedValue;
-    private PaymentMethodData paymentMethodData;
-    @EJB
-    private CashTransactionBean cashTransactionBean;
-
-    @Inject
-    SearchController searchController;
 
     public String toAddNewCollectingCentre() {
         return "/admin/institutions/collecting_centre";
@@ -1117,7 +1199,7 @@ public class OpdBillController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1139,9 +1221,7 @@ public class OpdBillController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         if (!executeSettleBillActions()) {
-
             return "";
-
         }
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -2031,12 +2111,12 @@ public class OpdBillController implements Serializable {
         p.setPaidValue(p.getBill().getNetTotal());
 
         if (p.getId() == null) {
-            getPaymentFacade().create(p);
+            paymentFacade.create(p);
         }
 
     }
 
-    double reminingCashPaid = 0.0;
+    private double reminingCashPaid = 0.0;
 
     public void createBillFeePaymentsByPaymentsAndBillEntry(Payment p, List<BillEntry> billEntrys) {
 
@@ -2093,7 +2173,7 @@ public class OpdBillController implements Serializable {
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        billFeePaymentFacade.create(bfp);
     }
 
     public double calBillPaidValue(Bill b) {
@@ -2103,7 +2183,7 @@ public class OpdBillController implements Serializable {
                 + " bfp.retired=false "
                 + " and bfp.billFee.bill.id=" + b.getId();
 
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
+        double d = billFeePaymentFacade.findDoubleByJpql(sql);
 
         return d;
     }
@@ -2607,22 +2687,6 @@ public class OpdBillController implements Serializable {
         this.opdBill = opdBill;
     }
 
-    public PaymentFacade getPaymentFacade() {
-        return PaymentFacade;
-    }
-
-    public void setPaymentFacade(PaymentFacade PaymentFacade) {
-        this.PaymentFacade = PaymentFacade;
-    }
-
-    public BillFeePaymentFacade getBillFeePaymentFacade() {
-        return billFeePaymentFacade;
-    }
-
-    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
-        this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
     public Institution getCollectingCentre() {
         return collectingCentre;
     }
@@ -2635,47 +2699,39 @@ public class OpdBillController implements Serializable {
         return "/admin/bill_contact_numbers.xhtml";
     }
 
-    /**
-     *
-     */
-    @FacesConverter(forClass = Bill.class)
-    public static class BillConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            OpdBillController controller = (OpdBillController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "billController");
-            return controller.getBillFacade().find(getKey(value));
+    public SearchKeyword getSearchKeyword() {
+        if (searchKeyword == null) {
+            searchKeyword = new SearchKeyword();
         }
+        return searchKeyword;
+    }
 
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
+    public void setSearchKeyword(SearchKeyword searchKeyword) {
+        this.searchKeyword = searchKeyword;
+    }
 
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
+    public List<BillLight> getBillLights() {
+        return billLights;
+    }
 
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + OpdBillController.class.getName());
-            }
-        }
+    public void setBillLights(List<BillLight> billLights) {
+        this.billLights = billLights;
+    }
+
+    public BillLight getBillLight() {
+        return billLight;
+    }
+
+    public void setBillLight(BillLight billLight) {
+        this.billLight = billLight;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
     public CommonController getCommonController() {
@@ -2692,6 +2748,22 @@ public class OpdBillController implements Serializable {
 
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
+    }
+
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
+    public double getReminingCashPaid() {
+        return reminingCashPaid;
+    }
+
+    public void setReminingCashPaid(double reminingCashPaid) {
+        this.reminingCashPaid = reminingCashPaid;
     }
 
 }
