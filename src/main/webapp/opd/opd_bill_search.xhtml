@@ -87,18 +87,18 @@
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}" >                                
-                                        <p:commandLink id="billNo" ajax="false" value="#{bill.billNo}" action="#{opdBillController.viewOPDBillById}">
-                                            <f:setPropertyActionListener value="#{bill.id}" target="#{opdBillController.billId}"/>
+                                        <p:commandLink id="billNo" 
+                                                       ajax="false" 
+                                                       value="#{bill.billNo}" 
+                                                       action="#{opdBillController.navigateToViewOpdBillByBillLight()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.billLight}"/>
                                         </p:commandLink>
                                     </p:column>
-
                                     <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
-
-
                                     <p:column headerText="Billed For" sortBy="#{bill.departmentName}" filterBy="#{bill.departmentName}" filterMatchMode="contains" >                                
                                         <h:outputLabel id="insDep" value="#{bill.departmentName}" />
                                     </p:column>
@@ -108,8 +108,6 @@
                                     <p:column headerText="Billed by"  sortBy="#{bill.userName}" filterBy="#{bill.userName}" >
                                         <h:outputLabel value="#{bill.userName}" >                                      
                                         </h:outputLabel>
-
-
                                     </p:column>    
                                     <p:column headerText="Client"  sortBy="#{bill.patientName}" filterBy="#{bill.patientName}" >                               
                                         <h:panelGroup id="pt">
@@ -118,9 +116,7 @@
                                             </h:commandLink>
                                             <h:outputLabel value="#{bill.patientName}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             </h:outputLabel>
-                                           ID :  #{bill.patientId}.
                                         </h:panelGroup>
-
                                     </p:column>
                                     <p:column headerText="Phone"  sortBy="#{bill.patientPhone}" filterBy="#{bill.patientPhone}" >                              
                                         <h:outputLabel value="#{bill.patientPhone}" />

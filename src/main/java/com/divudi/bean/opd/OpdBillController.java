@@ -9,14 +9,12 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -73,10 +71,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
@@ -110,7 +105,7 @@ public class OpdBillController implements Serializable {
     @EJB
     private BillEjb billEjb;
     @EJB
-    private PaymentFacade PaymentFacade;
+    private PaymentFacade paymentFacade;
     @EJB
     private BillFeePaymentFacade billFeePaymentFacade;
     @EJB
@@ -194,6 +189,7 @@ public class OpdBillController implements Serializable {
 
     //Print Last Bill
     private Bill bill;
+    private Bill batchBill;
     private Bill billPrint;
 
     private List<Bill> bills;
@@ -231,6 +227,12 @@ public class OpdBillController implements Serializable {
         return "/opd/patient_search";
     }
 
+    public String navigateToSearchOpdBills(){
+        batchBill=null;
+        bills=null;
+        return "/opd/opd_bill_search?faces-redirect=true";
+    }
+    
     public void searchDepartmentOpdBillLights() {
         System.out.println("searchDepartmentOpdBillLights");
         Date startTime = new Date();
@@ -245,33 +247,57 @@ public class OpdBillController implements Serializable {
         commonController.printReportDetails(fromDate, toDate, startTime, "OPD Bill Search(/opd_search_bill_own.xhtml)");
     }
 
-    public String viewOPDBillById() {
-        if (billId == null) {
+    public String navigateToViewOpdBillByBillLight() {
+        System.out.println("navigateToViewOpdBillByBillLight");
+        System.out.println("billLight = " + billLight);
+        if (billLight == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
-        Bill tb = getFacade().find(billId);
+        System.out.println("billLight.getId() = " + billLight.getId());
+        if (billLight.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return null;
+        }
+
+        Bill tb = getFacade().find(billLight.getId());
+        System.out.println("tb = " + tb);
         if (tb == null) {
             JsfUtil.addErrorMessage("No Bill");
             return null;
         }
-        Long batchBillId = null;
+        System.out.println("tb.getBillType() = " + tb.getBillType());
+        if(tb.getBillType()==null){
+            JsfUtil.addErrorMessage("No bill type");
+            return null;
+        }
         if (tb.getBillType() != BillType.OpdBill) {
             JsfUtil.addErrorMessage("Please Search Again and View Bill");
             bills = new ArrayList<>();
             return "";
         }
+        
+        Long batchBillId = null;
+        
+        
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
         }
+        System.out.println("batchBillId = " + batchBillId);
         if (batchBillId == null) {
+            JsfUtil.addErrorMessage("No Batch Bill");
             return null;
         }
+        batchBill = billFacade.find(batchBillId);
+        System.out.println("batchBill = " + batchBill);
         String jpql;
         Map m = new HashMap();
         jpql = "select b "
                 + " from Bill b"
                 + " where b.backwardReferenceBill.id=:id";
+        m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
+        System.out.println("bills = " + bills);
         return "/opd/opd_bill_print";
     }
 
@@ -1195,9 +1221,7 @@ public class OpdBillController implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         if (!executeSettleBillActions()) {
-
             return "";
-
         }
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
@@ -2087,12 +2111,12 @@ public class OpdBillController implements Serializable {
         p.setPaidValue(p.getBill().getNetTotal());
 
         if (p.getId() == null) {
-            getPaymentFacade().create(p);
+            paymentFacade.create(p);
         }
 
     }
 
-    double reminingCashPaid = 0.0;
+    private double reminingCashPaid = 0.0;
 
     public void createBillFeePaymentsByPaymentsAndBillEntry(Payment p, List<BillEntry> billEntrys) {
 
@@ -2149,7 +2173,7 @@ public class OpdBillController implements Serializable {
         bfp.setCreater(getSessionController().getLoggedUser());
         bfp.setCreatedAt(new Date());
         bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        billFeePaymentFacade.create(bfp);
     }
 
     public double calBillPaidValue(Bill b) {
@@ -2159,7 +2183,7 @@ public class OpdBillController implements Serializable {
                 + " bfp.retired=false "
                 + " and bfp.billFee.bill.id=" + b.getId();
 
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
+        double d = billFeePaymentFacade.findDoubleByJpql(sql);
 
         return d;
     }
@@ -2663,22 +2687,6 @@ public class OpdBillController implements Serializable {
         this.opdBill = opdBill;
     }
 
-    public PaymentFacade getPaymentFacade() {
-        return PaymentFacade;
-    }
-
-    public void setPaymentFacade(PaymentFacade PaymentFacade) {
-        this.PaymentFacade = PaymentFacade;
-    }
-
-    public BillFeePaymentFacade getBillFeePaymentFacade() {
-        return billFeePaymentFacade;
-    }
-
-    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
-        this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
     public Institution getCollectingCentre() {
         return collectingCentre;
     }
@@ -2740,6 +2748,22 @@ public class OpdBillController implements Serializable {
 
     public void setNetPlusVat(double netPlusVat) {
         this.netPlusVat = netPlusVat;
+    }
+
+    public Bill getBatchBill() {
+        return batchBill;
+    }
+
+    public void setBatchBill(Bill batchBill) {
+        this.batchBill = batchBill;
+    }
+
+    public double getReminingCashPaid() {
+        return reminingCashPaid;
+    }
+
+    public void setReminingCashPaid(double reminingCashPaid) {
+        this.reminingCashPaid = reminingCashPaid;
     }
 
 }
