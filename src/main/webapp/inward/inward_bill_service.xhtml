@@ -18,14 +18,13 @@
             <h:form id="form">     
                 <p:panel rendered="#{!billBhtController.printPreview}">
                     <div class="d-flex">
-                        <p:commandButton class="m-2" id="btnSettle" value="Settle" 
+                        <p:commandButton class="m-1" id="btnSettle" value="Settle" 
                                          action="#{billBhtController.settleBill}" 
                                          ajax="false" onclick="onSubmitButton();">
                         </p:commandButton>
                         <p:defaultCommand target="btnSettle"/>
-
-                        <p:commandButton class="m-2" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
-                        <p:commandButton class="m-2" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
+                        <p:commandButton class="m-1" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
+                        <p:commandButton class="m-1" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
                     </div>
                     <div class="row w-100">
                         <div class="col-6">
@@ -277,7 +276,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <h:panelGroup id="panelBillTotals" rendered="false" >
                         <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
                             <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
