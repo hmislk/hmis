@@ -29,11 +29,11 @@
                             </p:selectOneMenu>
                             <p:spacer/><p:spacer/><p:spacer/>
                             
-                            <p:outputLabel value="Transfer Department" for="departmentFromMenu"></p:outputLabel>
+                            <p:outputLabel value="Transfer Department" for="departmentTransferMenu"></p:outputLabel>
                             <h:panelGroup id="panalDepartment">
-                                <p:selectOneMenu value="#{reportController.department}" id="departmentFromMenu" required="true" rendered="#{reportController.fromDepartment ne null}">
-                                    <f:selectItem itemLabel="Select From Department"/>
-                                    <f:selectItems value="#{departmentController.listAllDepatrments}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                <p:selectOneMenu value="#{reportController.department}" id="departmentTransferMenu" required="true" rendered="#{reportController.institution ne null}">
+                                    <f:selectItem itemLabel="Select Department Type"/>
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(reportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
                             
@@ -47,11 +47,11 @@
 
                             
 
-                            <p:outputLabel value="Recieving Department" for="departmentToMenu"></p:outputLabel>
+                            <p:outputLabel value="Recieving Department" for="departmentRecieveMenu"></p:outputLabel>
                             <h:panelGroup>
-                                <p:selectOneMenu value="#{reportController.department}" id="departmentToMenu" required="true" rendered="#{reportController.toDepartment ne null}">
-                                    <f:selectItem itemLabel="Select To Department"/>
-                                    <f:selectItems value="#{departmentController.listAllDepatrments}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                                <p:selectOneMenu value="#{reportController.department}" id="departmentRecieveMenu" required="true" rendered="#{reportController.institution ne null}">
+                                    <f:selectItem itemLabel="Select Department Type"/>
+                                    <f:selectItems value="#{departmentController.getInstitutionDepatrments(reportController.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
