@@ -138,8 +138,11 @@ public class ReportController implements Serializable {
         return "/reports/asset_warranty_expire_report";
     }
       
-    public String navigateToAsseGrnReport(){
-        return "";
+    public String navigateToAssetGrnReport(){
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/asset_grn_report";
     }
     
     public String navigateToAssetTransferReport(){
