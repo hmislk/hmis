@@ -21,19 +21,19 @@
                                         <h:form>
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_roster" class="w-100" value="1) Rosters"  />
+                                                                 action="#{staffBasicController.navigateToHrRoster()}" class="w-100" value="1) Rosters"  />
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_shift" class="w-100" value="2) Shifts"/>                                                    
+                                                                 action="#{staffBasicController.navigateToHrShift()}" class="w-100" value="2) Shifts"/>                                                    
                                                 <p:commandButton styleClass="linkButton" ajax="false"  
-                                                                 action="/hr/hr_paysheet_component" class="w-100" value="3) Manage Custom Paysheet Component"  />
+                                                                 action="#{staffBasicController.navigateToHrPaysheetComponent()}" class="w-100" value="3) Manage Custom Paysheet Component"  />
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_paysheet_component_system" class="w-100" value="4) Manage System Paysheet Component"  />
+                                                                 action="#{staffBasicController.navigateToHrPaysheetComponentSystem()}" class="w-100" value="4) Manage System Paysheet Component"  />
                                                 <p:commandButton styleClass="linkButton" ajax="false"  
-                                                                 action="/hr/hr_hrm_variables" class="w-100" value="5) Manage HRM Variable"  />
+                                                                 action="#{staffBasicController.navigateToHrHrmVariables()}" class="w-100" value="5) Manage HRM Variable"  />
                                                 <p:commandButton styleClass="linkButton" ajax="false"
-                                                                 value="6) Holiday Date" action="/hr/hr_ph_date" class="w-100" onclick="onSubmitButton();"/>
+                                                                 value="6) Holiday Date" action="#{staffBasicController.navigateToHrPhDate()}" class="w-100" onclick="onSubmitButton();"/>
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 value="7) Manage Salary Cycle" action="/hr/hr_salary_cycle" class="w-100" onclick="onSubmitButton();"/>
+                                                                 value="7) Manage Salary Cycle" action="#{staffBasicController.navigateToHrSalaryCycle()}" class="w-100" onclick="onSubmitButton();"/>
 
                                             </div>
                                         </h:form>
@@ -42,20 +42,20 @@
                                         <h:form>
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="linkButton" ajax="false" value="1) Staff Master" 
-                                                                 action="/hr/hr_staff_admin" class="w-100" onclick="onSubmitButton();" 
+                                                                 action="#{staffBasicController.navigateToHrStaffAdmin()}" class="w-100" onclick="onSubmitButton();" 
                                                                  actionListener="#{hrReportController.listnerCheckStaffRetierd()}"/>                                 
                                                 <p:commandButton styleClass="linkButton" ajax="false" value="2) Change Staff" 
-                                                                 action="/hr/hr_change_staff" class="w-100" onclick="onSubmitButton();"/>                             
+                                                                 action="#{staffBasicController.navigateToHrChangeStaff()}" class="w-100" onclick="onSubmitButton();"/>                             
                                                 <p:commandButton styleClass="linkButton" ajax="false" value="3) Manage Staff Category" 
-                                                                 action="/hr/hr_staff_category" class="w-100" onclick="onSubmitButton();"/> 
+                                                                 action="#{staffBasicController.navigateToHrStaffCategory()}" class="w-100" onclick="onSubmitButton();"/> 
                                                 <p:commandButton styleClass="linkButton" ajax="false" value=" 4) Manage Staff Grade"
-                                                                 action="/hr/hr_staff_grade" class="w-100" onclick="onSubmitButton();"/>                             
+                                                                 action="#{staffBasicController.navigateToHrStaffGrade()}" class="w-100" onclick="onSubmitButton();"/>                             
                                                 <p:commandButton styleClass="linkButton" ajax="false" value=" 5) Manage Staff Designation" 
-                                                                 action="/hr/hr_staff_designation" class="w-100" onclick="onSubmitButton();"/>                             
+                                                                 action="#{staffBasicController.navigateToHrStaffDesignation()}" class="w-100" onclick="onSubmitButton();"/>                             
                                                 <p:commandButton styleClass="linkButton" ajax="false"
-                                                                 action="/hr/hr_staff_roster" class="w-100" value=" 6) Staff Roster"  />
+                                                                 action="#{staffBasicController.navigateToHrRoster()}" class="w-100" value=" 6) Staff Roster"  />
                                                 <p:commandButton styleClass="linkButton" ajax="false"  
-                                                                 action="/hr/hr_form_staff_transfer" class="w-100" value=" 7) Roster Transfer"  />  
+                                                                 action="#{staffBasicController.navigateToHrStaffTransfer()}" class="w-100" value=" 7) Roster Transfer"  />  
                                             </div>
                                         </h:form>
                                     </p:tab>
@@ -63,24 +63,24 @@
                                         <h:form>
                                             <div class="d-grid gap-2">
                                                 <p:commandButton styleClass="linkButton" ajax="false"  
-                                                                 action="/hr/hr_staff_basic_individual" class="w-100"
+                                                                 action="#{staffBasicController.navigateToHrStaffBasicIndividual()}" class="w-100"
                                                                  value=" 1) Staff Basic " 
                                                                  actionListener="#{staffBasicController.makeNull}" />    
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_staff_paysheet_component_individual" class="w-100"
+                                                                 action="#{staffBasicController.navigateToHrStaffPaysheetComponentIndividual()}" class="w-100"
                                                                  value=" 2) Staff Paysheet Component Individual " 
                                                                  actionListener="#{staffBasicController.makeNull}" />    
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_staff_paysheet_component_all" class="w-100"
+                                                                 action="#{staffBasicController.navigateToHrStaffPaysheetComponentAll()}" class="w-100"
                                                                  value=" 3) Staff Paysheet Component All " 
                                                                  actionListener="#{staffBasicController.makeNull}" />                           
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_staff_loan_installment" class="w-100"
+                                                                 action="#{staffBasicController.navigateToHrStaffLoanInstallment()}" class="w-100"
                                                                  value=" 4) Staff Loan and Advance Payment " 
                                                                  actionListener="#{staffLoanController.makeNull}"  />                                                                                                           
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
                                                                  value=" 5) Staff Leave Entitle" class="w-100"
-                                                                 action="hr_staff_leave_entitle" /> 
+                                                                 action="#{staffBasicController.navigateToHrStaffLeaveEntitle()}" /> 
                                             </div>
                                         </h:form>
                                     </p:tab>
@@ -89,12 +89,12 @@
                                             <div class="d-grid gap-2">
 
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
-                                                                 action="/hr/hr_staff_paysheet_component_all_performance_allovance" 
+                                                                 action="#{staffBasicController.navigateToHrStaffPaysheetComponentAllPerformanceAllovance()}" 
                                                                  value=" 1) Staff Paysheet Perfomance Allowance Value " class="w-100"
                                                                  actionListener="#{staffBasicController.makeNull}" />                              
                                                 <p:commandButton styleClass="linkButton" ajax="false" 
                                                                  action="/hr/hr_staff_paysheet_component_all_performace_allovance_percentatge" 
-                                                                 value=" 2) Staff Paysheet Perfomance Allowance Percentage " class="w-100"
+                                                                 value="#{staffBasicController.navigateToHrStaffPaysheetComponentAllPerformanceAllovancePercentage()} " class="w-100"
                                                                  actionListener="#{staffBasicController.makeNull}" />                              
                                             </div>
                                         </h:form>
