@@ -60,30 +60,58 @@
 
                         <div class="col-6">
                             <p:panel header="Charge Detail">
-                                <h:outputLabel value="Inward Charge Type"/>
-                                <div>
-                                    <p:selectOneMenu class="" value="#{inwardAdditionalChargeController.inwardChargeType}" >
-                                        <f:selectItem itemLabel="Please select Charge"/>
-                                        <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                    </p:selectOneMenu>
+                                <div class="row">
+                                    <div class="row m-1">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <h:outputLabel value="Inward Charge Type"/>
+
+                                        </div>
+                                        <div class="col-8">
+                                            <div>
+                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                                    <f:selectItem itemLabel="Please select Charge"/>
+                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row m-1">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <h:outputLabel value="From Institution"/>
+                                        </div>
+                                        <div class="col-8">
+                                            <p:autoComplete class="w-100" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                            completeMethod="#{institutionController.completeIns}"
+                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                                <p:column>
+                                                    #{ix.name}
+                                                </p:column>
+                                                <p:column>
+                                                    #{ix.institutionCode}
+                                                </p:column>
+                                            </p:autoComplete>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row m-1">
+                                        <div class="col-4 d-flex align-items-center">
+                                            <p:outputLabel value="Amount"/>
+                                        </div>
+                                        <div class="col-8">
+                                            <p:inputText class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row m-1">
+                                        <div class="col-4">
+                                             <p:outputLabel value="Description"/>
+                                        </div>
+                                        <div class="col-8">
+                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h:outputLabel value="From Institution"/>
-
-                                <p:autoComplete forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
-                                                completeMethod="#{institutionController.completeIns}"
-                                                var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30" >
-                                    <p:column>
-                                        #{ix.name}
-                                    </p:column>
-                                    <p:column>
-                                        #{ix.institutionCode}
-                                    </p:column>
-                                </p:autoComplete>
-
-                                <p:outputLabel value="Amount"/>
-                                <p:inputText autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
-                                <p:outputLabel value="Description"/>
-                                <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}"/>
                             </p:panel>
                         </div>
 
