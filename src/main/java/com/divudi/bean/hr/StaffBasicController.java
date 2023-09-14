@@ -62,6 +62,7 @@ public class StaffBasicController implements Serializable {
     ////////
     @Inject
     private SessionController sessionController;
+    private int hrAdminMenuIndex;
     private Date fromDate;
     private Date toDate;
     private ReportKeyWord reportKeyWord;
@@ -611,6 +612,14 @@ public class StaffBasicController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public int getHrAdminMenuIndex() {
+        return hrAdminMenuIndex;
+    }
+
+    public void setHrAdminMenuIndex(int hrAdminMenuIndex) {
+        this.hrAdminMenuIndex = hrAdminMenuIndex;
     }
 
 }
