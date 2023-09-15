@@ -12,7 +12,8 @@
             <div class="col-3">
                 <h:form>
                     <p:panel header="Channel Management" rendered="true" >
-                        <p:accordionPanel>
+                        <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}">
+                            <p:ajax process="@this" ></p:ajax>
                             <p:tab title="Agency">
                                 <div class="d-grid gap-2">
                                     <p:commandButton value="Agencies" action="/channel/institutions" ajax="false" class=" w-100"  ></p:commandButton>
@@ -54,12 +55,12 @@
                     </p:panel>
                 </h:form>
             </div>
-            
-            <div class="col-9">
-            <ui:insert name="subcontent">
 
-            </ui:insert>
-        </div>
+            <div class="col-9">
+                <ui:insert name="subcontent">
+
+                </ui:insert>
+            </div>
         </div>
 
     </ui:define>

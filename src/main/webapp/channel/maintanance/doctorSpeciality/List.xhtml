@@ -6,8 +6,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
 
-    <ui:composition template="/resources/template/template.xhtml">
-        <ui:define name="content">
+    <ui:composition template="/channel/management_index.xhtml">
+        <ui:define name="subcontent">
             <h:form id="DoctorSpecialityListForm">
                 <p:panel header="Managing Specialities">
                     <p:dataTable id="datalist" value="#{doctorSpecialityController.items}" var="item"
