@@ -15,7 +15,7 @@
         <h:form >
 
 
-            <div class="row" >
+            <div class="row w-100 m-0 p-0" >
                 <div class="col-md-2" >
                     <p:dataTable  scrollable="true" 
                                   scrollHeight="30vh"
@@ -28,7 +28,7 @@
                                   value="#{doctorSpecialityController.selectedItems}"  
                                   var="spe" 
                                   selectionMode="single" 
-                                  style="height: 30vh;">
+                                  >
                         <p:ajax  event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('tblCon',view).clientId}  
                                  :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} 
                                  :#{p:resolveFirstComponentWithId('panelSelectedBookinDetails',view).clientId} 
@@ -100,28 +100,28 @@
                             <h:outputText value=" *Leave*" escape="false" rendered="#{ses.deactivated}"></h:outputText>
                             <p:tooltip for="lblSesName" value="#{ses.name}" ></p:tooltip>
                         </p:column>
-                        <p:column headerText="Max" style="width: 20px!important; text-align: center;" >
+                        <p:column headerText="Max" style="text-align: center;" >
                             <h:outputText value="#{ses.maxNo}" rendered="#{ses.maxNo ne 0}">
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
                         </p:column>
 
-                        <p:column headerText="Booked" style="width: 20px!important; text-align: center;" >
+                        <p:column headerText="Booked" style="text-align: center;" >
                             <h:outputText value="#{ses.displayCount}">
                                 <f:convertNumber pattern="00" ></f:convertNumber>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Date" style="width: 50px!important; text-align: center;" >
+                        <p:column headerText="Date" style=" text-align: center;" >
                             <h:outputText value="#{ses.sessionDate}">
                                 <f:convertDateTime pattern="dd MMM"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
+                        <p:column headerText="Time" style="text-align: center;" >
                             <h:outputText value="#{ses.startingTime}">
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
+                        <p:column headerText="Fee" style=" text-align: center;" >
                             <h:outputText value="#{ses.totalFee}">
                                 <f:convertNumber pattern="#,##0" ></f:convertNumber>
                             </h:outputText>                                                            
@@ -131,7 +131,7 @@
                 <div class="col-md-3" >
                     <p:dataTable 
                         lazy="false"
-                        id="tblBookingsOfSelectedSession" 
+                        id="tblBookingsOfSelectedSession"
                         scrollHeight="30vh"
                         value="#{bookingController.billSessions}" 
                         emptyMessage="No Bookings"
@@ -143,12 +143,12 @@
                         scrollable="true" >
                         <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('detail',view).clientId}" 
                                 listener="#{channelBillController.createBillfees}" />
-                        <p:column headerText="No" style="width: 5px!important;">#{bs.serialNo}</p:column>
+                        <p:column headerText="No" >#{bs.serialNo}</p:column>
                         <p:column 
                             filterBy=">#{bs.bill.patient.person.nameWithTitle}"
                             filterMatchMode="contains"
-                            style="min-width: 50px!important;">#{bs.bill.patient.person.nameWithTitle}</p:column>
-                        <p:column headerText="Paid" style="width: 30px!important;">
+                            >#{bs.bill.patient.person.nameWithTitle}</p:column>
+                        <p:column headerText="Paid" >
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0}" value="Credit" style="color: green;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" style="color: green;"/>
                             <p:outputLabel rendered="#{bs.bill.paidAmount eq 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" style="color: green;"/>
@@ -157,11 +157,11 @@
                             <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'OnCall'}" value="-On Call" />
                             <p:outputLabel rendered="#{bs.bill.paidAmount ne 0 and bs.bill.paymentMethod eq 'Staff'}" value="-Staff" />
                         </p:column>
-                        <p:column headerText="C/R" style="width: 20px!important;" >
+                        <p:column headerText="C/R">
                             <p:outputLabel value="Cancelled" rendered="#{bs.bill.cancelled==true}"/>
                             <p:outputLabel value="Refunded" rendered="#{bs.bill.refunded==true}"/>
                         </p:column>   
-                        <p:column headerText="Agent" style="width: 10px!important;">
+                        <p:column headerText="Agent">
                             <p:outputLabel value="#{bs.bill.creditCompany.institutionCode}"/>
                             <p:outputLabel value="(#{bs.bill.toStaff.code})" rendered="#{bs.bill.toStaff ne null}"/>
                         </p:column> 
@@ -180,7 +180,7 @@
                             <p:tabView id="tabViewAgentBookDetails" >
                                 <p:tab title="Payemnet Details">
                                     <h:panelGrid id="pgNewBookingDetail" columns="2"  > 
-                                        <p:outputLabel value="Amount" style="width: 200px!important;"/>
+                                        <p:outputLabel value="Amount" class="w-100"/>
                                         <h:panelGroup id="lblSessionTotal">
                                             <p:outputLabel  
                                                 value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
@@ -197,7 +197,7 @@
 
                                         <p:outputLabel value="Payment Method"/>
                                         <h:panelGroup >
-                                            <p:selectOneMenu  id="cmbPs" value="#{channelBillController.paymentMethod}">  
+                                            <p:selectOneMenu class="w-100" id="cmbPs" value="#{channelBillController.paymentMethod}">  
                                                 <f:selectItem itemLabel="Select Payment Method" ></f:selectItem>
                                                 <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                                 <f:ajax execute="@this" render="agent agent2 ballance ballance2 agRefLbl agRefTxt creditCardSlc creditCardbnkLbl tblAgentBooks tblAgentBooks2 :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} 
@@ -205,6 +205,8 @@
                                                         lblChequeDate ChequeDate bankSel :#{p:resolveFirstComponentWithId('lblSessionTotal',view).clientId} :#{p:resolveFirstComponentWithId('tblSessionsOfSelectedConsultant',view).clientId} tabViewAgentBookDetails" event="change" listener="#{bookingController.generateSessionsOnlyIdNew}" />
                                             </p:selectOneMenu>
                                         </h:panelGroup>
+                                        
+                                        
                                         <h:outputLabel rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall" value="Agent"  style="display: #{channelBillController.paymentMethod eq 'OnCall' ? 'block' : 'none'} ; " />
                                         <p:autoComplete rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" id="agentOnCall2" forceSelection="true" style="display: #{channelBillController.paymentMethod eq 'OnCall'? 'block' : 'none'} ; "
                                                         value="#{channelBillController.institutionOnCallAgency}"  completeMethod="#{agencyController.completeAgency}" var="ix"
@@ -212,6 +214,7 @@
                                             <p:column>#{ix.institutionCode}</p:column>
                                             <p:column>#{ix.name}</p:column>                                
                                         </p:autoComplete>
+                                        
                                         <p:outputLabel value="Discount Scheme"/>
                                         <p:selectOneMenu   id="cmbPs2" value="#{channelBillController.paymentScheme}">     
                                             <f:selectItem itemLabel="Select Discount Scheme"/>
