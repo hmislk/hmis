@@ -11,7 +11,10 @@
                 >
 
     <ui:define name="content">
+
         <h:form >
+
+
             <div class="row" >
                 <div class="col-md-2" >
                     <p:dataTable  scrollable="true" 
@@ -505,6 +508,7 @@
                 <div class="col-md-7" >
                     <p:panel id="panelSelectedBookinDetails">
                         <p:tabView id="detail" rendered="true" style="width: 800px!important;height: 450px!important;">
+                            
                             <p:tab title="Booking" id="booking" 
                                    rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                 <h:panelGrid columns="2" >
