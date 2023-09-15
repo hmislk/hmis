@@ -25,15 +25,15 @@
 
                                 <p:tab title="Doctor Payment Report">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  ajax="false" value="(1)Doctor Payment Due Report" action="inward_professional_payment_due"/>
-                                        <p:commandButton  ajax="false" value="(2)Doctor Payment(By Bill Item)" action="report_doctor_payment" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
-                                        <p:commandButton  ajax="false" value="(3)Doctor Payment(By Bill)" action="report_doctor_payment_by_bill" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
-                                        <p:commandButton  ajax="false" value="(4)Doctor Payment Summary" action="report_doctor_payment_summery" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="(5)Discharged/Not Discharged Doctor Payment Summary" action="inward_professional_payment_discharged_or_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="(6)Doctor Payment Due Report Inwad" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="(7)All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
-                                        <p:commandButton  ajax="false" value="(9)Doctor Payment Done Detailed" action="inward_report_professional_done_payment"/>
-                                        <p:commandButton  ajax="false" value="(10)Doctor Payment Due OPD and Inward" action="inward_professional_payment_and_opd_payment_due"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report" action="inward_professional_payment_due"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment(By Bill Item)" action="report_doctor_payment" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
+                                        <p:commandButton  ajax="false" value="Doctor Payment(By Bill)" action="report_doctor_payment_by_bill" actionListener="#{inwardStaffPaymentBillController.makenull()}"/> 
+                                        <p:commandButton  ajax="false" value="Doctor Payment Summary" action="report_doctor_payment_summery" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Discharged/Not Discharged Doctor Payment Summary" action="inward_professional_payment_discharged_or_notdischarged" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due Report Inwad" action="inward_report_professional_payment_due" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="All Doctors Search" action="report_all_doctors" actionListener="#{inwardStaffPaymentBillController.makenull()}"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Done Detailed" action="inward_report_professional_done_payment"/>
+                                        <p:commandButton  ajax="false" value="Doctor Payment Due OPD and Inward" action="inward_professional_payment_and_opd_payment_due"/>
                                     </div>
                                 </p:tab>
 
@@ -85,22 +85,22 @@
 
                                 <p:tab title="inward Payment">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="(1)Deposits of Undischarged Patient and Complete Payments of Discharged Patients" action="bht_deposit_by_discharge_date_and_created_date" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" /> 
-                                        <p:commandButton value="(2)Complete Payments of Discharged Patient" action="bht_deposit_by_discharge_date" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(3)Deposite of Undischarged Patient" action="bht_deposit_by_created_date_not_discharge" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(4)All Payment By Created Date Date" action="bht_deposit_by_created_date_all" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(5)Deposit of Admitted Patient" action="bht_deposit_of_admitted_patient" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Deposits of Undischarged Patient and Complete Payments of Discharged Patients" action="bht_deposit_by_discharge_date_and_created_date" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" /> 
+                                        <p:commandButton value="Complete Payments of Discharged Patient" action="bht_deposit_by_discharge_date" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Deposite of Undischarged Patient" action="bht_deposit_by_created_date_not_discharge" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="All Payment By Created Date Date" action="bht_deposit_by_created_date_all" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
+                                        <p:commandButton value="Deposit of Admitted Patient" action="bht_deposit_of_admitted_patient" actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
                                     </div>
                                 </p:tab>
 
                                 <p:tab title="BHT Issuing">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="(1)BHT Issue By Bill Item"
+                                        <p:commandButton value="BHT Issue By Bill Item"
                                                          action="report_bht_issue_by_bill_item" 
                                                          actionListener="#{mdInwardReportController.makeNull()}"
                                                          ajax="false"/> 
                                         
-                                        <p:commandButton value="(2)BHT Issue By Item" 
+                                        <p:commandButton value="BHT Issue By Item" 
                                                          ajax="false"
                                                          action="pharmacy_report_bht_issue_by_item"/>
                                     </div>
@@ -114,30 +114,30 @@
 
                                 <p:tab title="Inward Payment">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton value="(1)Payment By Created Date " action="bht_deposit_by_created_date_discharged_all" 
+                                        <p:commandButton value="Payment By Created Date " action="bht_deposit_by_created_date_discharged_all" 
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(2)Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged" 
+                                        <p:commandButton value="Payment By Created Date Discharge Only" action="bht_deposit_by_created_date_discharged" 
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(3)All Payment of Discharged Patient"
+                                        <p:commandButton value="All Payment of Discharged Patient"
                                                          action="all_payment_by_created_date_discharged_only"
                                                          actionListener="#{mdInwardReportController.makeNull()}" 
                                                          ajax="false" />
-                                        <p:commandButton value="(4)Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge" 
+                                        <p:commandButton value="Payment By Created Date Not Discharged" action="bht_deposit_by_created_date_not_discharge" 
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(5)All Deposite of Not Discharged Patient" 
+                                        <p:commandButton value="All Deposite of Not Discharged Patient" 
                                                          action="bht_deposit_of_not_discharged_patient" 
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(6)All Deposite of Not Discharged Patient by BHT" 
+                                        <p:commandButton value="All Deposite of Not Discharged Patient by BHT" 
                                                          action="bht_deposit_of_not_discharged_patient_by_bht" 
                                                          actionListener="#{mdInwardReportController.makeNull()}"  ajax="false" />
-                                        <p:commandButton value="(7)Discharged List and Due Report"
+                                        <p:commandButton value="Discharged List and Due Report"
                                                          action="discharge_book_no_changes_due"
                                                          actionListener="#{mdInwardReportController.makeNull()}" 
                                                          ajax="false" />
-                                        <p:commandButton value="(8)Discharged List and Due Report with Letter"
+                                        <p:commandButton value="Discharged List and Due Report with Letter"
                                                          action="discharge_book_no_changes_due_with_letter"
                                                          actionListener="#{mdInwardReportController.makeNull()}" 
-                                                         ajax="false" />
+                                                         ajax="false"/>
                                     </div>
                                 </p:tab>
                             </p:accordionPanel>
