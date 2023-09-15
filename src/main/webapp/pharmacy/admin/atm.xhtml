@@ -14,8 +14,8 @@
                         <p:growl />
                         <div class="container">
                             <div class="row">
+                                <h2>Manage ATM</h2>
                                 <div class="col-md-6">
-                                    <h2>Manage ATM</h2>
                                     <div class="card mb-3">
                                         <div class="card-header">Search Atm</div>
                                         <div class="card-body">
@@ -45,9 +45,9 @@
 
                                 <div class="col-md-6">
                                     <h:panelGroup id="gpDetail" >
-                                        <div class="card">
+                                        <div class="card md-3">
                                             <div class="card-header d-flex justify-content-between">
-                                                <h3>Edit Details</h3>
+                                                Edit Details
                                                 <p:commandButton id="btnSave" value="Save"  action="#{atmController.saveSelected()}" styleClass="buttons btn btn-primary" 
                                                                  ajax="false" >
                                                 </p:commandButton>
@@ -55,16 +55,17 @@
                                             </div>
                                             <div class="card-body">
 
-                                                <div class="mb-3">
-                                                    <label for="lblName" class="form-label">Name</label>
+                                                <div class="mb-3 w-100">
+                                                    <label for="lblName" class="form-label w-100">Name</label>
                                                     <h:inputText autocomplete="off" id="txtName" value="#{atmController.current.name}" 
                                                                  required="true" class="form-control" ></h:inputText>
-                                                    <label for="lblVtm" class="form-label">VTM</label>
+                                                    <label for="lblVtm" class="form-label w-100">VTM</label>
+                                                    <div class="w-100">
+                                                        
                                                     <p:autoComplete completeMethod="#{vtmController.completeVtm}" 
-                                                                    value="#{atmController.current.vtm}" var="v"
-                                                                    inputStyleClass="form-control"
-                                                                    class="form-control"
+                                                                    value="#{atmController.current.vtm}" var="v" style="width: 100%;"
                                                                     itemLabel="#{v.name}" itemValue="#{v}" ></p:autoComplete>
+                                                    </div>
                                                 
                                                 </div>
                                             </div>
