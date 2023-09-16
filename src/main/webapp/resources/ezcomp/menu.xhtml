@@ -136,9 +136,8 @@
                         rendered="#{webUserController.hasPrivilege('Opd')}">
                         <p:menuitem 
                             ajax="false" 
-                            action="/opd/opd_search" 
-                            actionListener="#{searchController.makeListNull}"  
-                            value="OPD Bill List *" 
+                            action="#{opdBillController.navigateToSearchOpdBills()}" 
+                            value="OPD Bill Search" 
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
                         <p:menuitem 

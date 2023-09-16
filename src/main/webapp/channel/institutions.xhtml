@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/management_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -21,7 +21,7 @@
                 <p:panel header="Manage Channel Agents" >
 
                     <div id="Temp" style="position: relative;left: 0%;">
-                        <h:panelGrid id ="gpVeda" columns="2" >
+                        <h:panelGrid id ="gpVeda" columns="2" class="w-100" >
 
                             <h:panelGrid id="gpSelect" columns="1"  >
 
@@ -53,87 +53,96 @@
                                 </p:panel>
                             </h:panelGrid  >
 
-                            <p:panel>
+                            <p:panel class="w-100">
 
-                                <h:panelGrid id="gpDetail" columns="1">
+                                <h:panelGrid id="gpDetail" columns="1" class="w-100" >
 
                                     <p:tabView>
-                                        <p:tab title="Agent Detail">
+                                        <p:tab title="Agent Details">
 
-                                            <h:panelGrid id="gpDetailText" columns="2">
+                                            <div class="row" >
+                                                <div id="gpDetailText" class="col-md-6 m-auto">
+                                                    <h:panelGrid columns="2" class="w-100">
+                                                        <h:outputText id="lblId" value="Id" rendered="#{webUserController.hasPrivilege('Developers')}" />
+                                                        <h:outputLabel id="txtId" value="#{institutionController.agency.id}" rendered="#{webUserController.hasPrivilege('Developers')}" />
 
-                                                <h:outputText id="lblId" value="Id" rendered="#{webUserController.hasPrivilege('Developers')}" />
-                                                <h:outputLabel id="txtId" value="#{institutionController.agency.id}" rendered="#{webUserController.hasPrivilege('Developers')}" />
+                                                        <h:outputText value="Status" style="color: red;" rendered="#{institutionController.agency.inactive eq true}"/>
+                                                        <h:outputText value="Inactive" style="color: red;" rendered="#{institutionController.agency.inactive eq true}" />
 
-                                                <h:outputText value="Status" style="color: red;" rendered="#{institutionController.agency.inactive eq true}"/>
-                                                <h:outputText value="Inactive" style="color: red;" rendered="#{institutionController.agency.inactive eq true}" />
-                                                
-                                                <h:outputText id="lblName" value="Name" />
-                                                <h:inputText autocomplete="off" id="txtName" value="#{institutionController.agency.name}" />
+                                                        <h:outputText id="lblName" value="Name" />
+                                                        <h:inputText autocomplete="off" id="txtName" value="#{institutionController.agency.name}" class="m-2" />
 
-                                                <h:outputText id="lblChqPrnName" value="Cheque Printing Name" />
-                                                <h:inputText autocomplete="off" id="txtChqPrnName" value="#{institutionController.agency.chequePrintingName}" />
+                                                        <h:outputText id="lblChqPrnName" value="Cheque Printing Name" />
+                                                        <h:inputText autocomplete="off" id="txtChqPrnName" value="#{institutionController.agency.chequePrintingName}" class="m-2" />
 
-                                                <h:outputText value="Code" />
-                                                <h:inputText autocomplete="off"  value="#{institutionController.agency.institutionCode}" />
+                                                        <h:outputText value="Code" />
+                                                        <h:inputText autocomplete="off"  value="#{institutionController.agency.institutionCode}" class="m-2" />
 
-                                                <h:outputText id="lblType" value="Institution Type" />
-                                                <h:outputText value="#{institutionController.agency.institutionType}" />
+                                                        <h:outputText id="lblType" value="Institution Type" />
+                                                        <h:outputText value="#{institutionController.agency.institutionType}" class="m-2" />
 
-                                                <h:outputText value="Standerd Credit Limit" />
-                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.standardCreditLimit}" />
+                                                        <h:outputText value="Standrd Credit Limit" />
+                                                        <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.standardCreditLimit}" class="m-2"/>
 
-                                                <h:outputText value="Allowed Credit Limit" />
-                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.allowedCredit}" />
+                                                        <h:outputText value="Allowed Credit Limit" />
+                                                        <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.allowedCredit}" class="m-2"  />
 
-                                                <h:outputText value="Allowed Maximum Credit Limit" />
-                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.maxCreditLimit}" />
+                                                        <h:outputText value="Allowed Maximum Credit Limit" />
+                                                        <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.maxCreditLimit}" class="m-2" />
 
-                                                <h:outputText value="Balance" />
-                                                <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.ballance}" />
+                                                        <h:outputText value="Balance" />
+                                                        <h:inputText autocomplete="off" disabled="true"  value="#{institutionController.agency.ballance}" class="m-2" />
+                                                    </h:panelGrid>
+                                                </div>
 
-                                                <h:outputText id="lblPhone" value="Phone" />
-                                                <h:inputText autocomplete="off" id="txtPhone" value="#{institutionController.agency.phone}" />
-                                                
-                                                <h:outputText id="lblMemo" value="Memo" />
-                                                <h:inputTextarea id="txtMemo" value="#{institutionController.agency.descreption}" />
-                                                
-                                                <h:outputText id="lblMobile" value="Moble" />
-                                                <h:inputText autocomplete="off" id="txtMobile" value="#{institutionController.agency.mobile}" />
+                                                <div class="col-md-6 m-auto">
 
-                                                <h:outputText id="lblFax" value="Fax" />
-                                                <h:inputText autocomplete="off" id="txtFax" value="#{institutionController.agency.fax}" />
+                                                    <h:panelGrid  columns="2" class="w-75" >
 
-                                                <h:outputText id="lblEMail" value="Email" />
-                                                <h:inputText autocomplete="off" id="txtEmail" value="#{institutionController.agency.email}" />
 
-                                                <h:outputText id="lblAdress" value="Adress" />
-                                                <h:inputText autocomplete="off" id="txtAdress" value="#{institutionController.agency.address}" />
+                                                        <h:outputText id="lblPhone" value="Phone" />
+                                                        <h:inputText autocomplete="off" id="txtPhone" value="#{institutionController.agency.phone}" class="m-2" />
 
-                                                <h:outputText id="lblWeb" value="Web" />
-                                                <h:inputText autocomplete="off" id="txtWeb" value="#{institutionController.agency.web}" />
+                                                        <h:outputText id="lblMemo" value="Memo" />
+                                                        <h:inputTextarea id="txtMemo" value="#{institutionController.agency.descreption}" class="m-2" />
 
-                                                <h:outputText id="lblInactive" value="Inactive" />
-                                                <p:selectBooleanCheckbox value="#{institutionController.agency.inactive}" />
+                                                        <h:outputText id="lblMobile" value="Mobile" />
+                                                        <h:inputText autocomplete="off" id="txtMobile" value="#{institutionController.agency.mobile}" class="m-2"/>
 
-                                            </h:panelGrid>
+                                                        <h:outputText id="lblFax" value="Fax" />
+                                                        <h:inputText autocomplete="off" id="txtFax" value="#{institutionController.agency.fax}" class="m-2"/>
 
+                                                        <h:outputText id="lblEMail" value="Email" />
+                                                        <h:inputText autocomplete="off" id="txtEmail" value="#{institutionController.agency.email}" class="m-2" />
+
+                                                        <h:outputText id="lblAdress" value="Address" />
+                                                        <h:inputText autocomplete="off" id="txtAdress" value="#{institutionController.agency.address}" class="m-2" />
+
+                                                        <h:outputText id="lblWeb" value="Web" />
+                                                        <h:inputText autocomplete="off" id="txtWeb" value="#{institutionController.agency.web}" class="m-2"/>
+
+                                                        <h:outputText id="lblInactive" value="Inactive" />
+                                                        <p:selectBooleanCheckbox value="#{institutionController.agency.inactive}" class="m-2"/>
+
+                                                    </h:panelGrid>
+                                                </div>
+                                            </div>
 
                                         </p:tab>
 
-                                        <p:tab title="Contact Person Detail">
+                                        <p:tab title="Contact Person Details">
                                             <h:panelGrid id="gpContactPerson" columns="2">
                                                 <h:outputText value="Contact Person Name" />
-                                                <h:inputText autocomplete="off"  value="#{institutionController.agency.contactPerson.name}" />
+                                                <h:inputText autocomplete="off"  value="#{institutionController.agency.contactPerson.name}" class="m-2" />
 
                                                 <h:outputText value="Contact Person Tel" />
-                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.phone}" />
-                                                
+                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.phone}" class="m-2" />
+
                                                 <h:outputText value="Contact Person Mobile" />
-                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.mobile}" />
+                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.mobile}" class="m-2" />
 
                                                 <h:outputText value="Contact Person Email" />
-                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.email}" />
+                                                <h:inputText autocomplete="off" value="#{institutionController.agency.contactPerson.email}" class="m-2"/>
                                             </h:panelGrid>
                                         </p:tab>
                                     </p:tabView>

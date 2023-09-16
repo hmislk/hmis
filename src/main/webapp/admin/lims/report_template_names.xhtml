@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/lab/administration.xhtml"
+                template="/admin/lims/index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -10,7 +10,7 @@
         <h:form  >
             <p:focus id="selectFocus" for="lstSelect"  />
             <p:focus id="detailFocus" for="txtName" />
-            <p:panel header="Manage Report Format Categories" >
+            <p:panel header="Manage Report Template Names" >
                 <p:panelGrid columns="2"  styleClass="alignTop">
                     <p:panel  >
                         <p:selectOneListbox   id="lstSelect"   value="#{reportFormatController.current}" styleClass="listBox">
