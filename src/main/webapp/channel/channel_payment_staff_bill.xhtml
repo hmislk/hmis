@@ -50,9 +50,6 @@
                                         <p:calendar class="m-2" value="#{channelStaffPaymentBillController.toDate}" id="tDate"
                                                     disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
 
-
-
-
                                         <p:outputLabel class=""  value="Session" />
                                         <p:selectOneMenu class= "m-2" id="lstSelect" converter="sscon"  
                                                          value="#{channelStaffPaymentBillController.selectedServiceSession}" >
@@ -61,8 +58,6 @@
                                                             itemValue="#{ses}" 
                                                             itemLabel="#{ses.name} - #{ses.dayString}" ></f:selectItems>
                                         </p:selectOneMenu>
-
-
 
                                         <p:commandButton class="mb-2" ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFees}"/>
                                         <p:commandButton class="mb-2  mx-2" ajax="false" value="Clear" action="#{channelStaffPaymentBillController.makenull()}"/>
