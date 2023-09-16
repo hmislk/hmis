@@ -507,8 +507,10 @@
                 </div>
                 <div class="col-md-7" >
                     <p:panel id="panelSelectedBookinDetails">
-                        <p:tabView id="detail" rendered="true" class="w-100">
-                            <p:tab title="Booking" id="booking" class="w-100"
+
+                        <p:tabView id="detail" rendered="true" style="width: 800px!important;height: 450px!important;">
+                            
+                            <p:tab title="Booking" id="booking" 
                                    rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                 <h:panelGrid columns="2" >
 
