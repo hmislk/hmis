@@ -207,7 +207,7 @@ public enum BillNumberSuffix {
                 case SALE: suffix = "S"; break;
                 case SALCAN: suffix = "SC"; break;
                 default:
-                    throw new AssertionError();
+                    suffix = this.toString();
             }
 
             return suffix;
