@@ -11,7 +11,18 @@
 
 
     <ui:define name="content">       
-
+        <h:panelGroup>
+            <div class="col-12">
+                hello
+            </div>           
+        </h:panelGroup>
+            hello
+        <h:panelGroup>
+            <div class="col-12">
+                
+            </div>
+        </h:panelGroup>
+        
         <h:panelGroup rendered="true" styleClass="opdPanel" >
             <h:form id="form">
 
@@ -35,7 +46,8 @@
                                                     completeMethod="#{admissionController.completePatient}"
                                                     var="apt2" itemLabel="#{amp2.bhtNo}"
                                                     itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                        <p:ajax event="itemSelect" process="acPt2" update="panSearch2" listener="#{inwardProfessionalBillController.makeNullList()}"/>
+                                        
+                                        
                                         <p:column >
                                             <h:outputLabel value="#{apt2.bhtNo}"/>
                                         </p:column>
@@ -46,6 +58,9 @@
                                             <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
                                         </p:column>
                                     </p:autoComplete>  
+                                    <p:commandButton value="Select" ajax="false" action="#{inwardProfessionalBillController.makeNullList()}" >
+                                        
+                                    </p:commandButton>
 
                                     <br/><br/>
                                     <h:panelGroup id="panSearch2">
