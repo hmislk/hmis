@@ -252,11 +252,11 @@ public class AdmissionController implements Serializable {
         return suggestions;
     }
     
-    public List<PatientEncounter> completePatientEncounter(String query) {
-        List<PatientEncounter> suggestions;
+    public List<Admission> completeAdmission(String query) {
+        List<Admission> suggestions;
         String sql;
         HashMap hm = new HashMap();
-        sql = "select c from PatientEncounter c "
+        sql = "select c from Admission c "
                 + " where c.retired=false "
                 + " and c.discharged=false "
                 + " and ((c.bhtNo) like :q "
