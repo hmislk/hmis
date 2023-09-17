@@ -10,20 +10,20 @@
 
 
 
-    <ui:define name="content">       
-        <h:panelGroup>
-            <div class="col-12">
-                <h:form id="form">
+    <ui:define name="content">  
+        <h:form id="form">
+            <h:panelGroup rendered="#{inwardProfessionalBillController.current.patientEncounter eq null}">
+                <div class="col-12">
+
                     <h:panelGroup id="panelPatient" >
                         <p:panel header="Patient Details">
                             <h:outputLabel value="Type Patient Name or BHT : "/>
+                            
                             <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                             value="#{inwardProfessionalBillController.current.patientEncounter}" 
                                             completeMethod="#{admissionController.completePatient}"
-                                            var="apt2" itemLabel="#{amp2.bhtNo}"
+                                            var="apt2" itemLabel="#{apt2.bhtNo}"
                                             itemValue="#{apt2}" size="30"  style="width: 400px;">
-
-
                                 <p:column >
                                     <h:outputLabel value="#{apt2.bhtNo}"/>
                                 </p:column>
@@ -43,13 +43,17 @@
                             </h:panelGroup>
                         </p:panel>
                     </h:panelGroup>
-                </h:form>
-            </div>           
-        </h:panelGroup>
 
-        <h:panelGroup>
-            <div class="col-12">
-                <h:form >
+                </div>           
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{inwardProfessionalBillController.current.patientEncounter ne null}">
+                <div class="col-12">
+                    
+                    <h:panelGroup >
+                        <in:bhtDetail admission="#{inwardProfessionalBillController.current.patientEncounter}"/>
+                    </h:panelGroup>
+
                     <p:panel style="min-height: 600px; position:relative;"  >
                         <f:facet name="header" >
                             <h:panelGrid columns="10"  >
@@ -158,18 +162,18 @@
                         </h:panelGrid>
 
                     </p:panel>
-                </h:form>
 
-            </div>
-        </h:panelGroup>
+                </div>
+            </h:panelGroup>
 
-        <h:panelGroup rendered="true" styleClass="opdPanel" >
-
+            <h:panelGroup rendered="true" styleClass="opdPanel" >
 
 
 
 
 
-        </h:panelGroup>
+
+            </h:panelGroup>
+        </h:form>
     </ui:define>
 </ui:composition>
