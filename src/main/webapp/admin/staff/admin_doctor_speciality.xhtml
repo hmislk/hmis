@@ -16,10 +16,10 @@
 
 
             <p:panel header="Manage Doctor Speciality" >
-
+                
                 <div class="row">
-                    <div class="col-md-5">
-                        <h:form >
+                    <div class="col-6">
+                         <h:form >
                             <h:panelGrid id="gpSelect" >
                                 <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
                                     <p:commandButton id="btnAdd" value="Add" action="#{doctorSpecialityController.prepareAdd()}" class="w-100" ajax="false" >
@@ -50,17 +50,16 @@
                             </h:panelGrid  >
                         </h:form>
                     </div>
+                    <div class="col-6">
+                          <h:form >
 
-                    <div class="col-md-7">
-                        <h:form >
-
-                            <p:panel style="min-width: 550px; height: 590px">
+                            <p:panel>
                                 <h:panelGrid id="gpDetail" columns="1">
                                     <h:panelGrid id="gpDetailText" columns="2">
                                         <h:outputText id="lblName" value="Speciality Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtName" style="width:400px" value="#{doctorSpecialityController.current.name}" required="true" ></h:inputText>
+                                        <h:inputText class="w-100" autocomplete="off" id="txtName" value="#{doctorSpecialityController.current.name}" required="true" ></h:inputText>
                                         <h:outputText id="lblDescription" value="Income Name" ></h:outputText>
-                                        <h:inputTextarea  style="width:400px" id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
+                                        <h:inputTextarea class="w-100" id="txtDescription" value="#{doctorSpecialityController.current.description}" required="true" />
                                     </h:panelGrid>
                                     <h:panelGrid id="gpDetailButtons" columns="2">
                                         <p:commandButton id="btnSave" 
@@ -79,14 +78,6 @@
                         </h:form>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
 
             </p:panel>
 

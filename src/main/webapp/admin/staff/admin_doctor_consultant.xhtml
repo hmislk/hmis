@@ -9,21 +9,26 @@
 
 
     <ui:define name="subcontent">
+        
+        <div class="row">
+            
+            <div class="col-6">
+                
+            </div>
+            <div class="col-6">
+                
+            </div>
+        </div>
 
         <h:panelGroup >
             <h:form  >
                 <p:growl />
                 <p:focus id="selectFocus" context="gpSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
-
-
-
                 <p:panel header="Manage Consultant" >
-
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-6">
                             <h:panelGrid id="gpSelect" columns="1"  >
-
                                 <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
                                     <p:commandButton id="btnAdd" value="Add"  
                                                      action="#{consultantController.prepareAdd()}" styleClass="buttons" ajax="false" class="w-100"/>                                   
