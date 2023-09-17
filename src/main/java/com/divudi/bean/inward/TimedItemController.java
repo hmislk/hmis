@@ -249,6 +249,10 @@ public class TimedItemController implements Serializable {
         this.selectedItems = selectedItems;
     }
 
+    public List<TimedItem> getSelectedItems() {
+        return selectedItems;
+    }
+    
     public String getSelectText() {
         return selectText;
     }
