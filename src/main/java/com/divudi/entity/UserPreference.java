@@ -150,6 +150,7 @@ public class UserPreference implements Serializable {
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
+    private String pharmacyBillFooter;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -458,6 +459,8 @@ public class UserPreference implements Serializable {
     public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
         this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
     }
+    
+    
 
     public boolean isPharmacyBillWithOutItem() {
         return pharmacyBillWithOutItem;
@@ -753,6 +756,14 @@ public class UserPreference implements Serializable {
 
     public void setOpdBillTemplate(String opdBillTemplate) {
         this.opdBillTemplate = opdBillTemplate;
+    }
+
+    public String getPharmacyBillFooter() {
+        return pharmacyBillFooter;
+    }
+
+    public void setPharmacyBillFooter(String pharmacyBillFooter) {
+        this.pharmacyBillFooter = pharmacyBillFooter;
     }
 
 }
