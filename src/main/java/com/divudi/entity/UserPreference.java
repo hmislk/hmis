@@ -151,6 +151,7 @@ public class UserPreference implements Serializable {
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
     private String pharmacyBillFooter;
+    private String pharmacyBillHeader;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -765,5 +766,15 @@ public class UserPreference implements Serializable {
     public void setPharmacyBillFooter(String pharmacyBillFooter) {
         this.pharmacyBillFooter = pharmacyBillFooter;
     }
+
+    public String getPharmacyBillHeader() {
+        return pharmacyBillHeader;
+    }
+
+    public void setPharmacyBillHeader(String pharmacyBillHeader) {
+        this.pharmacyBillHeader = pharmacyBillHeader;
+    }
+    
+    
 
 }

@@ -18,7 +18,6 @@
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: avoid!important;">
-
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
@@ -442,16 +441,11 @@
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
             </div>
-
             <div class="footer" style="text-align: center;">
                 <br/>
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
                 <br/>
             </div>
-
-            
-
-
         </div>
     </cc:implementation>
 </html>
