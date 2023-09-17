@@ -251,6 +251,23 @@ public class AdmissionController implements Serializable {
 
         return suggestions;
     }
+    
+    public List<PatientEncounter> completePatientEncounter(String query) {
+        List<PatientEncounter> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from PatientEncounter c "
+                + " where c.retired=false "
+                + " and c.discharged=false "
+                + " and ((c.bhtNo) like :q "
+                + " or (c.patient.person.name) like :q "
+                + " or (c.patient.code) like :q) "
+                + " order by c.bhtNo ";
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = getFacade().findByJpql(sql, hm, 20);
+
+        return suggestions;
+    }
 
     public List<Admission> completePatientAll(String query) {
         List<Admission> suggestions;
