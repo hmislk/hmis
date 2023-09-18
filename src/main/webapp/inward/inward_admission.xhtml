@@ -16,7 +16,7 @@
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel header="Admit a Patient" class="w-100" >
                     <div class="row">
-                        <div class="col-8">
+                        <div class="col-11">
                             <h:panelGrid columns="12" class="m-2 w-100" >                   
                                 <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
                                     <f:selectItem itemLabel="Select Admission Type"/>
@@ -24,14 +24,16 @@
                                     <p:ajax event="change" process="@this" update="bh cmbDoc" listener="#{admissionController.bhtNumberCalculation()}" />
                                 </p:selectOneMenu>
 
-                                <p:outputLabel id="bh" value="#{admissionController.bhtText}"/>
-
+                                <p:outputLabel class="border px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
+                                
+                                <p:outputLabel class="mx-1 " value="Room No :" />
+                                
                                 <p:autoComplete  forceSelection="true"  
                                                  id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
                                                  value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                                  completeMethod="#{roomFacilityChargeController.completeRoom}"
                                                  var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
-                                                 styleClass="mediuminput">                            
+                                                 >                            
                                 </p:autoComplete>
 
                                 <p:inputText id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
@@ -43,7 +45,7 @@
 
                                 <p:defaultCommand target="admt"/>
                                 <p:watermark for="bh" value="BHT No"/>
-                                <p:watermark for="cmbDoc" value="Room No"/>
+                                <p:watermark for="cmbDoc" value="Room No "/>
 
                             </h:panelGrid>
                         </div>
