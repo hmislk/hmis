@@ -1308,6 +1308,7 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/unit_report_by_item?faces-redirect=true";
     }
+
     
     public String navigatePharmacyReportUnitReportByItem1(){
         FacesContext context = FacesContext.getCurrentInstance();
