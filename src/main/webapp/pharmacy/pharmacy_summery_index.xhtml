@@ -118,18 +118,18 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="1) Unit Issue by bill" 
-                                                             action="pharmacy_report_unit_issue_bill.xhtml" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitIssueBill()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2) Unit Issue by Department" 
-                                                             action="pharmacy_report_unit_issue_department_by_department.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitIssueDepartmentByDepartment}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3) Unit Issue by Item(Batch)" 
-                                                             action="unit_report_by_item.xhtml"/>
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem()}"/>
 
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="4) Unit Issue by Item" 
-                                                             action="unit_report_by_item_1.xhtml"/>
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem1()}"/>
                                         </div>
                                     </p:tab>  
                                     <p:tab title="8) BHT ISSUE">
