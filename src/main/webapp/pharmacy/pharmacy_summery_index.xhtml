@@ -188,9 +188,9 @@
                                     <p:tab title="13) Pharmacy All Sale Report">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="1) Pharmacy Sale Report" action="pharmacy_bill_report.xhtml" />
+                                                             value="1) Pharmacy Sale Report" action="#{pharmacySaleReport.navigatePharmacyBillReport()}" />
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="2) Pharmacy Whole Sale Report" action="/pharmacy_wholesale/pharmacy_whole_bill_report.xhtml" />
+                                                             value="2) Pharmacy Whole Sale Report" action="#{pharmacySaleReport.navigatePharmacyWholeBillReport()}" />
 
                                         </div>
                                     </p:tab>
