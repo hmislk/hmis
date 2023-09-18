@@ -452,7 +452,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentBHTIssueByBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillDepartmentBHTIssueByBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         Map m = new HashMap();
         String sql;
@@ -475,8 +501,15 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMargin();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+       
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill(/faces/pharmacy/pharmacy_report_bht_issue_bill.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill(/faces/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true)");
     }
 
     Item item;
@@ -490,7 +523,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentBHTIssueByBillItems() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillDepartmentBHTIssueByBillItems()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         Map m = new HashMap();
         String sql;
@@ -520,8 +579,13 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMarginValue();
             netTotalValues = netTotalValues + b.getNetValue();
         }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill item(/faces/pharmacy/pharmacy_report_bht_issue_billItem.xhtml)");
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill item(/faces/pharmacy/pharmacy_report_bht_issue_billItem?faces-redirect=true)");
     }
 
     List<String1Value3> listz;
@@ -1192,7 +1256,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillItemCountsBht() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillItemCountsBht()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, null);
 
@@ -1214,14 +1304,6 @@ public class ReportsTransfer implements Serializable {
             row.setMargin((Double) obj[2]);
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
-
-//            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
-//            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
-//            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
-//            System.err.println("PRE " + pre);
-//            System.err.println("PRE CAN " + preCancel);
-//            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
             row.setCount((Double) obj[5]);
 
             totalsValue += row.getGross();
@@ -1236,8 +1318,15 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml or /faces/inward/report_bht_issue_by_item.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml or /faces/inward/report_bht_issue_by_item?faces-redirect=true)");
 
     }
 
