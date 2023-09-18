@@ -1835,7 +1835,7 @@ public class PharmacySaleReport implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("navigatePharmacyWholeBillReport()");
+        auditEvent.setEventTrigger("navigatePharmacyReportCredit()");
         auditEventApplicationController.logAuditEvent(auditEvent);
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
