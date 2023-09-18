@@ -374,7 +374,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -394,9 +394,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger("createGRNBillItemTable()");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
-        
-       
 
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
@@ -434,8 +431,8 @@ public class PharmacySaleReport implements Serializable {
         billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
-        
-         Date endTime = new Date();
+
+        Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
@@ -793,8 +790,8 @@ public class PharmacySaleReport implements Serializable {
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public String navigatePharmacyReportGrnDetail(){
+
+    public String navigatePharmacyReportGrnDetail() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -802,7 +799,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -831,7 +828,7 @@ public class PharmacySaleReport implements Serializable {
         return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
     }
 
-    public String navigatePharmacyReportGrnDetailBySupplier(){
+    public String navigatePharmacyReportGrnDetailBySupplier() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -839,7 +836,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -867,8 +864,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grn_detail_by_supplier.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportGrnBillItem(){
+
+    public String navigatePharmacyReportGrnBillItem() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -876,7 +873,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -904,8 +901,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grn_billitem.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportGrnRegistory(){
+
+    public String navigatePharmacyReportGrnRegistory() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -913,7 +910,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -941,8 +938,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grn_registory.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportPurchaseBillByDepartment(){
+
+    public String navigatePharmacyReportPurchaseBillByDepartment() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -950,7 +947,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -978,8 +975,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportPurchaseDetailBySupplier(){
+
+    public String navigatePharmacyReportPurchaseDetailBySupplier() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -987,7 +984,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1015,8 +1012,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_detail_by_supplier.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportPurchaseDetail(){
+
+    public String navigatePharmacyReportPurchaseDetail() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1024,7 +1021,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1052,8 +1049,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_detail.xhtml?faces-redirect=true";
     }
-    
-     public String navigatePharmacyReportGrnAndPurchaseDetail(){
+
+    public String navigatePharmacyReportGrnAndPurchaseDetail() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1061,7 +1058,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1089,8 +1086,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grn_and_purchase_detail.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportPurchaseBillItem(){
+
+    public String navigatePharmacyReportPurchaseBillItem() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1098,7 +1095,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1126,8 +1123,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_purchase_bill_item.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportGrnPaymentDetail(){
+
+    public String navigatePharmacyReportGrnPaymentDetail() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1135,7 +1132,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1163,9 +1160,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grnPayment_detail.xhtml?faces-redirect=true";
     }
-     
-     
-    public String navigatePharmacyReportGrnPaymentDetailBySupplier(){
+
+    public String navigatePharmacyReportGrnPaymentDetailBySupplier() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1173,7 +1169,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1200,8 +1196,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_grnPayment_detail_by_supplier.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportUnitIssueBill(){
+
+    public String navigatePharmacyReportUnitIssueBill() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1209,7 +1205,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1236,8 +1232,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_unit_issue_bill.xhtml?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportUnitIssueDepartmentByDepartment(){
+
+    public String navigatePharmacyReportUnitIssueDepartmentByDepartment() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1245,7 +1241,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1272,8 +1268,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_unit_issue_department_by_department?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportUnitReportByItem(){
+
+    public String navigatePharmacyReportUnitReportByItem() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1281,7 +1277,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1309,8 +1305,7 @@ public class PharmacySaleReport implements Serializable {
         return "/pharmacy/unit_report_by_item?faces-redirect=true";
     }
 
-    
-    public String navigatePharmacyReportUnitReportByItem1(){
+    public String navigatePharmacyReportUnitReportByItem1() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1318,7 +1313,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1345,8 +1340,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/unit_report_by_item_1?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportBhtIssueBill(){
+
+    public String navigatePharmacyReportBhtIssueBill() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1354,7 +1349,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1381,8 +1376,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportBhtIssueBillItem(){
+
+    public String navigatePharmacyReportBhtIssueBillItem() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1390,7 +1385,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1417,8 +1412,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_bht_issue_billItem?faces-redirect=true";
     }
-    
-    public String navigateReportBhtIssueByItem(){
+
+    public String navigateReportBhtIssueByItem() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1426,7 +1421,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1453,8 +1448,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/inward/report_bht_issue_by_item?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportStaffIssueBill(){
+
+    public String navigatePharmacyReportStaffIssueBill() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1462,7 +1457,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1489,8 +1484,8 @@ public class PharmacySaleReport implements Serializable {
         auditEventApplicationController.logAuditEvent(auditEvent);
         return "/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true";
     }
-    
-    public String navigatePharmacyReportBhtIssueItemWithMargin(){
+
+    public String navigatePharmacyReportBhtIssueItemWithMargin() {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -1498,7 +1493,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1526,6 +1521,80 @@ public class PharmacySaleReport implements Serializable {
         return "/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true";
     }
     
+    public String navigatePharmacyReportIssueByDateSummary() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportIssueByDateSummary()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_issue_by_date_summery?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportTransferRecieveItemCount() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportTransferRecieveItemCount()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count?faces-redirect=true";
+    }
+    
+    
+
     private List<Object[]> fetchSaleValueByPaymentmethodByBill() {
         String sql;
 
@@ -4220,7 +4289,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createIssueReportByDate() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createIssueReportByDate()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedSummery = new PharmacySummery();
 
@@ -4255,8 +4350,12 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setRefundedTotal(calGrantNetTotalIssue(new RefundBill()));
 
         grantNetTotal = calGrantNetTotalIssue();
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer issue summery report by date(/faces/pharmacy/pharmacy_report_issue_by_date_summery.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer issue summery report by date(/faces/pharmacy/pharmacy_report_issue_by_date_summery?faces-redirect=true)");
 
     }
 
@@ -5726,8 +5825,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventTrigger("settleOpdBill()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-        
-
         itemWithDepBHTIssues = new ArrayList<>();
         ItemWithDepBHTIssue depBHTIssue = null;
         totalBHTIssue = 0.0;
@@ -5778,7 +5875,7 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-       
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue with margin report(/faces/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true)");
 
     }
@@ -5997,7 +6094,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -6018,7 +6115,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventTrigger("createSaleReportByDateDetailPaymentScheme()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
-       
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
         refundedDetail = new PharmacyDetail();
@@ -6180,7 +6276,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -6224,7 +6320,7 @@ public class PharmacySaleReport implements Serializable {
         billTotalWholeSale = w.getNetTotal();
         canTotalWholeSale = w.getCancelledTotal();
         refTotalWholeSale = w.getRefundTotal();
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -6384,7 +6480,7 @@ public class PharmacySaleReport implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        
+
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -6404,7 +6500,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger("createSalePaymentMethodDetailByBill()");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
 
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -6581,13 +6676,13 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash, BillType.PharmacyWholeSale);
         grantCreditTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacyWholeSale);
         grantDiscountWholeSale = calGrantDiscountByDepartmentByBill(BillType.PharmacyWholeSale);
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-     
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml?faces-redirect=true)");
     }
 
