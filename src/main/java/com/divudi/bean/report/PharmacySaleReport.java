@@ -1486,9 +1486,44 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        return "/inward/pharmacy_report_staff_issue_bill?faces-redirect=true";
+        return "/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true";
     }
     
+    public String navigatePharmacyReportBhtIssueItemWithMargin(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportBhtIssueItemWithMargin()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true";
+    }
     
     private List<Object[]> fetchSaleValueByPaymentmethodByBill() {
         String sql;
