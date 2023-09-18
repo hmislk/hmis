@@ -15,11 +15,9 @@
         <h:form>
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel header="Admit a Patient" class="w-100" >
-
                     <div class="row">
                         <div class="col-12">
                             <h:panelGrid columns="12" class="m-2 w-100" >                   
-
                                 <p:selectOneMenu  id="lstSelect"   value="#{admissionController.current.admissionType}" >
                                     <f:selectItem itemLabel="Select Admission Type"/>
                                     <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
