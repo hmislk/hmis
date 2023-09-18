@@ -132,25 +132,25 @@
                                                              action="#{pharmacySaleReport.navigatePharmacyReportUnitReportByItem1()}"/>
                                         </div>
                                     </p:tab>  
-                                    <p:tab title="8) BHT ISSUE">
+                                    <p:tab title="8) BHT Issue">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="1) BHT Issue - By Bill" 
-                                                             action="pharmacy_report_bht_issue_bill" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueBill()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="2) BHT Issue - By BillItem"
-                                                             action="pharmacy_report_bht_issue_billItem" 
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueBillItem()}" 
                                                              actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
                                                              value="3) BHT Issue - By Item" 
-                                                             action="/inward/report_bht_issue_by_item.xhtml"/>
+                                                             action="#{pharmacySaleReport.navigateReportBhtIssueByItem()}"/>
                                             <p:commandButton class="w-100" ajax="false"  style="text-align: left"
                                                              value="4) BHT Issue - Staff " 
-                                                             action="pharmacy_report_staff_issue_bill" />
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportStaffIssueBill()}" />
                                             <p:commandButton class="w-100" ajax="false"  style="text-align: left"
                                                              value="5) BHT Issue With Margine report " 
-                                                             action="pharmacy_report_bht_issue_item_with_margin" />
+                                                             action="#{pharmacySaleReport.navigatePharmacyReportBhtIssueItemWithMargin()}" />
                                         </div>
                                     </p:tab>  
                                     <p:tab title="9) Transfer Report">
