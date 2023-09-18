@@ -1682,8 +1682,35 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
-        Date startTime = new Date();
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillTheaterTransfersReceiveWithBHTIssue()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
         if (fromDepartment == null || toDepartment == null) {
             JsfUtil.addErrorMessage("Please Check From To Departments");
             return;
@@ -1734,7 +1761,12 @@ public class ReportsTransfer implements Serializable {
             itemBHTIssueCountTrancerReciveCounts.add(count);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer receieve vs BHT issue quantity total by item(/faces/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer receieve vs BHT issue quantity total by item(/faces/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count?faces-redirect=true)");
 
     }
 

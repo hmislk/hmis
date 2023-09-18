@@ -156,9 +156,9 @@
                                     <p:tab title="9) Transfer Report">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="1) Transfer Issue Summary Report By Date" action="pharmacy_report_issue_by_date_summery.xhtml" actionListener="#{pharmacySaleReport.makeNull}"/>
+                                                             value="1) Transfer Issue Summary Report By Date" action="#{pharmacySaleReport.navigatePharmacyReportIssueByDateSummary()}" actionListener="#{pharmacySaleReport.makeNull}"/>
                                             <p:commandButton class="w-100" ajax="false" style="text-align: left"
-                                                             value="2) Transfer Recive Vs BHT Issue Quntity Totals By Item" action="/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count" />
+                                                             value="2) Transfer Recive Vs BHT Issue Quntity Totals By Item" action="#{pharmacySaleReport.navigatePharmacyReportTransferRecieveItemCount}" />
 
                                         </div>
                                     </p:tab>  
