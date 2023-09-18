@@ -1193,7 +1193,6 @@ public class PharmacySaleReport implements Serializable {
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger("navigatePharmacyReportGrnPaymentDetailBySupplier()");
         auditEventApplicationController.logAuditEvent(auditEvent);
-
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
