@@ -98,6 +98,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="Debtor Balance Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="OPD and Inward Due " />
                                         <p:commandButton   class="w-100"  ajax="false" value="Debtor Age Anlysis" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Credit Invoice Dispatch" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Petty Cash Payment" />
                                         <p:commandButton   class="w-100"  ajax="false" value="WHT" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Bill Wise Item Movement" />
@@ -113,41 +114,102 @@
                                 </p:tab>
 
                                 <p:tab title="HR Reports">
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton   class="w-100"  ajax="false" value="Department Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Employee Detail" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Employee To Retired Details" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Employee End of Probation" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Detail" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Holiday Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Attandance Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Late In and Early Out" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Shift Detail By Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Verified Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Record by Logged" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Record by Verified" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Record by No Shift Settled" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Approve" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Leave Form" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Additinal Form Report Verification" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Online Form Status" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Shift History" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Fingerprint history" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Leave Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Leave Report Summary" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Late Leave(Detail)" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Leave Summary Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Staff Shift Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Entered Shift Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Roaster Table and Verify Time Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Head Count" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Employee Worked Day Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Employee Worked Day Report(Salary Cycle)" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Month End Employee Working Time + Over Time Report" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Month End Employee(No Pay) Report-By Minute" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Month End Employee Summary" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Finger Analysis Report by Salary Cycle" />
-                                    </div>
+                                    <p:accordionPanel>
+                                        <p:tab title="Administration">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Department Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Employee Detail" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Employee To Retired Details" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Employee End of Probation" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Staff Detail" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Holiday Report" />
+
+                                            </div>
+                                        </p:tab>
+
+                                    </p:accordionPanel>
+                                    <p:accordionPanel>
+                                        <p:tab title="Attendance">
+                                            <div class="d-grid gap-2">
+
+                                                <p:commandButton   class="w-100"  ajax="false" value="Attandance Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Late In and Early Out" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Staff Shift Detail By Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Verified Report" />
+
+                                            </div>
+                                        </p:tab>
+                                    </p:accordionPanel>
+
+                                    <p:accordionPanel>
+                                        <p:tab title="Finger print Reports">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Record by Logged" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Record by Verified" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Record by No Shift Settled" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Fingerprint Approve" />
+                                            </div>
+
+                                        </p:tab>
+                                    </p:accordionPanel>
+
+                                    <p:accordionPanel>
+                                        <p:tab title="Form">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Leave Form" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Additinal Form Report Verification" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Online Form Status" />
+                                            </div>
+                                        </p:tab>
+                                    </p:accordionPanel>
+
+                                    <p:accordionPanel>
+                                        <p:tab title="History">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Staff Shift History" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Fingerprint history" />
+
+                                            </div>
+                                        </p:tab>
+                                    </p:accordionPanel>
+                                    <p:accordionPanel>
+                                        <p:tab title="Leave">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Leave Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Leave Report Summary" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Late Leave(Detail)" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Leave Summary Report" />
+                                            </div>
+
+
+                                        </p:tab>
+                                    </p:accordionPanel>
+
+                                    <p:accordionPanel>
+                                        <p:tab title="Shift">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Staff Shift Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Entered Shift Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Roaster Table and Verify Time Report" />
+                                            </div>
+
+                                        </p:tab>
+                                    </p:accordionPanel>
+                                    <p:accordionPanel>
+                                        <p:tab title="Summary">
+                                            <div class="d-grid gap-2">
+                                                <p:commandButton   class="w-100"  ajax="false" value="Head Count" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Employee Worked Day Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Employee Worked Day Report(Salary Cycle)" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Month End Employee Working Time + Over Time Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Month End Employee(No Pay) Report-By Minute" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Month End Employee Summary" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="Finger Analysis Report by Salary Cycle" />
+
+                                            </div>
+
+                                        </p:tab>
+                                    </p:accordionPanel>
                                 </p:tab>
 
                                 <p:tab title="Inpatient Reports">
@@ -236,7 +298,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Generate Or Not Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Staff Salary Generate Or Delete Detail Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Staff Garduity" />
-                                        
+
 
                                     </div>
                                 </p:tab>
@@ -248,7 +310,7 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="Speciality Wise Demographic Data" />
                                     </div>
                                 </p:tab>
-                                
+
                                 <p:tab title="Statistics Reports">
                                     <div class="d-grid gap-2"></div>
                                 </p:tab>
