@@ -100,7 +100,7 @@
 
                                     <p:tab title="Room Details">                       
                                         <p:dataTable value="#{roomChangeController.patientRoom}" var="rm">
-                                            <p:column headerText="Admitted At" width="200px">                                          
+                                            <p:column headerText="Admitted At" width="190px">                                          
                                                 <p:calendar navigator="true"  
                                                             value="#{rm.admittedAt}" 
                                                             pattern="dd MMMM yyyy hh mm ss a" />     
@@ -109,7 +109,7 @@
                                                 <h:outputLabel value="#{rm.addmittedBy.webUserPerson.name}"  /><br/>
                                                 <h:outputLabel value="Deleted By #{rm.retirer.webUserPerson.name} " style="color: red;" rendered="#{rm.retired eq true}" />
                                             </p:column>
-                                            <p:column headerText="Discahrged At" width="200px">                                            
+                                            <p:column headerText="Discahrged At" width="190px">                                            
                                                 <p:calendar navigator="true"  
                                                             value="#{rm.dischargedAt}" 
                                                             pattern="dd MMMM yyyy hh mm ss a" />   
@@ -127,7 +127,7 @@
                                                 </p:autoComplete>                                        
                                             </p:column>      
 
-                                            <p:column class="text-center">
+                                            <p:column class="text-left" width="65px">
                                                 <p:commandButton ajax="false" value="Update" 
                                                                  action="#{roomChangeController.update(rm)}"
                                                                  disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
@@ -136,7 +136,7 @@
                                                 <p:commandButton ajax="false" value="Discharge" onclick="if (!confirm('Are you sure you want to Discharge this record?'))
                                                         return false;" action="#{roomChangeController.discharge(rm)}"/>
                                             </p:column> 
-                                            <p:column class="text-center">
+                                            <p:column class="text-right" width="65px">
                                                 <p:commandButton ajax="false" value="Remove"  onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                         return false;" action="#{roomChangeController.removeGuardianRoom(rm)}"/>
                                             </p:column>
