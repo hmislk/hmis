@@ -68,33 +68,41 @@
                     </h:panelGroup>
                 </div>
             </h:panelGroup>
+
+
+
             <h:panelGroup  rendered="#{billBhtController.patientEncounter ne null}">   
+
+
+
                 <div class="col-12">
 
-                    <h:panelGroup id="panSearch2">
-                        <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
-                    </h:panelGroup>
+
 
                     <h:panelGroup rendered="true" styleClass="opdPanel" >
 
+
                         <p:panel rendered="#{!billBhtController.printPreview}">
-                            <div class="d-flex">
-                                <p:commandButton class="m-1" id="btnSettle" value="Settle" 
-                                                 action="#{billBhtController.settleBill}" 
-                                                 ajax="false" onclick="onSubmitButton();">
-                                </p:commandButton>
-                                <p:defaultCommand target="btnSettle"/>
-                                <p:commandButton class="m-1" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
-                                <p:commandButton class="m-1" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
-                            </div>
-                            <div class="row w-100">
+
+                            <div class="row">
                                 <div class="col-6">
-                                    <div class="mb-2">
-
-
-
+                                    <h:panelGroup id="panSearch2" class="d-flex align-items-center justify-content-center p-1" >
+                                        <in:bhtDetail admission="#{billBhtController.patientEncounter}"/>
+                                    </h:panelGroup>
+                                </div>
+                                <div class="col-6">
+                                    <div class="row">
+                                        <div class="d-flex">
+                                            <p:commandButton class="m-1" id="btnSettle" value="Settle" 
+                                                             action="#{billBhtController.settleBill}" 
+                                                             ajax="false" onclick="onSubmitButton();">
+                                            </p:commandButton>
+                                            <p:defaultCommand target="btnSettle"/>
+                                            <p:commandButton class="m-1" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
+                                            <p:commandButton class="m-1" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
+                                        </div>
                                     </div>
-                                    <div>
+                                    <div class="row my-2 ">
                                         <h:panelGroup id="panelIx" >
                                             <p:panel id='pIxAdd' header="Item Requests">
                                                 <p:panelGrid columns="2" >
@@ -173,8 +181,9 @@
                                         </h:panelGroup>
                                     </div>
                                 </div>
-
-                                <div class="col-6">
+                            </div>
+                            <div class="row w-100 my-2">
+                                <div class="col-12">
                                     <div>
                                         <h:panelGroup id="panelBillItems" >
                                             <p:tabView id="tblBillItem" >

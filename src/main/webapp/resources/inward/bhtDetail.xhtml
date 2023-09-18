@@ -13,7 +13,8 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid  columns="2" style="min-width: 100%!important;" rendered="#{cc.attrs.admission!=null}" >
+        <div class="border p-2 w-100">
+             <h:panelGrid  columns="2" style="min-width: 100%!important;" rendered="#{cc.attrs.admission!=null}" >
             <h:outputLabel   value="BHT NO : " />
             <h:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
             <h:outputLabel   value="Admission Type : " />
@@ -47,5 +48,6 @@
             <p:inputText value="#{cc.attrs.admission.admissionType.admissionFee}" alt="off" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"/>
             <p:commandButton ajax="false" value="Update" action="#{bhtSummeryController.updateAdmissionFee(cc.attrs.admission.admissionType)}" rendered="#{sessionController.loggedPreference.inwardChangeAdmissionFee}"></p:commandButton>
         </h:panelGrid>
+        </div>
     </cc:implementation>
 </html>
