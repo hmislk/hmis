@@ -11,7 +11,7 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:panel header="Admitted Patients">
+                <p:panel header="Guardian Room Change">
                     <h:panelGrid id="gpSelectText" columns="4" >
                         <h:outputLabel value="Type Patinet Name or BHT"/>
                         <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
@@ -19,7 +19,7 @@
                                         completeMethod="#{admissionController.completePatient}" 
                                         var="myItem" itemValue="#{myItem}" 
                                         itemLabel="#{myItem.bhtNo}" 
-                                        size="30"  style="width: 400px;" required="true" requiredMessage="Please Select the patient"> 
+                                        size="30"  required="true" requiredMessage="Please Select the patient" class="mx-3"> 
                             <f:ajax execute="acPt" render="@all" event="itemSelect" 
                                     listener="#{roomChangeController.createGuardianRoom()}"/>
                             <p:column>
@@ -29,22 +29,22 @@
                                 <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
                             </p:column>
                         </p:autoComplete>   
-                        <p:commandButton value="Change"  
-                                         action="#{roomChangeController.changeGurdianRoom()}" ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
-                        <p:commandButton value="Clear"  
+                        <p:commandButton value="Change"  class="mx-3"
+                                         action="#{roomChangeController.changeGurdianRoom()}" ajax="false"  onclick="onSubmitButton();" />
+                        <p:commandButton value="Clear"  class="mx-3"
                                          action="#{roomChangeController.recreate()}"
-                                         ajax="false" styleClass="buttons" onclick="onSubmitButton();" />
+                                         ajax="false"  onclick="onSubmitButton();" />
 
                     </h:panelGrid>
                 </p:panel>
 
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-6">
                         <p:panel>
                             <p:tabView >
-                                <p:tab title="Patient Detail" >
-                                    <h:panelGrid columns="2">
+                                <p:tab title="Patient Details" >
+                                    <p:panelGrid columns="2">
                                         <h:outputText  value="Name" />
                                         <h:outputText value="#{roomChangeController.current.patient.person.nameWithTitle}"/>
                                         <h:outputText value="NIC" />
@@ -55,29 +55,29 @@
                                         <h:outputText  value="#{roomChangeController.current.patient.person.address}" />
                                         <h:outputText value="Phone No" />
                                         <h:outputText  value="#{roomChangeController.current.patient.person.phone}"  />
-                                    </h:panelGrid>
+                                    </p:panelGrid>
                                 </p:tab>
 
-                                <p:tab title="Gardian Detail">
-                                    <h:panelGrid columns="2">
+                                <p:tab title="Guardian Details">
+                                    <p:panelGrid columns="2">
                                         <h:outputText  value="Name" />
                                         <h:outputText value="#{roomChangeController.current.guardian.name}"  />
                                         <h:outputText value="Address" />
                                         <h:outputText  value="#{roomChangeController.current.guardian.address}"  />
                                         <h:outputText value="Phone No" />
                                         <h:outputText  value="#{roomChangeController.current.guardian.phone}"  />
-                                    </h:panelGrid>
+                                    </p:panelGrid>
                                 </p:tab>
 
                             </p:tabView>
                         </p:panel>
 
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-6">
                         <p:panel>
                             <p:tabView >
 
-                                <p:tab title="New Room Detail">
+                                <p:tab title="New Room Details">
                                     <h:panelGrid columns="2">
                                         <h:outputLabel value="Type Room Number or Facility"/>
                                         <p:autoComplete forceSelection="true" id="cmbDoc" 
@@ -98,7 +98,7 @@
                                     </h:panelGrid>                                    
                                 </p:tab>
 
-                                <p:tab title="Room Detail">                       
+                                <p:tab title="Room Details">                       
                                     <p:dataTable value="#{roomChangeController.patientRoom}" var="rm">
                                         <p:column headerText="Admitted At">                                          
                                             <p:calendar navigator="true"  
@@ -143,7 +143,7 @@
                                     </p:dataTable>
                                 </p:tab>
 
-                                <p:tab title="Add Extra Charge Detail">
+                                <p:tab title="Add Extra Charge Details">
                                     <p:dataTable value="#{roomChangeController.patientRoom}" var="rm" >                        
                                         <p:column headerText="Room">
                                             <h:outputLabel value="#{rm.roomFacilityCharge.name}" />                                                                 
