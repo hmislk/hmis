@@ -4,10 +4,10 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp">
-    <h:head class="">
+    <h:head >
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
-        <ui:insert name="title"   >
+        <ui:insert name="title" >
             <title>
                 <h:panelGroup rendered="#{sessionController.logged}" >
                     <h:outputText value="#{sessionController.loggedUser.institution.name}" ></h:outputText>
@@ -16,7 +16,7 @@
                     <h:outputText value="- " ></h:outputText>
                     <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" ></h:outputText>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{!sessionController.logged}" >
+                <h:panelGroup rendered="#{not sessionController.logged}" >
                     <h:outputText value="Hospital Information Management System" ></h:outputText>
                 </h:panelGroup>
             </title>
@@ -37,10 +37,10 @@
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
-    <h:body style="height: 100vh;" class="bg-light">
+    <h:body style="height: 90vh;" class="bg-light">
         <div class="container-fluid" >
             <div class="row" >
-                <div class="col-12 p-1" >
+                <div class="col-12" >
                     <h:panelGroup rendered="#{!sessionController.firstLogin}" >
                         <h:panelGroup rendered ="#{not sessionController.logged}"  >
                             <ui:insert name="login">

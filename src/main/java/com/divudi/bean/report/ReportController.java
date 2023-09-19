@@ -27,6 +27,8 @@ public class ReportController implements Serializable {
     private int reportIndex;
     private Institution institution;
     private Department department;
+    private Department fromDepartment;
+    private Department toDepartment;
     private Date fromDate;
     private Date toDate;
     private Category category;
@@ -138,12 +140,35 @@ public class ReportController implements Serializable {
         return "/reports/asset_warranty_expire_report";
     }
       
-    public String navigateToAsseGrnReport(){
-        return "";
+    public String navigateToAssetGrnReport(){
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/asset_grn_report";
     }
     
     public String navigateToAssetTransferReport(){
-        return "";
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assest_transfer_report";
+      
+    }
+
+    public Department getFromDepartment() {
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
     }
 
 }

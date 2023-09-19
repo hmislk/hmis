@@ -500,8 +500,8 @@ public class AppointmentController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = Bill.class)
-    public static class BillControllerConverter implements Converter {
+    @FacesConverter(forClass = Appointment.class)
+    public static class AppointmentControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -510,7 +510,7 @@ public class AppointmentController implements Serializable {
             }
             AppointmentController controller = (AppointmentController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "appointmentController");
-            return controller.getBillFacade().find(getKey(value));
+            return controller.getFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
@@ -530,12 +530,12 @@ public class AppointmentController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Bill) {
-                Bill o = (Bill) object;
+            if (object instanceof Appointment) {
+                Appointment o = (Appointment) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AppointmentController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + Appointment.class.getName());
             }
         }
     }
@@ -544,8 +544,5 @@ public class AppointmentController implements Serializable {
         return commonController;
     }
 
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
+  
 }

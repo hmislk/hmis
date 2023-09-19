@@ -83,8 +83,8 @@
                                         <h:outputLabel value="#{bill.id}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}" >                                
-                                        <p:commandLink id="billNo" ajax="false" value="#{bill.billNo}" action="#{searchController.viewOPD(bill)}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billSearch}"/>
+                                        <p:commandLink id="billNo" ajax="false" value="#{bill.billNo}" action="#{searchController.viewOPDBillById(bill.id)}">
+                                            <f:setPropertyActionListener value="#{bill.id}" target="#{billSearch.bill}"/>
                                         </p:commandLink>
 
                                     </p:column>

@@ -584,7 +584,7 @@ public class Bill implements Serializable {
         StringBuilder str = new StringBuilder();
 
         // Add the table start, thead and headers
-        str.append("<table class='table table-bordered table-striped'>")
+        str.append("<table class='table-sm'>")
                 .append("<thead>")
                 .append("<tr>")
                 .append("<th>Item</th>")

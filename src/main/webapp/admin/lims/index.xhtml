@@ -95,20 +95,19 @@
                                 </div>
                             </p:tab>
                             <p:tab title="Report Templates">
-
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabReports')}">
                                     <div class="d-grid gap-2">
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
-                                            value="Report Format Names" 
-                                            action="#{investigationController.navigateToListInvestigation()}"
+                                            value="Report Template Names" 
+                                            action="/admin/lims/report_template_names"
                                             rendered="#{webUserController.hasPrivilege('LabReportFormatEditing')}"/>
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
                                             value="Report Format Templates" 
-                                            action="/lab/report_format_category" />
+                                            action="/admin/lims/report_template" />
                                         <p:commandButton 
                                             class="w-100" 
                                             ajax="false" 
@@ -215,11 +214,6 @@
                                 </div>
 
                             </p:tab>
-
-
-
-
-
                             <p:tab title="SMS Messaging">
                                 <p:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
                                     <p:outputLabel value="Number" ></p:outputLabel>
@@ -231,7 +225,6 @@
                                     <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Send Message" action="#{patientReportController.sendSms()}" />
                                 </p:panelGrid>
                             </p:tab>
-
                             <p:tab title="Lab Setup">
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSetUp')}">
@@ -258,7 +251,6 @@
 
                             </p:tab>
                         </p:accordionPanel>
-
                     </p:panel>
                 </h:form>
             </div>

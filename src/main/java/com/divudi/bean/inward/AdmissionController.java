@@ -70,6 +70,8 @@ public class AdmissionController implements Serializable {
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
+    private PatientEncounterFacade patientEncounterFacade;
+    @EJB
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
@@ -99,8 +101,7 @@ public class AdmissionController implements Serializable {
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
     private PaymentMethodData paymentMethodData;
-    @EJB
-    PatientEncounterFacade patientEncounterFacade;
+    
 
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
@@ -235,6 +236,23 @@ public class AdmissionController implements Serializable {
     }
 
     public List<Admission> completePatient(String query) {
+        List<Admission> suggestions;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Admission c "
+                + " where c.retired=false "
+                + " and c.discharged=false "
+                + " and ((c.bhtNo) like :q "
+                + " or (c.patient.person.name) like :q "
+                + " or (c.patient.code) like :q) "
+                + " order by c.bhtNo ";
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        suggestions = getFacade().findByJpql(sql, hm, 20);
+
+        return suggestions;
+    }
+    
+    public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
         String sql;
         HashMap hm = new HashMap();
@@ -396,6 +414,22 @@ public class AdmissionController implements Serializable {
             sql = "select p from Admission p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
             ////// // System.out.println(sql);
             suggestions = getFacade().findByJpql(sql, 20);
+        }
+        if (suggestions == null) {
+            suggestions = new ArrayList<>();
+        }
+        return suggestions;
+    }
+    
+    public List<PatientEncounter> completePatientEncounter(String query) {
+        List<PatientEncounter> suggestions;
+        String sql;
+        if (query == null || query.trim().equals("")) {
+            suggestions = new ArrayList<>();
+        } else {
+            sql = "select p from PatientEncounter p where p.retired=false and (p.bhtNo) like '%" + query.toUpperCase() + "%'";
+            ////// // System.out.println(sql);
+            suggestions = patientEncounterFacade.findByJpql(sql, 20);
         }
         if (suggestions == null) {
             suggestions = new ArrayList<>();

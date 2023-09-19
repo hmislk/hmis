@@ -617,6 +617,7 @@ public class ServiceController implements Serializable {
         i.setTotal(fee);
         i.setTotalFee(0);
         i.setTotalFfee(fee);
+        i.setRequestForQuentity(true);
         ejbFacade.create(i);
         return i;
     }

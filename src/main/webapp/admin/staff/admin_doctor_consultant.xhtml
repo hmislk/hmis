@@ -9,21 +9,26 @@
 
 
     <ui:define name="subcontent">
+        
+        <div class="row">
+            
+            <div class="col-6">
+                
+            </div>
+            <div class="col-6">
+                
+            </div>
+        </div>
 
         <h:panelGroup >
             <h:form  >
                 <p:growl />
                 <p:focus id="selectFocus" context="gpSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
-
-
-
                 <p:panel header="Manage Consultant" >
-
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-6">
                             <h:panelGrid id="gpSelect" columns="1"  >
-
                                 <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
                                     <p:commandButton id="btnAdd" value="Add"  
                                                      action="#{consultantController.prepareAdd()}" styleClass="buttons" ajax="false" class="w-100"/>                                   
@@ -60,9 +65,8 @@
                                 <p:commandLink value="Consultant List" action="admin_doctor_consultant_1" ajax="false" />
                             </h:panelGrid  >
                         </div>
-                        <div class="col-md-7">
-
-                            <p:panel style="min-height: 600px">
+                        <div class="col-6">
+                            <p:panel>
                                 <h:panelGrid id="gpDetail" columns="1">
 
 
@@ -70,37 +74,37 @@
                                         <p:tab title="Basic Details" >
                                             <h:panelGrid columns="2">
                                                 <h:outputText  value="Title" />
-                                                <p:selectOneMenu  id="cmbTitle"  style="min-width: 400px;"
-                                                                  value="#{consultantController.current.person.title}"  >
+                                                <p:selectOneMenu  id="cmbTitle" 
+                                                                  value="#{consultantController.current.person.title}" class="w-100" >
                                                     <f:selectItem itemLabel="Select Title" />
                                                     <f:selectItems value="#{enumController.titleDoctor}" var="i" 
                                                                    itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
                                                 <h:outputText  value="Name" />
-                                                <p:inputText autocomplete="off" value="#{consultantController.current.person.name}"  style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off" value="#{consultantController.current.person.name}" class="w-100" />
                                                 <h:outputText  value="Code" />
-                                                <p:inputText autocomplete="off" value="#{consultantController.current.code}"  style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off" value="#{consultantController.current.code}" class="w-100"/>
                                                 <h:outputText  value="*Consultant Serial No" />
-                                                <p:inputText autocomplete="off" value="#{consultantController.current.codeInterger}" style="min-width: 400px;" />
+                                                <p:inputText autocomplete="off" value="#{consultantController.current.codeInterger}" class="w-100" />
                                                 <h:outputText  value="Phone" />
-                                                <p:inputText  value="#{consultantController.current.person.phone}" style="min-width: 400px;" />
+                                                <p:inputText  value="#{consultantController.current.person.phone}" class="w-100"/>
                                                 <h:outputText  value="Fax" />
-                                                <p:inputText autocomplete="off"  value="#{consultantController.current.person.fax}" style="min-width: 400px;" />
+                                                <p:inputText autocomplete="off"  value="#{consultantController.current.person.fax}" class="w-100" />
                                                 <h:outputText  value="Mobile" />
-                                                <p:inputText autocomplete="off" value="#{consultantController.current.person.mobile}"  style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off" value="#{consultantController.current.person.mobile}" class="w-100"/>
                                                 <h:outputText  value="Address" />
-                                                <p:inputText autocomplete="off" value="#{consultantController.current.person.address}"  style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off" value="#{consultantController.current.person.address}" class="w-100" />
                                                 <h:outputText value="Speciality" />
-                                                <p:selectOneMenu value="#{consultantController.current.speciality}" style="min-width: 400px;">
+                                                <p:selectOneMenu value="#{consultantController.current.speciality}" class="w-100" >
                                                     <f:selectItem itemLabel="Please select a speciality"/>
                                                     <f:selectItems value="#{doctorSpecialityController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" />
                                                 </p:selectOneMenu>
                                                 <h:outputText value="Registration" />
-                                                <p:inputText autocomplete="off" value="#{consultantController.current.registration}" style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off" value="#{consultantController.current.registration}" class="w-100" />
                                                 <h:outputText value="Qualification" />
-                                                <p:inputText autocomplete="off"  value="#{consultantController.current.qualification}" style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off"  value="#{consultantController.current.qualification}" class="w-100" />
                                                 <h:outputText  value="Refering Charge" />
-                                                <p:inputText autocomplete="off"  value="#{consultantController.current.charge}"  style="min-width: 400px;"/>
+                                                <p:inputText autocomplete="off"  value="#{consultantController.current.charge}" class="w-100" />
 
 
 

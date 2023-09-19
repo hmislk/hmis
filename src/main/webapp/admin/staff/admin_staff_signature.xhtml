@@ -18,68 +18,72 @@
                     <f:facet name="header" >
                         <h:form >
                             <p:outputLabel value="Add Staff Signature" ></p:outputLabel>
-                            <p:commandButton ajax="false" value="Back" action="#{webUserController.backToViewUsers()}" >
+                            <p:commandButton class="mx-2" ajax="false" value="Back" action="#{webUserController.backToViewUsers()}" >
                             </p:commandButton>
                         </h:form>
                     </f:facet>
 
+                    <div class="row">
+                        <div class="col-6">
+                            <p:panel header="Add New Signature" >
+                                <h:form enctype="multipart/form-data" >
+
+                                    <div class="row mb-1">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <h:outputLabel value="Name" >
+                                            </h:outputLabel>
+                                        </div>
+                                        <div class="col-6">
+                                            <autocomplete:completeStaff value="#{staffController.current}"/>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-6 d-flex align-items-center">
+                                            <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
+                                        </div>
+                                        <div class="col-6 d-flex align-items-center justify-content-end">
+                                            <p:commandButton ajax="false" id="btnSave" value="Save" action="#{staffImageController.saveSignature()}"/>
+                                            <p:defaultCommand target="btnSave"/>
+                                        </div>
+                                    </div>
+
+
+                                </h:form>
+                            </p:panel>
+                        </div>
+                        <div class="col-6">
+                            <h:form >
+                                <p:panel >
+                                    <f:facet name="header" >
+
+                                        <div class="row">
+                                            <div class="col-6 d-flex align-items-center">
+                                                <p:outputLabel value="Current Signature" ></p:outputLabel>
+                                            </div>
+                                            <div class="col-6  d-flex align-items-center justify-content-end">
+                                                <p:commandButton ajax="false" id="btnSave2" value="Remove" action="#{staffImageController.removeSignature()}"/>
+                                            </div>
+                                        </div>
 
 
 
-                    <h:panelGrid columns="2" styleClass="alignTop" >
-
-                        <p:panel header="Add New Signature" >
-
-                            <h:form enctype="multipart/form-data" >
-                                <h:panelGrid columns="2" >
-                                    <h:outputLabel value="Name" >
-                                    </h:outputLabel>
-                                    <autocomplete:completeStaff value="#{staffController.current}"/>
-
-                                    <p:fileUpload value="#{staffImageController.file}" mode="simple"/>
-                                    <p:commandButton ajax="false" id="btnSave" value="Save" action="#{staffImageController.saveSignature()}"/>
-
-                                    <p:defaultCommand target="btnSave"/>
-
-
-                                </h:panelGrid>
-                            </h:form>
-
-                        </p:panel>
-
-                        <h:form >
-                            <p:panel >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Current Signature" ></p:outputLabel>
-                                    <p:commandButton ajax="false" id="btnSave2" value="Remove" action="#{staffImageController.removeSignature()}"/>
-                                </f:facet>
-                                <div >
+                                    </f:facet>
+                                    <div >
+                                        <p:graphicImage cache="false"  value="#{staffImageController.signatureFromStaffController}" >
+                                        </p:graphicImage>
+                                    </div>
                                     <p:graphicImage cache="false"  value="#{staffImageController.signatureFromStaffController}" >
                                     </p:graphicImage>
-                                </div>
-                                <p:graphicImage cache="false"  value="#{staffImageController.signatureFromStaffController}" >
-                                </p:graphicImage>
-                            </p:panel>
+                                </p:panel>
 
-                        </h:form>
+                            </h:form>
+                        </div>
 
-                    </h:panelGrid>
-
-
-
-
-
-
-
-
-
+                    </div>
 
                 </p:panel>
-
-
             </ui:define>
-
-
         </ui:composition>
 
     </h:body>

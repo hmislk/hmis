@@ -14,9 +14,10 @@
                         <p:growl />
                         <div class="container">
                             <div class="row">
+                                <h2>Manage Virtual Therapeutic Moiety (VTMs)</h2>
                                 <div class="col-md-6">
-                                    <h2>Manage Virtual Therapeutic Moiety (VTMs)</h2>
-                                    <div class="card mb-3">
+                                    
+                                    <div class="card md-3">
                                         <div class="card-header">Search Vtm</div>
                                         <div class="card-body">
                                             <h:inputText autocomplete="off" id="txtSearch" value="#{vtmController.selectText}" class="form-control" >
@@ -45,20 +46,23 @@
 
                                 <div class="col-md-6">
                                     <h:panelGroup id="gpDetail" >
-                                        <div class="card">
-                                            <div class="card-header d-flex justify-content-between">
-                                                <h3>Edit Details</h3>
-                                                <p:commandButton id="btnSave" value="Save"  action="#{vtmController.saveSelected()}" styleClass="buttons btn btn-primary" 
+                                        <div class="card md-3">
+                                            
+                                                <div class="card-header d-flex justify-content-between">Edit Details
+                                                    
+                                                    <p:commandButton id="btnSave" value="Save"  action="#{vtmController.saveSelected()}" styleClass="buttons btn btn-primary" style="align-items: flex-end"
                                                                  ajax="false" >
                                                 </p:commandButton>
                                                 <p:defaultCommand target="btnSave"/>
-                                            </div>
+                                                </div>
+                                                
+                                            
                                             <div class="card-body">
 
-                                                <div class="mb-3">
+                                                
                                                     <label for="lblName" class="form-label">Name</label>
                                                     <h:inputText autocomplete="off" id="txtName" value="#{vtmController.current.name}" required="true" class="form-control" ></h:inputText>
-                                                </div>
+                                                
                                             </div>
                                         </div>
                                     </h:panelGroup>

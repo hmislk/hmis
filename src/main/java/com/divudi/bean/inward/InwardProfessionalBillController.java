@@ -828,7 +828,6 @@ public class InwardProfessionalBillController implements Serializable {
         if (current == null) {
             current = new BilledBill();
             current.setBillType(BillType.InwardProfessional);
-
             current.setDepartment(getSessionController().getLoggedUser().getDepartment());
             current.setInstitution(getSessionController().getLoggedUser().getInstitution());
         }
