@@ -17,64 +17,77 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputLabel value="Total Value : "/>
-                        <h:outputLabel value="#{surgeryBillController.batchBill.total}"/>
-                        <p:commandButton value="Clear All" ajax="false"
-                                        action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
-                        <p:commandButton value="Save Surgery Detail" ajax="false" 
-                                        action="#{surgeryBillController.save()}" 
+                        <h:outputLabel value="#{surgeryBillController.batchBill.total}" class="m-2" />
+                        <p:commandButton value="Clear All" ajax="false" class="m-2"
+                                         action="#{surgeryBillController.makeNull}" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Save Surgery Detail" ajax="false" class="m-2" action="#{surgeryBillController.save()}" 
                                          disabled="#{surgeryBillController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();"/>
-                        <p:commandButton value="Print" ajax="false" action="#"  >
+                        <p:commandButton value="Print" ajax="false" class="m-2" action="#"  >
                             <p:printer target="panThe" ></p:printer>
                         </p:commandButton>
 
                     </f:facet>
 
-                    
+
 
                 </p:panel>  
 
                 <p:panel id="panThe" >
                     <p:panel > 
                         <f:facet name="header">
-                            <h:outputLabel value="Surgery &amp; BHT Detail"/>
+                            <h:outputLabel value="Surgery &amp; BHT Details"/>
                         </f:facet>
-                        <h:panelGrid columns="2">
-                            <p:panel>
-                                <h:outputLabel value="Type Patient Name or BHT : "/>
-                                <p:autoComplete  forceSelection="true" 
-                                                 value="#{surgeryBillController.batchBill.patientEncounter}" 
-                                                 completeMethod="#{admissionController.completePatient}"
-                                                 var="apt2" itemLabel="#{apt2.patient.person.name}"
-                                                 itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                    <p:ajax event="itemSelect"  update="panSearch2"  process="@this" />
-                                    <p:column >
-                                        #{apt2.bhtNo} 
-                                    </p:column>
-                                    <p:column >
-                                        #{apt2.patient.person.name} 
-                                    </p:column>
-                                    <p:column>
-                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                </p:autoComplete>
-                                <h:panelGroup id="panSearch2">
-                                    <in:bhtDetail admission="#{surgeryBillController.batchBill.patientEncounter}"/>
-                                </h:panelGroup>
-                            </p:panel>
-                            <p:panel>
+
+                        <div class="row">
+                            <div class="col-6">
                                 <p:panelGrid columns="2" >
-                                    <h:outputLabel value="Surgery Name" >
+
+                                    <h:outputLabel value="Type Patient Name or BHT "/> 
+                                    <p:autoComplete  forceSelection="true" 
+                                                     value="#{surgeryBillController.batchBill.patientEncounter}" 
+                                                     completeMethod="#{admissionController.completePatient}"
+                                                     var="apt2" itemLabel="#{apt2.patient.person.name}"
+                                                     itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                        <p:ajax event="itemSelect"  update="panSearch2"  process="@this" />
+                                        <p:column >
+                                            #{apt2.bhtNo} 
+                                        </p:column>
+                                        <p:column >
+                                            #{apt2.patient.person.name} 
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        </p:column>
+                                    </p:autoComplete>
+
+                                </p:panelGrid>
+
+                            </div>
+                            
+                            <div class="col-6">
+                                <p:panelGrid columns="2" >
+                                    <h:outputLabel value="Surgery Name"  >
                                     </h:outputLabel>
                                     <p:autoComplete forceSelection="true"
                                                     value="#{surgeryBillController.batchBill.procedure.item}" 
-                                                    completeMethod="#{procedureController.completeDiagnosis}"
+                                                    completeMethod="#{procedureController.completeProcedures}"
                                                     var="apt2" itemLabel="#{apt2.name}"
                                                     itemValue="#{apt2}" size="30"  style="width: 400px;">
                                     </p:autoComplete>
 
                                 </p:panelGrid>
-                            </p:panel>
-                        </h:panelGrid>
+                            </div>
+
+                        </div>
+
+
+
+
+                            <h:panelGroup id="panSearch2">
+                                <in:bhtDetail admission="#{surgeryBillController.batchBill.patientEncounter}"/>
+                            </h:panelGroup>
+
+                       
                     </p:panel>
 
                     <p:panelGrid columns="1" >

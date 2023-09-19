@@ -18,7 +18,7 @@
                         <h:outputLabel value="Staff Delete"></h:outputLabel>
                     </f:facet>
 
-                    <p:commandButton ajax="false" value="Remove Selected" styleClass="noPrintButton" action="#{staffController.removeSelectedItems()}"
+                    <p:commandButton class="my-2" ajax="false" value="Remove Selected" action="#{staffController.removeSelectedItems()}"
                                      onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
                                      >
                     </p:commandButton>

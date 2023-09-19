@@ -27,7 +27,11 @@
                     id="smOpd"
                     icon="fa fa-fw fa-user-md"
                     rendered="#{webUserController.hasPrivilege('Opd')}">
-                    <p:menuitem ajax="false" action="#{opdBillController.navigateToSearchPatients()}" value="Patient Registration" icon="fa fa-user-plus" rendered="true" />
+                    <p:menuitem ajax="false" 
+                                action="#{opdBillController.navigateToSearchPatients()}" 
+                                value="Patient Lookup &amp; Registration" 
+                                icon="fa fa-user-plus" 
+                                rendered="true" />
 
                     <p:submenu 
                         id="smOpdBilling"
@@ -132,8 +136,7 @@
                         rendered="#{webUserController.hasPrivilege('Opd')}">
                         <p:menuitem 
                             ajax="false" 
-                            action="/opd_search_bill_own" 
-                            actionListener="#{searchController.makeListNull}"  
+                            action="#{opdBillController.navigateToSearchOpdBills()}" 
                             value="OPD Bill Search" 
                             icon="fa fa-search"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" ></p:menuitem>
@@ -819,7 +822,8 @@
                 <p:submenu  icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
-                                 rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
+                                 rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>  
+                    <p:menuitem  ajax="false"  action="/reports/index" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                                            
                     <p:menuitem  ajax="false"  action="/reportInstitution/report_own" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
                     <p:menuitem  ajax="false"  action="/reportIncome/report_income" value="Income Report"  ></p:menuitem>
                     <p:menuitem  ajax="false"  action="/revenue_reports/index" value="Revenue Reports"  ></p:menuitem>
@@ -841,30 +845,94 @@
 
                 </p:submenu>
 
-                <p:submenu  label="Admin"  rendered="#{webUserController.hasPrivilege('Admin')}">
-                    <p:menuitem  ajax="false"  action="#{webUserController.navigateToManageUsers()}" value="Manage Users" rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{institutionController.toAdminManageInstitutions()}" value="Manage Institutions" rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{staffController.navigateToManageStaff()}" value="Manage Staff" rendered="#{webUserController.hasPrivilege('AdminStaff')}" ></p:menuitem>
+                <p:submenu label="Administration" icon="fa fa-wrench" rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{webUserController.navigateToManageUsers()}" 
+                        value="Manage Users" 
+                        icon="fa fa-users"
+                        rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{institutionController.toAdminManageInstitutions()}" 
+                        value="Manage Institutions" 
+                        icon="fa fa-hospital"
+                        rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{staffController.navigateToManageStaff()}" 
+                        value="Manage Staff" 
+                        icon="fa fa-user-circle"
+                        rendered="#{webUserController.hasPrivilege('AdminStaff')}" >
+                    </p:menuitem>
                     <p:menuitem 
                         ajax="false" 
                         action="#{investigationController.navigateToLimsAdminIndex()}" 
-                        value="LIMS" 
-                        rendered="#{webUserController.hasPrivilege('LabAdiministrator')}"  >
+                        value="Manage Lab Services" 
+                        icon="fa fa-flask"
+                        rendered="#{webUserController.hasPrivilege('LabAdiministrator')}" >
                     </p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{webContentController.navigateToManageWeb()}" value="Manage Web" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{formFormatController.navigateToManageForms()}" value="Manage Form" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{itemController.toManageItemdIndex()}" value="Manage Items &amp; Services" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{webContentController.navigateToManageWeb()}" 
+                        value="Manage Website" 
+                        icon="fa fa-globe"
+                        rendered="#{webUserController.hasPrivilege('AdminItems')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{formFormatController.navigateToManageForms()}" 
+                        value="Manage EMR" 
+                        icon="fa fa-stethoscope"
+                        rendered="#{webUserController.hasPrivilege('AdminItems')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{itemController.toManageItemdIndex()}" 
+                        value="Manage Services" 
+                        icon="fa fa-list"
+                        rendered="#{webUserController.hasPrivilege('AdminItems')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        rendered="#{webUserController.hasPrivilege('InwardAdministration')}"
+                        ajax="false"  
+                        action="/inward/inward_administration" 
+                        value="Manage Inpatient Services" 
+                        icon="fa fa-bed" >
+                    </p:menuitem>
+               
                     <p:menuitem  
                         ajax="false"  
                         action="#{pharmacyController.navigateToManagePharmaceuticals}" 
                         value="Manage Pharmaceuticals" 
-                        rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="#{feeController.navigateToAdminFee()}" value="Manage Prices/Charges/Packages" rendered="#{webUserController.hasPrivilege('AdminPrices')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{feeController.navigateToAdminDiscounts()}" value="Discount" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{dataAdministrationController.navigateToAdminDataAdministration()}" value="Data Administration" rendered="#{webUserController.hasPrivilege('AdminItems')}" ></p:menuitem>
-                    <p:menuitem ajax="false" action="#{billController.navigateToBillContactNumbers()}" value="Send Bulk SMS" rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" ></p:menuitem>
-
+                        icon="fa fa-medkit"
+                        rendered="#{webUserController.hasPrivilege('PharmacyAdministration')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{feeController.navigateToAdminFee()}" 
+                        value="Manage Pricing" 
+                        icon="fa fa-tag"
+                        rendered="#{webUserController.hasPrivilege('AdminPrices')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{dataAdministrationController.navigateToAdminDataAdministration()}" 
+                        value="Manage Data" 
+                        icon="fa fa-database"
+                        rendered="#{webUserController.hasPrivilege('AdminItems')}" >
+                    </p:menuitem>
+                    <p:menuitem  
+                        ajax="false"  
+                        action="#{billController.navigateToBillContactNumbers()}" 
+                        value="Bulk Messaging" 
+                        icon="fa fa-comments"
+                        rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" >
+                    </p:menuitem>
                 </p:submenu>
+
 
 
                 <f:facet name="options">

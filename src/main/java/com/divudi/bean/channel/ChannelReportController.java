@@ -1441,7 +1441,7 @@ public class ChannelReportController implements Serializable {
         String url = request.getRequestURL().toString();
 
         String ipAddress = request.getRemoteAddr();
-        System.out.println("Start");
+        
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -3048,7 +3048,34 @@ public class ChannelReportController implements Serializable {
     }
 
     public void createAllOPDBillReportForVat() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createAllOPDBillReportForVat()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         channelBills = new ArrayList<>();
 
         BillType[] billTypes = {BillType.OpdBill};
@@ -3061,7 +3088,13 @@ public class ChannelReportController implements Serializable {
         channelTotal.setNetTotal(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, true, false));
         channelTotal.setVat(channelBillTotalByBillType(true, null, bts, fromDate, toDate, false, false, false, true));
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "OPD/Summery/6) Bill Lists/3)opd Vat(reportCashier/report_opd_bills_for_vat.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "OPD/Summery/6) Bill Lists/3)opd Vat(reportCashier/report_opd_bills_for_vat.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+       
     }
 
     public void createAllChannelBillReport(boolean createdDate) {

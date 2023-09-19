@@ -45,7 +45,7 @@
                             </p:autoComplete>
 
                             <h:outputLabel styleClass="noPrintButton" value=" User Name " rendered="#{!channelReportController.reportKeyWord.bool1}"/>
-                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true" rendered="#{!channelReportController.reportKeyWord.bool1}"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{channelReportController.webUser}" ></p:autoComplete>

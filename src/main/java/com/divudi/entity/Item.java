@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -41,6 +42,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -53,7 +55,8 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Inheritance
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
 
@@ -240,6 +243,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     private String transCodeFromName;
 
+    @Column(name = "DTYPE", insertable = false, updatable = false)
+    private String clazz;
+    
     
     
     public double getVatPercentage() {
@@ -1256,6 +1262,14 @@ public class Item implements Serializable, Comparable<Item> {
 
     public void setBaseUnitsPerIssueUnit(Double baseUnitsPerIssueUnit) {
         this.baseUnitsPerIssueUnit = baseUnitsPerIssueUnit;
+    }
+
+    public String getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

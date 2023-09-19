@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form id="measurementUnitForm">
+                    <p:panelGrid columns="2" >
+                        <p:outputLabel value="Name:" />
+                        <p:inputText value="#{measurementUnitController.current.name}" />
+
+                        <p:outputLabel value="Strength Unit:" />
+                        <p:selectBooleanCheckbox value="#{measurementUnitController.current.strengthUnit}" />
+
+                        <p:outputLabel value="Pack Unit:" />
+                        <p:selectBooleanCheckbox value="#{measurementUnitController.current.packUnit}" />
+
+                        <p:outputLabel value="Issue Unit:" />
+                        <p:selectBooleanCheckbox value="#{measurementUnitController.current.issueUnit}" />
+
+                        <p:outputLabel value="Duration Unit:" />
+                        <p:selectBooleanCheckbox value="#{measurementUnitController.current.durationUnit}" />
+
+                        <p:outputLabel value="Frequency Unit:" />
+                        <p:selectBooleanCheckbox value="#{measurementUnitController.current.frequencyUnit}" />
+
+                        <p:outputLabel value="Duration in Hours:" />
+                        <p:inputNumber value="#{measurementUnitController.current.durationInHours}" />
+
+                        <p:outputLabel value="Frequency in Hours:" />
+                        <p:inputNumber value="#{measurementUnitController.current.frequencyInHours}" />
+                    </p:panelGrid>
+
+                    <p:commandButton value="Save" action="#{measurementUnitController.saveSelected()}" update="@form" />
+                </h:form>
+
+    
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

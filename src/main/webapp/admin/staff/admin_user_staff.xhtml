@@ -1,51 +1,63 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://java.sun.com/jsf/html"
-                xmlns:f="http://java.sun.com/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"
-                >
+      template="/resources/template/template.xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui"
+      >
 
 
-    
+
     <h:body>
-    
+
         <ui:composition template="/admin/staff/admin_manage_staff_index.xhtml">
-        
-    <ui:define name="subcontent">
+            <ui:define name="subcontent">
 
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
-            <h:outputLabel value="You are NOT authorized"/>
-        </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
+                    <h:outputLabel value="You are NOT authorized"/>
+                </h:panelGroup>
 
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
-            <h:form  >
-                <p:panel header="Allow user to log on to Departments" >
-                    <h:panelGrid  columns="2">                          
-                        <h:outputLabel value="Select User"/>
-                        <p:autoComplete id="user" converter="webUs" forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  value="#{webUserController.current}" >
-                            <f:ajax event="itemSelect" execute="user" render="ins" />
-                        </p:autoComplete>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="ins">
-                        <p:panel header="Staff of this user">
-                            <h:selectOneMenu  value="#{webUserController.current.staff}" style="width: 400px">
-                                <f:selectItem itemLabel="Staff"/>
-                                <f:selectItems  value="#{staffController.items}" var="s" itemLabel="#{s.person.name}" itemValue="#{s}" />
-                            </h:selectOneMenu>                        
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
+                    <h:form  >
+                        <p:panel header="Allow user to log on to Departments" >
+
+                            <div class="row">
+                                <div class="col-6 ">
+                                    <h:outputLabel value="Select User"/>
+                                    <p:autoComplete class="mx-2" id="user"  forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  value="#{webUserController.current}" >
+                                        <f:ajax event="itemSelect" execute="user" render="ins" />
+                                    </p:autoComplete>
+                                </div>
+                                <div class="col-6">
+
+                                    <p:panel header="Staff of this user">
+                                        <h:selectOneMenu  value="#{webUserController.current.staff}" style="width: 400px">
+                                            <f:selectItem itemLabel="Staff"/>
+                                            <f:selectItems  value="#{staffController.items}" var="s" itemLabel="#{s.person.name}" itemValue="#{s}" />
+                                        </h:selectOneMenu>                        
+                                    </p:panel>
+
+                                    <div class="row">
+                                        <div class="my-2 d-flex justify-content-end align-items-center">
+                                            <p:commandButton id="btnSave" ajax="false" value="Save" action="#{webUserController.saveUser()}"  onclick="onSubmitButton();"/>
+                                            <p:defaultCommand target="btnSave"/>
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+
                         </p:panel>
-                    </h:panelGrid>
-                    <p:commandButton id="btnSave" ajax="false" value="Save" action="#{webUserController.saveUser()}"  onclick="onSubmitButton();"/>
-                    <p:defaultCommand target="btnSave"/>
-                </p:panel>
 
-            </h:form>
+                    </h:form>
 
-        </h:panelGroup>
+                </h:panelGroup>
 
-    </ui:define>
+            </ui:define>
 
         </ui:composition>
     </h:body>

@@ -58,6 +58,21 @@ public class DepartmentController implements Serializable {
         j = "select i from Department i where i.retired=false order by i.name";
         items = getFacade().findByJpql(j);
     }
+    
+    public List<Department> getInsDepartments(Institution currentInstituion) {
+        List<Department> currentInsDepartments = new ArrayList<>();
+        if (currentInstituion == null) {
+            return currentInsDepartments;
+        }
+        Map m = new HashMap();
+        m.put("ins", currentInstituion);
+        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
+        currentInsDepartments = getFacade().findByJpql(sql,m);
+        if (currentInsDepartments == null) {
+            currentInsDepartments = new ArrayList<>();
+        }
+        return currentInsDepartments;
+    }
 
     public String toListDepartments() {
         fillItems();

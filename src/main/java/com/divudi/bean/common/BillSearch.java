@@ -23,6 +23,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AgentHistory;
 import com.divudi.entity.AppEmail;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -62,10 +63,13 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
 
@@ -137,6 +141,9 @@ public class BillSearch implements Serializable {
     private BillBeanController billBean;
     @Inject
     private SecurityController securityController;
+    
+    @Inject
+    private AuditEventApplicationController auditEventApplicationController;
     /**
      * Class Variables
      */
@@ -291,6 +298,35 @@ public class BillSearch implements Serializable {
     }
 
     public void fillTransactionTypeSummery() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillTransactionTypeSummery()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
         Map m = new HashMap();
         String j;
         if (billClassType == null) {
@@ -358,6 +394,14 @@ public class BillSearch implements Serializable {
             billSummeries.add(tbs);
             i++;
         }
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
+        
     }
 
     public String listBillsFromBillTypeSummery() {
@@ -544,6 +588,36 @@ public class BillSearch implements Serializable {
     }
 
     public void clearSearchFIelds() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+        
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("clearSearchFIelds()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+       
+        auditEventApplicationController.logAuditEvent(auditEvent);
         department = null;
         fromDate = null;
         toDate = null;
@@ -551,6 +625,11 @@ public class BillSearch implements Serializable {
         user = null;
         billType = null;
         billClassType = null;
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
     }
 
     public BillSearch() {
@@ -1469,7 +1548,7 @@ public class BillSearch implements Serializable {
                             + getBill().getInsId()
                             + "</title>"
                             + "</head>"
-                            + "<body>";
+                            + "<h:body>";
                     tb += "<p>";
                     tb += "Bill No : " + getBill().getInsId() + "<br/>";
                     tb += "Bill Date : " + getBill().getBillDate() + "<br/>";
@@ -1506,7 +1585,7 @@ public class BillSearch implements Serializable {
                             + "<br/>"
                             + "</p>";
 
-                    tb += "</body></html>";
+                    tb += "</h:body></html>";
 
                     e.setMessageBody((tb));
 

@@ -175,6 +175,38 @@ public abstract class AbstractFacade<T> {
         getEntityManager().merge(entity);
     }
 
+    public void batchEdit(List<T> entities) {
+        final int batchSize = 25; // you can set an appropriate batch size
+        int i = 0;
+        for (T entity : entities) {
+            getEntityManager().merge(entity);
+            i++;
+            if (i % batchSize == 0) {
+                getEntityManager().flush();
+                getEntityManager().clear();
+            }
+        }
+        // Flush one final time
+        getEntityManager().flush();
+        getEntityManager().clear();
+    }
+
+    public void batchCreate(List<T> entities) {
+        final int batchSize = 25; // you can set an appropriate batch size
+        int i = 0;
+        for (T entity : entities) {
+            getEntityManager().persist(entity);
+            i++;
+            if (i % batchSize == 0) {
+                getEntityManager().flush();
+                getEntityManager().clear();
+            }
+        }
+        // Flush one final time
+        getEntityManager().flush();
+        getEntityManager().clear();
+    }
+
     public void editAndCommit(T entity) {
         getEntityManager().merge(entity);
         getEntityManager().getTransaction().commit();
@@ -259,6 +291,32 @@ public abstract class AbstractFacade<T> {
 
         return resultList;
     }
+    
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt) {
+    Query qry = getEntityManager().createQuery(jpql);
+    Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+    for (Map.Entry<String, Object> entry : entries) {
+        String paramName = entry.getKey();
+        Object paramValue = entry.getValue();
+
+        if (paramValue instanceof Date) {
+            qry.setParameter(paramName, (Date) paramValue, tt);
+        } else {
+            qry.setParameter(paramName, paramValue);
+        }
+    }
+
+    List<?> resultList;
+    try {
+        resultList = qry.getResultList();
+    } catch (Exception e) {
+        resultList = new ArrayList<>();
+    }
+
+    return resultList;
+}
+
 
     public List<T> findByJpql(String jpql, int maxResults) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
