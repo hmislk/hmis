@@ -31,7 +31,7 @@
                         <h:panelGrid columns="20"  >
                             <h:panelGrid columns="1">                                
                                 <p:selectOneMenu   id="pay" value="#{opdPreBillController.paymentMethod}">     
-                                    <f:selectItems value="#{enumController.paymentMethods}"  />
+                                    <f:selectItems var="payMethod" itemLabel="#{payMethod.label}" itemValue="#{payMethod}"  value="#{enumController.paymentMethods}"  />
                                     <p:ajax process="@this cmbPs" 
                                             update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem creditCard cheque slip"
                                             event="change"

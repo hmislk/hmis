@@ -296,7 +296,7 @@
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
                                         <h:outputLabel value="Default Payment Method"></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
-                                            <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                                            <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
 
 
