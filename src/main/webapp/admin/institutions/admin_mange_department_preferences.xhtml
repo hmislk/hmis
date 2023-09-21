@@ -113,7 +113,7 @@
                                         class="form-control"
                                         value="#{sessionController.currentPreference.opdBillPaperType}" >
                                         <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                                        <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputLabel 
