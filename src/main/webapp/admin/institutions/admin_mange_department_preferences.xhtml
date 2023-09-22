@@ -379,7 +379,7 @@
                                         <h:outputLabel value="Institution" ></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
                                             <f:selectItem itemLabel="Select Institution" />
-                                            <f:selectItems var="institute" itemLabel="#{institute.Label}" itemValue="#{institute}" value="#{enumController.applicationInstitutions}" ></f:selectItems>
+                                            <f:selectItems var="institute" itemLabel="#{institute.label}" itemValue="#{institute}" value="#{enumController.applicationInstitutions}" ></f:selectItems>
                                         </p:selectOneMenu>
                                         <h:outputLabel value="Logo Name"></h:outputLabel>
                                         <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
