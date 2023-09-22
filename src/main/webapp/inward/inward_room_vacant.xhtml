@@ -9,49 +9,53 @@
 
 
     <ui:define name="content">
-        <h:form>
-            <p:commandButton ajax="false" 
-                            action="#{roomOccupancyController.createPatientRoomVacant()}"
-                             value="Fill" onclick="onSubmitButton();" />             
-            <p:dataTable 
-                value="#{roomOccupancyController.roomFacilityCharges}" 
-                var="pr"
-                paginator="true"
-                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                rowsPerPageTemplate="5,10,15"
-                >
-                <f:facet name="header">
-                    Room Vacant Detail
-                </f:facet>
-                 
-                <p:column headerText="Room">
-                    #{pr.room.name}                    
-                </p:column>
-                
-                <p:column headerText="Category">
-                    #{pr.roomCategory.name}                   
-                </p:column>
-                
-                <p:column headerText="Department">
-                    #{pr.department.name}                    
-                </p:column>
-                
-<!--                <p:column headerText="Chargers for 24">
+        <p:panel>
+            <f:facet name="header">
+                Room Vacancy Details
+            </f:facet>
+            <h:form>
+                <p:commandButton ajax="false" 
+                                 action="#{roomOccupancyController.createPatientRoomVacant()}"
+                                 value="Fill" onclick="onSubmitButton();" />             
+                <p:dataTable 
+                    value="#{roomOccupancyController.roomFacilityCharges}" 
+                    var="pr"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="5,10,15" class="mt-3"
+                    >
+
+
+                    <p:column headerText="Room">
+                        #{pr.room.name}                    
+                    </p:column>
+
+                    <p:column headerText="Category">
+                        #{pr.roomCategory.name}                   
+                    </p:column>
+
+                    <p:column headerText="Department">
+                        #{pr.department.name}                    
+                    </p:column>
+
+                    <!--                <p:column headerText="Chargers for 24">
                     #{(pr.linenCharge)+
                       ((pr.adminstrationCharge + pr.maintananceCharge
                       + pr.medicalCareCharge + pr.roomCharge
                       + pr.nursingCharge + pr.moCharge)*8)}                    
                 </p:column>-->
 
-                <p:column headerText="Room Chargers for 24">
-                    #{pr.roomCharge*8}                    
-                </p:column>
-                
-            </p:dataTable>
+                    <p:column headerText="Room Chargers for 24">
+                        #{pr.roomCharge*8}                    
+                    </p:column>
+
+                </p:dataTable>
 
 
 
-        </h:form>
+            </h:form> 
+        </p:panel>
+
     </ui:define>
 
 </ui:composition>
