@@ -84,7 +84,7 @@
                                             <div>
                                                 <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
                                                     <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems var="charg" itemLabel="#{charg.label}" itemValue="#{charg}"  value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                         </div>
