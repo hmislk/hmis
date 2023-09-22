@@ -25,7 +25,7 @@
                                         <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
                                             <f:selectItem itemLabel="Please Select Paper Type" />
-                                            <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                                            <f:selectItems var="t" itemLabel="#{t.label}" itemValue="#{t}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
                                         <h:outputLabel value="GRN Detaied" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.grnBillDetailed}" ></p:selectBooleanButton>
@@ -113,7 +113,7 @@
                                         class="form-control"
                                         value="#{sessionController.currentPreference.opdBillPaperType}" >
                                         <f:selectItem itemLabel="Please Select Paper Type" />
-                                        <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
+                                        <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputLabel 
@@ -296,7 +296,7 @@
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.channelDoctorArivalMsgSend}" rendered="#{sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}"/>
                                         <h:outputLabel value="Default Payment Method"></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.currentPreference.channellingPaymentMethod}">  
-                                            <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>                                                               
+                                            <f:selectItems var="pay" itemLabel="#{pay.label}" itemValue="#{pay}" value="#{enumController.paymentMethodsForChannel}"/>                                                               
                                         </p:selectOneMenu>
 
 
@@ -377,10 +377,13 @@
 
 
                                         <h:outputLabel value="Institution" ></h:outputLabel>
+
                                         <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
                                             <f:selectItem itemLabel="Select Institution" />
-                                            <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
+                                            <f:selectItems var="institute" itemValue="#{institute}" value="#{enumController.applicationInstitutions}" ></f:selectItems>
                                         </p:selectOneMenu>
+
+
                                         <h:outputLabel value="Logo Name"></h:outputLabel>
                                         <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
                                         <p:watermark for="imgName" value="Eg- /abc.jpg" />

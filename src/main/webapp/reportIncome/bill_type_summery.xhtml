@@ -39,12 +39,13 @@
                                     <h:outputLabel value="Type"/>                                
                                     <p:selectOneMenu value="#{billSearch.billType}" >
                                         <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.billTypes}" ></f:selectItems>
+                                        <f:selectItems var="billtype" itemLabel="#{billtype.label}" itemValue="#{billtype}" value="#{enumController.billTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
+                                    
                                     <h:outputLabel value="Billed/Cancelled/Refunded"/>                                
                                     <p:selectOneMenu value="#{billSearch.billClassType}" >
                                         <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.billClassTypes}" ></f:selectItems>
+                                        <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="User"/>
