@@ -1,3 +1,5 @@
+package com.divudi.data.hr;
+
 public enum DayType {
     Normal("Normal Day"),
     DayOff("Day Off"),
