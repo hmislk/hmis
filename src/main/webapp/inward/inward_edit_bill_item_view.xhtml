@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form  >
-                <p:commandButton ajax="false" value="Back to Intrim"
+                <p:commandButton ajax="false" value="Back to Interim"
                                 action="/inward/inward_bill_intrim" onclick="onSubmitButton();"/>
                 <p:dataTable value="#{bhtSummeryController.billItems}" var="ser"
                              rowStyleClass="#{(ser.bill.billClass eq 'class com.divudi.entity.BilledBill')? '':'noDisplayRow'}">
