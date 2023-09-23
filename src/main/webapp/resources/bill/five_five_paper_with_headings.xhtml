@@ -297,10 +297,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <td class="totalsBlock" style="text-align:left; width: 60%; font-weight: bold;">
                                 <h:outputLabel value="Total" />
                             </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px; font-weight: bold;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
