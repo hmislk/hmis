@@ -273,7 +273,7 @@
                             <div styleClass="noBorderWhenPrint" style="width: 21.0cm; " >
                                 <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                             </div>
-                            <div>
+                            <div class="bg-primary">
                                 <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                              sortBy="#{iss.bill.deptId}"
                                              rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
