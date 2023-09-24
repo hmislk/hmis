@@ -47,8 +47,8 @@
 
                         <p:panelGrid columns="3">
                         
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createRoomTime()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createRoomTime()}"   ></p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

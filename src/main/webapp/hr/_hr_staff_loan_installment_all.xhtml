@@ -51,7 +51,7 @@
                         <h:outputLabel/>
                         <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
                                                  itemLabel="Completed"/>
-                        <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" />
                         
                         </h:panelGrid>
                     </p:panel>
@@ -60,7 +60,7 @@
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
                                         action="#{staffController.createStaffWithCode()}"
-                                         onclick="onSubmitButton();"/>
+                                         />
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
                                       filteredValue="#{staffController.filteredStaff}" 
@@ -91,7 +91,7 @@
                 <p:panel id="lst">
                     <f:facet name="header">      
                         <h:outputLabel value="#{staffPaySheetComponentAllController.paysheetComponent.name}" style="text-transform:capitalize;" />
-                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" />
                         <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
                     </f:facet>
                     <h:panelGrid columns="2" >
@@ -198,7 +198,7 @@
                         </p:column>  
 
                         <p:column style="width:6%">  
-                            <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" onclick="onSubmitButton();">
+                            <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" >
                                 <f:setPropertyActionListener target="#{staffPaySheetComponentAllController.current}" value="#{i}" />
                             </p:commandButton>
                         </p:column>  

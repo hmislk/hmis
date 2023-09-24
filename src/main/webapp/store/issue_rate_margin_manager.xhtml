@@ -26,17 +26,17 @@
                                 <h:outputLabel value="Margin" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{issueRateMarginsController.issueRateMargins.rateForPharmaceuticals}" />                                
                                 <p:commandButton value="Add" ajax="false" action="#{issueRateMarginsController.add()}" 
-                                                 onclick="onSubmitButton();" >
+                                                  >
                                 </p:commandButton>
 
                             </p:panelGrid>                          
                             <p:commandButton ajax="false" value="Fill" 
                                             action="#{issueRateMarginsController.createMargins()}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                             
                              <p:commandButton ajax="false" value="Add All" 
                                             action="#{issueRateMarginsController.addAllDep()}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                            
 
                         </p:panel>
@@ -69,10 +69,10 @@
                                 </p:column>
 
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{issueRateMarginsController.onEdit(a)}" onclick="onSubmitButton();"/> 
+                                    <p:commandButton ajax="false" value="Update" action="#{issueRateMarginsController.onEdit(a)}" /> 
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton value="Delete" action="#{issueRateMarginsController.delete(a)}" onclick="onSubmitButton();">                                        
+                                    <p:commandButton value="Delete" action="#{issueRateMarginsController.delete(a)}" >                                        
                                     </p:commandButton>
                                 </p:column>
 

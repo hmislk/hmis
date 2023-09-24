@@ -20,8 +20,8 @@
                 <p:panel  >
                     <f:facet name="header">
                         <p:outputLabel value="Inward Payment Bill"/>                        
-                        <p:commandButton ajax="false"  value="Back" action="/credit/inward_due_age_credit_company_detail" rendered="#{bhtSummeryFinalizedController.activeBackButton}" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}" onclick="onSubmitButton();" />                                                                        
+                        <p:commandButton ajax="false"  value="Back" action="/credit/inward_due_age_credit_company_detail" rendered="#{bhtSummeryFinalizedController.activeBackButton}"  />
+                        <p:commandButton ajax="false"  value="Clear" style="float:right;" action="#{bhtSummeryFinalizedController.makeNull()}"  />                                                                        
                     </f:facet>
                     <h:panelGrid columns="3" style="min-width: 100%;">
                         <p:panel header="BHT">
@@ -293,7 +293,7 @@
 
                             <p:panelGrid columns="1">
                                 <p:commandButton value="Export Excel" ajax="false" 
-                                                 styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                                 styleClass="noPrintButton"  >
                                     <p:dataExporter type="xlsx"
                                                  target="timed" fileName="Timed_Service"
                                                    
@@ -380,7 +380,7 @@
                         <p:tab id="tabSer" title="Service Detail BillItem"  >
                             <p:panelGrid columns="1">
                                 <p:commandButton value="Export Excel" ajax="false" 
-                                                 styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                                 styleClass="noPrintButton"  
                                                  >
                                     <p:dataExporter type="xlsx"
                                                  target="serv" fileName="Service"
@@ -763,7 +763,7 @@
 
                         <p:tab title="Medicine Issues">
                             <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             styleClass="noPrintButton"  
                                              >
                                 <p:dataExporter type="xlsx"
                                              target="pharmacy" fileName="Madicine_Issue"
@@ -918,7 +918,7 @@
 
                         <p:tab id="tabAdd" title="Out Side Charge Detail"  >
                             <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             styleClass="noPrintButton"  
                                              >
                                 <p:dataExporter type="xlsx"
                                              target="outSide" fileName="Out_Side_Fee"
@@ -1015,7 +1015,7 @@
 
                         <p:tab id="tabPro" title="Professional Fee"  >
                             <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             styleClass="noPrintButton"  
                                              >
                                 <p:dataExporter type="xlsx"
                                              target="pro" fileName="Professional_Fee"
@@ -1106,7 +1106,7 @@
 
                         <p:tab id="tabDoc" title="Assisting Fee"  >
                             <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             styleClass="noPrintButton"  
                                              >
                                 <p:dataExporter type="xlsx"
                                              target="ass" fileName="Assisting_Fee"
@@ -1202,7 +1202,7 @@
 
                         <p:tab id="tabP" title="Payments"  >
                             <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             styleClass="noPrintButton"  
                                              >
                                 <p:dataExporter type="xlsx"
                                              target="pay" fileName="Payment"
@@ -1298,7 +1298,7 @@
 
                         <p:tab id="tabC" title="Credit Payments"  >
                             <p:commandButton value="Export Excel" ajax="false" 
-                                             styleClass="noPrintButton" onclick="onSubmitButton();" 
+                                             styleClass="noPrintButton"  
                                              >
                                 <p:dataExporter type="xlsx"
                                              target="cre" fileName="Credit Company Payment"

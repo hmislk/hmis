@@ -19,8 +19,8 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}"  />
+                                <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}"  />
                                 <p:spacer height="30"/><h:outputLabel/>
                                 <h:outputLabel/><h:outputLabel/>
                                 <h:outputLabel/> <h:outputLabel/>
@@ -95,22 +95,22 @@
                             </p:column>
                             <p:column  headerText="Actions"  styleClass="alignTop" >
                                 <p:panelGrid columns="1" rendered="#{pi.billItem.bill.cancelled ne true and pi.billItem.refunded ne true }" >
-                                    <p:commandButton process="btnSample" update="tblBills"  rendered="#{!pi.collected}"   id="btnSample" value="Collect Sample" action="#{patientInvestigationController.markAsSampled}" onclick="onSubmitButton();"  >
+                                    <p:commandButton process="btnSample" update="tblBills"  rendered="#{!pi.collected}"   id="btnSample" value="Collect Sample" action="#{patientInvestigationController.markAsSampled}"   >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton process="btnReceive" update="tblBills"  rendered="#{pi.received ne true}"   id="btnReceive" value="Receive Sample" action="#{patientInvestigationController.markAsReceived()}" onclick="onSubmitButton();" onclick="onSubmitButton();">
+                                    <p:commandButton process="btnReceive" update="tblBills"  rendered="#{pi.received ne true}"   id="btnReceive" value="Receive Sample" action="#{patientInvestigationController.markAsReceived()}"  >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="/lab/single_worksheet" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" id="btnPrintWorksheets" value="Worksheet" action="/lab/single_worksheet"  >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry"  action="#{patientReportController.lastPatientReport(pi)}" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="Result Entry"  action="#{patientReportController.lastPatientReport(pi)}"  >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab/patient_report" actionListener="#{patientReportController.createNewReport(pi)}" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Result" action="/lab/patient_report" actionListener="#{patientReportController.createNewReport(pi)}"  >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format" action="/lab/ix_for_ix" onclick="onSubmitButton();"  >
+                                    <p:commandButton ajax="false" rendered="#{pi.received}" value="New Format" action="/lab/ix_for_ix"   >
                                         <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}"></f:setPropertyActionListener>
                                         <f:setPropertyActionListener value="#{pi}" target="#{itemForItemController.patientIx}"></f:setPropertyActionListener>
                                     </p:commandButton>

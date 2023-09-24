@@ -46,8 +46,8 @@
                     <h:outputLabel value="Value"/>
                     <p:inputText autocomplete="off" value="#{staffPaySheetComponentController.current.staffPaySheetComponentValue}"/>
 
-                    <p:commandButton value="Add" action="#{staffPaySheetComponentController.save}" ajax="false" onclick="onSubmitButton();"/>
-                    <p:commandButton value="Clear" action="#{staffPaySheetComponentController.makeItemNull}" ajax="false" onclick="onSubmitButton();"/>
+                    <p:commandButton value="Add" action="#{staffPaySheetComponentController.save}" ajax="false" />
+                    <p:commandButton value="Clear" action="#{staffPaySheetComponentController.makeItemNull}" ajax="false" />
 
                 </h:panelGrid>
 
@@ -83,7 +83,7 @@
                     </h:panelGrid>
                     <h:panelGrid columns="3">  
                         <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentController.createTable()}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb6" fileName="hr_staff_paysheet_component_individual"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -249,7 +249,7 @@
                             </p:column>  
 
                             <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
-                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentController.remove}" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentController.remove}" >
                                     <f:setPropertyActionListener target="#{staffPaySheetComponentController.removingEntry}" value="#{i}" />
                                 </p:commandButton>
                             </p:column>  

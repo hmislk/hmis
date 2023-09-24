@@ -24,7 +24,7 @@
                             <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
                                 <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
                             </p:calendar>
-                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDue}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDue}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="panIx" />
                             </p:commandButton>

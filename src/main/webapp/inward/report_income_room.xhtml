@@ -43,11 +43,11 @@
                         </h:panelGrid>
                            
                         <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processPatientRooms()}" onclick="onSubmitButton();"  ></p:commandButton>
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.processPatientRooms()}"   ></p:commandButton>
 
                         <p:commandButton ajax="false" value="Back" action="inward_report_bht_income_by_caregories"/>
 
-                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                             <p:dataExporter type="xlsx" target="so1,so2,so3,so4,so5,so6,so7"  fileName="BHT_Category_Report" />
                         </p:commandButton> 
                         </p:panelGrid>

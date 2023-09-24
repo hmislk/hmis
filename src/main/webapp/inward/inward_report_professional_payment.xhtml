@@ -47,12 +47,12 @@
 
                         </h:panelGrid>
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController1.processProfessionalPayment()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Process By Discharged Date" action="#{inwardReportController1.processProfessionalPaymentByDischargedDate()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Created Date" action="#{inwardReportController1.processProfessionalPayment()}"   ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Discharged Date" action="#{inwardReportController1.processProfessionalPaymentByDischargedDate()}"   ></p:commandButton>
 
 
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >

@@ -11,8 +11,8 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generate For Check" action="#{staffSalaryController.generateForCheck()}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
-                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"  onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Generate For Check" action="#{staffSalaryController.generateForCheck()}"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
+                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryController.clear}"   rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}"/>
             </p:panel>
 
             <p:tabView style="min-height:300px;">
@@ -63,10 +63,10 @@
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Salary Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryGeneratedTable()}" onclick="onSubmitButton();"/>
-                    <p:commandButton ajax="false" value="Fill Resigned Staff" action="#{staffController.createResignedStaffTable()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" />
+                    <p:commandButton ajax="false" value="Fill Salary Not Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryNotGeneratedTable(staffSalaryController.salaryCycle.salaryFromDate)}" />
+                    <p:commandButton ajax="false" value="Fill Salary Generated Staff Only" action="#{staffController.createActiveStaffOnylSalaryGeneratedTable()}" />
+                    <p:commandButton ajax="false" value="Fill Resigned Staff" action="#{staffController.createResignedStaffTable()}" />
                     <h:panelGrid columns="2"> 
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffController.reportKeyWord.staff}"/>

@@ -22,13 +22,13 @@
                                 <f:selectItem itemLabel="Select Department Type"/>
                                 <f:selectItems value="#{departmentController.departmentType}"/>
                             </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Fill" action="#{dataAdministrationController.fillDepartmentss()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{dataAdministrationController.fillDepartmentss()}"  ></p:commandButton>
                             <h:panelGrid columns="2">
                                 <p:commandButton value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                     <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_#{dataAdministrationController.departmentType}_List"  />
                                 </p:commandButton>
                             </h:panelGrid>

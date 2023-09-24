@@ -21,7 +21,7 @@
                             <p:commandButton  value="Return" 
                                              action="#{storeIssueReturnController.settle}" 
                                             ajax="false" 
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();" >
+                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"  >
                             </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" /> 
                             <p:outputLabel id="total"  value="#{storeIssueReturnController.returnBill.total}" 
@@ -77,7 +77,7 @@
             <p:panel rendered="#{storeIssueReturnController.printPreview}">
                 <p:commandButton ajax="false" action="store_search_issue_bill" 
                                  value="Issue Bill Search" actionListener="#{storeIssueReturnController.makeNull}" 
-                                 onclick="onSubmitButton();" />                    
+                                  />                    
                 <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
                     <p:printer target="gpBillPreview1" ></p:printer>
                 </p:commandButton>

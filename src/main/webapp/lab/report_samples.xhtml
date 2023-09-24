@@ -23,7 +23,7 @@
                     <h:outputLabel value="Sample Reports" styleClass="nonPrintBlock" ></h:outputLabel>
                 </f:facet>
                 <p:commandButton ajax="false" value="Generate Sample Reports" action="#{investigationController.prepareSelectedReportSamples}"
-                                 styleClass="noPrintButton" onclick="onSubmitButton();"  />
+                                 styleClass="noPrintButton"   />
                 <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
 
                 <p:dataTable id="tbl" rowIndexVar="rowIndex" 

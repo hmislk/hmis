@@ -20,7 +20,7 @@
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Inward Final Bill" />                          
                             <p:commandButton  value="Save Interim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                             </p:commandButton>
                             <p:commandButton value="Print Interim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" >
                                 <p:printer target="Interim" ></p:printer>

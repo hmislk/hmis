@@ -93,15 +93,15 @@
                             <p:outputLabel value="Amount"/>
                             <p:inputText autocomplete="off" value="#{inwardRefundController.current.total}" disabled="#{inwardRefundController.paidAmount gt 0 or inwardRefundController.paidAmount eq 0}"/>
                             <p:commandButton id="btnRefund" ajax="false" value="Refund" 
-                                            action="#{inwardRefundController.pay}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" onclick="onSubmitButton();"/>
+                                            action="#{inwardRefundController.pay}" />
+                            <p:commandButton ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" />
                             <p:defaultCommand target="btnRefund"/>
                         </h:panelGrid>
                     </p:panel>
 
                 </p:panel>
                 <p:panel rendered="#{inwardRefundController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" action="#{inwardRefundController.makeNull}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="New Bill" action="#{inwardRefundController.makeNull}" />
                     <bill:paymentRefund bill="#{inwardRefundController.current}"/>
                 </p:panel>
             </h:form>

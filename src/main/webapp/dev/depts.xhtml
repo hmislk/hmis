@@ -54,7 +54,7 @@
                                     <h:outputLabel value="#{i.department.name}"/>                              
                                 </p:column>
                                 <p:column >
-                                    <p:commandButton ajax="false" value="Remove" action="#{userDepartmentController.delete()}" onclick="onSubmitButton();">
+                                    <p:commandButton ajax="false" value="Remove" action="#{userDepartmentController.delete()}" >
                                         <f:setPropertyActionListener value="#{i}" target="#{userDepartmentController.current}"/>
                                     </p:commandButton>
                                 </p:column>

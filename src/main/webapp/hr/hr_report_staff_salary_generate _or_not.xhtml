@@ -59,7 +59,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryGenereateOrNotStaffTable()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1 tb2" fileName="hr_report_staff_salary_generate_or_not"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
