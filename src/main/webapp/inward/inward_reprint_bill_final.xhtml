@@ -61,6 +61,7 @@
 
                                         </h:panelGrid>
                                     </p:panel>
+                                    
                                     <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Patient Copy without Professional" ajax="false">
@@ -273,7 +274,7 @@
                             <div styleClass="noBorderWhenPrint" style="width: 21.0cm; " >
                                 <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                             </div>
-                            <div class="bg-primary">
+                            <div>
                                 <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
                                              sortBy="#{iss.bill.deptId}"
                                              rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
