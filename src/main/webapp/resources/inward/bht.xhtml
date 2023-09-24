@@ -20,12 +20,13 @@
                 <p:printer target="gpBillPreview" ></p:printer>
             </p:commandButton>
 
-            <!--            <h:outputStylesheet library="css" name="printing_bht.css"></h:outputStylesheet>-->
+            <h:outputStylesheet library="css" name="printing_bht.css"></h:outputStylesheet>
 
-            <div>
+            <div class="w-75">
                 <h:panelGroup id="gpBillPreview" class="" >
 
-                    <div class="border container-fluid row">
+                    <div class="border container-fluid">
+                        
                         <div class="row m-2 text-center">
                             <div >
                                 <h:outputText value="#{cc.attrs.admission.bhtNo}"/>
@@ -35,13 +36,12 @@
                             </div>
                         </div>
 
-                        <div class="row mt-1 text-center" style="font-weight: bolder;">
+                        <div class="my-4" style="font-weight: bold;text-align: center">
                             <p:outputLabel value="INDOOR PATIENT DEPARTMENT" />
                         </div>
 
-                        <div class="row">
-                            <div class="col-6  justify-content-center">
-
+                        <div class="row d-flex justify-content-center ">
+                            <div class="col-6">
                                 <div>
                                     <p:outputLabel   value="Admission Type : " />
                                     <p:outputLabel  value="#{cc.attrs.admission.admissionType.name}" />
@@ -61,9 +61,9 @@
                                 </div>
                             </div>
 
-                            <div class="col-6 d-flex justify-content-center ">
+                            <div class="col-6">
                                 <div>
-                                    <div>
+                                    <div >
                                         <p:outputLabel   value="Room : " />
                                         <p:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
                                     </div>
@@ -89,12 +89,12 @@
                             </div>
                         </div>
 
-                        <div class="mt-1 text-center text" style="font-weight: bolder;">
+                        <div class="my-4" style="font-weight: bold;margin-left: 10%;">
                             <p:outputLabel   value="PATIENT DETAIL" />
                         </div>
 
                         <div class="row ">
-                            <div class="col-6  d-flex justify-content-center">
+                            <div class="col-6 ">
                                 <Div>
                                     <div>
                                         <p:outputLabel   value="Name :" />
@@ -132,7 +132,7 @@
                                 </Div>
                             </div>
 
-                            <div class="col-6  d-flex justify-content-center">
+                            <div class="col-6">
                                 <div class="">
                                     <div>
                                         <h:outputLabel value="Sex : ">
@@ -171,12 +171,12 @@
                             </div>
                         </div>
 
-                        <div class="text-center" style="font-weight: bold;">
+                        <div class="my-4" style="font-weight: bold;margin-left: 10%;">
                             <p:outputLabel   value="GUARDIAN DETAIL" />
                         </div>
 
                         <div class="row">
-                            <div class="col-6  d-flex justify-content-center">
+                            <div class="col-6 ">
                                 <div>
                                     <div>
                                         <h:outputLabel value="Name : ">
@@ -205,7 +205,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-6 d-flex justify-content-center ">
+                            <div class="col-6">
                                 <div>
                                     <div>
                                         <h:outputLabel value="NIC : ">
@@ -228,12 +228,12 @@
                             </div>
                         </div>
 
-                        <div class="text-center" style="font-weight: bold">
+                        <div class="my-4" style="font-weight: bold;margin-left: 10%;">
                             <p:outputLabel   value="CREDIT COMPANY DETAIL" />
                         </div>
 
                         <div class="row">
-                            <div class="col-6 d-flex justify-content-center ">
+                            <div class="col-6 ">
                                 <div>
                                     <div>
                                         <h:outputLabel value="Credit Company : ">
@@ -253,7 +253,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-6 d-flex justify-content-center">
+                            <div class="col-6">
                                 <div>
                                     <div>
                                         <h:outputLabel value="Policy Number : ">
@@ -266,7 +266,7 @@
                             </div>
                         </div>
 
-                        <div class="my-4" style="font-weight: bold">
+                        <div class="my-5" style="font-weight: bold">
                             <p>
                                 I agree to Abide by the terms and conditions of admission prevailing 
                                 at this hospital and hold myself responsible for payment of all bills of 
