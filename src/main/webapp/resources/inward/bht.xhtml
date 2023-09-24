@@ -35,98 +35,106 @@
                             </div>
                         </div>
 
-                        <div class="row mt-1 text-center text" style="font-weight: bolder;">
+                        <div class="row mt-1 text-center" style="font-weight: bolder;">
                             <p:outputLabel value="INDOOR PATIENT DEPARTMENT" />
                         </div>
 
-                        <div class="col-6">
+                        <div class="row">
+                            <div class="col-6  justify-content-center">
 
-                            <div class="d-flex">
-                                <p:outputLabel   value="Admission Type : " />
-                                <p:outputLabel  value="#{cc.attrs.admission.admissionType.name}" />
+                                <div>
+                                    <p:outputLabel   value="Admission Type : " />
+                                    <p:outputLabel  value="#{cc.attrs.admission.admissionType.name}" />
+                                </div>
+
+                                <div >
+                                    <p:outputLabel   value="BHT NO : " />
+                                    <p:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
+                                </div>
+
+                                <div>
+                                    <h:outputLabel value="Payment Type : ">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{cc.attrs.admission.paymentMethod}" >
+                                    </h:outputLabel>
+                                </div>
                             </div>
 
-                            <div class="text-center">
-                                <p:outputLabel   value="BHT NO : " />
-                                <p:outputLabel  value="#{cc.attrs.admission.bhtNo}" />
+                            <div class="col-6 d-flex justify-content-center ">
+                                <div>
+                                    <div>
+                                        <p:outputLabel   value="Room : " />
+                                        <p:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
+                                    </div>
+
+                                    <div>
+                                        <h:outputLabel value="Date of Admission : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                        </h:outputLabel>
+                                    </div>
+
+                                    <div>
+                                        <h:outputLabel value="Time of Admission : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
+                                            <f:convertDateTime pattern="hh mm a"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
                             </div>
-
-                            <div class="text-center">
-                                <h:outputLabel value="Payment Type : ">
-                                </h:outputLabel>
-
-                                <h:outputLabel value="#{cc.attrs.admission.paymentMethod}" >
-                                </h:outputLabel>
-                            </div>
-                        </div>
-
-                        <div class="col-6">
-                            <div class="text-center">
-                                <p:outputLabel   value="Room : " />
-                                <p:outputLabel  value="#{cc.attrs.admission.currentPatientRoom.roomFacilityCharge.name}" />
-                            </div>
-
-                            <div class="text-center" >
-                                <h:outputLabel value="Date of Admission : ">
-                                </h:outputLabel>
-
-                                <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
-                                    <f:convertDateTime pattern="dd/MM/yy"/>
-                                </h:outputLabel>
-                            </div>
-
-                            <div class="text-center">
-                                <h:outputLabel value="Time of Admission : ">
-                                </h:outputLabel>
-
-                                <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
-                                    <f:convertDateTime pattern="hh mm a"/>
-                                </h:outputLabel>
-                            </div>
-
                         </div>
 
                         <div class="mt-1 text-center text" style="font-weight: bolder;">
                             <p:outputLabel   value="PATIENT DETAIL" />
                         </div>
 
-                        <div class="row">
-                            <div class="col-6">
-                                <div>
-                                    <p:outputLabel   value="Name :" />
-                                    <p:outputLabel  value="#{cc.attrs.admission.patient.person.nameWithTitle}" />
+                        <div class="row ">
+                            <div class="col-6  d-flex justify-content-center">
+                                <Div>
+                                    <div>
+                                        <p:outputLabel   value="Name :" />
+                                        <p:outputLabel  value="#{cc.attrs.admission.patient.person.nameWithTitle}" />
 
-                                </div>
+                                    </div>
 
-                                <div >
-                                    <h:outputLabel value="Address : ">
-                                    </h:outputLabel>
+                                    <div >
+                                        <h:outputLabel value="Address : ">
+                                        </h:outputLabel>
 
-                                    <h:outputLabel value="#{cc.attrs.admission.patient.person.address}" >
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.person.address}" >
 
-                                    </h:outputLabel>
-                                </div>
+                                        </h:outputLabel>
+                                    </div>
 
-                                <div>
-                                    <h:outputLabel value="Age : ">
-                                    </h:outputLabel>
+                                    <div>
+                                        <h:outputLabel value="Age : ">
+                                        </h:outputLabel>
 
-                                    <h:outputLabel value="#{cc.attrs.admission.patient.age}" >
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.age}" >
 
-                                    </h:outputLabel>
-                                </div>
+                                        </h:outputLabel>
+                                    </div>
 
-                                <div  style="margin-top: 36%;">
-                                    <h:outputLabel value="Mobile No : ">
-                                    </h:outputLabel>
+                                    <div>
+                                        <h:outputLabel value="Mobile No : ">
+                                        </h:outputLabel>
 
-                                    <h:outputLabel value="#{cc.attrs.admission.patient.person.mobile}" >
+                                        <h:outputLabel value="#{cc.attrs.admission.patient.person.mobile}" >
 
-                                    </h:outputLabel>
-                                </div>
+                                        </h:outputLabel>
+                                    </div>
 
-                                <div class="col-6">
-                                    <div  style="margin-top: 22%;">
+                                </Div>
+                            </div>
+
+                            <div class="col-6  d-flex justify-content-center">
+                                <div class="">
+                                    <div>
                                         <h:outputLabel value="Sex : ">
                                         </h:outputLabel>
 
@@ -134,10 +142,7 @@
 
                                         </h:outputLabel>
                                     </div>
-
-
-
-                                    <div  style="margin-top: 29%;">
+                                    <div>
                                         <h:outputLabel value="NIC : ">
                                         </h:outputLabel>
 
@@ -145,10 +150,7 @@
 
                                         </h:outputLabel>
                                     </div>
-
-
-
-                                    <div  style="margin-top: 32%;">
+                                    <div>
                                         <h:outputLabel value="Home No : ">
                                         </h:outputLabel>
 
@@ -156,10 +158,7 @@
 
                                         </h:outputLabel>
                                     </div>
-
-
-
-                                    <div  style="margin-top: 36%;">
+                                    <div>
                                         <h:outputLabel value="Refering Doctor : ">
                                         </h:outputLabel>
 
@@ -168,119 +167,106 @@
                                         </h:outputLabel>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        <div style="position: absolute;
-                             text-align: center;
-                             text-decoration: underline;
-                             font-weight: bold;
-                             font-size: 100%;
-                             margin-top: 40%;
-                             margin-left: 25%;" >
+                        <div class="text-center" style="font-weight: bold;">
                             <p:outputLabel   value="GUARDIAN DETAIL" />
                         </div>
 
-                        <div >
-                            <h:outputLabel value="Name : ">
-                            </h:outputLabel>
+                        <div class="row">
+                            <div class="col-6  d-flex justify-content-center">
+                                <div>
+                                    <div>
+                                        <h:outputLabel value="Name : ">
+                                        </h:outputLabel>
 
-                            <h:outputLabel value="#{cc.attrs.admission.guardian.name}" >
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
+                                        <h:outputLabel value="#{cc.attrs.admission.guardian.name}" >
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div >
+                                        <h:outputLabel value="Address : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.guardian.address}" >
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                        </h:outputLabel>
+                                    </div>
+                                    <div >
+                                        <h:outputLabel value="Mobile No : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
+                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6 d-flex justify-content-center ">
+                                <div>
+                                    <div>
+                                        <h:outputLabel value="NIC : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.guardian.nic}" >
+                                        </h:outputLabel>
+                                    </div>
+
+                                    <div>
+                                        <h:outputLabel value="Home No : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.guardian.phone}" >
+                                        </h:outputLabel>
+                                    </div>
+
+                                </div>
+
+                            </div>
                         </div>
 
-                        <div >
-                            <h:outputLabel value="NIC : ">
-                            </h:outputLabel>
-
-                            <h:outputLabel value="#{cc.attrs.admission.guardian.nic}" >
-                            </h:outputLabel>
-                        </div>
-
-                        <div >
-                            <h:outputLabel value="Address : ">
-                            </h:outputLabel>
-
-                            <h:outputLabel value="#{cc.attrs.admission.guardian.address}" >
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
-                        </div>
-
-                        <div >
-                            <h:outputLabel value="Home No : ">
-                            </h:outputLabel>
-
-                            <h:outputLabel value="#{cc.attrs.admission.guardian.phone}" >
-                            </h:outputLabel>
-                        </div>
-
-                        <div >
-                            <h:outputLabel value="Mobile No : ">
-                            </h:outputLabel>
-
-                            <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
-                                <f:convertDateTime pattern="dd/MM/yy"/>
-                            </h:outputLabel>
-                        </div>
-
-                        <div style="position: absolute;
-                             text-align: center;
-                             text-decoration: underline;
-                             font-weight: bold;
-                             font-size: 100%;
-                             margin-top: 56%;
-                             margin-left: 25%;" >
+                        <div class="text-center" style="font-weight: bold">
                             <p:outputLabel   value="CREDIT COMPANY DETAIL" />
                         </div>
 
-                        <div  >
-                            <h:outputLabel value="Credit Company : ">
-                            </h:outputLabel>
+                        <div class="row">
+                            <div class="col-6 d-flex justify-content-center ">
+                                <div>
+                                    <div>
+                                        <h:outputLabel value="Credit Company : ">
+                                        </h:outputLabel>
 
-                            <h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" >
-                            </h:outputLabel>
+                                        <h:outputLabel value="#{cc.attrs.admission.creditCompany.name}" >
+                                        </h:outputLabel>
+                                    </div>
+
+                                    <div>
+                                        <h:outputLabel value="Reference Number : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.referanceNo}" >
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6 d-flex justify-content-center">
+                                <div>
+                                    <div>
+                                        <h:outputLabel value="Policy Number : ">
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value="#{cc.attrs.admission.policyNo}" >
+                                        </h:outputLabel>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div  >
-                            <h:outputLabel value="Policy Number : ">
-                            </h:outputLabel>
-
-                            <h:outputLabel value="#{cc.attrs.admission.policyNo}" >
-                            </h:outputLabel>
-
-                        </div>
-
-                        <div  >
-                            <h:outputLabel value="Reference Number : ">
-                            </h:outputLabel>
-
-                            <h:outputLabel value="#{cc.attrs.admission.referanceNo}" >
-                            </h:outputLabel>
-                        </div>
-
-                        <div >
+                        <div class="my-4" style="font-weight: bold">
                             <p>
                                 I agree to Abide by the terms and conditions of admission prevailing 
                                 at this hospital and hold myself responsible for payment of all bills of 
@@ -288,15 +274,24 @@
                             </p>
                         </div>
 
-                        <div  >
-                            <h:outputLabel value="Guardian" style="text-decoration: overline;">
-                            </h:outputLabel>
+                        <div class="row">
+                            <div class="col-6">
+                                <div  >
+                                    <h:outputLabel value="Guardian" style="text-decoration: overline;">
+                                    </h:outputLabel>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div  >
+                                    <h:outputLabel value="Cashier : #{cc.attrs.admission.creater.code}" style="text-decoration: overline;">
+                                    </h:outputLabel>
+                                </div> 
+                            </div>
                         </div>
 
-                        <div  >
-                            <h:outputLabel value="Cashier : #{cc.attrs.admission.creater.code}" style="text-decoration: overline;">
-                            </h:outputLabel>
-                        </div>
+
+
+
                         <!--                        <div class="BillDate">
                                                     <h:outputLabel value="Payment Methord : ">
                                                     </h:outputLabel>
