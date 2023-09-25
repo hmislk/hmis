@@ -17,7 +17,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-
+       
 
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
@@ -30,9 +30,9 @@
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                <div class="text-center">
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} " class="w-25"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" class="w-25"/>
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
@@ -45,10 +45,8 @@
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <div class="billline">
-                <br/>
-                <hr></hr>   
-                <br/>
+            <div class="billline">                
+                <hr></hr>                
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -299,10 +297,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <td class="totalsBlock" style="text-align:left; width: 60%; font-weight: bold;">
                                 <h:outputLabel value="Total" />
                             </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px; font-weight: bold;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>

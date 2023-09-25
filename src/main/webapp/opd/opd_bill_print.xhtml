@@ -14,11 +14,7 @@
                 <h:outputStylesheet>
                     /* Styles for screen display */
                     .page {
-                    border: 1px solid #ddd;
-                    margin: 20px;
-                    padding: 20px;
-                    background-color: whitesmoke;
-                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
+                    
                     }
                     .d-flex {
                     display: flex;
@@ -27,6 +23,11 @@
                     flex: 1;
                     }
                     .bill-item {
+                    border: 1px solid #ddd;
+                    margin: 20px;
+                    padding: 20px;
+                    background-color: whitesmoke;
+                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
                     page-break-after: always;
                     }
 
@@ -89,9 +90,16 @@
                                                 </h:panelGroup>
                                                 <!--Pasindu-->
                                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                                    <ui:repeat value="#{opdBillController.bills}" var="b">
-                                                        <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                                                    <div class="page">
+                                                        <ui:repeat value="#{opdBillController.bills}" var="b">
+                                                        <div class="bill-item">
+                                                            <bi:five_five_paper_with_headings bill="#{b}"/> 
+                                                        </div>
+
                                                     </ui:repeat>
+                                                    </div>
+                                                    
+
                                                 </h:panelGroup>
                                                 <!--Pavan-->
                                                 <h:panelGroup id="fiveFivePaperWithHeadings"  
