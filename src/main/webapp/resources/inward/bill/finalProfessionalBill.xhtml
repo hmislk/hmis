@@ -172,43 +172,43 @@
 
                     <div class="px-5">
                         <ui:repeat  class="tbl"  value="#{cc.attrs.bill.billItems}" var="bip">
-                        <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
-                            <br></br>
-                            <p:dataTable style="noBorder" value="#{bip.proFees}" var="fe">
+                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}">
+                                <br></br>
+                                <p:dataTable style="noBorder" value="#{bip.proFees}" var="fe">
 
-                                <p:column headerText="Consultant Name" style="text-align: left!important; line-height: 2px;"> 
-                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false 
-                                                              and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
-                                        <h:outputLabel value="#{fe.staff.person.nameWithTitle}"/> 
-                                    </h:panelGroup>
-                                </p:column>
-                                <p:column headerText="Amount" style="text-align: right;">
-                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted ne 0.0
-                                                              and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
-                                        <h:outputLabel value="#{fe.feeAdjusted}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted eq 0.0
-                                                              and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
-                                        <h:outputLabel value="Free of Charge"/>
-                                    </h:panelGroup>
-                                </p:column>
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column footerText="Total"/>
-                                        <p:column style="text-align: right;" >
-                                            <f:facet name="footer">
-                                                <h:outputLabel  value="#{bip.netValue}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                            </p:dataTable>                         
-                        </h:panelGroup>
-                    </ui:repeat>
+                                    <p:column headerText="Consultant Name" style="text-align: left!important; line-height: 2px;"> 
+                                        <h:panelGroup rendered="#{fe.bill.cancelled eq false 
+                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                            <h:outputLabel value="#{fe.staff.person.nameWithTitle}"/> 
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:column headerText="Amount" style="text-align: right;">
+                                        <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted ne 0.0
+                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                            <h:outputLabel value="#{fe.feeAdjusted}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted eq 0.0
+                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                            <h:outputLabel value="Free of Charge"/>
+                                        </h:panelGroup>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText="Total"/>
+                                            <p:column style="text-align: right;" >
+                                                <f:facet name="footer">
+                                                    <h:outputLabel  value="#{bip.netValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>                         
+                            </h:panelGroup>
+                        </ui:repeat>
                     </div>
 
 
@@ -221,7 +221,7 @@
                     
                     <h:outputLabel value=" Patient/Guardian     " style="margin-left: 60%; text-decoration: overline;">
                     </h:outputLabel>-->
-                    <h:outputLabel value="&quot;Collected for and on behalf of the Doctor&quot;" ></h:outputLabel>
+                    <h:outputLabel class="text-center px-5" value="&quot;Collected for and on behalf of the Doctor&quot;" ></h:outputLabel>
                 </div>
 
             </h:panelGroup>
