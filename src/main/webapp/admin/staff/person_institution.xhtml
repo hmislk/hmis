@@ -57,7 +57,7 @@
                         <p:outputLabel value="Staff" />
                         <au:completeConsultant value="#{personInstitutionController.reportKeyWord.staff}" />
                         <p:commandButton class="my-2" value="Fill Person Institutions" action="#{personInstitutionController.fillStaffInstitutionPersons}" ajax="false" />
-                        <p:commandButton class="my-2" ajax="false" value="Excel" onclick="onSubmitButton();" >
+                        <p:commandButton class="my-2" ajax="false" value="Excel"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="Channel_Doctor_List"/>
                         </p:commandButton>
                     </h:panelGrid>

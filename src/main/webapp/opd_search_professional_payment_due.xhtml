@@ -22,7 +22,7 @@
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTable}"/>
                                 <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createDueFeeTableAll()}"/>                                
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                     <p:dataExporter type="xlsx" target="tblFee" fileName="Detailed_Transfer_Listing"  />
                                 </p:commandButton>  
                                 <h:outputLabel/><h:outputLabel/>

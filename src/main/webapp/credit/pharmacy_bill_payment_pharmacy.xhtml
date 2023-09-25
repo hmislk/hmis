@@ -15,7 +15,7 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Paymetnt For Pharmacy Bill" ></h:outputLabel>
                     <hr></hr>
-                    <p:commandButton value="Back To Search" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}" onclick="onSubmitButton();" >
+                    <p:commandButton value="Back To Search" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}"  >
                     </p:commandButton>
                 </f:facet>
 
@@ -102,10 +102,10 @@
 
 
             <h:panelGroup  rendered="#{billController.printPreview}">
-                <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
-                <p:commandButton value="New Bill" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}" onclick="onSubmitButton();" >
+                <p:commandButton value="New Bill" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}"  >
                 </p:commandButton>
 
                 <h:panelGroup   id="gpBillPreview" > 

@@ -14,7 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
             <p:dataExporter type="xlsx" target="tb1" fileName="bht_details"  />
         </p:commandButton>
         <p:dataTable id="tb1" value="#{cc.attrs.bill.billItems}" var="bip"

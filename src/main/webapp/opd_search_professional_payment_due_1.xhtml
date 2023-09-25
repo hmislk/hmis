@@ -56,7 +56,7 @@
                                 <h:panelGrid columns="4"> 
                                     <p:spacer width="90" height="0"/>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeTableAndPaidFeeTable()}"/>
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                     <p:dataExporter type="xlsx" target="tblFee,tblFee2" fileName="opd_pro_pay_due"  />
                                 </p:commandButton>
                                 <p:commandButton value="Print" ajax="false" action="#" >

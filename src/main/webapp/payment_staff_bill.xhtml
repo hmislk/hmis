@@ -139,7 +139,7 @@
                                                      action="#{staffPaymentBillController.settleBill()}" >
                                         <!--<f:ajax execute="@this cmbPay tblFee scStaff" render="@all" />-->
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                         <p:dataExporter type="xlsx" target="tblFee" fileName="Staff_Payment_Due_OPD"  />
                                     </p:commandButton>
                                     <p:defaultCommand target="btnPay"/>

@@ -605,7 +605,7 @@ public class mdInwardReportController implements Serializable {
         for (BillItem bi : billItem) {
             purchaseValue += bi.getPharmaceuticalBillItem().getPurchaseRate() * bi.getPharmaceuticalBillItem().getQty();
         }
-        commonController.printReportDetails(fromDate, toDate, startTime, " BHT intrim error correction(/faces/inward/report_bht_issue_by_bill_item.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, " BHT Interim error correction(/faces/inward/report_bht_issue_by_bill_item.xhtml)");
     }
 
     public void listInBhtBillItemsStore() {

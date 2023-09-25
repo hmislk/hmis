@@ -40,8 +40,8 @@
                                 </h:panelGrid>
                                 <h:panelGrid columns="5">
                                     <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" itemLabel="Search All" />
-                                    <p:commandButton value="Search" ajax="false" action="#{searchController.createChannelDueBillFee()}" onclick="onSubmitButton();"/>
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                    <p:commandButton value="Search" ajax="false" action="#{searchController.createChannelDueBillFee()}" />
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                         <p:dataExporter type="xlsx" target="tblFee" fileName="channel_doc_pay_due"  />
                                     </p:commandButton>
                                 </h:panelGrid>

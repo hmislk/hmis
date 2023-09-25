@@ -25,10 +25,13 @@
 
                             <div class="row">
                                 <div class="col-6 ">
-                                    <h:outputLabel value="Select User"/>
-                                    <p:autoComplete class="mx-2" id="user"  forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  value="#{webUserController.current}" >
-                                        <f:ajax event="itemSelect" execute="user" render="ins" />
-                                    </p:autoComplete>
+                                    <p:panel>
+                                        <h:outputLabel value="Select User"/>
+                                        <p:autoComplete class="mx-5" id="user"  forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  value="#{webUserController.current}" >
+                                            <f:ajax event="itemSelect" execute="user" render="ins" />
+                                        </p:autoComplete>
+                                    </p:panel>
+
                                 </div>
                                 <div class="col-6">
 
@@ -41,7 +44,7 @@
 
                                     <div class="row">
                                         <div class="my-2 d-flex justify-content-end align-items-center">
-                                            <p:commandButton id="btnSave" ajax="false" value="Save" action="#{webUserController.saveUser()}"  onclick="onSubmitButton();"/>
+                                            <p:commandButton id="btnSave" ajax="false" value="Save" action="#{webUserController.saveUser()}"  />
                                             <p:defaultCommand target="btnSave"/>
                                         </div>
                                     </div>

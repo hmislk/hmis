@@ -36,7 +36,7 @@
 
                         <p:commandButton id="btnClr" value="Clear"  
                                          action="#{roomChangeController.recreate()}"
-                                         ajax="false" class="mx-3" onclick="onSubmitButton();" />
+                                         ajax="false" class="mx-3"  />
 
                     </h:panelGrid>
                 </p:panel>
@@ -109,10 +109,10 @@
                                 </p:calendar>
                                 <p:commandButton  value="Change"  
                                                   action="#{roomChangeController.change()}"
-                                                  ajax="false" styleClass="buttons" onclick="onSubmitButton();" class="m-2"/>
+                                                  ajax="false" styleClass="buttons"  class="m-2"/>
                                 <p:commandButton  value="Add New Room"  
                                                   action="#{roomChangeController.addNewRoom()}"
-                                                  ajax="false" styleClass="buttons" onclick="onSubmitButton();" disabled="#{roomChangeController.patientRoom.size() ne 0}" class="m-2" />
+                                                  ajax="false" styleClass="buttons"  disabled="#{roomChangeController.patientRoom.size() ne 0}" class="m-2" />
 
                             </h:panelGrid>                                    
                         </p:tab>
@@ -151,7 +151,7 @@
                                 <p:column class="text-center">
                                     <p:commandButton ajax="false" value="Update" 
                                                      action="#{roomChangeController.update(rm)}"
-                                                     disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
+                                                     disabled="#{rm.retired eq true}"  />
                                 </p:column>
                                 <p:column class="text-center">
                                     <p:commandButton ajax="false" value="Discharge" onclick="if (!confirm('Are you sure you want to Discharge this record?'))
@@ -172,7 +172,7 @@
                                 <p:column class="text-center">
                                     <p:commandButton ajax="false" value="Update" 
                                                      action="#{roomChangeController.update(rm)}"
-                                                     disabled="#{rm.retired eq true}" onclick="onSubmitButton();" />
+                                                     disabled="#{rm.retired eq true}"  />
                                 </p:column>
 
                                 <p:column headerText="Adminitraion Charge">

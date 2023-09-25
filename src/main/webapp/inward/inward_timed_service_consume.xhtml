@@ -40,7 +40,7 @@
                                 </p:autoComplete>  
 
                                 <p:spacer width="10" height="1" ></p:spacer>
-                                <p:commandButton ajax="false" value="Clear Patient" action="#{inwardTimedItemController.makeNull}" onclick="onSubmitButton();"  />
+                                <p:commandButton ajax="false" value="Clear Patient" action="#{inwardTimedItemController.makeNull}"   />
 
                                 <h:panelGrid id="panSearch2" columns="5" >
                                     <h:outputLabel  value="Name" />
@@ -105,7 +105,7 @@
                                     <p:watermark value="Start typing Service Name" for="it" ></p:watermark>
                                     <p:commandButton class="mx-2" value="Add Service" ajax="false"
                                                      action="#{inwardTimedItemController.save}" 
-                                                     onclick="onSubmitButton();" />
+                                                      />
 
                                 </h:panelGrid>
                             </p:panel> 
@@ -142,13 +142,13 @@
                                 </h:panelGroup>
                             </p:column>     
                             <p:column headerText="Update" >
-                                <p:commandButton value="Update" ajax="false" action="#{inwardTimedItemController.finalizeService(ti)}" onclick="onSubmitButton();">                                                                    
+                                <p:commandButton value="Update" ajax="false" action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
                                 </p:commandButton>
                             </p:column>
                             <p:column headerText="Remove">
                                 <p:commandButton ajax="false" value="Remove "  
                                                  action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                                 disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                                 disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}"  />
                             </p:column>
                         </p:dataTable>
                     </p:panel>

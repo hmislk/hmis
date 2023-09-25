@@ -20,7 +20,7 @@
                         <h:panelGrid columns="10"  >
                             <h:outputLabel value="Inward Estimated Professional Charges" />                           
 
-                            <p:commandButton class="mx-2" value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" onclick="onSubmitButton();">
+                            <p:commandButton class="mx-2" value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" >
                             </p:commandButton>
                         </h:panelGrid>
                     </f:facet>
@@ -86,7 +86,7 @@
                                             <f:ajax event="dateSelect"  render="feeAt"/>
                                         </p:calendar>
                                         <h:outputLabel/>
-                                        <p:commandButton value="Add" id="btn" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" onclick="onSubmitButton();"/>
+                                        <p:commandButton value="Add" id="btn" action="#{inwardProfessionalBillController.addToBill()}" ajax="false" />
 
                                     </p:panelGrid>
 
@@ -125,7 +125,7 @@
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Remove" action="#{inwardProfessionalBillController.remove(bif)}" onclick="onSubmitButton();"/>
+                                    <p:commandButton ajax="false" value="Remove" action="#{inwardProfessionalBillController.remove(bif)}" />
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>

@@ -34,13 +34,13 @@
                                 <p:commandButton ajax="false" value="Fill New"
                                                  actionListener="#{shiftTableController.makeTableNull()}"
                                                  action="#{shiftTableController.createShiftTable()}"
-                                                 onclick="onSubmitButton();" />  
+                                                  />  
                             </td>
                             <td>
                                 <p:commandButton ajax="false" value="Fill Old Roster"
                                                  actionListener="#{shiftTableController.makeTableNull()}"
                                                  action="#{shiftTableController.fetchShiftTable()}"
-                                                 onclick="onSubmitButton();"  />   
+                                                   />   
                             </td>
                             <td colspan="2" >
                                 <p:commandButton value="Go to Roster Table" ajax="false" action="hr_shift_table_finger_print" actionListener="#{shiftTableController.makeNull()}"  >
@@ -52,19 +52,19 @@
                         <tr>
                             <td>
                                 <p:commandButton ajax="false" value="Hide" 
-                                                 action="#{shiftTableController.hide}" onclick="onSubmitButton();" />
+                                                 action="#{shiftTableController.hide}"  />
                             </td>
                             <td>
                                 <p:commandButton ajax="false" value="Visible" 
-                                                 action="#{shiftTableController.visible}" onclick="onSubmitButton();" />
+                                                 action="#{shiftTableController.visible}"  />
                             </td>
                             <td>
                                 <p:commandButton ajax="false" value="Save"
-                                                 action="#{shiftTableController.save}" onclick="onSubmitButton();"/>
+                                                 action="#{shiftTableController.save}" />
                             </td>
                             <td>
                                 <p:commandButton ajax="false" value="Clear" 
-                                                 action="#{shiftTableController.makeNull()}" onclick="onSubmitButton();" />
+                                                 action="#{shiftTableController.makeNull()}"  />
                             </td>
                         </tr>
                     </table>

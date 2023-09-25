@@ -39,7 +39,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="All_Admission_Detail"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -65,7 +65,7 @@
                                 <p:column headerText="View">
                                     <p:commandButton ajax="false" value="View Detail"
                                                     action="/inward/inward_bill_intrim_finalized"
-                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
+                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}"  >
                                         <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
                                     </p:commandButton>
                                 </p:column>

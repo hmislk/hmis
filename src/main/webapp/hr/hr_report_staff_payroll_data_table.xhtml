@@ -54,7 +54,7 @@
             </p:commandButton>
 
             <p:commandButton value="Process" ajax="false" action="#{salaryCycleController.fillStaffPayRoll()}" ></p:commandButton>
-            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                 <p:dataExporter type="xlsx" target="tbl" fileName="hr_report_pay_roll"  />
             </p:commandButton>
 
