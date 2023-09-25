@@ -19,11 +19,11 @@
                     <f:facet name="header">
                         Surgery Service(Theatre)
                     </f:facet>
-                    <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                    <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                     </p:commandButton>
                     <p:defaultCommand target="btnSettle"/>
 
-                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
+                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" />
 
 
                     <h:panelGrid columns="2" >
@@ -96,7 +96,7 @@
 
 
                                     <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" ></p:inputTextarea>
-                                    <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" onclick="onSubmitButton();">
+                                    <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" >
                                        
                                     </p:commandButton> 
 
@@ -238,7 +238,7 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" onclick="onSubmitButton();" >
+                        <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}"  >
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Batch Cancel" action="#{billBhtController.cancellAll}" style="float: right;"
                                          onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))

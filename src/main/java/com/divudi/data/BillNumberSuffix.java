@@ -62,7 +62,7 @@ public enum BillNumberSuffix {
     //Inward
     INWPAY,//Payment Bill
     INWFINAL,//Inward Final
-    INWINTRIM,//Inward Intrim    
+    INWINTRIM,//Inward Interim    
     INWPRO,//Professional
     INWSER,//Service
     INWREF,//Refund

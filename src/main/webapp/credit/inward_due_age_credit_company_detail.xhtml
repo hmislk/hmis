@@ -11,10 +11,10 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>            
-                    <p:commandButton id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}" onclick="onSubmitButton();" />
+                    <p:commandButton id="btnSearch" ajax="false" value="Process Due Age" action="#{creditCompanyDueController.createInwardAgeTable()}"  />
                     <p:commandButton id="btnProcess" ajax="false" 
                                      value="Process Due Age(Excel)" 
-                                     action="#{creditCompanyDueController.createInwardAgeDetailAnalysis}" onclick="onSubmitButton();" />
+                                     action="#{creditCompanyDueController.createInwardAgeDetailAnalysis}"  />
                     <p:commandButton value="Excel" ajax="false" actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}" >
                         <p:dataExporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx" />
                     </p:commandButton>

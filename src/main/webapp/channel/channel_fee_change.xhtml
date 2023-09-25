@@ -73,13 +73,13 @@
                     </h:panelGrid>
 
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
-                        <p:commandButton ajax="false" id="btnAdd" value="Clear" action="#{sheduleController.prepareAddFeeChange}" styleClass="buttons" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" id="btnAdd" value="Clear" action="#{sheduleController.prepareAddFeeChange}" styleClass="buttons"  >
                             <f:ajax render="btnAdd  pg1 btnSave" execute="" >
                             </f:ajax>
                         </p:commandButton>
                         <p:commandButton ajax="false" id="btnSave" value="Save"  
                                          action="#{sheduleController.saveFeeChanges()}"
-                                         styleClass="buttons" onclick="onSubmitButton();">
+                                         styleClass="buttons" >
 
                         </p:commandButton>
                     </h:panelGrid>

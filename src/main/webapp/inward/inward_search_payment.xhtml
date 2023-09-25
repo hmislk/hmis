@@ -23,7 +23,7 @@
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardPaymentBills()}" value="Search" onclick="onSubmitButton();" />
+                                    <p:commandButton ajax="false" action="#{searchController.createInwardPaymentBills()}" value="Search"  />
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="6">
@@ -46,7 +46,7 @@
 
                         <p:dataTable id="tblBills" value="#{searchController.bills}" var="bb">
                             <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_payment" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_payment"  >
                                     <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>

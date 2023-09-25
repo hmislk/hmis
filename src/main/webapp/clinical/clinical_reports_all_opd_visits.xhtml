@@ -44,7 +44,7 @@
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Process" 
                                         action="/clinical/clinical_reports_all_opd_visits" 
-                                        actionListener="#{patientEncounterController.listAllEncounters()}" onclick="onSubmitButton();" ></p:commandButton>
+                                        actionListener="#{patientEncounterController.listAllEncounters()}"  ></p:commandButton>
                     </p:panelGrid>
 
                     <p:panel id="pList" >
@@ -63,7 +63,7 @@
                                 <h:outputLabel value="#{pe.opdDoctor.person.nameWithTitle}" ></h:outputLabel>
                             </p:column>
                             <p:column headerText="View" >
-                                <p:commandButton ajax="false" value="View" action="clinical_new_opd_visit" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="View" action="clinical_new_opd_visit"  >
                                     <f:setPropertyActionListener value="#{pe}" target="#{patientEncounterController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                                 

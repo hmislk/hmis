@@ -27,8 +27,8 @@
 
                         </h:panelGrid>
                         <p:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.listBhtViceIncome()}" onclick="onSubmitButton();"  />
-                            <p:commandButton ajax="false" value="Export to Excel" onclick="onSubmitButton();"  >
+                            <p:commandButton ajax="false" value="Process" action="#{inwardReportController.listBhtViceIncome()}"   />
+                            <p:commandButton ajax="false" value="Export to Excel"   >
                                 <p:dataExporter target="tbl" type="xlsx" fileName="BHT Vice Income by Categories" />
                             </p:commandButton>
                         </p:panelGrid>

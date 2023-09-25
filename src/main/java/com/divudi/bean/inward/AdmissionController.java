@@ -550,30 +550,24 @@ public class AdmissionController implements Serializable {
     }
 
     private boolean errorCheck() {
-
         if (getCurrent().getAdmissionType() == null) {
             UtilityController.addErrorMessage("Please select Admission Type");
             return true;
         }
-
         if (getCurrent().getPaymentMethod() == null) {
             UtilityController.addErrorMessage("Select Paymentmethod");
             return true;
         }
-
         if (getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
             if (getCurrent().getCreditCompany() == null) {
                 UtilityController.addErrorMessage("Select Credit Company");
                 return true;
             }
-
         }
-
         if (getPatientRoom().getRoomFacilityCharge() == null) {
             UtilityController.addErrorMessage("Select Room ");
             return true;
         }
-
         if (sessionController.getLoggedPreference().isInwardMoChargeCalculateInitialTime()) {
             if (getPatientRoom().getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge() == 0.0) {
                 JsfUtil.addErrorMessage("Plase Add Duration Days For Mo Charge");
@@ -727,16 +721,13 @@ public class AdmissionController implements Serializable {
     }
 
     public void saveSelected() {
-
         if (errorCheck()) {
             return;
         }
-
         if (getPatientTabId().equals("tabNewPt")) {
             savePatient();
             getCurrent().setPatient(getNewPatient());
         }
-
         saveGuardian();
         bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
@@ -748,7 +739,8 @@ public class AdmissionController implements Serializable {
         } else {
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-            //      getCurrent().setDateOfAdmission(new Date());
+            getCurrent().setInstitution(sessionController.getInstitution());
+            getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
             UtilityController.addSuccessMessage("Patient Admitted Succesfully");
         }

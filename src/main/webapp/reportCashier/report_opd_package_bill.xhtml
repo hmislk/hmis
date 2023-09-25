@@ -45,13 +45,13 @@
                 <h:panelGrid columns="4" > 
                     <p:commandButton ajax="false" value="Search" 
                                      action="#{billPackageMedicalController.createOtherPackageBills()}"
-                                     onclick="onSubmitButton();" />
+                                      />
 
                     <p:commandButton value="Print" ajax="false" action="#" >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
 
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{billPackageMedicalController.createOtherPackageBillItems()}">
                         <p:dataExporter type="xlsx" target="tbl" fileName="Package_Bill_Detail_Report" />
                     </p:commandButton>
                 </h:panelGrid>

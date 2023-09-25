@@ -23,7 +23,7 @@
                             <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" styleClass="dateTimePicker">                                                                              
                             </p:calendar>
                             <p:spacer width="50" height="1" ></p:spacer>
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchPatientInvestigations()}" onclick="onSubmitButton();" />
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchPatientInvestigations()}"  />
                         </h:panelGrid>
                         <p:defaultCommand target="btnSearch" />
 

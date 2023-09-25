@@ -28,7 +28,7 @@
                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                 </p:selectOneMenu>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{commonReport1.createOpdBillList}"/>
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                     <p:dataExporter type="xlsx" target="tblBills,tblBills1,tblBills2" fileName="report_opd_bill_payment_sheame"  />
                                 </p:commandButton>
                                 <p:commandButton value="Print" ajax="false" action="#" >

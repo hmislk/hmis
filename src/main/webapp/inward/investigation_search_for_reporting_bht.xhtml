@@ -41,9 +41,17 @@
                                 <p:column>
                                     <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                                 </p:column>
+
                             </p:autoComplete>  
                             <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{inwardReportController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
                             <p:defaultCommand target="btnSearch2" />
+
+                            </p:autoComplete>                            
+                        </h:panelGrid>
+
+
+                        <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{inwardReportController.createPatientInvestigationsTableAll()}"  />
+
 
                         </h:panelGrid>
 

@@ -66,15 +66,15 @@
                                 <h:outputLabel value="Margin" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.margin}" />
                                 <h:outputLabel value="" ></h:outputLabel>
-                                <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardPriceAdjustmntController.saveSelected}" onclick="onSubmitButton();" >
+                                <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardPriceAdjustmntController.saveSelected}"  >
                                 </p:commandButton>
 
                                 <p:defaultCommand target="btnAdd"/>
                             </p:panelGrid>
-                            <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyService()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyService()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_service"  />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyService()}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyService()}" />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
@@ -157,10 +157,10 @@
                                     </h:inputText>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}" onclick="onSubmitButton();"/> 
+                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}" /> 
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton value="Delete" action="#{inwardPriceAdjustmntController.delete}" onclick="onSubmitButton();">
+                                    <p:commandButton value="Delete" action="#{inwardPriceAdjustmntController.delete}" >
                                         <f:setPropertyActionListener value="#{a}" target="#{inwardPriceAdjustmntController.current}"/>
                                     </p:commandButton>
                                 </p:column>

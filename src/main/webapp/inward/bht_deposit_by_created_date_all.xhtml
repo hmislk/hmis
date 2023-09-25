@@ -83,13 +83,13 @@
                         </h:panelGroup>
 
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
                                 <p:dataExporter type="xlsx" target="tbl2" fileName="All_Payment_by_Created_Date_Date"  />
                             </p:commandButton>  
                         </p:panelGrid>

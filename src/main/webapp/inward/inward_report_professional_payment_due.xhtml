@@ -86,7 +86,7 @@
                        
                         <p:panelGrid columns="3">
                           
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createDueFeeReportInward()}"  />
 
                                 <p:defaultCommand target="btnSearch" />
 
@@ -121,7 +121,7 @@
 
                             <p:column>
 
-                                <p:commandButton ajax="false" value="Pay Professional" action="inward_bill_staff_payment" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Pay Professional" action="inward_bill_staff_payment"  >
                                     <f:setPropertyActionListener value="#{bf.staff}" target="#{inwardStaffPaymentBillController.currentStaff}"/>
                                 </p:commandButton>
                             </p:column>

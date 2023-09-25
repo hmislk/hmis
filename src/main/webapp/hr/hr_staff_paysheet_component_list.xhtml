@@ -44,7 +44,7 @@
                     <hr:completeBank value="#{staffBasicController.reportKeyWord.institutionBank}"/>
                 </h:panelGrid>
                 <p:commandButton value="Process" action="#{staffBasicController.createTable}" ajax="false" />
-                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                     <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_list"  />
                 </p:commandButton>
                 <p:commandButton value="Print" ajax="false" action="#" >

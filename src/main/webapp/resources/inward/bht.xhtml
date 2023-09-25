@@ -14,25 +14,72 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:form>
+        <h:form class="w-100" >
 
-            <p:commandButton class="my-1" value="Print" ajax="false" action="#" >
+            <p:commandButton class="my-1" value="Print" ajax="false" >
                 <p:printer target="gpBillPreview" ></p:printer>
             </p:commandButton>
 
-            <h:outputStylesheet library="css" name="printing_bht.css"></h:outputStylesheet>
+            <h:outputStylesheet>
+                /* Styles for screen display */
+                .page {
 
-            <div class="w-75">
-                <h:panelGroup id="gpBillPreview" class="" >
+                }
+                .d-flex {
+                display: flex;
+                }
+                .flex-grow-1 {
+                flex: 1;
+                }
+                .bill-item {
+                border: 1px solid #ddd;
+                margin: 20px;
+                padding: 20px;
+                background-color: whitesmoke;
+                box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
+                page-break-after: always;
+                }
 
-                    <div class="border container-fluid">
-                        
+                /* Styles for print */
+                @media print {
+                .bill-item {
+                page-break-after: always;
+                margin: 0px;
+                padding: 0px
+                }
+                .page {
+                border: none;
+                background-color: transparent;
+                box-shadow: none;
+                margin: 0px;
+                padding: 0px
+                }
+                }
+            </h:outputStylesheet>
+
+
+            <div class="w-100 m-1"  >
+                <h:panelGroup id="gpBillPreview" class="w-100 " >
+
+                    <div class="container-fluid bill-item">
+
                         <div class="row m-2 text-center">
                             <div >
-                                <h:outputText value="#{cc.attrs.admission.bhtNo}"/>
-                                <h:outputText value="#{cc.attrs.admission.institution.name}"/>
-                                <h:outputText value="#{cc.attrs.admission.institution.address}"/>
-                                <h:outputText value="#{cc.attrs.admission.institution.phone}"/>
+
+                                <h1 class="ml-5">
+                                    <h:outputText  value="#{cc.attrs.admission.department.name}"/>
+                                </h1>
+                                <h2>
+                                    <h:outputText value="#{cc.attrs.admission.department.address}"/>
+                                </h2>
+                                <h3>
+                                    <h:outputText value="#{cc.attrs.admission.department.telephone1}"/>
+                                    <h:outputText value="#{cc.attrs.admission.department.telephone2}"/>
+                                </h3>
+                                <h3>
+                                    <h:outputText value="#{cc.attrs.admission.department.email}"/>
+                                </h3>
+
                             </div>
                         </div>
 

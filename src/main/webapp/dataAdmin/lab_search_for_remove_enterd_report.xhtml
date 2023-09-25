@@ -21,7 +21,7 @@
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="toDate" value="#{dataAdministrationController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                     </p:calendar>
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{dataAdministrationController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{dataAdministrationController.createPatientInvestigationsTable()}"  />
                                 </h:panelGrid>
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="Bill No"/>

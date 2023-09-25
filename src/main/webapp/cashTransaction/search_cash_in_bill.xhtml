@@ -20,7 +20,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createTableCashIn()}" onclick="onSubmitButton();"/>
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createTableCashIn()}" />
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -42,7 +42,7 @@
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
                             <p:column headerText="View Bill">
-                                <p:commandButton ajax="false" value="View Bill" action="cash_in_reprint" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="View Bill" action="cash_in_reprint" >
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>
