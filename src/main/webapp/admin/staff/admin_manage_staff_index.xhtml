@@ -14,7 +14,8 @@
                     <div class="col-md-3">
                         <p:panel header="Manage Staff" >
                             <h:form>
-                                <p:accordionPanel>
+                                <p:accordionPanel activeIndex="#{navigationController.adminStaffMenuIndex}">
+                                    <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Metadata">
                                         <div class="d-grid gap-2">
                                             <p:commandButton  class="w-100" ajax="false" value="Doctor Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>

@@ -20,7 +20,7 @@
                 <div class="row">
                     <div class="col-6">
                          <h:form >
-                            <h:panelGrid id="gpSelect" >
+                            <h:panelGrid id="gpSelect" class="w-100">
                                 <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
                                     <p:commandButton id="btnAdd" value="Add" action="#{doctorSpecialityController.prepareAdd()}" class="w-100" ajax="false" >
                                            
@@ -37,9 +37,9 @@
                                         />
                                 </h:panelGrid>
                                 
-                                    <h:panelGrid id="gpSelectText" >
+                                    <h:panelGrid id="gpSelectText" class="w-100">
                                         
-                                        <p:selectOneListbox  id="lstSelect" filterMatchMode="contains" scrollHeight="500" class="w-100" filter="true" value="#{doctorSpecialityController.current}" style="min-width: 400px">
+                                        <p:selectOneListbox  id="lstSelect" filterMatchMode="contains" scrollHeight="500" class="w-100" filter="true" value="#{doctorSpecialityController.current}">
                                             <f:selectItems  value="#{doctorSpecialityController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                             <f:ajax render=":#{p:resolveFirstComponentWithId('gpDetail',view).clientId}" execute="lstSelect" >
                                                 
