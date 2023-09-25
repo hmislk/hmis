@@ -37,11 +37,11 @@
                                 <pa:slip paymentMethodData="#{agentPaymentRecieveBillController.paymentMethodData}"/>
                             </h:panelGroup>
 
-                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.collectingCentrePaymentRecieveSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                            <p:commandButton id="btnSettle" value="Settle" action="#{agentPaymentRecieveBillController.collectingCentrePaymentRecieveSettleBill}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                             </p:commandButton> 
                             <p:defaultCommand target="btnSettle"/>
 
-                            <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  onclick="onSubmitButton();">
+                            <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
                             </p:commandButton>
                         </h:panelGrid>
                     </f:facet>
@@ -63,7 +63,7 @@
 
 
             <h:panelGroup rendered="#{agentPaymentRecieveBillController.printPreview}" >     
-                <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  onclick="onSubmitButton();">
+                <p:commandButton value="New Bill" ajax="false" action="#{agentPaymentRecieveBillController.prepareNewBill()}"  >
                 </p:commandButton>
                 <bi:agent billController="#{agentPaymentRecieveBillController}"  bill="#{agentPaymentRecieveBillController.current}" dup="false"/>     
             </h:panelGroup>        

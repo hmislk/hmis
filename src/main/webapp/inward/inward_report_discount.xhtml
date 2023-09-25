@@ -68,8 +68,8 @@
                         </h:panelGrid>
 
                         <p:panelGrid columns="3">
-                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createBHTDiscountTable()}" onclick="onSubmitButton();"  ></p:commandButton>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController1.createBHTDiscountTable()}">
+                        <p:commandButton ajax="false" value="Process" action="#{inwardReportController1.createBHTDiscountTable()}"   ></p:commandButton>
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{inwardReportController1.createBHTDiscountTable()}">
                             <p:dataExporter type="xlsx" target="tb1" fileName="bht_Discount" />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

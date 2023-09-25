@@ -54,7 +54,7 @@
                         <p:commandButton ajax="false" value="Process OT Payment" action="#{hrReportController.createStaffSalaryOtPaymentSummeryByBank()}"/>
                         <p:commandButton ajax="false" value="Process Net And OT Payment" action="#{hrReportController.createStaffSalaryNetAndOtPaymentSummeryByBank()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank_summery"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

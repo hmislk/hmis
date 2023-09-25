@@ -21,12 +21,12 @@
                                 </h:outputLabel>
                                 <p:spacer width="10" ></p:spacer>
                                 <h:panelGrid columns="6">
-                                    <p:commandButton ajax="false" value="Save Visit" action="#{patientEncounterController.saveSelected()}"  onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Pharmacy Issue" action="#{patientEncounterController.issueItems()}"  onclick="onSubmitButton();"></p:commandButton>
-                                    <p:commandButton ajax="false" value="Services/Investigation" action="#{patientEncounterController.issueServices()}"  onclick="onSubmitButton();"></p:commandButton>
+                                    <p:commandButton ajax="false" value="Save Visit" action="#{patientEncounterController.saveSelected()}"   ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Pharmacy Issue" action="#{patientEncounterController.issueItems()}"  ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Services/Investigation" action="#{patientEncounterController.issueServices()}"  ></p:commandButton>
 
-                                    <p:commandButton ajax="false" value="Back to search" action="clinical_patient_for_receptionist"  style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Back to queue" action="clinical_queue" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Back to search" action="clinical_patient_for_receptionist"  style="float: right;"  ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Back to queue" action="clinical_queue" style="float: right;"  ></p:commandButton>
 
                                     
 
@@ -83,7 +83,7 @@
                                             <p:commandButton ajax="false" id="btnAddDx" value="Add Diagnosis" 
                                                              action="#{patientEncounterController.addDx()}" 
                                                              process="acDx txtDx" 
-                                                             update="tblDx" onclick="onSubmitButton();" >
+                                                             update="tblDx"  >
                                             </p:commandButton>
                                             <p:inputTextarea 
                                                 id="txtDx" 
@@ -103,7 +103,7 @@
                                                 <h:outputLabel value="#{edx.lobValue}" ></h:outputLabel>
                                             </p:column>
                                             <p:column  >
-                                                <p:commandButton ajax="false" value="X" update="tblDx" action="#{patientEncounterController.removeCfv()}" onclick="onSubmitButton();"> 
+                                                <p:commandButton ajax="false" value="X" update="tblDx" action="#{patientEncounterController.removeCfv()}" > 
                                                     <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                 </p:commandButton>
                                             </p:column>
@@ -140,7 +140,7 @@
 
 
                                             <p:commandButton ajax="false" value="Update Patient" actionListener="#{patientEncounterController.updatePerson()}"
-                                                             process="@this txtPersonName calPersonDob txtPatientComments txtPatientAddress" update="panelPt" onclick="onSubmitButton();" ></p:commandButton>
+                                                             process="@this txtPersonName calPersonDob txtPatientComments txtPatientAddress" update="panelPt"  ></p:commandButton>
 
                                         </h:panelGrid>
 
@@ -393,7 +393,7 @@
                                                 </ui:repeat>
                                             </p:column>
                                             <p:column headerText="View" >
-                                                <p:commandButton ajax="false" value="View" action="#{patientEncounterController.prepareToDisplayPastVisit()}" onclick="onSubmitButton();" >
+                                                <p:commandButton ajax="false" value="View" action="#{patientEncounterController.prepareToDisplayPastVisit()}"  >
                                                     <f:setPropertyActionListener target="#{patientEncounterController.encounterToDisplay}" value="#{pe}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                             </p:column>

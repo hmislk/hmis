@@ -26,8 +26,8 @@
                                     <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
 
                                     </p:calendar>
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardSurgeryBillsReport()}" value="Search" onclick="onSubmitButton();" />
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
+                                    <p:commandButton ajax="false" action="#{searchController.createInwardSurgeryBillsReport()}" value="Search"  />
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="surgery_details"  />
                                     </p:commandButton>
                                 </h:panelGrid>

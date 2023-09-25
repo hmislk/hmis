@@ -32,7 +32,7 @@
                                 <p:printer target="tblFee1" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischargeWithBHT}">
                                 <p:dataExporter type="xlsx" target="tblFee1,
                                              tblFee2,
                                              tblFee3,

@@ -51,13 +51,13 @@
 
 
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtTotPySummerries()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtTotPySummerries()}"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtTotPySummerries()}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.allBhtTotPySummerries()}">
                                 <p:dataExporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Payment_of_Undischarge_Patient" />
                             </p:commandButton>  
                         </p:panelGrid>

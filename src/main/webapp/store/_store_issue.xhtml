@@ -117,7 +117,7 @@
                                         </h:panelGrid>
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
                                                          action="#{storeIssueController.addBillItem}"
-                                                          onclick="onSubmitButton();"
+                                                          
                                                           process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}" 
                                                           update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem tabI" ></p:commandButton>
 
@@ -221,7 +221,7 @@
 
                                         <h:commandButton  accesskey="s" value="Issue" 
                                                         action="#{storeIssueController.settleBill()}" 
-                                                          onclick="onSubmitButton();"
+                                                          
                                                          actionListener="#{storeIssueController.calculateAllRates}">
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
@@ -229,7 +229,7 @@
                                             </f:facet>
                                         </h:commandButton>
                                         <p:commandButton accesskey="n" value="New Issue Bill"  
-                                                          onclick="onSubmitButton();"
+                                                          
                                                        ajax="false" action="/store_issue"
                                                         actionListener="#{storeIssueController.resetAll()}"  ></p:commandButton>
 
@@ -277,7 +277,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Issue"
-                                              onclick="onSubmitButton();"
+                                              
                                            ajax="false" action="store_issue" 
                                             actionListener="#{storeIssueController.resetAll()}" ></p:commandButton>
 

@@ -95,11 +95,11 @@
                                         <div class="d-flex">
                                             <p:commandButton class="m-1" id="btnSettle" value="Settle" 
                                                              action="#{billBhtController.settleBill}" 
-                                                             ajax="false" onclick="onSubmitButton();">
+                                                             ajax="false" >
                                             </p:commandButton>
                                             <p:defaultCommand target="btnSettle"/>
-                                            <p:commandButton class="m-1" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" onclick="onSubmitButton();"/>
-                                            <p:commandButton class="m-1" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" onclick="onSubmitButton();"/>
+                                            <p:commandButton class="m-1" action="#{billBhtController.makeNull}" ajax="false" value="New Bill" />
+                                            <p:commandButton class="m-1" value="Go To Add Outside" ajax="false" action="/inward/inward_bill_outside_charge" />
                                         </div>
                                     </div>
                                     <div class="row my-2 ">
@@ -175,7 +175,7 @@
                                                                 id="billedTimeStamp"
                                                                 pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
                                                     </p:calendar>
-                                                    <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" onclick="onSubmitButton();"/>
+                                                    <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" />
                                                 </p:panelGrid>
                                             </p:panel>
                                         </h:panelGroup>

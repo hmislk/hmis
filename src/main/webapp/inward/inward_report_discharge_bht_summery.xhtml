@@ -23,13 +23,13 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.listBhtFinalBills}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.listBhtFinalBills}"   ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Bht_Final_Bill"  />
                             </p:commandButton>  
                         </h:panelGrid>

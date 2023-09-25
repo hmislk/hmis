@@ -31,12 +31,12 @@
                     <p:panel header="Manage Recieve" >
                         <f:facet name="header" >
                             <h:outputLabel value="Manage Receving Samples and Printing Worksheets" />
-                            <p:commandButton value="Mark Yet to Receive ones" ajax="false" action="#{patientInvestigationController.markYetToReceiveOnes}" onclick="onSubmitButton();"  >
+                            <p:commandButton value="Mark Yet to Receive ones" ajax="false" action="#{patientInvestigationController.markYetToReceiveOnes}"   >
                             </p:commandButton>
-                            <p:commandButton value="Receive selected ones" ajax="false" action="#{patientInvestigationController.markSelectedAsReceived()}" onclick="onSubmitButton();"  >
+                            <p:commandButton value="Receive selected ones" ajax="false" action="#{patientInvestigationController.markSelectedAsReceived()}"   >
 
                             </p:commandButton>
-                            <p:commandButton value="Print worksheets for selected ones" ajax="false" onclick="onSubmitButton();"  >
+                            <p:commandButton value="Print worksheets for selected ones" ajax="false"   >
                                 <p:printer target="pPrintWorksheet" />
                             </p:commandButton>
                         </f:facet>

@@ -37,10 +37,15 @@
                                 </p:autoComplete>
 
                                 <p:inputText id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
-                                <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit" onclick="onSubmitButton();" />
+                                
+                                <p:commandButton 
+                                    id="admt" 
+                                    action="#{admissionController.saveSelected}" 
+                                    ajax="false" 
+                                    value="Admit"  />
 
                                 <div class="d-flex justify-content-end">
-                                    <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>
+                                    <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
                                 </div>
 
                                 <p:defaultCommand target="admt"/>
@@ -239,7 +244,7 @@
 
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 

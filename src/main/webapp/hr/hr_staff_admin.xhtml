@@ -41,7 +41,7 @@
 
                                         </h:panelGrid>
                                         <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                            <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{staffController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                            <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{staffController.prepareAdd()}" styleClass="buttons"  >
                                                 <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail panelPrint detailFocus" execute="" >
                                                 </f:ajax>
                                             </p:commandButton>
@@ -68,7 +68,7 @@
                                         <p:commandButton style="text-align: center;" id="btnSave" ajax="false"
                                                          value="Save"  
                                                          action="#{staffController.saveSelected()}" 
-                                                         styleClass="buttons" onclick="onSubmitButton();">
+                                                         styleClass="buttons" >
                                         </p:commandButton>
                                         <p:commandButton ajax="false" value="Print" style="float: right;" >
                                             <p:printer target="panelPrint" ></p:printer>

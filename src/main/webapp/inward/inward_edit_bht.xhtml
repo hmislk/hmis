@@ -36,9 +36,9 @@
                         </div>
                         <div class="col-5">
                             <p:commandButton ajax="false" value="Display Details" action="#{bhtEditController.displayDetails}" class="m-1"/>
-                            <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();" class="m-1">
+                            <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}"  class="m-1">
                             </p:commandButton>
-                            <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false" onclick="onSubmitButton();" class="m-1" >
+                            <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false"  class="m-1" >
                             </p:commandButton>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                                 </p:inputTextarea>
 
                                 <p:watermark for="com" value="Comment"/>
-                                <p:commandButton class="my-1" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" onclick="onSubmitButton();">                            
+                                <p:commandButton class="my-1" value="Cancel Admission" action="#{bhtEditController.cancelBht}" ajax="false" >                            
                                 </p:commandButton>
                             </p:panel>
                         </div>
@@ -172,7 +172,7 @@
                                 </h:panelGrid>
                             </p:panel>
 
-                            <p:panel id="panPrint">
+                            <p:panel id="panPrint" class="w-100" >
                                 <bill:bht admission="#{bhtEditController.current}"/>
                             </p:panel>
                         </div>
