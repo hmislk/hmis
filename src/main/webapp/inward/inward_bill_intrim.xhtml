@@ -21,49 +21,142 @@
                             <p:outputLabel value="Inward Interim Bill"/>
                         </f:facet>
 
-                        <h:panelGroup rendered="#{bhtSummeryController.patientEncounter eq null}" >
-                            <p:outputLabel value="Type to SelectBHT" ></p:outputLabel>
-                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                             value="#{bhtSummeryController.patientEncounter}"
-                                             completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                             var="myItem" itemValue="#{myItem}" 
-                                             itemLabel="#{myItem.bhtNo}" 
-                                             size="30"  >
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                            </p:autoComplete>   
-                            <p:commandButton ajax="false"  style="width: 10em;" 
-                                             value="Display Details" 
-                                             action="#{bhtSummeryController.createTables()}" >
-                            </p:commandButton>
-                            <p:panelGrid columns="1" styleClass="alignTop" rendered="#{bhtSummeryController.patientEncounter eq null}">
-                                Please select a BHT and Click Display Details *
-                            </p:panelGrid>
-                        </h:panelGroup>
+    
+                            <h:panelGrid columns="10">
 
-                        <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" >
+                                <p:outputLabel value="Type to SelectBHT" ></p:outputLabel>
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                 value="#{bhtSummeryController.patientEncounter}"
+                                                 completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                                 var="myItem" itemValue="#{myItem}" 
+                                                 itemLabel="#{myItem.bhtNo}" 
+                                                 size="30"  >
+                                    <p:column>
+                                        #{myItem.bhtNo}
+                                    </p:column>
+                                    <p:column>
+                                        #{myItem.patient.person.nameWithTitle}
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                    </p:column>
+                                </p:autoComplete>   
+                                <p:commandButton ajax="false"  
+                                                 value="Display Details" 
+                                                 action="#{bhtSummeryController.createTables()}" >
+                                </p:commandButton>
+                                <p:spacer height="1" width="15" ></p:spacer>
 
 
+                                <p:commandButton ajax="false" value="Clear"  action="#{bhtSummeryController.clear}"  />                                                
+                                <p:commandButton ajax="false" value="Settle Bill"  action="#{bhtSummeryController.toSettle()}"  />
+                                <p:commandButton ajax="false"   value="Print Bill" action="#{bhtSummeryController.toPrintItrim()}"  />
 
-                            <div class="row" >
-                                <div class="col-4" >
-                                    <p:commandButton ajax="false"  style="width: 10em;" 
-                                                     value="Refresh" 
-                                                     action="#{bhtSummeryController.createTables()}" >
-                                    </p:commandButton>
-                                    <p:commandButton ajax="false" style="width: 10em;"  value="Clear"  action="#{bhtSummeryController.clear}"  />                                                
-                                    <p:commandButton ajax="false"  style="width: 10em;" value="Settle Bill"  action="#{bhtSummeryController.toSettle()}"  />
-                                    <p:commandButton ajax="false"  style="width: 10em;"  value="Print Bill" action="#{bhtSummeryController.toPrintItrim()}"  />
+
+                            </h:panelGrid>
+
+                            <h:panelGrid columns="1" rendered="#{bhtSummeryController.patientEncounter eq null}">
+                                Please select a BHT and Click Display Details
+                            </h:panelGrid>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p:panel id="panSearch2" header="Patient Details" class="w-100">
+                                        <in:bhtDetail admission="#{bhtSummeryController.patientEncounter}" class="w-100"/>
+                                    </p:panel>
+                                </div>
+                                <div class="col-md-4" >
+                                    <h:panelGrid class="w-100" columns="1">
+                                        <p:panel header="Summary" id="tot" class="w-100">
+                                            <h:panelGroup id="crd" class="w-100" style="display: #{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
+                                                <credit:outputCredit  class="w-100" patientEncounter="#{bhtSummeryController.patientEncounter}"/>
+                                            </h:panelGroup>
+
+
+                                            <h:panelGrid columns="2" >
+                                                <h:outputLabel  value="Total Charges : " />
+                                                <h:outputLabel value="#{bhtSummeryController.grantTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>                               
+                                                <h:outputLabel value="Paid By Patient :  " />
+                                                <h:outputLabel value="#{bhtSummeryController.paid}" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                                <h:outputLabel value="Due : " 
+                                                               rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
+                                                                           and bhtSummeryController.due > 0 }" />
+                                                <h:outputLabel  value="#{bhtSummeryController.due}"
+                                                                rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
+                                                                            and bhtSummeryController.due > 0 }" >
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </h:panelGrid>
+                                        </p:panel>
+                                        <p:panel id="dis" header="Discharge">
+                                            <h:panelGrid columns="2">
+                                                <p:outputLabel value="Discharge Time"/>
+                                                <p:calendar value="#{bhtSummeryController.date}"
+                                                            id="dischargeTimeStamp"
+                                                            pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
+                                                    <f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />
+                                                </p:calendar> 
+                                                <p:commandButton ajax="false" rendered="false" value="Add Vat" action="#{bhtSummeryController.addVat}"  />
+                                                <p:commandButton ajax="false" value="Discharge" action="#{bhtSummeryController.discharge}"  />
+                                                <p:commandButton ajax="false" value="Discharge Cancel" action="#{bhtSummeryController.dischargeCancel}"  />
+                                            </h:panelGrid>
+                                        </p:panel>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:dataTable id="sum" 
+                                                 value="#{bhtSummeryController.chargeItemTotals}" 
+                                                 var="c" 
+                                                
+                                                 scrollable="true"
+                                                 scrollHeight="350"
+                                                 >
+                                        <p:column headerText="Charge Type" >
+                                            <h:outputLabel value="#{c.inwardChargeType.label}"/>
+                                        </p:column>
+                                        <p:column  sortBy="#{c.total}"  headerText="Total">
+                                            <h:outputLabel value="#{c.total}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+
+
+                            <p:tabView  id="tvPt"  rendered="#{bhtSummeryController.patientEncounter ne null}" >                     
+                                <p:tab id="tabNewPt" title="Room Detail" >
+
+                                    <p:dataTable   value="#{bhtSummeryController.patientRooms}" var="rm">                                
+                                        <p:column headerText="Room Name">
+                                            <h:outputLabel value="#{rm.roomFacilityCharge.name}"/><br/>
+                                            <h:outputLabel value="GAURDIAN ROOM" style="color: #008000;"
+                                                           rendered="#{rm.patientRoomClass eq 'class com.divudi.entity.inward.GuardianRoom'}"/>
+                                        </p:column>                                                                          
+                                        <p:column headerText="Admitted At">
+                                            <p:calendar navigator="true"  
+                                                        id="roomAdmittedTimeStamp"
+                                                        value="#{rm.admittedAt}" 
+                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" />     
+                                        </p:column>
+                                        <p:column headerText="Discharged At">                                      
+                                            <p:calendar navigator="true"  
+                                                        id="roomDischargeTimeStamp"
+                                                        value="#{rm.dischargedAt}" 
+                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" /> 
+                                        </p:column>
+                                        <p:column headerText="Room Charge" >
+                                            <h:outputLabel value="#{rm.calculatedRoomCharge}" >
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>                                        
+                                        </p:column>
 
                                     <p:panel id="panSearch2" header="Patient Details">
                                         <in:bhtDetail admission="#{bhtSummeryController.patientEncounter}"/>
@@ -700,22 +793,6 @@
                             </div>
 
                         </h:panelGroup>
-
-
-
-
-
-
-<!--
-Ward 58
-Bed 17
-Mahindapala
-
-46-->
-
-
-
-
 
 
                     </p:panel>
