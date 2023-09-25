@@ -16,10 +16,10 @@
             <h:form>
                 <p:commandButton ajax="false" 
                                  action="#{roomOccupancyController.createPatientRoom}"
-                                 value="Fill" onclick="onSubmitButton();"  />
+                                 value="Fill"   />
                 <p:commandButton ajax="false" 
                                  action="#{roomOccupancyController.createPatientRoomAll}"
-                                 value="Fill All" onclick="onSubmitButton();" class="mx-2" />
+                                 value="Fill All"  class="mx-2" />
                 <p:dataTable 
                     value="#{roomOccupancyController.patientRooms}" 
                     var="pr"
@@ -69,7 +69,7 @@
                                                  itemLabel="Discharge"/>
                     </p:column>
                     <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
-                        <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}" onclick="onSubmitButton();" />
+                        <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}"  />
                     </p:column>
                 </p:dataTable>
 

@@ -29,9 +29,9 @@
                                 <p:inputTextarea value="#{drawerAdjustmentController.comment}"  />
 
                                 <p:commandButton value="Make Adjustment" ajax="false" 
-                                                action="#{drawerAdjustmentController.saveAdjustBillCash()}"  onclick="onSubmitButton();"/>
+                                                action="#{drawerAdjustmentController.saveAdjustBillCash()}"  />
                                 <p:commandButton ajax="false" action="#{drawerAdjustmentController.makeNull()}"
-                                                 value="New Adjustment" onclick="onSubmitButton();"/>
+                                                 value="New Adjustment" />
                             </h:panelGrid>
 
                             <h:panelGrid columns="2" id="det">
@@ -64,7 +64,7 @@
                     </p:panel>
 
                     <p:panel rendered="#{drawerAdjustmentController.printPreview}">
-                        <p:commandButton ajax="false" action="#{drawerAdjustmentController.makeNull()}" value="New Adjustment" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" action="#{drawerAdjustmentController.makeNull()}" value="New Adjustment" />
                         <ph:adjustmentDrawer bill="#{drawerAdjustmentController.adjustmentBill}" str="CASH" />
                     </p:panel>
 

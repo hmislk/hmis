@@ -37,7 +37,7 @@
 
                         <p:commandButton ajax="false" value="Finger Print Logged Record All " action="#{hrReportController.createFingerPrintRecordAll()}"/>
                         <p:commandButton ajax="false" value="Finger Print Logged Record " action="#{hrReportController.createFingerPrintRecordLogged()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_finger_print_record_logged"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

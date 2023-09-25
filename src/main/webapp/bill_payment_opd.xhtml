@@ -154,10 +154,10 @@
                             <div id="centrewrapper">
                                 <div id="centrecell">
                                     <div class="centrecontent">
-                                        <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                                        <p:commandButton value="Print" ajax="false" action="#"  >
                                             <p:printer target="gpBillPreview" ></p:printer>
                                         </p:commandButton>
-                                        <p:commandButton value="New Bill" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}" onclick="onSubmitButton();" >
+                                        <p:commandButton value="New Bill" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
                                         </p:commandButton>
 
 
@@ -321,7 +321,7 @@
                                     <p:printer target="gpPosBill" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton value="New Bill" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}" onclick="onSubmitButton();" >
+                                <p:commandButton value="New Bill" ajax="false" action="/opd_search_bill_to_pay" actionListener="#{billController.clear()}"  >
                                 </p:commandButton>
 
                             </div>

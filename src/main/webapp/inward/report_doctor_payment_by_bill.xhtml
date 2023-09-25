@@ -55,13 +55,13 @@
                             <p:watermark for="scStaff" value="Staff / Doctor" />
                         </p:panel>
                         <p:panelGrid columns="4">
-                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByCreatedDate}" onclick="onSubmitButton();"  />
-                            <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByDischargeDate}" onclick="onSubmitButton();"  />
+                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByCreatedDate}"   />
+                            <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByDischargeDate}"   />
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
                             </p:commandButton>
 

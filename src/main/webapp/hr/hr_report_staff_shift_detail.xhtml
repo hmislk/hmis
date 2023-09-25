@@ -50,7 +50,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShift()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_shift_detail"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

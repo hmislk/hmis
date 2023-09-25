@@ -65,7 +65,7 @@
                         </p:autoComplete>
                         <p:commandButton ajax="false" value="Search" 
                                          action="#{billPackageMedicalController.createOtherPackageBillItemsOld}"
-                                         onclick="onSubmitButton();" />
+                                          />
                         <p:watermark for="acIx1" value="Package" />
                         <p:watermark for="ins" value="Institution" />
                         <p:watermark for="acIx" value="Service/Investigation" />
@@ -73,7 +73,7 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="Package_Bill_Detail_Report" />
                         </p:commandButton>
 

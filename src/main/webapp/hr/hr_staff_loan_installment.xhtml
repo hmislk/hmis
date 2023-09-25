@@ -99,7 +99,7 @@
                         <p:commandButton ajax="false" value="Fill" action="#{staffLoanController.createLones()}" />
                         <p:commandButton ajax="false" value="Fill Deleted" action="#{staffLoanController.createLonesDeleted()}" />
                         <p:commandButton ajax="false" value="Fill For Paid" action="#{staffLoanController.createsheduleForPaidLones()}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb5" fileName="hr_staff_loan_installment"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -110,7 +110,7 @@
                     <p:panel id="loaninstall" styleClass="noBorder summeryBorder" >
                         <f:facet name="header">
                             <h:outputLabel value="Loan And Advances" styleClass="noPrintButton"/>
-                            <!--<p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;" onclick="onSubmitButton();" styleClass="noPrintButton"/>-->
+                            <!--<p:commandButton ajax="false" value="Save Selected" action="#{staffLoanController.saveSelected}" style="float: right;"  styleClass="noPrintButton"/>-->
                         </f:facet>
                         <p:dataTable value="#{staffLoanController.paysheetComponents}" id="tb5"
                                      var="i" scrollHeight="200"
