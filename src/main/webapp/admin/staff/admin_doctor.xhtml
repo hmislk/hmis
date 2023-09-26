@@ -21,7 +21,7 @@
                 <p:panel header="Manage Doctor" >
                     <div class="row">
                         <div class="col-6">
-                            <h:panelGrid id="gpSelect" >
+                            <h:panelGrid id="gpSelect" class="w-100">
                                 <h:panelGrid id="gpSelectButtons" columns="3"  class="w-100 p-2" >
                                     <p:commandButton id="btnAdd" value="Add"  
                                                      action="#{doctorController.prepareAdd()}" styleClass="buttons" ajax="false" class="w-100"/>                                   
@@ -37,7 +37,7 @@
                                         />
                                 </h:panelGrid>
 
-                                <h:panelGrid id="gpSelectText" >
+                                <h:panelGrid id="gpSelectText" class="w-100">
 
 
                                     <p:selectOneListbox  class="w-100" filterMatchMode="contains" scrollHeight="500" id="lstSelect" value="#{doctorController.current}" filter="true" style="min-width: 400px;">

@@ -88,6 +88,7 @@ public class ChannelReportController implements Serializable {
     private double repayTotalFee;
     private double taxTotal;
     private double total;
+    private int channelReportMenuIndex;
     ///////
     private List<BillSession> billSessions;
     private List<BillSession> billSessionsBilled;
@@ -5853,6 +5854,14 @@ public class ChannelReportController implements Serializable {
 
     public void setWeekdayDisplays(List<WeekdayDisplay> weekdayDisplays) {
         this.weekdayDisplays = weekdayDisplays;
+    }
+
+    public int getChannelReportMenuIndex() {
+        return channelReportMenuIndex;
+    }
+
+    public void setChannelReportMenuIndex(int channelReportMenuIndex) {
+        this.channelReportMenuIndex = channelReportMenuIndex;
     }
 
     public class DocPage {

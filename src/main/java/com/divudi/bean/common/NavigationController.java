@@ -15,6 +15,8 @@ public class NavigationController implements Serializable {
     /**
      * Creates a new instance of NavigationController
      */
+    
+    private int adminStaffMenuIndex;
     public NavigationController() {
     }
     
@@ -161,5 +163,13 @@ public class NavigationController implements Serializable {
     
     public String navigateToReportOpd(){
         return "/admin/pricing/report_opd";
+    }
+
+    public int getAdminStaffMenuIndex() {
+        return adminStaffMenuIndex;
+    }
+
+    public void setAdminStaffMenuIndex(int adminStaffMenuIndex) {
+        this.adminStaffMenuIndex = adminStaffMenuIndex;
     }
 }

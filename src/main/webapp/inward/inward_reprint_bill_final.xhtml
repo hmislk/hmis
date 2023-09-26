@@ -61,6 +61,7 @@
 
                                         </h:panelGrid>
                                     </p:panel>
+                                    
                                     <p:panel header="Non Claimable Bill Reprints" rendered="#{inwardSearch.bill.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:panelGrid columns="1">
                                             <p:commandButton value="Patient Copy without Professional" ajax="false">
@@ -216,7 +217,6 @@
                             <bi:credit_company_letter_new bill="#{inwardSearch.bill}"/> 
                         </h:panelGroup>
 
-                        <p:spacer height="700" />
 
                         <h:panelGroup id="claimableHospitalCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
                             <bi:finalBill  hosCopy="true" showProfessional="true"                              
