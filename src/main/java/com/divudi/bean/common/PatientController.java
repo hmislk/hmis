@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.web.CaptureComponentController;
@@ -118,6 +119,8 @@ public class PatientController implements Serializable {
     CaptureComponentController captureComponentController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    AdmissionController admissionController;
     /**
      *
      * Class Variables
@@ -331,6 +334,16 @@ public class PatientController implements Serializable {
             return "";
         }
         return "/opd/patient";
+    }
+    
+    public String navigateToAdmitFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        admissionController.prepereToAdmitNewPatient();
+        admissionController.getCurrent().setPatient(current);
+        return "/inward/inward_admission";
     }
 
     public String navigateToOpdPatientEdit() {
