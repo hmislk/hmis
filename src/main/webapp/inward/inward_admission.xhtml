@@ -45,7 +45,7 @@
                                     value="Admit"  />
 
                                 <div class="d-flex justify-content-end">
-                                    <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
+                                    <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.prepereToAdmitNewPatient}" />
                                 </div>
 
                                 <p:defaultCommand target="admt"/>
@@ -244,7 +244,7 @@
 
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admiprepereToAdmitNewPatienttroller.makeNull}" />                   
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 

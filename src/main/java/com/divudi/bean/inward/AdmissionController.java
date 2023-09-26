@@ -448,7 +448,7 @@ public class AdmissionController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
-        makeNull();
+        prepereToAdmitNewPatient();
 //        getItems();
         current = null;
         getCurrent();
@@ -462,7 +462,12 @@ public class AdmissionController implements Serializable {
         return selectText;
     }
 
-    public void makeNull() {
+    public String navigateToAdmitFromMenu(){
+        prepereToAdmitNewPatient();
+        return "/inward/inward_admission";
+    }
+    
+    public void prepereToAdmitNewPatient() {
         current = null;
         patientRoom = null;
         items = null;
