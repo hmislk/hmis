@@ -594,26 +594,16 @@ public class AdmissionController implements Serializable {
             UtilityController.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
-
-//        if (inwardStaffPaymentBillController.referringDoctorSpeciality == null) {
-//            UtilityController.addErrorMessage("Please Select Referring Doctor Speciality");
-//            return true;
-//        }
-
-     
-            if (getCurrent().getPatient() == null) {
-                UtilityController.addErrorMessage("Select Patient");
-                return true;
-            }
-    
-
+        if (getCurrent().getPatient() == null) {
+            UtilityController.addErrorMessage("Select Patient");
+            return true;
+        }
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 UtilityController.addErrorMessage("Please Add Reference No");
                 return true;
             }
         }
-
         return false;
     }
 
