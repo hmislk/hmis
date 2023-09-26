@@ -205,7 +205,7 @@ public class ServiceController implements Serializable {
                 int feeColumnIndex = 19;
                 for (ItemFee f : sym.getItemFeesAuto()) {
                     row.createCell(feeColumnIndex++).setCellValue(f.getName());
-                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType().getLabel());
+                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType()!= null ? f.getFeeType().getLabel() : "");
                     row.createCell(feeColumnIndex++).setCellValue(f.getFee());
                     row.createCell(feeColumnIndex++).setCellValue(f.getFfee());
                     row.createCell(feeColumnIndex++).setCellValue(f.getDepartment() != null ? f.getDepartment().getName() : "");
