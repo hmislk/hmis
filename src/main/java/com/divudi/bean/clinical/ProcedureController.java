@@ -61,11 +61,12 @@ public class ProcedureController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
+            Sheet sheet = workbook.createSheet("Services");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
             headerRow.createCell(0).setCellValue("No");
+            headerRow.createCell(1).setCellValue("Name");
             headerRow.createCell(1).setCellValue("Name");
             // Add more columns as needed
 

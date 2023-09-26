@@ -21,6 +21,7 @@ import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.Service;
+import com.divudi.entity.clinical.ClinicalEntity;
 import com.divudi.facade.CategoryFacade;
 import com.divudi.facade.DepartmentFacade;
 import com.divudi.facade.FeeFacade;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -114,6 +116,45 @@ public class ServiceController implements Serializable {
         this.itemsToRemove = itemsToRemove;
     }
 
+    
+    
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Proecdures");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("No");
+            headerRow.createCell(1).setCellValue("Name");
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (ClinicalEntity sym : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(rowNum);
+                row.createCell(1).setCellValue(sym.getName());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"procedures.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+    }
+    
     public void removeSelectedItems() {
         for (Service s : itemsToRemove) {
             s.setRetired(true);
@@ -641,7 +682,10 @@ public class ServiceController implements Serializable {
     }
 
     public void fillItems() {
-        String sql = "select c from Service c where c.retired=false order by c.category.name,c.department.name";
+        String sql = "select c "
+                + " from Service c "
+                + " where c.retired=false "
+                + " order by c.category.name,c.department.name";
         items = getFacade().findByJpql(sql);
         for (Service i : items) {
             List<ItemFee> tmp = getFees(i);
