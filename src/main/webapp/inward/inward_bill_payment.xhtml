@@ -95,15 +95,15 @@
 
 
                             </h:panelGrid>
-                            <p:commandButton id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}" onclick="onSubmitButton();"/>
-                            <p:commandButton value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}" onclick="onSubmitButton();"/>
+                            <p:commandButton id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}" />
+                            <p:commandButton value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}" />
                             <p:defaultCommand target="btnPay"/>
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
 
                 <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
-                    <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}" onclick="onSubmitButton();"/>
+                    <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}" />
                     <p:commandButton value="Print" ajax="false" action="#"  >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>

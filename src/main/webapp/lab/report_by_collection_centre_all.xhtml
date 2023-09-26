@@ -15,7 +15,7 @@
             <p:panel id="panelPrint" header="Collecting Centre Sale Report">
                 <f:facet name="header" >
                     <p:outputLabel value="Collecting Centre Sale Report"/>
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  />
+                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"   />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
                         <p:printer target="panelPrint" />
@@ -25,7 +25,7 @@
                       ajax="false" 
                         value="Excel"  
                         styleClass="noPrintButton" 
-                        style="float: right;" onclick="onSubmitButton();"  >
+                        style="float: right;"   >
                         <p:dataExporter 
                             type="xlsx" 
                             target="tbl" 

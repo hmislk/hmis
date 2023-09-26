@@ -22,11 +22,11 @@
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search All"  
-                                                action="#{searchController.createCreditTableBillItemAll()}" onclick="onSubmitButton();"/>
+                                                action="#{searchController.createCreditTableBillItemAll()}" />
                                 <p:commandButton ajax="false" value="Search OPD"  
-                                                action="#{searchController.createCreditTableBillItemOpd()}" onclick="onSubmitButton();"/>
+                                                action="#{searchController.createCreditTableBillItemOpd()}" />
                                 <p:commandButton ajax="false" value="Search BHT"  
-                                                action="#{searchController.createCreditTableBillItemBht()}" onclick="onSubmitButton();"/>
+                                                action="#{searchController.createCreditTableBillItemBht()}" />
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                             </h:panelGrid>
@@ -55,7 +55,7 @@
 
                         <p:dataTable id="tblBills" value="#{searchController.billItems}" var="b">
                             <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="credit_company_bill_reprint" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="View Bill" action="credit_company_bill_reprint" >
                                     <f:setPropertyActionListener value="#{b.bill}" target="#{creditCompanyBillSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>

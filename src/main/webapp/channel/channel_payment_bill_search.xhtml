@@ -43,7 +43,7 @@
                                     <p:selectBooleanCheckbox value="#{searchController.reportKeyWord.additionalDetails}" itemLabel="Search All" />
                                     <p:commandButton ajax="false" value="Search(Before 2016 04 22)" action="#{searchController.channelPaymentBills()}"/>
                                     <p:commandButton ajax="false" value="Search" action="#{searchController.channelPaymentBillsNew()}"/>
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="Channel_doc_pay_done"  />
                                     </p:commandButton>
                                 </h:panelGrid>

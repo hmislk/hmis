@@ -38,7 +38,7 @@
 
                         <p:commandButton ajax="false" value="Process All" action="#{hrReportController.createStaffWorkingTime()}"/>
                         <p:commandButton ajax="false" value="Process Belove 28" action="#{hrReportController.createStaffWorkingTimeBelow28()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

@@ -32,11 +32,11 @@
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                             
                             <p:commandButton  value="Settle" action="#{pharmacyPurchaseController.settle}"
-                                              onclick="onSubmitButton();"
+                                              
                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
                             <p:commandButton value="New Bill" ajax="false"
-                                             onclick="onSubmitButton();"
+                                             
                                             action="#{pharmacyPurchaseController.makeNull()}" >
                             </p:commandButton>
 
@@ -159,7 +159,7 @@
                        
                         <p:commandButton id="btnAdd" value="Add Item" 
                                         action="#{pharmacyPurchaseController.addItem}" 
-                                         onclick="onSubmitButton();"
+                                         
                                          process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId}"/>
                     </p:panelGrid>
 
@@ -293,7 +293,7 @@
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">
                 <p:commandButton ajax="false" 
-                                 onclick="onSubmitButton();"
+                                 
                                 action="#{pharmacyPurchaseController.makeNull()}" value="New Bill"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>

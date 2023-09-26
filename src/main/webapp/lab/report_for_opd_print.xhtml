@@ -22,9 +22,9 @@
                                     <h:outputLabel value="To Date " class="mx-2"/>
                                     <p:calendar id="toDate" value="#{searchController.toDate}" class="mx-2" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                     </p:calendar>
-                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" class="m-2" action="#{searchController.fillToDepartmentPatientInvestigations()}" onclick="onSubmitButton();" />
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" class="m-2" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
-                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" class="m-2" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" class="m-2" action="#{searchController.fillToDepartmentPatientInvestigations()}"  />
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" class="m-2" action="#{searchController.createPatientInvestigationsTable()}"  />
+                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" class="m-2" action="#{searchController.createPatientInvestigationsTableAll()}"  />
                                 
                                 </h:panelGrid>
                                 

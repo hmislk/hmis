@@ -20,8 +20,8 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}" onclick="onSubmitButton();" />
-                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createProfessionalPaymentTableInward}"  />
+                                <p:commandButton id="btnSearchAll" ajax="false" value="Search All" action="#{searchController.createProfessionalPaymentTableInwardAll}"  />
                                 <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="Cashier_Detailed_Report"  />
                                 </p:commandButton>
@@ -56,7 +56,7 @@
                                 <h:outputLabel value="#{searchController.total}"/>
                             </f:facet>
                             <p:column>
-                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_staff_payment" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="View Bill" action="inward_reprint_staff_payment"  >
                                     <f:setPropertyActionListener value="#{bi.bill}" target="#{inwardSearch.bill}"/>
                                 </p:commandButton>
                             </p:column>

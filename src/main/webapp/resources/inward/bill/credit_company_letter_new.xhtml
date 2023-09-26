@@ -19,11 +19,11 @@
         <div style="position: relative!important;
              /*padding-left: 0.5%!important;*/
              height:95%!important;
-             width:95%!important; 
+             width:95%!important;
              /*             overflow:hidden!important; */
-             font-family: Times New Roman!important; 
-             font-size: 10px!important; 
-             margin:2px!important; 
+             font-family: Times New Roman!important;
+             font-size: 10px!important;
+             margin:2px!important;
              padding: 5px!important;
              /*             background-size: 100% auto!important;*/
              letter-spacing: 0px;
@@ -35,23 +35,17 @@
                  font-weight: bold;">
 
             </div>
-            <div style="font-size: 9px!important; font-family: Times New Roman!important;
-                 letter-spacing: 0px; position: absolute!important; padding-left: 5%; padding-top: 18%;">
+            <div class="d-flex justify-content-center">
+                <div class="p-5">
                 <table >
                     <tr>
                         <td>
-                            <h:outputLabel value="#{commonController.currentDateTime}">
+                            <h:outputLabel  value="#{commonController.currentDateTime}">
                                 <f:convertDateTime pattern="dd-MMM-yy" />
                             </h:outputLabel>
                         </td>
                         <td></td>
                         <td></td>
-                    </tr>
-
-                    <tr>
-                        <td><p:spacer height="10" /></td>
-                        <td><h:outputLabel value=" "/></td>
-                        <td><h:outputLabel value=" "/></td>
                     </tr>
 
                     <tr>
@@ -148,12 +142,14 @@
 
                     <tr>
 
-                        <td colspan="2">
-                            <center>
+                        <td colspan="3">
+
+                            <div class="d-flex justify-content-center">
                                 <b>
                                     <h:outputLabel value="SETTLEMENT OF MEDICAL BILL" style="text-decoration: underline; font-size: 15px!important;"/>
                                 </b>
-                            </center>
+                            </div>
+
 
                         </td>
                         <td></td>
@@ -187,9 +183,9 @@
 
                     <tr>
                         <td colspan="3">
-                            <center>
+                            <div class="text-left">
                                 <b> <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" /> </b>
-                            </center>
+                            </div>
                         </td>
                     </tr>
 
@@ -217,14 +213,8 @@
                     </tr>
 
                     <tr>
-                        <td><p:spacer height="10" /></td>
-                        <td><h:outputLabel value=" "/></td>
-                        <td><h:outputLabel value=" "/></td>
-                    </tr>
-
-                    <tr>
                         <td colspan="3">
-                            <p>
+                            <p class="text-center">
                                 You are kindly requested to remit this amount by cheque written in favour of -
                                 <b> <h:outputLabel value='"#{cc.attrs.bill.institution.name} "'/> </b>
                                 <h:outputLabel value="&nbsp;"/>
@@ -233,15 +223,10 @@
                         </td>
                     </tr>
 
-                    <tr>
-                        <td><p:spacer height="10" /></td>
-                        <td><h:outputLabel value=" "/></td>
-                        <td><h:outputLabel value=" "/></td>
-                    </tr>
 
                     <tr>
                         <td colspan="3">
-                            <p>
+                            <p class="text-center">
                                 <b> <h:outputLabel value="* Please not that Prevailing Bank overdraft interest rate will be applied for all overdue debts"/> </b>
                             </p>
                         </td>
@@ -301,12 +286,12 @@
                         <td><h:outputLabel value=" "/></td>
                     </tr>
 
-<!--                    <tr>
-                        <td colspan="2">
-                            <h:outputLabel value="(B.A Lahiru Priyabandu)" style="text-decoration: overline;"/>
-                        </td>
-                        <td></td>
-                    </tr>-->
+                    <!--                    <tr>
+                                            <td colspan="2">
+                                                <h:outputLabel value="(B.A Lahiru Priyabandu)" style="text-decoration: overline;"/>
+                                            </td>
+                                            <td></td>
+                                        </tr>-->
                     <tr>
                         <td>
                             <h:outputLabel value="Accountant,"/>
@@ -317,6 +302,7 @@
 
                 </table>
 
+            </div>
             </div>
         </div>
     </cc:implementation>

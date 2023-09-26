@@ -18,7 +18,7 @@
 
                 <f:facet name="header" >
                     <h:outputLabel value="Inward  Break Down -&nbsp;&nbsp; #{bhtSummeryFinalizedController.patientEncounter.patient.person.name}"/>
-                    <p:commandButton ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"/>  
+                    <p:commandButton ajax="false" value="Refresh" styleClass="noPrintButton" style="float: right;" />  
                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
                         <p:printer target="reportPrint" />
                     </p:commandButton>  
@@ -60,11 +60,11 @@
                     <p:panel header="Pharmacy Issue" style="text-align: center;">         
                        
                         <p:panelGrid columns="2">
-                        <p:commandButton ajax="false" value="Print Pharmacy Issue" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                        <p:commandButton ajax="false" value="Print Pharmacy Issue" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="pharmacyIssue" />
                         </p:commandButton>  
                         <p:commandButton value="Export Excel" ajax="false" 
-                                         styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                         styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="pharmacyIssue" 
                                          fileName="Pharmacy_Issue"/>
                         </p:commandButton>
@@ -133,11 +133,11 @@
                     <p:panel header="Store Issue" style="text-align: center;">
                         
                         <p:panelGrid columns="2">
-                        <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();">
+                        <p:commandButton ajax="false" value="Print Store Issue" styleClass="noPrintButton" style="float: right;" >
                             <p:printer target="pharmacyIssue" />
                         </p:commandButton>  
                         <p:commandButton value="Export Excel" ajax="false" 
-                                         styleClass="noPrintButton" onclick="onSubmitButton();" >
+                                         styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="storeIssue" 
                                          fileName="store_Issue"/>
                         </p:commandButton>

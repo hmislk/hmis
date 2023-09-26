@@ -27,10 +27,10 @@
                             <h:outputLabel value="To"/>
                             <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="dd MM yyyy"/>
 
-                            <p:commandButton  value="Save" action="#{staffPaySheetComponentAllPerformancePercentageController.save}" onclick="onSubmitButton();">
+                            <p:commandButton  value="Save" action="#{staffPaySheetComponentAllPerformancePercentageController.save}" >
 
                             </p:commandButton>
-                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllPerformancePercentageController.makeNull}" ajax="false" onclick="onSubmitButton();" />
+                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllPerformancePercentageController.makeNull}" ajax="false"  />
 
                         </h:panelGrid>                      
                     </p:panel>
@@ -53,7 +53,7 @@
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
                                          action="#{staffController.createActiveStaffTable()}"
-                                         onclick="onSubmitButton();"/>
+                                         />
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
                                       filteredValue="#{staffController.filteredStaff}" 
@@ -100,7 +100,7 @@
                 <p:panel id="lst" >
                     <f:facet name="header"  >      
                         <h:outputLabel value="#{staffPaySheetComponentAllPerformancePercentageController.paysheetComponent.name}" style="text-transform:capitalize;" />
-                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllPerformancePercentageController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllPerformancePercentageController.removeAll}" style="float: right;" />
 
                     </f:facet>
                     <h:panelGrid columns="2" >
@@ -124,7 +124,7 @@
                         <h:panelGrid columns="3">
 
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="stb2" fileName="hr_staff_paysheet_component_all_performace_allovance_percentatge"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -278,7 +278,7 @@
                             </p:column>  
 
                             <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
-                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllPerformancePercentageController.remove}" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllPerformancePercentageController.remove}" >
                                     <f:setPropertyActionListener target="#{staffPaySheetComponentAllPerformancePercentageController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column>  

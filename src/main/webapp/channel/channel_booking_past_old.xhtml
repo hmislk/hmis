@@ -139,7 +139,7 @@
 
                             </p:panelGrid>
                             <p:commandButton ajax="false" value="Cancel" action="#{channelBillController.cancel}" disabled="#{channelBillController.billSession.bill.refunded==true
-                                                                                   or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
+                                                                                   or channelBillController.billSession.bill.cancelled==true}" />
                         </p:tab>
 
 
@@ -194,7 +194,7 @@
                             </p:panelGrid>
                             <p:commandButton ajax="false" value="Refund" action="#{channelBillController.refund}" disabled="#{channelBillController.billSession.bill.refunded==true
                                                                                    or channelBillController.billSession.bill.cancelled==true
-                                                                                   or channelBillController.billSession.bill.billType eq 'ChannelCredit'}" onclick="onSubmitButton();"/>
+                                                                                   or channelBillController.billSession.bill.billType eq 'ChannelCredit'}" />
 
 
                         </p:tab>
@@ -231,7 +231,7 @@
 
                                 </h:panelGrid>
                                 <p:commandButton id="setBtn" ajax="false" value="Settle Credit" action="#{channelBillController.settleCredit}" disabled="#{channelBillController.billSession.bill.billType ne 'ChannelCredit' 
-                                                                                                          or channelBillController.billSession.bill.cancelled==true}" onclick="onSubmitButton();"/>
+                                                                                                          or channelBillController.billSession.bill.cancelled==true}" />
 
 
                             </p:panel>
@@ -251,7 +251,7 @@
                                 <p:outputLabel/>
                                 <p:commandButton ajax="false" value="Update" action="#{bookingPastController.updatePatient}"
                                                  disabled="#{bookingPastController.selectedBillSession.bill.cancelled==true
-                                                             or bookingPastController.selectedBillSession.bill.refunded==true}" onclick="onSubmitButton();"/>
+                                                             or bookingPastController.selectedBillSession.bill.refunded==true}" />
 
                             </h:panelGrid>
 
@@ -401,15 +401,15 @@
 
                             <p:panel header="Selected Session">
                                 <h:panelGrid columns="1">
-                                    <p:commandButton value="Nurse View " action="#{bookingPastController.nurse}" onclick="onSubmitButton();"  >                                       
+                                    <p:commandButton value="Nurse View " action="#{bookingPastController.nurse}"   >                                       
                                     </p:commandButton>
-                                    <p:commandButton value="Doctor View " action="#{bookingPastController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                    <p:commandButton value="Doctor View " action="#{bookingPastController.doctor}" ajax="false" >                                        
                                     </p:commandButton>
-                                    <p:commandButton value="Session View " action="#{bookingPastController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                    <p:commandButton value="Session View " action="#{bookingPastController.session}" ajax="false" >                                        
                                     </p:commandButton>
-                                    <p:commandButton value="Phone View " action="#{bookingPastController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                    <p:commandButton value="Phone View " action="#{bookingPastController.phone}" ajax="false" >                                        
                                     </p:commandButton>
-                                    <p:commandButton value="User View " action="#{bookingPastController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                    <p:commandButton value="User View " action="#{bookingPastController.user}" ajax="false" >                                        
                                     </p:commandButton>
                                 </h:panelGrid>
 

@@ -49,12 +49,12 @@
                             <p:watermark for="acSpeciality" value="Speciality" />
                         </p:panel>
                         <p:panel>
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischarge()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{inwardStaffPaymentBillController.fillDocPayDischargeAndNotDischarge()}"   ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb" fileName="Doctor_Payment"  />
                             </p:commandButton>
                         </p:panel>

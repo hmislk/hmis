@@ -33,13 +33,13 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardReportController.fillAdmissionBookOnlyInwardDeleted()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{inwardReportController.fillAdmissionBookOnlyInwardDeleted()}"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_Transfer_Listing"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -65,7 +65,7 @@
                                 <p:column headerText="View">
                                     <p:commandButton ajax="false" value="View Detail"
                                                     action="/inward/inward_bill_intrim_finalized"
-                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}" onclick="onSubmitButton();" >
+                                                    actionListener="#{bhtSummeryFinalizedController.createTablesFinalized()}"  >
                                         <f:setPropertyActionListener value="#{i}" target="#{bhtSummeryFinalizedController.patientEncounter}"/> 
                                     </p:commandButton>
                                 </p:column>

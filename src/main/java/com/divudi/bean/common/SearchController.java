@@ -7195,7 +7195,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Intrim Bill Search(/faces/inward/inward_search_intrim.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Interim Bill Search(/faces/inward/inward_search_intrim.xhtml)");
 
     }
 

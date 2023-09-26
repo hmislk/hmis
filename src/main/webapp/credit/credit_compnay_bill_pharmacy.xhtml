@@ -38,10 +38,10 @@
                             </h:panelGroup>
 
                             <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBillPharmacy}"
-                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                             </p:commandButton>
                             <p:defaultCommand target="btnSettle"/>
-                            <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >
+                            <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -109,7 +109,7 @@
                             <p:inputText autocomplete="off" id="val" value="#{cashRecieveBillController.currentBillItem.netValue}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
-                            <p:commandButton id="btnAddIx" value="Add" action="#{cashRecieveBillController.addToBillPharmacy()}" ajax="false" onclick="onSubmitButton();"/>
+                            <p:commandButton id="btnAddIx" value="Add" action="#{cashRecieveBillController.addToBillPharmacy()}" ajax="false" />
                         </h:panelGroup>
                         <p:dataTable value="#{cashRecieveBillController.billItems}" rowIndexVar="rowIndex"   var="b" id="items">
                             <f:facet name="header">
@@ -136,7 +136,7 @@
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Remove">
-                                <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" >
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
@@ -160,7 +160,7 @@
 
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  onclick="onSubmitButton();">
+                    <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  >
                     </p:commandButton>
                     <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>
