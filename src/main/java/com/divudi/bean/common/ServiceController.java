@@ -116,34 +116,110 @@ public class ServiceController implements Serializable {
         this.itemsToRemove = itemsToRemove;
     }
 
+    public String navigateToDownloadItems(){
+        return "/admin/items/downloads";
+    }
     
-    
-    public void downloadAsExcel() {
+    // Created by Dr M H B Ariyaratne with the help of ChatGPT by OpenAI
+    public void downloadServicesAsExcel() {
         getItems();
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
+            Sheet sheet = workbook.createSheet("Services");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
             headerRow.createCell(0).setCellValue("No");
             headerRow.createCell(1).setCellValue("Name");
-            // Add more columns as needed
+            headerRow.createCell(2).setCellValue("Printing Name");
+            headerRow.createCell(3).setCellValue("Full Name");
+            headerRow.createCell(4).setCellValue("Code");
+            headerRow.createCell(5).setCellValue("Category");
+            headerRow.createCell(6).setCellValue("Institution");
+            headerRow.createCell(7).setCellValue("Department");
+            headerRow.createCell(8).setCellValue("Printing Name");
+            headerRow.createCell(9).setCellValue("Inward Caegory");
+            headerRow.createCell(10).setCellValue("Active");
+            headerRow.createCell(11).setCellValue("Can change Rate");
+            headerRow.createCell(12).setCellValue("Fees Visible in Inpatient Billing");
+            headerRow.createCell(13).setCellValue("Discount allowed");
+            headerRow.createCell(14).setCellValue("Margins allowed for inward");
+            headerRow.createCell(15).setCellValue("Quentity Required");
+            headerRow.createCell(16).setCellValue("Patient required");
 
-            // Populate the data rows
+            headerRow.createCell(17).setCellValue("Total Fee");
+            headerRow.createCell(18).setCellValue("Total Fee for Foreigners");
+
+            headerRow.createCell(19).setCellValue("Fee 1");
+            headerRow.createCell(20).setCellValue("Fee 1 Type");
+            headerRow.createCell(21).setCellValue("Fee 1 Value");
+            headerRow.createCell(22).setCellValue("Fee 1 Value for Foreigners");
+            headerRow.createCell(23).setCellValue("Fee 1 Department");
+            headerRow.createCell(24).setCellValue("Fee 1 Institution");
+            headerRow.createCell(25).setCellValue("Fee 1 Speciality");
+            headerRow.createCell(26).setCellValue("Fee 1 Staff");
+
+            headerRow.createCell(27).setCellValue("Fee 2");
+            headerRow.createCell(28).setCellValue("Fee 2 Type");
+            headerRow.createCell(29).setCellValue("Fee 2 Value");
+            headerRow.createCell(30).setCellValue("Fee 2 Value for Foreigners");
+            headerRow.createCell(31).setCellValue("Fee 2 Department");
+            headerRow.createCell(32).setCellValue("Fee 2 Institution");
+            headerRow.createCell(33).setCellValue("Fee 2 Speciality");
+            headerRow.createCell(34).setCellValue("Fee 2 Staff");
+
+            headerRow.createCell(35).setCellValue("Fee 2");
+            headerRow.createCell(36).setCellValue("Fee 2 Type");
+            headerRow.createCell(37).setCellValue("Fee 2 Value");
+            headerRow.createCell(38).setCellValue("Fee 2 Value for Foreigners");
+            headerRow.createCell(39).setCellValue("Fee 2 Department");
+            headerRow.createCell(40).setCellValue("Fee 2 Institution");
+            headerRow.createCell(41).setCellValue("Fee 2 Speciality");
+            headerRow.createCell(42).setCellValue("Fee 2 Staff");
+
             int rowNum = 1;
-            for (ClinicalEntity sym : items) {
+            for (Service sym : items) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(rowNum);
                 row.createCell(1).setCellValue(sym.getName());
+                row.createCell(2).setCellValue(sym.getPrintName());
+                row.createCell(3).setCellValue(sym.getFullName());
+                row.createCell(4).setCellValue(sym.getCode());
+                row.createCell(5).setCellValue(sym.getCategory() != null ? sym.getCategory().getName() : "");
+                row.createCell(6).setCellValue(sym.getInstitution() != null ? sym.getInstitution().getName() : "");
+                row.createCell(7).setCellValue(sym.getDepartment() != null ? sym.getDepartment().getName() : "");
+                row.createCell(8).setCellValue(sym.getPrintName());
+                row.createCell(9).setCellValue(sym.getInwardChargeType() != null ? sym.getInwardChargeType().toString() : "");
+                row.createCell(10).setCellValue(sym.isInactive() ? "No" : "Yes");
+                row.createCell(11).setCellValue(sym.isMarginNotAllowed() ? "No" : "Yes");
+                row.createCell(12).setCellValue(sym.isChargesVisibleForInward() ? "Yes" : "No");
+                row.createCell(13).setCellValue(sym.getDiscountAllowed() ? "Yes" : "No");
+                row.createCell(14).setCellValue(sym.isMarginNotAllowed() ? "No" : "Yes");
+                row.createCell(15).setCellValue(sym.isRequestForQuentity() ? "Yes" : "No");
+                row.createCell(16).setCellValue(sym.isPatientNotRequired() ? "No" : "Yes");
+
+                row.createCell(17).setCellValue(sym.getTotal());
+                row.createCell(18).setCellValue(sym.getTotalForForeigner());
+
+                int feeColumnIndex = 19;
+                for (ItemFee f : sym.getItemFeesAuto()) {
+                    row.createCell(feeColumnIndex++).setCellValue(f.getName());
+                    row.createCell(feeColumnIndex++).setCellValue(f.getFeeType().getLabel());
+                    row.createCell(feeColumnIndex++).setCellValue(f.getFee());
+                    row.createCell(feeColumnIndex++).setCellValue(f.getFfee());
+                    row.createCell(feeColumnIndex++).setCellValue(f.getDepartment() != null ? f.getDepartment().getName() : "");
+                    row.createCell(feeColumnIndex++).setCellValue(f.getInstitution() != null ? f.getInstitution().getName() : "");
+                    row.createCell(feeColumnIndex++).setCellValue(f.getSpeciality() != null ? f.getSpeciality().getName() : "");
+                    row.createCell(feeColumnIndex++).setCellValue(f.getStaff() != null ? f.getStaff().getName() : "");
+                }
             }
 
             // Set the response headers to initiate the download
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"procedures.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"services.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
@@ -154,7 +230,7 @@ public class ServiceController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void removeSelectedItems() {
         for (Service s : itemsToRemove) {
             s.setRetired(true);
@@ -689,6 +765,7 @@ public class ServiceController implements Serializable {
         items = getFacade().findByJpql(sql);
         for (Service i : items) {
             List<ItemFee> tmp = getFees(i);
+            i.setItemFees(tmp);
             for (ItemFee itf : tmp) {
                 i.setItemFee(itf);
             }

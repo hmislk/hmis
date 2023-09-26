@@ -407,11 +407,9 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     double totalFfee;
     @Transient
-    @JsonIgnore
     List<ItemFee> itemFees;
 
     @Transient
-    @JsonIgnore
     private List<ItemFee> itemFeesActive;
 
     public List<ItemFee> getItemFeesAuto() {

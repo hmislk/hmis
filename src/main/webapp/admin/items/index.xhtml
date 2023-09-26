@@ -54,6 +54,8 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Relationships" action="#{investigationCategoryController.navigateToRelationships()}" ></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="Religions" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
                                     <p:commandButton   class="w-100"  ajax="false" value="Nationalities" action="#{investigationCategoryController.navigateToReligion()}" ></p:commandButton>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Downloads"
+                                                       action="#{serviceController.navigateToDownloadItems()}" ></p:commandButton>
                                 </div>
                             </p:tab>
                             <p:tab title="Manage Metadata">
@@ -71,7 +73,7 @@
                                         ajax="false" 
                                         value="OPD Service Upload" 
                                         action="/admin/items/opd_service_upload" />
-                                    
+
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Delete of Services" action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Bulk Un-Delete of Services" action="#{investigationCategoryController.navigateToItemBulkDelete()}" />
 
