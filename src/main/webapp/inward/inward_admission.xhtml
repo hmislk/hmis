@@ -94,10 +94,10 @@
                                     <p:tab title="Special Details">
                                         <h:panelGrid columns="2" class="w-100">
                                             <p:selectBooleanCheckbox value="#{admissionController.current.foriegner}"
-                                                                     itemLabel="Mark as Foreigner"/>
+                                                                     itemLabel="Mark as Foreigner" class="my-2"/>
 
                                             <p:selectBooleanCheckbox value="#{admissionController.current.claimable}" 
-                                                                     itemLabel="Claimable" class="mx-2"/>
+                                                                     itemLabel="Claimable" class="mx-2 my-2"/>
 
                                             <p:outputLabel value="Admitted Time"/>
                                             <p:calendar value="#{admissionController.current.dateOfAdmission}" 
