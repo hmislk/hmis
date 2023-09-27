@@ -101,7 +101,6 @@ public class AdmissionController implements Serializable {
     private YearMonthDay yearMonthDay;
     private Bill appointmentBill;
     private PaymentMethodData paymentMethodData;
-    
 
     public PatientEncounterFacade getPatientEncounterFacade() {
         return patientEncounterFacade;
@@ -199,7 +198,6 @@ public class AdmissionController implements Serializable {
 //        return b;
 //
 //    }
-
 //    public List<Admission> completePatientPaymentMax(String qry) {
 //        String sql = "Select b.patientEncounter From "
 //                + " BilledBill b where"
@@ -224,7 +222,6 @@ public class AdmissionController implements Serializable {
 //        return b;
 //
 //    }
-
     public List<Admission> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
@@ -251,7 +248,7 @@ public class AdmissionController implements Serializable {
 
         return suggestions;
     }
-    
+
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
         String sql;
@@ -312,7 +309,6 @@ public class AdmissionController implements Serializable {
 //        }
 //        return suggestions;
 //    }
-
     public List<Admission> completePatientDishcargedNotFinalized(String query) {
         List<Admission> suggestions;
         String sql;
@@ -383,7 +379,6 @@ public class AdmissionController implements Serializable {
 //        }
 //        return suggestions;
 //    }
-
     public void prepareAdd() {
         current = new Admission();
     }
@@ -400,7 +395,6 @@ public class AdmissionController implements Serializable {
 //        }
 //        return admissionsWithErrors;
 //    }
-
     public void setAdmissionsWithErrors(List<Admission> admissionsWithErrors) {
         this.admissionsWithErrors = admissionsWithErrors;
     }
@@ -420,7 +414,7 @@ public class AdmissionController implements Serializable {
         }
         return suggestions;
     }
-    
+
     public List<PatientEncounter> completePatientEncounter(String query) {
         List<PatientEncounter> suggestions;
         String sql;
@@ -448,7 +442,7 @@ public class AdmissionController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
-        makeNull();
+        prepereToAdmitNewPatient();
 //        getItems();
         current = null;
         getCurrent();
@@ -462,7 +456,13 @@ public class AdmissionController implements Serializable {
         return selectText;
     }
 
-    public void makeNull() {
+    public String navigateToAdmitFromMenu() {
+        prepereToAdmitNewPatient();
+        getCurrent().setPatient(getNewPatient());
+        return "/inward/inward_admission";
+    }
+
+    public void prepereToAdmitNewPatient() {
         current = null;
         patientRoom = null;
         items = null;
@@ -594,36 +594,16 @@ public class AdmissionController implements Serializable {
             UtilityController.addErrorMessage("Please Select Referring Doctor");
             return true;
         }
-
-//        if (inwardStaffPaymentBillController.referringDoctorSpeciality == null) {
-//            UtilityController.addErrorMessage("Please Select Referring Doctor Speciality");
-//            return true;
-//        }
-        if (getPatientTabId().toString().equals("tabNewPt")) {
-            if ("".equals(getAgeText())) {
-                UtilityController.addErrorMessage("Patient Age Should be Typed");
-                return true;
-            }
-            if (getNewPatient().getPerson().getName() == null || getNewPatient().getPerson().getName().trim().equals("") || getNewPatient().getPerson().getSex() == null || getAgeText() == null) {
-                UtilityController.addErrorMessage("Can not admit without Patient Name, Age or Sex.");
-                return true;
-            }
+        if (getCurrent().getPatient() == null) {
+            UtilityController.addErrorMessage("Select Patient");
+            return true;
         }
-
-        if (getPatientTabId().toString().trim().equals("tabSearchPt")) {
-            if (getCurrent().getPatient() == null) {
-                UtilityController.addErrorMessage("Select Patient");
-                return true;
-            }
-        }
-
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getLoggedPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
                 UtilityController.addErrorMessage("Please Add Reference No");
                 return true;
             }
         }
-
         return false;
     }
 
@@ -724,10 +704,7 @@ public class AdmissionController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        if (getPatientTabId().equals("tabNewPt")) {
-            savePatient();
-            getCurrent().setPatient(getNewPatient());
-        }
+        savePatient();
         saveGuardian();
         bhtText = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         getCurrent().setBhtNo(getBhtText());
@@ -1045,7 +1022,6 @@ public class AdmissionController implements Serializable {
     /**
      *
      */
-
     @FacesConverter(forClass = Admission.class)
     public static class AdmissionControllerConverter implements Converter {
 

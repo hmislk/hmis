@@ -25,9 +25,9 @@
                                 </p:selectOneMenu>
 
                                 <p:outputLabel class="border px-2 py-2" id="bh" value="#{admissionController.bhtText}"/>
-                                
+
                                 <p:outputLabel class="mx-1 " value="Room No :" />
-                                
+
                                 <p:autoComplete  forceSelection="true"  
                                                  id="cmbDoc" disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
                                                  value="#{admissionController.patientRoom.roomFacilityCharge}" 
@@ -37,7 +37,7 @@
                                 </p:autoComplete>
 
                                 <p:inputText id="comment" value="#{admissionController.current.comments}" placeholder="Comment/Reference No"/>
-                                
+
                                 <p:commandButton 
                                     id="admt" 
                                     action="#{admissionController.saveSelected}" 
@@ -45,7 +45,7 @@
                                     value="Admit"  />
 
                                 <div class="d-flex justify-content-end">
-                                    <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
+                                    <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.prepereToAdmitNewPatient}" />
                                 </div>
 
                                 <p:defaultCommand target="admt"/>
@@ -58,18 +58,7 @@
                     <div class="row">
                         <div class="col-6">
                             <p:panel header="Patient Detail">
-                                <p:tabView  id="tvPt" activeIndex="#{admissionController.patientSearchTab}" >
-                                    <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
-                                    <p:tab  title="New Patient" id="tabNewPt">
-
-                                        <in:inputPatientDetail patient="#{admissionController.newPatient}"/>
-
-                                    </p:tab>
-                                    <p:tab id="tabSearchPt" title="Search Patient" >
-
-                                        <in:searchPatient patient="#{admissionController.current.patient}"/>
-                                    </p:tab>
-                                </p:tabView>
+                                <in:inputPatientDetail patient="#{admissionController.current.patient}"/>
                             </p:panel>
 
                             <p:panel header="Payment Detail" style="margin-top: 10px;">
@@ -244,7 +233,7 @@
 
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admiprepereToAdmitNewPatienttroller.makeNull}" />                   
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 
