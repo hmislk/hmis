@@ -13,7 +13,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-    <div class="row">
+    <div class="row p-1">
         <div class="col-md-4 p-1">
             <p:selectOneMenu id="cmbTitle" value="#{cc.attrs.controller.newPatient.person.title}" placeholder="Title" class="form-control w-100">
                 <f:selectItem itemLabel="Select Title" />
@@ -24,7 +24,7 @@
             <p:inputText autocomplete="off" id="txtNewPtName" value="#{cc.attrs.controller.newPatient.person.name}" class="form-control w-100" style="width: 200px; text-transform: capitalize;" placeholder="Age"></p:inputText>
         </div>
         <div class="col-md-4 p-1">
-            <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.controller.newPatient.person.sex}" style="width: 200px;" class="form-control w-100">
+            <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.controller.newPatient.person.sex}"  class="form-control w-100">
                 <f:selectItem itemLabel="Select Sex" />
                 <f:selectItems value="#{cc.attrs.controller.sex}" />
             </p:selectOneMenu>
@@ -49,14 +49,13 @@
         </div>
     </div>
 
-    <div class="row mt-2">
-        <div class="col-md-9 p-1">
-            <p:autoComplete id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta" class="w-100" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}"  placeholder="Address" ></p:autoComplete>
+    <div class="row mt-2 ">
+        <div class="col-12 p-1">
+            <p:autoComplete  id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta"  itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}"  placeholder="Address" ></p:autoComplete>
         </div>
-        
     </div>
 
-    <div class="row mt-2">
+    <div class="row mt-2 ">
         <div class="col-md-6 p-1">
             <p:inputText id="txtNewPtPhone" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}" placeholder="Mobile"></p:inputText>
         </div>

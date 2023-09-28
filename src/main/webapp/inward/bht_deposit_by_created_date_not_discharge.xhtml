@@ -77,13 +77,13 @@
                             </p:autoComplete>   
 
                             <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateNotDischarged()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateNotDischarged()}"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
                                 <p:dataExporter type="xlsx" target="tbl,tbl2,tbl3" fileName="Deposite_of_Undischaged_Patient"  />
                             </p:commandButton> 
 <!--                             <p:commandButton value="Excel" ajax="false">

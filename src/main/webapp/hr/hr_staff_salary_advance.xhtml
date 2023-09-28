@@ -11,9 +11,9 @@
     <ui:define name="content">
         <h:form>
             <p:panel>
-                <p:commandButton ajax="false" value="Generate Salary Advance" action="#{staffSalaryAdvanceController.generate}" onclick="onSubmitButton();" class="m-2 " />
-                <p:commandButton ajax="false" value="Save Salary Advance" action="#{staffSalaryAdvanceController.saveSalary}" onclick="onSubmitButton();" class="m-2" />
-                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryAdvanceController.clear}"  onclick="onSubmitButton();" class="m-2" />
+                <p:commandButton ajax="false" value="Generate Salary Advance" action="#{staffSalaryAdvanceController.generate}"  class="m-2 " />
+                <p:commandButton ajax="false" value="Save Salary Advance" action="#{staffSalaryAdvanceController.saveSalary}"  class="m-2" />
+                <p:commandButton ajax="false" value="Clear" actionListener="#{staffSalaryAdvanceController.clear}"   class="m-2" />
             </p:panel>
 
             <p:tabView style="min-height:300px;">
@@ -64,7 +64,7 @@
                 </p:tab>
                 <p:tab title="Staff List" >
 
-                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable()}" onclick="onSubmitButton();" class="mb-2" />
+                    <p:commandButton ajax="false" value="Fill Staff" action="#{staffController.createActiveStaffTable()}"  class="mb-2" />
                     
                     <h:panelGrid columns="2"> 
                         <h:outputLabel value="Employee : "/>
@@ -170,7 +170,7 @@
                                 <p:commandButton process="@this" 
                                                  update=":#{p:resolveFirstComponentWithId('lst',view).clientId}" 
                                                  value="View Detail"  
-                                                 actionListener="#{staffSalaryAdvanceController.onEditListener(ii)}" onclick="onSubmitButton();">                              
+                                                 actionListener="#{staffSalaryAdvanceController.onEditListener(ii)}" >                              
                                 </p:commandButton>
                             </f:facet>
                             <p:rowEditor /> 
@@ -239,7 +239,7 @@
                         </p:column>      
                         <p:column style="width:6%">  
                             <f:facet name="header">
-                                <p:commandButton ajax="false" value="Refresh" onclick="onSubmitButton();" />
+                                <p:commandButton ajax="false" value="Refresh"  />
                             </f:facet>
                             <p:rowEditor />  
                         </p:column>  

@@ -40,7 +40,7 @@
                         <p:commandButton ajax="false" value="Process Not Approved" action="#{hrReportController.createFingerPrintNotApproved()}"/>
                         <p:commandButton ajax="false" value="Process Approved" action="#{hrReportController.createFingerPrintApproved()}"/>
                         <p:commandButton ajax="false" value="Approve Selected" action="#{hrReportController.approve()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_finger_print_record_approved"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

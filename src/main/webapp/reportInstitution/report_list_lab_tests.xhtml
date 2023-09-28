@@ -23,7 +23,7 @@
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
                                 </p:calendar>
-                                <p:commandButton id="btnSearch2" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                <p:commandButton id="btnSearch2" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTableAll()}"  />
                                 <p:commandButton ajax="false" value="Download as Excel" >
                                     <p:dataExporter target="tblBills" type="xls" fileName="test_list" ></p:dataExporter>
                                 </p:commandButton>

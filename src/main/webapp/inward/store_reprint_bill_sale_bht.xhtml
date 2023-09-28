@@ -24,16 +24,16 @@
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Cancel" 
                                             action="/store/store_cancel_bill_retail_bht"
-                                             disabled="#{storeBillSearch.bill.cancelled}" onclick="onSubmitButton();" >                           
+                                             disabled="#{storeBillSearch.bill.cancelled}"  >                           
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Return Item" 
                                             action="/store/store_bill_return_bht_issue"   
-                                             disabled="#{storeBillSearch.bill.cancelled eq true}" onclick="onSubmitButton();" >                                
+                                             disabled="#{storeBillSearch.bill.cancelled eq true}"  >                                
                                 <f:setPropertyActionListener value="#{storeBillSearch.bill}" 
                                                              target="#{storeBhtIssueReturnController.bill}"  />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Inward_Payment_Bill"  />
                             </p:commandButton> 
 
@@ -47,12 +47,12 @@
                     <p:panel>
                         <p:commandButton ajax="false" value="Mark As Checked"
                                         action="#{storeBillSearch.markAsChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}" onclick="onSubmitButton();" />
+                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
                         <p:commandButton ajax="false" value="Mark As Un Check"
                                         action="#{storeBillSearch.markAsUnChecked()}"
-                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Back To Intrim"
-                                        action="/inward/inward_bill_intrim" onclick="onSubmitButton();" />
+                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                        <p:commandButton ajax="false" value="Back To Interim"
+                                        action="/inward/inward_bill_intrim"  />
                     </p:panel>
 
                     <h:panelGrid columns="2">

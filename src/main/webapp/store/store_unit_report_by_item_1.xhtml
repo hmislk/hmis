@@ -44,7 +44,7 @@
                         <p:spacer width="95" height="1"/>
                         <p:commandButton ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCountsWithOutMarginStore}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tbl" fileName="store_unit_report_by_item"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

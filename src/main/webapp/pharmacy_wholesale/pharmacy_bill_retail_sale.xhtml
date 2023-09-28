@@ -336,7 +336,7 @@
                                             </h:panelGroup>
 
                                             <p:commandButton ajax="false" accesskey="s" value="Settle" 
-                                                             onclick="onSubmitButton();"
+                                                             
                                                              action="#{pharmacyWholeSaleController.settleBillWithPay}" >
                                                 <f:facet name="title" >
                                                     <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
@@ -345,7 +345,7 @@
                                             </p:commandButton>
                                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                                              ajax="false" action="pharmacy_bill_retail_sale"
-                                                             onclick="onSubmitButton();"
+                                                             
                                                              actionListener="#{pharmacyWholeSaleController.resetAll()}"  ></p:commandButton>
 
 
@@ -523,7 +523,7 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                              ajax="false" action="pharmacy_bill_retail_sale" 
-                                             onclick="onSubmitButton();"
+                                             
                                              actionListener="#{pharmacyWholeSaleController.resetAll()}" ></p:commandButton>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController.pharmacyWholeSale()}" />
                         </div>

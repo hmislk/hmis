@@ -10,22 +10,25 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Bills" >
-
-                        <h:panelGrid columns="2" >
+                    <p:panel header="Search Bills" class="mt-4" >
+                        <h:panelGrid columns="12" class="w-100 mb-2" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="fromDate" value="#{inwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            <p:calendar class="mx-2 w-100" id="fromDate" value="#{inwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
                             </p:calendar>
+
+
+
+
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{inwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
                             </p:calendar>                                
                             <h:outputLabel value="BHT No"/>
                             <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                            value="#{inwardReportController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >                                
+                                             value="#{inwardReportController.patientEncounter}"
+                                             completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                             var="myItem" itemValue="#{myItem}" 
+                                             itemLabel="#{myItem.bhtNo}" 
+                                             >                                
                                 <p:column>
                                     #{myItem.bhtNo}
                                 </p:column>
@@ -38,15 +41,21 @@
                                 <p:column>
                                     <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                                 </p:column>
+
+                            </p:autoComplete>  
+                            <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{inwardReportController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                            <p:defaultCommand target="btnSearch2" />
+
                             </p:autoComplete>                            
                         </h:panelGrid>
 
 
-                        <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{inwardReportController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                        <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{inwardReportController.createPatientInvestigationsTableAll()}"  />
 
 
+                        </h:panelGrid>
 
-                        <p:defaultCommand target="btnSearch2" />
+
 
 
 

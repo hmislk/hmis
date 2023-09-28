@@ -12,10 +12,10 @@
         <h:form>
             <p:panel header="Manage Person Institutions(Channeling)" >
                 <p:panel>
-                    <p:outputLabel value="Instituion" />
+                    <p:outputLabel class="mx-2" value="Instituion" />
                     <au:institution value="#{personInstitutionController.institution}" ></au:institution>
                     <au:completeDoctorSpeciality value="#{personInstitutionController.speciality}" />
-                    <p:commandButton value="Fill Doctors" action="#{personInstitutionController.createWithOutInstitutionPersonsStaffs}" ajax="false" />
+                    <p:commandButton class="mx-1" value="Fill Doctors" action="#{personInstitutionController.createWithOutInstitutionPersonsStaffs}" ajax="false" />
                 </p:panel>
                 <p:panel>
                     <p:dataTable  value="#{personInstitutionController.withOutInstitutionPersonsStaffs}" 
@@ -46,7 +46,7 @@
                             <h:outputLabel value="#{s.speciality.name}"/>
                         </p:column>
                     </p:dataTable>
-                    <p:commandButton value="Add Doctors" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
+                    <p:commandButton class="my-2" value="Add Doctors" action="#{personInstitutionController.addStaffToInstitutionPersons}" ajax="false" />
                 </p:panel>
                 <p:panel header="Person Institutions Search">
                     <h:panelGrid columns="2">
@@ -56,8 +56,8 @@
                         <au:completeDoctorSpeciality value="#{personInstitutionController.reportKeyWord.speciality}" />
                         <p:outputLabel value="Staff" />
                         <au:completeConsultant value="#{personInstitutionController.reportKeyWord.staff}" />
-                        <p:commandButton value="Fill Person Institutions" action="#{personInstitutionController.fillStaffInstitutionPersons}" ajax="false" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton class="my-2" value="Fill Person Institutions" action="#{personInstitutionController.fillStaffInstitutionPersons}" ajax="false" />
+                        <p:commandButton class="my-2" ajax="false" value="Excel"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="Channel_Doctor_List"/>
                         </p:commandButton>
                     </h:panelGrid>

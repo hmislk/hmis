@@ -5,8 +5,10 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.util.JsfUtil;
 import com.divudi.data.BillType;
 import com.divudi.data.dataStructure.StockReportRecord;
@@ -14,6 +16,7 @@ import com.divudi.data.inward.SurgeryBillType;
 import com.divudi.data.table.String1Value3;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -39,9 +42,12 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
@@ -113,6 +119,11 @@ public class ReportsTransfer implements Serializable {
     ////////////
     @Inject
     CommonController commonController;
+    
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
+    @Inject
+    private SessionController sessionController;
 
     /**
      * Methods
@@ -441,7 +452,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentBHTIssueByBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillDepartmentBHTIssueByBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         Map m = new HashMap();
         String sql;
@@ -464,8 +501,15 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMargin();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+       
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill(/faces/pharmacy/pharmacy_report_bht_issue_bill.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill(/faces/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true)");
     }
 
     Item item;
@@ -479,7 +523,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentBHTIssueByBillItems() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillDepartmentBHTIssueByBillItems()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         Map m = new HashMap();
         String sql;
@@ -509,8 +579,13 @@ public class ReportsTransfer implements Serializable {
             marginValue += b.getMarginValue();
             netTotalValues = netTotalValues + b.getNetValue();
         }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill item(/faces/pharmacy/pharmacy_report_bht_issue_billItem.xhtml)");
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - by bill item(/faces/pharmacy/pharmacy_report_bht_issue_billItem?faces-redirect=true)");
     }
 
     List<String1Value3> listz;
@@ -525,7 +600,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void createDepartmentIssue() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createDepartmentIssue()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         listz = new ArrayList<>();
 
@@ -549,8 +650,13 @@ public class ReportsTransfer implements Serializable {
             netTotalValues += dbl;
 
         }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit issue by departments(/faces/pharmacy/pharmacy_report_unit_issue_department_by_department.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+      
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit issue by departments(/faces/pharmacy/pharmacy_report_unit_issue_department_by_department?faces-redirect=true)");
 
     }
 
@@ -634,8 +740,36 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentUnitIssueByBill() {
-        Date startTime = new Date();
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillDepartmentUnitIssueByBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+       
         Map m = new HashMap();
         String sql;
 
@@ -668,8 +802,14 @@ public class ReportsTransfer implements Serializable {
             discountsValue = discountsValue + b.getDiscount();
             netTotalValues = netTotalValues + b.getNetTotal();
         }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit issue by bill (/faces/pharmacy/pharmacy_report_unit_issue_bill.xhtml)");
+         Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+    
+    
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit issue by bill (/faces/pharmacy/pharmacy_report_unit_issue_bill?faces-redirect=true)");
     }
 
     public void fillDepartmentUnitIssueByBillStore() {
@@ -918,7 +1058,36 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillItemCounts() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillItemCounts()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
+        
         List<Object[]> list = fetchBillItem(BillType.PharmacyIssue);
 
         if (list == null) {
@@ -956,15 +1125,53 @@ public class ReportsTransfer implements Serializable {
         billDiscount = fetchBillDiscount(BillType.PharmacyIssue);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyIssue);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (batch)(/faces/pharmacy/unit_report_by_item.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (batch)(/faces/pharmacy/unit_report_by_item.xhtml?faces-redirect=true)");
     }
 
     public void fillItemCountsWithOutMarginPharmacy() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
 
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillItemCountsWithOutMarginPharmacy()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
         fillItemCountsWithOutMargin(BillType.PharmacyIssue);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (/faces/pharmacy/unit_report_by_item_1.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Department Issue/Unit Issue by item (/faces/pharmacy/unit_report_by_item_1?faces-redirect=true)");
     }
 
     public void fillItemCountsWithOutMarginStore() {
@@ -1049,7 +1256,33 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillItemCountsBht() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillItemCountsBht()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         List<Object[]> list = fetchBillItem(BillType.PharmacyBhtPre, null);
 
@@ -1071,14 +1304,6 @@ public class ReportsTransfer implements Serializable {
             row.setMargin((Double) obj[2]);
             row.setDiscount((Double) obj[3]);
             row.setNet((Double) obj[4]);
-
-//            Double pre = calCount(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
-//            Double preCancel = calCountCan(row.getItemBatch(), BillType.PharmacyBhtPre, new PreBill());
-//            Double returned = calCountReturn(row.getItemBatch(), BillType.PharmacyBhtPre, new RefundBill());
-//            System.err.println("PRE " + pre);
-//            System.err.println("PRE CAN " + preCancel);
-//            System.err.println("Return " + returned);
-//            long retturnedCancel = calCountCan(row.getItem(), new RefundBill());
             row.setCount((Double) obj[5]);
 
             totalsValue += row.getGross();
@@ -1093,8 +1318,15 @@ public class ReportsTransfer implements Serializable {
         billMargin = fetchBillMargin(BillType.PharmacyBhtPre);
         billDiscount = fetchBillDiscount(BillType.PharmacyBhtPre);
         billNetTotal = fetchBillNetTotal(BillType.PharmacyBhtPre);
+        
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml or /faces/inward/report_bht_issue_by_item.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "BHT issue by item(/faces/inward/pharmacy_report_bht_issue_by_item.xhtml or /faces/inward/report_bht_issue_by_item?faces-redirect=true)");
 
     }
 
@@ -1450,8 +1682,35 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillTheaterTransfersReceiveWithBHTIssue() {
-        Date startTime = new Date();
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("fillTheaterTransfersReceiveWithBHTIssue()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
         if (fromDepartment == null || toDepartment == null) {
             JsfUtil.addErrorMessage("Please Check From To Departments");
             return;
@@ -1502,7 +1761,12 @@ public class ReportsTransfer implements Serializable {
             itemBHTIssueCountTrancerReciveCounts.add(count);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer receieve vs BHT issue quantity total by item(/faces/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer receieve vs BHT issue quantity total by item(/faces/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count?faces-redirect=true)");
 
     }
 

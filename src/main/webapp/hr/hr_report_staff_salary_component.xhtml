@@ -63,7 +63,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryComponent()}"/>
                         <p:commandButton ajax="false" value="Process Special" action="#{hrReportController.createStaffSalaryComponentSpecial()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="staff_salary_component"/>
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#">

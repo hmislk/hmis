@@ -9,71 +9,75 @@
 
 
     <ui:define name="content">
-        <h:form>
-            <p:commandButton ajax="false" 
-                             action="#{roomOccupancyController.createPatientRoom}"
-                             value="Fill" onclick="onSubmitButton();" />
-            <p:commandButton ajax="false" 
-                             action="#{roomOccupancyController.createPatientRoomAll}"
-                             value="Fill All" onclick="onSubmitButton();" />
-            <p:dataTable 
-                value="#{roomOccupancyController.patientRooms}" 
-                var="pr"
-                paginator="true"
-                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                rowsPerPageTemplate="5,10,15"
-                >
-                <f:facet name="header">
-                    Room Occupancy Detail
-                </f:facet>
-                <p:column headerText="ID">
-                    #{pr.id}                    
-                </p:column>
-                <p:column headerText="Room"
-                          sortBy="#{pr.roomFacilityCharge.room.name}"
-                          filterBy="#{pr.roomFacilityCharge.room.name}"
-                          filterMatchMode="contains">
-                    #{pr.roomFacilityCharge.room.name}                    
-                </p:column>
-                <p:column headerText="BHT No" 
-                          sortBy="#{pr.patientEncounter.bhtNo}"
-                          filterBy="#{pr.patientEncounter.bhtNo}"
-                          filterMatchMode="contains">
-                    #{pr.patientEncounter.bhtNo}
-                </p:column>
-                <p:column headerText="Patient" >
-                    #{pr.patientEncounter.patient.person.name}
-                </p:column>
-                <p:column headerText="Guardian">
-                    #{pr.patientEncounter.guardian.name}
-                </p:column>
-                <p:column headerText="Guardian Phone">
-                    #{pr.patientEncounter.guardian.phone}
-                </p:column>
-                <p:column headerText="Guardian Addres">
-                    #{pr.patientEncounter.guardian.address}
-                </p:column>
-                <p:column headerText="Credit Company Name">
-                    #{pr.patientEncounter.creditCompany.name}
-                </p:column>
-                <p:column headerText="Payment Method">
-                    #{pr.patientEncounter.paymentMethod}
-                </p:column>
-                <p:column headerText="Room No">
-                    <h:outputLabel value="#{pr.roomFacilityCharge.room.name}"/>
-                </p:column>
-                <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
-                    <p:selectBooleanCheckbox value="#{pr.discharged}" 
-                                             itemLabel="Discharge"/>
-                </p:column>
-                <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
-                    <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}" onclick="onSubmitButton();" />
-                </p:column>
-            </p:dataTable>
+        <p:panel>
+            <f:facet name="header">
+                Room Occupancy Details
+            </f:facet>
+            <h:form>
+                <p:commandButton ajax="false" 
+                                 action="#{roomOccupancyController.createPatientRoom}"
+                                 value="Fill"   />
+                <p:commandButton ajax="false" 
+                                 action="#{roomOccupancyController.createPatientRoomAll}"
+                                 value="Fill All"  class="mx-2" />
+                <p:dataTable 
+                    value="#{roomOccupancyController.patientRooms}" 
+                    var="pr"
+                    paginator="true"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="5,10,15" class="mt-3"
+                    >
+
+                    <p:column headerText="ID">
+                        #{pr.id}                    
+                    </p:column>
+                    <p:column headerText="Room"
+                              sortBy="#{pr.roomFacilityCharge.room.name}"
+                              filterBy="#{pr.roomFacilityCharge.room.name}"
+                              filterMatchMode="contains">
+                        #{pr.roomFacilityCharge.room.name}                    
+                    </p:column>
+                    <p:column headerText="BHT No" 
+                              sortBy="#{pr.patientEncounter.bhtNo}"
+                              filterBy="#{pr.patientEncounter.bhtNo}"
+                              filterMatchMode="contains">
+                        #{pr.patientEncounter.bhtNo}
+                    </p:column>
+                    <p:column headerText="Patient" >
+                        #{pr.patientEncounter.patient.person.name}
+                    </p:column>
+                    <p:column headerText="Guardian">
+                        #{pr.patientEncounter.guardian.name}
+                    </p:column>
+                    <p:column headerText="Guardian Phone">
+                        #{pr.patientEncounter.guardian.phone}
+                    </p:column>
+                    <p:column headerText="Guardian Addres">
+                        #{pr.patientEncounter.guardian.address}
+                    </p:column>
+                    <p:column headerText="Credit Company Name">
+                        #{pr.patientEncounter.creditCompany.name}
+                    </p:column>
+                    <p:column headerText="Payment Method">
+                        #{pr.patientEncounter.paymentMethod}
+                    </p:column>
+                    <p:column headerText="Room No">
+                        <h:outputLabel value="#{pr.roomFacilityCharge.room.name}"/>
+                    </p:column>
+                    <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
+                        <p:selectBooleanCheckbox value="#{pr.discharged}" 
+                                                 itemLabel="Discharge"/>
+                    </p:column>
+                    <p:column rendered="#{webUserController.hasPrivilege('InwardRoomDischarge')}" >
+                        <p:commandButton ajax="false" value="Update" action="#{roomOccupancyController.update(pr)}"  />
+                    </p:column>
+                </p:dataTable>
 
 
 
-        </h:form>
+            </h:form>
+        </p:panel>
+
     </ui:define>
 
 </ui:composition>

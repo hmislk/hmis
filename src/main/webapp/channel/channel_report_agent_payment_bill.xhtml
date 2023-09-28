@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/channel/channel_reports.xhtml">
+            <ui:define name="subContent">
                 <h:form>
                     <p:panel>
                         <p:panel>
@@ -39,7 +39,7 @@
                                     </p:autoComplete>
                                 </h:panelGrid>
                                 <h:panelGrid columns="3" >
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportTempController.createAgentPaymentTable()}" onclick="onSubmitButton();"/>
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportTempController.createAgentPaymentTable()}" />
                                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                                         <p:printer target="reportPrint"  />
                                     </p:commandButton>

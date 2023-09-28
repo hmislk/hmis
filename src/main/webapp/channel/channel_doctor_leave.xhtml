@@ -40,7 +40,7 @@
                     <p:column>
                         <p:commandButton value="Remove" 
                                          ajax="false" action="#{serviceSessionLeaveController.remove(d)}" 
-                                         onclick="onSubmitButton();" disabled="#{d.retired eq true}"
+                                          disabled="#{d.retired eq true}"
                                          >
                             <!--<f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>-->
                         </p:commandButton>
@@ -53,7 +53,7 @@
                     <f:ajax event="dateSelect" execute="@this"  />
                 </p:calendar>
                 <p:outputLabel/>
-                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.removeLeave}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.removeLeave}" />
             </h:panelGrid>
 
         </h:form>

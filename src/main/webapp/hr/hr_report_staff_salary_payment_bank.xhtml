@@ -73,7 +73,7 @@
                         <p:watermark for="chq" value="Cheque Number"/>
                         <p:commandButton ajax="false" value="Update" action="#{hrReportController.update()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_salary_payment_bank"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -293,7 +293,7 @@
                                                      ajax="false"
                                                      value="Update"  
                                                      actionListener="#{hrReportController.onEditBlockedUpdate(ss)}" 
-                                                     onclick="onSubmitButton();">                              
+                                                     >                              
                                     </p:commandButton>                          
                                 </p:column>
 

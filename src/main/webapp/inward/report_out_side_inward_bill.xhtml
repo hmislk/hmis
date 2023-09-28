@@ -54,13 +54,13 @@
                                                          action="#{inwardReportController.createOutSideBillsByDischargeDate()}"
                                                          />-->
 
-                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();">
+                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill" />
                     </p:commandButton>
-<!--                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
+<!--                    <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton"  actionListener="#{inwardReportController.createOutSideBillsByAddedDate()}">
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_discharge" />
                     </p:commandButton>
-                    <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardReportController.createOutSideBillsByDischargeDate()}">
+                    <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton"  actionListener="#{inwardReportController.createOutSideBillsByDischargeDate()}">
                         <p:dataExporter type="xlsx" target="tbl" fileName="report_out_side_inward_bill_admit" />
                     </p:commandButton>-->
 

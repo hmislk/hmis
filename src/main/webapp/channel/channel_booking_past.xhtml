@@ -505,26 +505,26 @@
                                              action="#{channelBillController.cancelAgentPaidBill()}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                             <p:commandButton ajax="false" value="Cancel" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCashFlowBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                             <p:commandButton ajax="false" value="Cancel Booking" 
                                              rendered="#{(channelBillController.billSession.bill.billType eq 'ChannelOnCall' or channelBillController.billSession.bill.billType eq 'ChannelStaff')and channelBillController.billSession.bill.paidBill eq null}"
                                              action="#{channelBillController.cancelBookingBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                             <p:commandButton ajax="false" value="Cancel Paid" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' and channelBillController.billSession.bill.billType ne 'ChannelAgent'}"
                                              action="#{channelBillController.cancelCreditPaidBill}"
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true
                                                          or channelBillController.billSession.bill.paidAmount eq 0}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
                         </p:tab>
 
 
@@ -569,14 +569,14 @@
                                              action="#{channelBillController.refundAgentBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="onSubmitButton();"/>
+                                             />
 
                             <p:commandButton ajax="false" value="Refund" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCashFlow' and channelBillController.billSession.billItem.bill.paymentMethod ne 'Agent'}"
                                              action="#{channelBillController.refundCashFlowBill}" 
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true}"
-                                             onclick="onSubmitButton();"/>
+                                             />
 
                             <p:commandButton ajax="false" value="Refund Paid" 
                                              rendered="#{channelBillController.billSession.bill.billType.parent eq 'ChannelCreditFlow' }"
@@ -584,7 +584,7 @@
                                              disabled="#{channelBillController.billSession.bill.refunded==true
                                                          or channelBillController.billSession.bill.cancelled==true
                                                          or channelBillController.billSession.bill.paidAmount eq 0}"
-                                             onclick="onSubmitButton();"/>
+                                             />
 
 
                         </p:tab>
@@ -697,11 +697,11 @@
                                 <p:commandButton ajax="false" value="Update Serial" action="#{bookingPastController.updateSerial()}"
                                                  disabled="#{bookingPastController.selectedBillSession.bill.cancelled==true
                                                              or bookingPastController.selectedBillSession.bill.refunded==true
-                                                             or !webUserController.hasPrivilege('ChannellingEditSerialNo')}" onclick="onSubmitButton();"/>
+                                                             or !webUserController.hasPrivilege('ChannellingEditSerialNo')}" />
                                 <p:commandButton ajax="false" value="Update Patient" action="#{bookingPastController.updatePatient}"
                                                  disabled="#{bookingPastController.selectedBillSession.bill.cancelled==true
                                                              or bookingPastController.selectedBillSession.bill.refunded==true
-                                                             or !webUserController.hasPrivilege('ChannellingEditPatientDetails')}" onclick="onSubmitButton();"/>
+                                                             or !webUserController.hasPrivilege('ChannellingEditPatientDetails')}" />
 
                             </h:panelGrid>
 
@@ -851,29 +851,29 @@
                             <h:panelGrid columns="2">
                                 <p:panel header="Selected Session">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton value="Nurse View " action="#{bookingPastController.nurse}"  onclick="onSubmitButton();" >                                       
+                                        <p:commandButton value="Nurse View " action="#{bookingPastController.nurse}"   >                                       
                                         </p:commandButton>
-                                        <p:commandButton value="Doctor View " action="#{bookingPastController.doctor}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Doctor View " action="#{bookingPastController.doctor}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="Session View " action="#{bookingPastController.session}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Session View " action="#{bookingPastController.session}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="Phone View " action="#{bookingPastController.phone}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="Phone View " action="#{bookingPastController.phone}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="User View " action="#{bookingPastController.user}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="User View " action="#{bookingPastController.user}" ajax="false" >                                        
                                         </p:commandButton>
                                     </h:panelGrid>
 
                                 </p:panel>
                                 <p:panel header="Today's">
                                     <h:panelGrid columns="1">
-                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Patient" action="channel_patient_view_today" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="All Doctor" action="channel_doctor_view_past" actionListener="#{channelReportController.createTotalDoctor(bookingPastController.date)}" ajax="false" onclick="onSubmitButton();">                                        
+                                        <p:commandButton value="All Doctor" action="channel_doctor_view_past" actionListener="#{channelReportController.createTotalDoctor(bookingPastController.date)}" ajax="false" >                                        
                                         </p:commandButton>
-                                        <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" onclick="onSubmitButton();">     
+                                        <p:commandButton value="All Absent" action="channel_absent_view_today" actionListener="#{channelReportController.createTodayAbsentList()}" ajax="false" >     
                                             <f:setPropertyActionListener value="#{bookingPastController.date}" target="#{channelReportController.date}"/>
                                         </p:commandButton>
-                                        <p:commandButton value="All Cancel" action="channel_cancel_view_today" actionListener="#{channelReportController.createTodayCancelList()}" ajax="false" onclick="onSubmitButton();">  
+                                        <p:commandButton value="All Cancel" action="channel_cancel_view_today" actionListener="#{channelReportController.createTodayCancelList()}" ajax="false" >  
                                             <f:setPropertyActionListener value="#{bookingPastController.date}" target="#{channelReportController.date}"/>
                                         </p:commandButton>
                                     </h:panelGrid>                                    

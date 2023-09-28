@@ -10,7 +10,7 @@
         <ui:composition template="/credit/index_opd_due_access.xhtml">
             <ui:define name="subcontent">
                 <h:form>            
-                    <p:commandButton id="btnSearch" ajax="false" value="Process Access Age" action="#{creditCompanyDueController.createAgeAccessTable()}"  onclick="onSubmitButton();"/>
+                    <p:commandButton id="btnSearch" ajax="false" value="Process Access Age" action="#{creditCompanyDueController.createAgeAccessTable()}"  />
                     <p:defaultCommand target="btnSearch"/>
                     
                     <p:dataTable id="lst" value="#{creditCompanyDueController.creditCompanyAge}" var="i"

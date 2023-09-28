@@ -16,8 +16,44 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <h:outputStylesheet>
+                    /* Styles for screen display */
+                    .page {
+                    
+                    }
+                    .d-flex {
+                    display: flex;
+                    }
+                    .flex-grow-1 {
+                    flex: 1;
+                    }
+                    .bill-item {
+                    border: 1px solid #ddd;
+                    margin: 20px;
+                    padding: 20px;
+                    background-color: whitesmoke;
+                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
+                    page-break-after: always;
+                    }
 
+                    /* Styles for print */
+                    @media print {
+                    .bill-item {
+                    page-break-after: always;
+                    margin: 0px;
+                    padding: 0px
+                    }
+                    .page {
+                    border: none;
+                    background-color: transparent;
+                    box-shadow: none;
+                    margin: 0px;
+                    padding: 0px
+                    }
+                    }
+                </h:outputStylesheet>
 
+       
 
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
@@ -30,9 +66,9 @@
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
+                <div class="text-center">
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} " class="w-25"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" class="w-25"/>
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
@@ -45,10 +81,8 @@
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <div class="billline">
-                <br/>
-                <hr></hr>   
-                <br/>
+            <div class="billline">                
+                <hr></hr>                
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -299,10 +333,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                            <td class="totalsBlock" style="text-align:left; width: 60%; font-weight: bold;">
                                 <h:outputLabel value="Total" />
                             </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px; font-weight: bold;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
