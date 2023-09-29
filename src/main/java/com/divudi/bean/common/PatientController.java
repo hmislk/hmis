@@ -121,6 +121,8 @@ public class PatientController implements Serializable {
     OpdBillController opdBillController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    AppointmentController appointmentController;
     /**
      *
      * Class Variables
@@ -344,6 +346,18 @@ public class PatientController implements Serializable {
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission";
+    }
+    
+    public String navigateToInwardAppointmentFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        appointmentController.prepereForInwardAppointPatient();
+        appointmentController.setSearchedPatient(getCurrent());
+        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/inward/inward_appointment";
     }
 
     public String navigateToOpdPatientEdit() {
