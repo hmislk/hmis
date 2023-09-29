@@ -140,6 +140,12 @@
                                                     <p:commandButton value="Lab Reports" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-1">
                                                         <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                     </p:commandButton>
+                                                    <p:commandButton value="Inward Appointments"
+                                                                     action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                                                     ajax="false"
+                                                                     styleClass="mx-1">
+                                                        <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    </p:commandButton>
 
                                                 </div>
                                             </div>

@@ -7,7 +7,8 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
+                xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill">
 
 
 
@@ -46,6 +47,7 @@
 
                                 <p:commandButton  value="Settle" action="#{appointmentController.settleBill}" ajax="false"   class="m-1">
                                 </p:commandButton>
+                                <h1>#{appointmentController.searchedPatient}</h1>
                                 <p:commandButton value="New Bill" ajax="false" action="#{appointmentController.prepareNewBill()}" >
                                 </p:commandButton>
 
@@ -59,13 +61,17 @@
 
                                     <p:panel>
                                         <h:panelGroup id="panelPatient" >
-
-                                            <p:tabView id="tvPt">
+                                            <p:panel header="Patient Details">
+                                                <ez:patientDetail  patient="#{appointmentController.searchedPatient}"/>
+                                                
+                                            </p:panel>
+<!--                                            <p:tabView id="tvPt">
                                                 <p:ajax event="tabChange"  process="@this" listener="#{appointmentController.onTabChange}" />
 
                                                 <p:tab  id="tabNewPt" title="New Patient"  >
                                                     <ez:patientDetail  controller="#{appointmentController}"/>
                                                 </p:tab>
+                                                
                                                 <p:tab id="tabSearchPt" title="Search Patient">
 
                                                     <h:panelGrid columns="1" >
@@ -97,7 +103,7 @@
 
                                                 </p:tab>
 
-                                            </p:tabView>
+                                            </p:tabView>-->
 
                                         </h:panelGroup>
                                     </p:panel>
@@ -194,7 +200,13 @@
 
 
                 <h:panelGroup rendered="#{appointmentController.printPreview}" >
-
+                    <p:commandButton value="Print"></p:commandButton>
+                    <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}"></p:commandButton>
+                    <p:commandButton value="New Inward Appointment" action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"></p:commandButton>
+                    
+                    <h1>#{appointmentController.currentBill.id}</h1>
+                    <h1>#{appointmentController.currentAppointment.appointmentDate}</h1>
+                    <h1>#{appointmentController.currentAppointment.patient.person.name}</h1>
 
                 </h:panelGroup>
 

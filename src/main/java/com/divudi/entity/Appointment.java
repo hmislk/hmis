@@ -22,7 +22,7 @@ import javax.persistence.Temporal;
  * @author Buddhika
  */
 @Entity
-public class Appointment implements Serializable {
+public class Appointment extends PatientEncounter implements Serializable {
     @OneToOne
     private Bill bill;
 
