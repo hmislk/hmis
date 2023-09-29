@@ -8,8 +8,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-                xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill">
-
+                xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:ia="http://java.sun.com/jsf/composite/inward/bht_1">
 
 
 
@@ -200,13 +200,11 @@
 
 
                 <h:panelGroup rendered="#{appointmentController.printPreview}" >
-                    <p:commandButton value="Print"></p:commandButton>
-                    <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}"></p:commandButton>
-                    <p:commandButton value="New Inward Appointment" action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"></p:commandButton>
+                   
+                    <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}" ></p:commandButton>&nbsp;
+                    <p:commandButton value="New Inward Appointment" action="#{appointmentController.navigateToInwardAppointmentFromMenu()}" class="my-1"></p:commandButton>
+                    <ez:inward_appointment_print controller="#{appointmentController}"/>
                     
-                    <h1>#{appointmentController.currentBill.id}</h1>
-                    <h1>#{appointmentController.currentAppointment.appointmentDate}</h1>
-                    <h1>#{appointmentController.currentAppointment.patient.person.name}</h1>
 
                 </h:panelGroup>
 
