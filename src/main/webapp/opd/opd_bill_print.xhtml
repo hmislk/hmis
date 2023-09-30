@@ -11,7 +11,6 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
                     You are NOT authorized
                 </h:panelGroup>
@@ -58,16 +57,9 @@
                                                 </h:panelGroup>
                                                 <!--Pasindu-->
                                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                                    <div class="page">
-                                                        <ui:repeat value="#{opdBillController.bills}" var="b">
-                                                            <div class="bill-item">
-                                                                <bi:five_five_paper_with_headings bill="#{b}"/> 
-                                                            </div>
-
-                                                        </ui:repeat>
-                                                    </div>
-
-
+                                                    <ui:repeat value="#{opdBillController.bills}" var="b">
+                                                        <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                                                    </ui:repeat>
                                                 </h:panelGroup>
                                                 <!--Pavan-->
                                                 <h:panelGroup id="fiveFivePaperWithHeadings"  
