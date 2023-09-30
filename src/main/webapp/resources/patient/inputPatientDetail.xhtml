@@ -14,6 +14,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+    
         <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
             <!--            <p:outputLabel value="Title"/>-->
             <p:selectOneMenu  id="cmbTitle" value="#{cc.attrs.patient.person.title}" class="w-100" >

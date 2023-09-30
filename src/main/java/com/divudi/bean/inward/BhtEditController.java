@@ -72,6 +72,7 @@ public class BhtEditController implements Serializable {
     List<Admission> selectedItems;
     private List<Admission> items = null;
     private List<Patient> patientList;
+    private Patient newPatient;
     /////////////
     private Admission current;
     String selectText = "";
@@ -175,7 +176,7 @@ public class BhtEditController implements Serializable {
         getEjbFacade().edit(current);
 
         UtilityController.addSuccessMessage("Bht Successfully Cancelled");
-        makeNull();
+        prepereForNew();
     }
 
     public Title[] getTitle() {
@@ -232,6 +233,18 @@ public class BhtEditController implements Serializable {
     public void prepareAdd() {
         current = new Admission();
     }
+    
+    public Patient getNewPatient() {
+        if (newPatient == null) {
+            Person p = new Person();
+            newPatient = new Patient();
+            newPatient.setPerson(p);
+        }
+        return newPatient;
+    }
+    public void setNewPatient(Patient newPatient) {
+        this.newPatient = newPatient;
+    }
 
     public void delete() {
 
@@ -244,7 +257,7 @@ public class BhtEditController implements Serializable {
         } else {
             UtilityController.addSuccessMessage("Nothing to Delete");
         }
-        makeNull();
+        prepereForNew();
         getItems();
         current = null;
         getCurrent();
@@ -258,7 +271,7 @@ public class BhtEditController implements Serializable {
         return selectText;
     }
 
-    public void makeNull() {
+    public void prepereForNew() {
         patientRoom = null;
         selectedItems = null;
         items = null;
@@ -279,7 +292,7 @@ public class BhtEditController implements Serializable {
             UtilityController.addSuccessMessage("Final Bill Updated");
         }
         UtilityController.addSuccessMessage("Detail Updated");
-        makeNull();
+        prepereForNew();
     }
 
     public void updateFirstPatientRoomAdmissionTime() {
