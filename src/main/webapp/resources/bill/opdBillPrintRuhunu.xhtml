@@ -16,42 +16,6 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet>
-                    /* Styles for screen display */
-                    .page {
-                    
-                    }
-                    .d-flex {
-                    display: flex;
-                    }
-                    .flex-grow-1 {
-                    flex: 1;
-                    }
-                    .bill-item {
-                    border: 1px solid #ddd;
-                    margin: 20px;
-                    padding: 20px;
-                    background-color: whitesmoke;
-                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
-                    page-break-after: always;
-                    }
-
-                    /* Styles for print */
-                    @media print {
-                    .bill-item {
-                    page-break-after: always;
-                    margin: 0px;
-                    padding: 0px
-                    }
-                    .page {
-                    border: none;
-                    background-color: transparent;
-                    box-shadow: none;
-                    margin: 0px;
-                    padding: 0px
-                    }
-                    }
-                </h:outputStylesheet>
 
         <h:panelGroup>
             <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
