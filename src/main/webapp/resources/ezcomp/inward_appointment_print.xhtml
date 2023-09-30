@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface >
+        <cc:attribute name="controller" type="com.divudi.bean.common.AppointmentController" />   
+
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <h:outputStylesheet>
+                /* Styles for screen display */
+                .page {
+
+                }
+                .d-flex {
+                display: flex;
+                }
+                .flex-grow-1 {
+                flex: 1;
+                }
+                .bill-item {
+                border: 1px solid #ddd;
+                margin: 20px;
+                padding: 20px;
+                background-color: whitesmoke;
+                box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
+                page-break-after: always;
+                }
+
+                /* Styles for print */
+                @media print {
+                .bill-item {
+                page-break-after: always;
+                margin: 0px;
+                padding: 0px
+                }
+                .page {
+                border: none;
+                background-color: transparent;
+                box-shadow: none;
+                margin: 0px;
+                padding: 0px
+                }
+                }
+            </h:outputStylesheet>
+        <h:form>
+            <p:commandButton class="my-1" value="Print" ajax="false" >
+                <p:printer target="gpBillPreview" ></p:printer>
+            </p:commandButton>
+            <div class="w-100 m-1">
+                <h:panelGroup id="gpBillPreview" class="w-100 " >
+
+                    <div class="container-fluid bill-item">
+
+                        <div class="row m-2 text-center">
+                            <div class="my-4" style="font-weight: bold;">
+                                <p:outputLabel   value="PATIENT DETAIL" />
+                            </div>
+
+                            <div class="row ">
+                                <div class="col-6 ">
+                                    <div>
+                                        <div>
+                                            <p:outputLabel   value="Name :" />
+                                            <p:outputLabel  value="#{cc.attrs.controller.currentAppointment.patient.person.nameWithTitle}" />
+
+                                        </div>
+
+                                        <div >
+                                            <h:outputLabel value="Address : ">
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.address}" >
+
+                                            </h:outputLabel>
+                                        </div>
+
+                                        <div>
+                                            <h:outputLabel value="Age : ">
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.age}" >
+
+                                            </h:outputLabel>
+                                        </div>
+
+                                       
+
+                                    </div>
+                                </div>
+
+                                <div class="col-6">
+                                    <div class="">
+                                        <div>
+                                            <h:outputLabel value="Sex : ">
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.sex}" >
+
+                                            </h:outputLabel>
+                                        </div>
+                                        <div>
+                                            <h:outputLabel value="NIC : ">
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.nic}" >
+
+                                            </h:outputLabel>
+                                        </div>
+                                        <div>
+                                            <h:outputLabel value="Address : ">
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.address}" >
+
+                                            </h:outputLabel>
+                                        </div>
+
+                                        <div>
+                                            <h:outputLabel value="Mobile No : ">
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="#{cc.attrs.controller.currentAppointment.patient.person.mobile}" >
+
+                                            </h:outputLabel>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="my-4" style="font-weight: bold;">
+                                <p:outputLabel   value="REFERING DOCTOR DETAIL" />
+                            </div>
+
+                            <div class="">
+                                <div>
+                                    <h:outputLabel value="Doctor Name : ">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{cc.attrs.controller.currentBill.referredBy.person.name}" >
+
+                                    </h:outputLabel>
+                                </div>
+                                <div>
+                                    
+                                    <h:outputLabel value="Appointment Date : ">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="#{cc.attrs.controller.currentAppointment.appointmentDate}" >
+
+                                    </h:outputLabel>
+                                    
+                                    
+                                </div>
+                            </div>
+                            
+                            <div class="my-4" style="font-weight: bold;">
+                                <p:outputLabel   value="BILL DETAILS" />
+                            </div>
+                            <div>
+                                <h:outputLabel value="Total  :">
+                                </h:outputLabel>
+
+                                <h:outputLabel value="#{cc.attrs.controller.currentBill.total}" >
+                                </h:outputLabel>
+                            </div>
+                            
+                            <div>
+                                <h:outputLabel value="Payment Method  :">
+                                </h:outputLabel>
+
+                                <h:outputLabel value="#{cc.attrs.controller.currentBill.paymentMethod}" >
+                                </h:outputLabel>
+                            </div>
+                        </div>
+
+
+
+                    </div>
+                </h:panelGroup>    
+            </div>
+        </h:form>
+
+    </cc:implementation>
+</html>
