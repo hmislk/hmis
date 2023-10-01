@@ -69,13 +69,13 @@
                                 <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardPriceAdjustmntController.saveSelected}"  >
                                 </p:commandButton>
 
-                                <p:defaultCommand target="btnAdd"/>
+                                
                             </p:panelGrid>
-                            <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyService()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
+                            <p:commandButton class="my-2" actionListener="#{inwardPriceAdjustmntController.createCategroyService()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_service"  />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyService()}" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
+                            <p:commandButton class="mx-1 my-2" ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyService()}" />
+                            <p:commandButton class="mx-1" ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
 
@@ -88,13 +88,13 @@
                                          var="a" editable="true" scrollable="true" scrollHeight="500">
                                 
 
-                                <p:column headerText="ID">
+                                <p:column headerText="ID" style="width: 2em;">
                                     #{a.id}
                                 </p:column>
                                 
-                                <p:column filterBy="#{a.department.name}" filterMatchMode="contains" headerText="Department Name" exportable="false">
+                                <p:column style="width: 5em;" filterBy="#{a.department.name}" filterMatchMode="contains" headerText="Department Name" exportable="false">
 
-                                    <p:autoComplete forceSelection="true" value="#{a.department}" completeMethod="#{departmentController.completeDept}" 
+                                    <p:autoComplete  forceSelection="true" value="#{a.department}" completeMethod="#{departmentController.completeDept}" 
                                                     var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
                                         <p:column>
                                             <h:outputLabel value="#{dep.name}"/>
@@ -105,7 +105,7 @@
                                     </p:autoComplete>
 
                                 </p:column>
-                                <p:column>
+                                <p:column style="width: 3em;">
                                     <p:outputLabel value="#{a.department.name}"/>
                                 </p:column>
                                 
