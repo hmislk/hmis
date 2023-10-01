@@ -57,6 +57,7 @@ public class SmsManagerEjb {
 
     @SuppressWarnings("unused")
     @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
+    
     public void myTimer() {
         sendSmsAwaitingToSendInDatabase();
     }
