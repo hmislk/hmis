@@ -66,6 +66,23 @@
                         <h:outputLabel value="SMS Password" ></h:outputLabel>
                         <h:inputText
                             value="#{sessionController.currentPreference.smsPassword}" />
+                        
+                        <h:outputLabel value="SMS User Alias Parameter Name" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsUserAliasParameterName}" />
+                        <h:outputLabel value="SMS User Alias" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsUserAlias}" />
+                        
+                        
+                        <h:outputLabel value="Phone Number Parameter Name" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsPhoneNumberParameterName}" />
+                        
+                        <h:outputLabel value="Message Parameter Name" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsMessageParameterName}" />
+                        
 
                     </h:panelGrid>
                 </p:tab>

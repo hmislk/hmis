@@ -141,8 +141,12 @@ public class UserPreference implements Serializable {
     private String smsUrl;
     private String smsUsername;
     private String smsPassword;
+    private String smsUserAlias;
     private String smsUsernameParameterName;
     private String smsPasswordParameterName;
+    private String smsUserAliasParameterName;
+    private String smsPhoneNumberParameterName;
+    private String smsMessageParameterName;
 
     private boolean familyMembership;
     private boolean membershipExpires;
@@ -818,6 +822,38 @@ public class UserPreference implements Serializable {
 
     public void setSmsPasswordParameterName(String smsPasswordParameterName) {
         this.smsPasswordParameterName = smsPasswordParameterName;
+    }
+
+    public String getSmsUserAlias() {
+        return smsUserAlias;
+    }
+
+    public void setSmsUserAlias(String smsUserAlias) {
+        this.smsUserAlias = smsUserAlias;
+    }
+
+    public String getSmsUserAliasParameterName() {
+        return smsUserAliasParameterName;
+    }
+
+    public void setSmsUserAliasParameterName(String smsUserAliasParameterName) {
+        this.smsUserAliasParameterName = smsUserAliasParameterName;
+    }
+
+    public String getSmsPhoneNumberParameterName() {
+        return smsPhoneNumberParameterName;
+    }
+
+    public void setSmsPhoneNumberParameterName(String smsPhoneNumberParameterName) {
+        this.smsPhoneNumberParameterName = smsPhoneNumberParameterName;
+    }
+
+    public String getSmsMessageParameterName() {
+        return smsMessageParameterName;
+    }
+
+    public void setSmsMessageParameterName(String smsMessageParameterName) {
+        this.smsMessageParameterName = smsMessageParameterName;
     }
     
     

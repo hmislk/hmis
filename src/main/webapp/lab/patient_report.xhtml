@@ -74,8 +74,13 @@
                                         action="#{patientReportController.calculate}">
                                     </p:commandButton>
 
-                                    <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
-                                                     value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false"   >
+                                    <p:commandButton 
+                                        styleClass="nonPrintBlock"  
+                                        id="btnApprove"  
+                                        disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
+                                        value="Approve" 
+                                        action="#{patientReportController.approvePatientReport()}" 
+                                        ajax="false"   >
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock" rendered="true"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Sent SMS" 
@@ -86,13 +91,13 @@
                                                      disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
                                                      action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
                                     </p:commandButton>
-<!--                                    <p:commandButton styleClass="nonPrintBlock"  
-                                                     ajax="false" 
-                                                     value="Print" 
-                                                     rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
-                                                     actionListener="#{patientReportController.printPatientReport()}">
-                                        <p:printer target="divPrint" />
-                                    </p:commandButton>-->
+                                    <!--                                    <p:commandButton styleClass="nonPrintBlock"  
+                                                                                         ajax="false" 
+                                                                                         value="Print" 
+                                                                                         rendered="#{patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                                                                         actionListener="#{patientReportController.printPatientReport()}">
+                                                                            <p:printer target="divPrint" />
+                                                                        </p:commandButton>-->
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
