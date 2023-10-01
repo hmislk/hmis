@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <p:panel >
+            <f:facet name="header" >
+                <h:outputText value="Application Preferences" ></h:outputText>
+                <p:spacer height="1" width="30" ></p:spacer>
+                <p:commandButton id="btnSave" ajax="false" value="Save" 
+                                 action="#{sessionController.saveUserPreferences()}" ></p:commandButton>
+            </f:facet>
+
+
+
+
+
+            <p:tabView orientation="left" >
+                <p:tab title="Frontend" >
+                    <p:panel header="Website" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
+
+                            <h:outputLabel value="Template Name" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.themeName}" />
+
+
+                            <p:commandButton id="btnWeb" 
+                                             ajax="false" 
+                                             value="Save" 
+                                             action="#{applicationController.setHasAwebsiteAsFrontEnd(null)}" ></p:commandButton>
+
+
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+
+                <p:tab title="SMS"  >
+                    <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
+                        <h:outputLabel value="SMS URL" ></h:outputLabel>
+                        <h:inputText class="w-100"
+                                     value="#{sessionController.currentPreference.smsUrl}" />
+
+
+                        <h:outputLabel value="SMS Username Parameter Name" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsUsernameParameterName}" />
+                        <h:outputLabel value="SMS Username" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsUsername}" />
+
+                        <h:outputLabel value="SMS Password Parameter Name" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsPasswordParameterName}" />
+                        <h:outputLabel value="SMS Password" ></h:outputLabel>
+                        <h:inputText
+                            value="#{sessionController.currentPreference.smsPassword}" />
+
+                    </h:panelGrid>
+                </p:tab>
+                <p:tab title="Patient Registration" >
+                    <p:panel header="Patient Registration" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+
+                            <h:outputLabel value="Need Phone number for patient registration"></h:outputLabel>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.needPhoneNumberForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+
+                            <h:outputLabel value="Need NIC for patient registration"></h:outputLabel>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.needNicForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+
+
+                            <h:outputLabel value="Need area for patient registration"></h:outputLabel>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.needAreaForPatientRegistration}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+
+
+
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+
+                <p:tab title="Miscellaneous" >
+                    <p:panel header="Miscellaneous" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+
+                            <h:outputLabel value="Family Membership"></h:outputLabel>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+
+                            <h:outputLabel value="Membership Expires"></h:outputLabel>
+                            <p:selectBooleanButton value="#{sessionController.currentPreference.membershipExpires}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+
+
+                            <h:outputLabel value="Institution" ></h:outputLabel>
+                            <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
+                                <f:selectItem itemLabel="Select Institution" />
+                                <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <h:outputLabel value="Logo Name"></h:outputLabel>
+                            <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
+                            <p:watermark for="imgName" value="Eg- /abc.jpg" />
+                            <h:outputLabel value="Bill Proboda" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
+                            <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
+                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+            </p:tabView>
+
+
+        </p:panel>
+
+
+    </cc:implementation>
+</html>
