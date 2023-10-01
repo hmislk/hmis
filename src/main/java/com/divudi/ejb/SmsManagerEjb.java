@@ -48,17 +48,15 @@ import java.util.logging.Logger;
  */
 @Stateless
 public class SmsManagerEjb {
-
     @EJB
     private EmailFacade emailFacade;
     @EJB
     UserPreferenceFacade userPreferenceFacade;
-
     @EJB
     SmsFacade smsFacade;
 
     @SuppressWarnings("unused")
-    @Schedule(second = "19", minute = "*/1", hour = "*", persistent = false)
+    @Schedule(second = "19", minute = "*/5", hour = "*", persistent = false)
     public void myTimer() {
         sendSmsAwaitingToSendInDatabase();
     }
