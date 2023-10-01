@@ -927,13 +927,11 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         Bill bill = current.getBillItem().getBill();
-        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getPhone() == null) {
+        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getSmsNumber()== null) {
             JsfUtil.addErrorMessage("System Error");
             return;
         }
-        String sendingNo = bill.getPatient().getPerson().getMobile();
         
-    
         Sms s = new Sms();
         s.setPending(false);
         s.setBill(bill);
@@ -943,7 +941,7 @@ public class PatientInvestigationController implements Serializable {
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
         s.setPatientInvestigation(current);
        
-        s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
+        s.setReceipientNumber(bill.getPatient().getPerson().getSmsNumber());
 
         String messageBody = "Dear Sir/Madam, "
                 + "Reports bearing bill number " + bill.getInsId() + " is ready for collection at "

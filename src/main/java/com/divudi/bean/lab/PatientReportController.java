@@ -1236,7 +1236,7 @@ public class PatientReportController implements Serializable {
             }
         }
 
-        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
             Sms e = new Sms();
             e.setPending(true);
             e.setCreatedAt(new Date());
@@ -1246,7 +1246,7 @@ public class PatientReportController implements Serializable {
             e.setPatientInvestigation(currentPtIx);
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
             e.setSendingMessage(smsBody(currentPatientReport));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1293,7 +1293,7 @@ public class PatientReportController implements Serializable {
             return;
         }
 
-        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
@@ -1302,7 +1302,7 @@ public class PatientReportController implements Serializable {
             e.setPatientInvestigation(currentPtIx);
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
             e.setSendingMessage(smsBody(currentPatientReport));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
