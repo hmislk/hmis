@@ -96,8 +96,8 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -260,8 +260,6 @@ public class PatientReportController implements Serializable {
         return "/mobile/my_test_results";
 
     }
-
-   
 
     public void sendEmail() {
 
@@ -582,8 +580,8 @@ public class PatientReportController implements Serializable {
         }
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
-            if(priv.getInvestigationItem().getFormatString()!=null && !priv.getInvestigationItem().getFormatString().trim().equals("")){
-                if(priv.getInvestigationItem().getIxItemValueType()==InvestigationItemValueType.Varchar){
+            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
+                if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
                     priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
@@ -1210,15 +1208,8 @@ public class PatientReportController implements Serializable {
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
 
-        UserPreference pf;
-
-        if (getSessionController().getLoggedPreference() != null) {
-            pf = getSessionController().getLoggedPreference();
-        } else if (getSessionController().getUserPreference() != null) {
-            pf = getSessionController().getUserPreference();
-        } else {
-            pf = null;
-        }
+        UserPreference pf = getSessionController().getApplicationPreference();
+        
         if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
             if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
                 AppEmail e;
