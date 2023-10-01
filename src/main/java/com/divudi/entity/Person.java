@@ -71,6 +71,7 @@ public class Person implements Serializable {
     String surName;
     String lastName;
     String zoneCode;
+    
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date dob;
@@ -137,6 +138,8 @@ public class Person implements Serializable {
     long ageInDays;
     @Transient
     int serealNumber;
+    @Transient
+    private String smsNumber;
 
     public Item getCivilStatus() {
         return civilStatus;
@@ -579,6 +582,22 @@ public class Person implements Serializable {
 
     public void setReligion(Item religion) {
         this.religion = religion;
+    }
+
+    public String getSmsNumber() {
+        if(this.getMobile()==null && this.getPhone()==null){
+            smsNumber="";
+        }
+        else if(this.getMobile()!=null && this.getPhone()==null){
+            smsNumber = this.getMobile();
+        }
+        else if(this.getPhone()!=null && this.getMobile()==null){
+            smsNumber = this.getPhone();
+        }
+        else {
+            smsNumber = this.getMobile();
+        }
+        return smsNumber;
     }
 
 }
