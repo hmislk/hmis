@@ -11,7 +11,6 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                
                 <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}">
                     You are NOT authorized
                 </h:panelGroup>
@@ -49,22 +48,18 @@
                                             <h:panelGroup id="gpPosBill1" >
                                                 <!--Senula-->
                                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}">
-                                                    <ui:repeat value="#{opdBillController.bills}" var="bill">
-                                                        <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
-                                                    </ui:repeat>
+                                                    <div class="page">
+                                                        <ui:repeat value="#{opdBillController.bills}" var="bill">
+                                                            <bi:fiveFivePrintedPaper bill="#{bill}" dup="false"/>
+                                                        </ui:repeat>
+                                                    </div>
+
                                                 </h:panelGroup>
                                                 <!--Pasindu-->
                                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                                    <div class="page">
-                                                        <ui:repeat value="#{opdBillController.bills}" var="b">
-                                                        <div class="bill-item">
-                                                            <bi:five_five_paper_with_headings bill="#{b}"/> 
-                                                        </div>
-
+                                                    <ui:repeat value="#{opdBillController.bills}" var="b">
+                                                        <bi:five_five_paper_with_headings bill="#{b}"/>                        
                                                     </ui:repeat>
-                                                    </div>
-                                                    
-
                                                 </h:panelGroup>
                                                 <!--Pavan-->
                                                 <h:panelGroup id="fiveFivePaperWithHeadings"  
@@ -128,7 +123,7 @@
                         <p:outputLabel value="Balance = #{billController.cashBalance}" style="font-weight: bold;font-size: 20pt;color: red;"/>
                         <h:panelGroup id="gpBillPreview">
                             <ui:repeat value="#{opdBillController.bills}" var="bill">
-                                <bi:opdBillPrintRuhunu bill="#{bill}" dup="false"/>
+                                <bi:fiveFivePrintedPaper bill="#{bill}" />
                             </ui:repeat>
                         </h:panelGroup>
                     </h:panelGroup>

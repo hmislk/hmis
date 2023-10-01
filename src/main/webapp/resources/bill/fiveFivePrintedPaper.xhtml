@@ -16,7 +16,6 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
         <h:outputStylesheet>
                     /* Styles for screen display */
                     .page {
@@ -57,37 +56,36 @@
        
 
 
-       
-        <div  >
+        <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
+        <div class="fiveinchbill" >
 
-            <div >
+            <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
-            <div  >
+            <div class="institutionContact" >
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
-                <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} " />
-                    <p:spacer width="20" height="1" ></p:spacer>
-                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" />
+                <div class="text-center">
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1} " class="w-25"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" class="w-25"/>
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
                 </div>
             </div>
 
-            <div >
+            <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="RECEIPT"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
 
-            <div >                
+            <div class="billline">                
                 <hr></hr>                
             </div>
 
-            <div >
+            <div class="billDetailsFiveFive" >
                 <table style="width: 99%!important;" >
 
 
@@ -236,7 +234,7 @@
 
 
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
-                <div >
+                <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
                                    />
@@ -244,11 +242,11 @@
                 </div>
             </h:panelGroup>
 
-            <div  >
+            <div class="itemHeadingsFiveFive" >
 
                 <table width="100%" style="width: 100%;" >
                     <tr>
-                        <td colspan="2" style="text-align: center;" >
+                        <td colspan="2" style="text-align: center;" class="billline">
                             <hr/>
                         </td>
                     </tr>
@@ -261,7 +259,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2" style="text-align: center;" >
+                        <td colspan="2" style="text-align: center;" class="billline">
                             <hr/>
                         </td>
                     </tr>
@@ -270,11 +268,11 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
                                 <td  style="overflow: visible;">
-                                    <h:outputLabel  value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
                                 <td style="text-align: right;" >
-                                    <h:outputLabel    value="#{bip.grossValue}"    >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -287,22 +285,22 @@
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
                                 <td  style="overflow: visible;">
-                                    <h:outputLabel  value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
+                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
                                 <td>
-                                    <h:outputLabel     value="#{bip.qty}" style="text-align: right;" >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}" style="text-align: right;" >
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
                                 <td    style="text-align: right;" >
-                                    <h:outputLabel     value="#{bip.rate}">
+                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
 
                                 <td style="text-align: right;" >
-                                    <h:outputLabel    value="#{bip.grossValue}"    >
+                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
@@ -320,7 +318,7 @@
             </div>
 
 
-            <div >
+            <div class="billline">
                 <br/>
                 <hr/>
                 <br/>
@@ -335,10 +333,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
-                            <td  style="text-align:left; width: 60%; font-weight: bold;">
+                            <td class="totalsBlock" style="text-align:left; width: 60%; font-weight: bold;">
                                 <h:outputLabel value="Total" />
                             </td>
-                            <td   style="text-align: right!important; width: 40%; padding-right: 30px; font-weight: bold;">
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px; font-weight: bold;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -348,10 +346,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
                         <tr>
-                            <td  style="text-align: left; width: 60%;">
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
                                 <h:outputLabel value="Total" />
                             </td>
-                            <td   style="text-align: right!important; width: 40%; padding-right: 30px;">
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
                                 <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -361,10 +359,10 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
                         <tr>
-                            <td   style="text-align: left;">
+                            <td  class="totalsBlock" style="text-align: left;">
                                 <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}" value="Discount " style="font-weight: bolder!important;"/>
                             </td>
-                            <td   style="text-align: right!important; ; padding-right: 30px;">
+                            <td  class="totalsBlock" style="text-align: right!important; ; padding-right: 30px;">
                                 <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}"   value="#{-cc.attrs.bill.discount}" style="font-weight: bolder!important;" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
@@ -373,10 +371,10 @@
                     </h:panelGroup>
 
                     <tr>
-                        <td   style="text-align: left;">
+                        <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
                         </td>
-                        <td   style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -384,10 +382,10 @@
                     </tr>
 
                     <tr>
-                        <td   style="text-align: left;">
+                        <td  class="totalsBlock" style="text-align: left;">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="VAT" />
                         </td>
-                        <td   style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
+                        <td  class="totalsBlock" style="text-align: right!important;font-weight: bold; ; padding-right: 30px; ">
                             <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.vat}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -405,7 +403,7 @@
 
             <div class="footer" style="text-align: center;">
                 <br/>
-
+<!--                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>-->
                 <br/>
             </div>
 

@@ -461,6 +461,8 @@ public class AdmissionController implements Serializable {
         getCurrent().setPatient(getNewPatient());
         return "/inward/inward_admission";
     }
+    
+    
 
     public void prepereToAdmitNewPatient() {
         current = null;
