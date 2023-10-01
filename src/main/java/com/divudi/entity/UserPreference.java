@@ -138,6 +138,11 @@ public class UserPreference implements Serializable {
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
+    private String smsUrl;
+    private String smsUsername;
+    private String smsPassword;
+    private String smsUsernameParameterName;
+    private String smsPasswordParameterName;
 
     private boolean familyMembership;
     private boolean membershipExpires;
@@ -774,6 +779,49 @@ public class UserPreference implements Serializable {
     public void setPharmacyBillHeader(String pharmacyBillHeader) {
         this.pharmacyBillHeader = pharmacyBillHeader;
     }
+
+    public String getSmsUrl() {
+        return smsUrl;
+    }
+
+    public void setSmsUrl(String smsUrl) {
+        this.smsUrl = smsUrl;
+    }
+
+    public String getSmsUsername() {
+        return smsUsername;
+    }
+
+    public void setSmsUsername(String smsUsername) {
+        this.smsUsername = smsUsername;
+    }
+
+    public String getSmsPassword() {
+        return smsPassword;
+    }
+
+    public void setSmsPassword(String smsPassword) {
+        this.smsPassword = smsPassword;
+    }
+
+    public String getSmsUsernameParameterName() {
+        return smsUsernameParameterName;
+    }
+
+    public void setSmsUsernameParameterName(String smsUsernameParameterName) {
+        this.smsUsernameParameterName = smsUsernameParameterName;
+    }
+
+    public String getSmsPasswordParameterName() {
+        return smsPasswordParameterName;
+    }
+
+    public void setSmsPasswordParameterName(String smsPasswordParameterName) {
+        this.smsPasswordParameterName = smsPasswordParameterName;
+    }
+    
+    
+    
     
     
 
