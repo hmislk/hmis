@@ -26,6 +26,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -930,22 +931,18 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("System Error");
             return;
         }
-        String sendingNo = bill.getPatient().getPerson().getPhone();
-        if (sendingNo.contains("077") || sendingNo.contains("076") || sendingNo.contains("070")
-                || sendingNo.contains("071") || sendingNo.contains("072")
-                || sendingNo.contains("075") || sendingNo.contains("078")) {
-        } else {
-            JsfUtil.addErrorMessage("Wrong Telephone Number");
-            return;
-        }
-
+        String sendingNo = bill.getPatient().getPerson().getMobile();
+        
+    
         Sms s = new Sms();
+        s.setPending(false);
         s.setBill(bill);
         s.setCreatedAt(new Date());
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
         s.setPatientInvestigation(current);
+       
         s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
 
         String messageBody = "Dear Sir/Madam, "
@@ -956,17 +953,16 @@ public class PatientInvestigationController implements Serializable {
         s.setSentSuccessfully(true);
         s.setSmsType(MessageType.LabReport);
         getSmsFacade().create(s);
+        
+        UserPreference ap = sessionController.getApplicationPreference();
 
-        //System.out.println("getSmsManagerEjb() = " + getSmsManagerEjb());
-        //System.out.println("s.getReceipientNumber() = " + messageBody);
-        //System.out.println("messageBody = " + s.getReceipientNumber());
-        getSmsController();
-        boolean sent = getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
-                s.getInstitution().getSmsSendingUsername(),
-                s.getInstitution().getSmsSendingPassword(),
-                s.getInstitution().getSmsSendingAlias());
+      
+        boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
 
         if (sent) {
+            s.setSentSuccessfully(true);
+            getSmsFacade().edit(s);
+            
             getCurrent().getBillItem().getBill().setSmsed(true);
             getCurrent().getBillItem().getBill().setSmsedAt(new Date());
             getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
@@ -977,7 +973,7 @@ public class PatientInvestigationController implements Serializable {
         } else {
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
-        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+//        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
 
     public void markAsSampled() {
