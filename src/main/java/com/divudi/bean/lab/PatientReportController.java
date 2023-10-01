@@ -1306,12 +1306,13 @@ public class PatientReportController implements Serializable {
             e.setSendingMessage(smsBody(currentPatientReport));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSentSuccessfully(false);
+            e.setPending(false);
             getSmsFacade().create(e);
-            smsManager.sendSms(e.getReceipientNumber(), e.getSendingMessage(),
-                    e.getInstitution().getSmsSendingUsername(),
-                    e.getInstitution().getSmsSendingPassword(),
-                    e.getInstitution().getSmsSendingAlias());
+            
+            boolean sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(),e.getSendingMessage(),
+                    sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
         }
 
         UtilityController.addSuccessMessage("SMS Sent");

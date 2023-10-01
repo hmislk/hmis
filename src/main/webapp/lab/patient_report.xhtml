@@ -83,8 +83,13 @@
                                         ajax="false"   >
                                     </p:commandButton>
 
-                                    <p:commandButton styleClass="nonPrintBlock" rendered="true"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Sent SMS" 
-                                                     action="#{patientReportController.sendSmsForPatientReport()}" ajax="false"   >
+                                    <p:commandButton 
+                                        styleClass="nonPrintBlock" 
+                                        rendered="true"  
+                                        id="btnSms"  
+                                        disabled ="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"   
+                                        value="Sent SMS"             
+                                        action="#{patientReportController.sendSmsForPatientReport()}" ajax="false"   >
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnSendSms"  
