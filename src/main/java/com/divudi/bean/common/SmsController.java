@@ -53,15 +53,8 @@ public class SmsController implements Serializable {
     SessionController sessionController;
     @Inject
     CommonFunctions commonFunctions;
-
     List<Sms> smses;
-    List<Sms> allsms;
-
     List<SmsSummeryRow> smsSummeryRows;
-
-    public List<Sms> getAllsms() {
-        return allsms;
-    }
 
     ReportKeyWord reportKeyWord;
 
@@ -306,6 +299,10 @@ public class SmsController implements Serializable {
             smses = getSmsFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         }
 
+    }
+
+    public List<Sms> allsms() {
+       return getSmsFacade().findAll();
     }
 
     public List<SmsSummeryRow> getSmsSummeryRows() {

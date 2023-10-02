@@ -15,15 +15,15 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
                         <p:datePicker styleClass="dateTimePicker" 
-                                    id="fromDate" 
-                                    value="#{searchController.fromDate}" 
-                                    showTime="true"
-                                    pattern="dd MMMM yyyy hh:mm" >      
+                                      id="fromDate" 
+                                      value="#{searchController.fromDate}" 
+                                      showTime="true"
+                                      pattern="dd MMMM yyyy hh:mm" >      
                         </p:datePicker>
                         <h:outputLabel value="To Date"/>
                         <p:datePicker id="toDate" value="#{searchController.toDate}" 
                                       showTime="true"
-                                     pattern="dd MMMM yyyy hh:mm" >                                                                              
+                                      pattern="dd MMMM yyyy hh:mm" >                                                                              
                         </p:datePicker>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillAllBills}"/>
@@ -33,25 +33,25 @@
                     </h:panelGrid>
 
                     <p:dataTable rowIndexVar="i" id="tblBills" 
-                                 value="#{smsController.smsSummeryRows}"
+                                 value="#{smsController.allsms}"
                                  reflow="true"
                                  var="sms"  
                                  style="min-width: 100%;"  
                                  paginator="true"
-                                 rows ="10"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rows="10"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15"
                                  >
                         <p:column headerText="No" styleClass="alignTop" width="15">
-                            <h:outputLabel value="#{sms.id}"/>
+                            <h:outputLabel value="#{sms.createdAt}"/>
                         </p:column>
-                        <p:column headerText="No" styleClass="alignTop" width="15">
+                        <p:column headerText="SMS Type" styleClass="alignTop" width="15">
                             <h:outputLabel value="#{sms.smsType}"/>
                         </p:column>
-                        
                     </p:dataTable>
-                    
-                    <h1></h1>
+
+
+
 
 
 
