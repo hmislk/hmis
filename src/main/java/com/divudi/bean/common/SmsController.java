@@ -55,7 +55,13 @@ public class SmsController implements Serializable {
     CommonFunctions commonFunctions;
 
     List<Sms> smses;
+    List<Sms> allsms;
+
     List<SmsSummeryRow> smsSummeryRows;
+
+    public List<Sms> getAllsms() {
+        return allsms;
+    }
 
     ReportKeyWord reportKeyWord;
 
