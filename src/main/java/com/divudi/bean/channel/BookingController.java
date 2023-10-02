@@ -1341,18 +1341,14 @@ public class BookingController implements Serializable {
     }
 
     public void generateSessionsOnlyIdNew() {
-//        System.err.println("Time in = " + new Date());
         serviceSessions = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
         m.put("nd", new Date());
-//        System.err.println("Time stage 1 = " + new Date());
         if (staff != null) {
-//            System.err.println("Time stage 4.1 = " + new Date());
             serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
-//            System.err.println("Time stage 4.2 = " + new Date());
         }
         if (getSessionController().getLoggedUser().getWebUserPerson() != null) {
         }
