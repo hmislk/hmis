@@ -27,6 +27,7 @@ import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.entity.channel.ArrivalRecord;
@@ -130,9 +131,9 @@ public class BookingController implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date channelDay;
-    private ServiceSession selectedServiceSession;
+    private ServiceSessionInstance selectedServiceSessionInstance;
     private BillSession selectedBillSession;
-    private List<ServiceSession> serviceSessions;
+    private List<ServiceSessionInstance> serviceSessionInstances;
     private List<BillSession> billSessions;
     List<Staff> consultants;
     List<BillSession> getSelectedBillSession;
@@ -147,7 +148,6 @@ public class BookingController implements Serializable {
     ArrivalRecord arrivalRecord;
     PaymentMethod canPayMetTmp;
 
-    private ScheduleModel eventModel;
 
     private ChannelScheduleEvent event = new ChannelScheduleEvent();
 
@@ -324,9 +324,9 @@ public class BookingController implements Serializable {
     public void makeNull() {
         speciality = null;
         staff = null;
-        selectedServiceSession = null;
+        selectedServiceSessionInstance = null;
         /////////////////////
-        serviceSessions = null;
+        serviceSessionInstances = null;
         billSessions = null;
         sessionStartingDate = null;
         consultants = null;
@@ -924,8 +924,8 @@ public class BookingController implements Serializable {
         }
     }
 
-    public void calculateFeeBooking(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
-        for (ServiceSession ss : lstSs) {
+    public void calculateFeeBooking(List<ServiceSessionInstance> lstSs, PaymentMethod paymentMethod) {
+        for (ServiceSessionInstance ss : lstSs) {
             Double[] dbl = fetchFee(ss.getOriginatingSession(), FeeType.OwnInstitution);
             ss.setHospitalFee(dbl[0]);
             ss.setHospitalFfee(dbl[1]);
@@ -958,9 +958,9 @@ public class BookingController implements Serializable {
         }
     }
 
-    public void calculateFeeBookingNew(List<ServiceSession> lstSs, PaymentMethod paymentMethod) {
+    public void calculateFeeBookingNew(List<ServiceSessionInstance> lstSs, PaymentMethod paymentMethod) {
         int rowIndex = 0;
-        for (ServiceSession ss : lstSs) {
+        for (ServiceSessionInstance ss : lstSs) {
             ss.setDisplayCount(channelBean.getBillSessionsCount(ss, ss.getSessionDate()));
             ss.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(ss, ss.getSessionDate()));
             ss.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(ss, ss.getSessionDate()));
@@ -1000,7 +1000,7 @@ public class BookingController implements Serializable {
                     //all Bill
 //                    ss.setTotalFee(ss.getTotalFee() * finalVariables.getVATPercentageWithAmount());
 //                    ss.getOriginatingSession().setTotalFee(ss.getOriginatingSession().getTotalFfee() * finalVariables.getVATPercentageWithAmount());
-                    
+
                     //only Doc Fee
                     ss.setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
                     ss.getOriginatingSession().setTotalFee(fetchLocalFeeOnlyStaffVat(ss.getOriginatingSession(), paymentMethod));
@@ -1020,37 +1020,37 @@ public class BookingController implements Serializable {
     }
 
     public void generateSessions() {
-        serviceSessions = new ArrayList<>();
+        serviceSessionInstances = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
 
         if (staff != null) {
+//            No Change Needed
             sql = "Select s From ServiceSession s "
                     + " where s.retired=false "
                     + " and s.staff=:staff "
                     + " and s.originatingSession is null "
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
-            List<ServiceSession> tmp = new ArrayList<>();
-            tmp = getServiceSessionFacade().findByJpql(sql, m);
+            List<ServiceSession> originatingServiceSessions = getServiceSessionFacade().findByJpql(sql, m);
 
-            for (ServiceSession ss : tmp) {
+            for (ServiceSession ss : originatingServiceSessions) {
                 ss.getStaff();
                 ss.getDepartment();
 
             }
 
-            calculateFee(tmp, channelBillController.getPaymentMethod());
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(tmp, sessionStartingDate);
-            generateSessionEvents(serviceSessions);
-            checkDoctorArival(serviceSessions);
+            calculateFee(originatingServiceSessions, channelBillController.getPaymentMethod());
+            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(originatingServiceSessions, sessionStartingDate);
+//            generateSessionEvents(serviceSessionInstances);
+            checkDoctorArival(originatingServiceSessions);
         }
     }
 
     public void generateSessionsOnlyId() {
-        serviceSessions = new ArrayList<>();
+        serviceSessionInstances = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
@@ -1328,49 +1328,48 @@ public class BookingController implements Serializable {
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, sessionStartingDate);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
+            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, sessionStartingDate);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
+//            generateSessionEvents(serviceSessionInstances);
         }
     }
 
     public void generateSessionsOnlyIdNew() {
-        serviceSessions = new ArrayList<>();
+        System.out.println("generateSessionsOnlyIdNew");
+        serviceSessionInstances = new ArrayList<>();
         String sql;
         Map m = new HashMap();
         m.put("staff", getStaff());
         m.put("class", ServiceSession.class);
         m.put("nd", new Date());
         if (staff != null) {
-            serviceSessions = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
+            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
         }
         if (getSessionController().getLoggedUser().getWebUserPerson() != null) {
         }
     }
 
-    public void generateSessionEvents(List<ServiceSession> sss) {
-        eventModel = new DefaultScheduleModel();
-        for (ServiceSession s : sss) {
-            ChannelScheduleEvent e = new ChannelScheduleEvent();
-            e.setServiceSession(s);
-            e.setTitle(s.getName());
-            e.setStartDate(CommonFunctions.getLocalDateTime(s.getTransStartTime()));
-            e.setEndDate(CommonFunctions.getLocalDateTime(s.getTransEndTime()));
-            eventModel.addEvent(e);
-            checkDoctorArival(s);
-        }
-    }
+//    public void generateSessionEvents(List<ServiceSessionInstance> sss) {
+//        eventModel = new DefaultScheduleModel();
+//        for (ServiceSessionInstance s : sss) {
+//            ChannelScheduleEvent e = new ChannelScheduleEvent();
+//            e.setServiceSession(s);
+//            e.setTitle(s.getName());
+//            e.setStartDate(CommonFunctions.getLocalDateTime(s.getTransStartTime()));
+//            e.setEndDate(CommonFunctions.getLocalDateTime(s.getTransEndTime()));
+//            eventModel.addEvent(e);
+//            checkDoctorArival(s);
+//        }
+//    }
 
     public void checkDoctorArival(ServiceSession s) {
-//        //// // System.out.println("s.getName() = " + s.getName());
         s.setArival(findArrivals(s));
-//        //// // System.out.println("s.getArival() = " + s.getArival());
     }
 
     public void checkDoctorArival(List<ServiceSession> sss) {
@@ -1379,16 +1378,16 @@ public class BookingController implements Serializable {
         }
     }
 
-    public void onEventSelect(SelectEvent selectEvent) {
-        event = (ChannelScheduleEvent) selectEvent.getObject();
-        selectedServiceSession = event.getServiceSession();
-        fillBillSessions();
-    }
+//    public void onEventSelect(SelectEvent selectEvent) {
+//        event = (ChannelScheduleEvent) selectEvent.getObject();
+//        selectedServiceSessionInstance = event.getServiceSession();
+//        fillBillSessions();
+//    }
 
     public void generateSessionsFutureBooking(SelectEvent event) {
         date = null;
         date = ((Date) event.getObject());
-        serviceSessions = new ArrayList<>();
+        serviceSessionInstances = new ArrayList<>();
         Map m = new HashMap();
 
         Date currenDate = new Date();
@@ -1413,7 +1412,7 @@ public class BookingController implements Serializable {
             m.put("wd", wd);
             List<ServiceSession> tmp = getServiceSessionFacade().findByJpql(sql, m);
             calculateFee(tmp, channelBillController.getPaymentMethod());//check work future bokking
-            serviceSessions = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
+            serviceSessionInstances = getChannelBean().generateServiceSessionsForSelectedDate(tmp, date);
         }
 
         billSessions = new ArrayList<>();
@@ -1427,12 +1426,12 @@ public class BookingController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    public List<ServiceSession> getServiceSessions() {
-        return serviceSessions;
+    public List<ServiceSessionInstance> getServiceSessionInstances() {
+        return serviceSessionInstances;
     }
 
-    public void setServiceSessions(List<ServiceSession> serviceSessions) {
-        this.serviceSessions = serviceSessions;
+    public void setServiceSessionInstances(List<ServiceSessionInstance> serviceSessionInstances) {
+        this.serviceSessionInstances = serviceSessionInstances;
     }
 
     public ServiceSessionFacade getServiceSessionFacade() {
@@ -1449,7 +1448,7 @@ public class BookingController implements Serializable {
 
 //    public void fillBillSessions(SelectEvent event) {
 //        selectedBillSession = null;
-//        selectedServiceSession = ((ServiceSession) event.getObject());
+//        selectedServiceSessionInstance = ((ServiceSession) event.getObject());
 //
 //        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
 //        List<BillType> bts = Arrays.asList(billTypes);
@@ -1482,13 +1481,12 @@ public class BookingController implements Serializable {
                 + " and bs.serviceSession=:ss "
                 + " and bs.sessionDate= :ssDate ";
         HashMap hh = new HashMap();
-        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
-        hh.put("ss", getSelectedServiceSession());
+        hh.put("ssDate", getSelectedServiceSessionInstance().getSessionDate());
+        hh.put("ss", getSelectedServiceSessionInstance());
         arrivalRecord = (ArrivalRecord) fpFacade.findFirstByJpql(sql, hh);
     }
 
     public Boolean findArrivals(ServiceSession ss) {
-
         String sql = "Select bs From ArrivalRecord bs "
                 + " where bs.retired=false"
                 + " and bs.serviceSession.id=:ss "
@@ -1526,7 +1524,7 @@ public class BookingController implements Serializable {
 
         String msg = "Dear Sir/Madam,\n"
                 + ss.getStaff().getPerson().getName() + " has arrived.\n"
-//                + "** Now you can channel your doctor online on www.ruhunuhospital.lk **";
+                //                + "** Now you can channel your doctor online on www.ruhunuhospital.lk **";
                 + "** Now you can channel your doctor online on https://goo.gl/aEbnDD **";
 //        fillBillSessions();
         for (BillSession bs : bSessions) {
@@ -1539,7 +1537,7 @@ public class BookingController implements Serializable {
 
     public void sendSmsToinformLeave() {
         String msg = "Dear Sir/Madam,\n"
-                + selectedServiceSession.getStaff().getPerson().getName() + " is Leave Today."
+                + selectedServiceSessionInstance.getStaff().getPerson().getName() + " is Leave Today."
                 + "Thank you for using Ruhunu Hospital services.";
         //fillBillSessions();
         for (BillSession bs : billSessions) {
@@ -1575,26 +1573,26 @@ public class BookingController implements Serializable {
     }
 
     public void markAsArrived() {
-        if (selectedServiceSession == null) {
+        if (selectedServiceSessionInstance == null) {
             return;
         }
-        if (selectedServiceSession.getSessionDate() == null) {
+        if (selectedServiceSessionInstance.getSessionDate() == null) {
             return;
         }
-        if (commonFunctions.getEndOfDay(selectedServiceSession.getSessionDate()).getTime() != commonFunctions.getEndOfDay(new Date()).getTime()) {
+        if (commonFunctions.getEndOfDay(selectedServiceSessionInstance.getSessionDate()).getTime() != commonFunctions.getEndOfDay(new Date()).getTime()) {
             JsfUtil.addErrorMessage("You Can Mark Only Today Arrivals Only");
             return;
         }
         if (arrivalRecord == null) {
             arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
+            arrivalRecord.setSessionDate(selectedServiceSessionInstance.getSessionDate());
+            arrivalRecord.setServiceSession(selectedServiceSessionInstance.getOriginatingSession());
             arrivalRecord.setCreatedAt(new Date());
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
             //
             if (getSessionController().getLoggedPreference().isChannelDoctorArivalMsgSend()) {
-                sendSmsDoctorArived(selectedServiceSession);
+                sendSmsDoctorArived(selectedServiceSessionInstance.getOriginatingSession());
             }
         }
         arrivalRecord.setRecordTimeStamp(new Date());
@@ -1603,16 +1601,16 @@ public class BookingController implements Serializable {
     }
 
     public void markAsLeft() {
-        if (selectedServiceSession == null) {
+        if (selectedServiceSessionInstance == null) {
             return;
         }
-        if (selectedServiceSession.getSessionDate() == null) {
+        if (selectedServiceSessionInstance.getSessionDate() == null) {
             return;
         }
         if (arrivalRecord == null) {
             arrivalRecord = new ArrivalRecord();
-            arrivalRecord.setSessionDate(selectedServiceSession.getSessionDate());
-            arrivalRecord.setServiceSession(selectedServiceSession);
+            arrivalRecord.setSessionDate(selectedServiceSessionInstance.getSessionDate());
+            arrivalRecord.setServiceSession(selectedServiceSessionInstance.getOriginatingSession());
             arrivalRecord.setCreatedAt(new Date());
             arrivalRecord.setCreater(sessionController.getLoggedUser());
             fpFacade.create(arrivalRecord);
@@ -1626,7 +1624,7 @@ public class BookingController implements Serializable {
 
     public void fillBillSessions() {
         selectedBillSession = null;
-//        selectedServiceSession = ((ServiceSession) event.getObject());
+//        selectedServiceSessionInstance = ((ServiceSession) event.getObject());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -1642,8 +1640,8 @@ public class BookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
-        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
-        hh.put("ss", getSelectedServiceSession());
+        hh.put("ssDate", getSelectedServiceSessionInstance().getSessionDate());
+        hh.put("ss", getSelectedServiceSessionInstance().getOriginatingSession());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 
     }
@@ -1672,7 +1670,7 @@ public class BookingController implements Serializable {
 
     public void fillAbsentBillSessions(SelectEvent event) {
         selectedBillSession = null;
-        selectedServiceSession = ((ServiceSession) event.getObject());
+        selectedServiceSessionInstance = ((ServiceSessionInstance) event.getObject());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -1689,8 +1687,8 @@ public class BookingController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
-        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
-        hh.put("ss", getSelectedServiceSession());
+        hh.put("ssDate", getSelectedServiceSessionInstance().getSessionAt());
+        hh.put("ss", getSelectedServiceSessionInstance().getOriginatingSession());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
         //absentCount=billSessions.size();
 
@@ -1731,16 +1729,17 @@ public class BookingController implements Serializable {
     }
 
     public void listnerStaffListForRowSelectNew() {
-        serviceSessions = new ArrayList<>();
+        serviceSessionInstances = new ArrayList<>();
         listnerStaffListForRowSelect();
         listnerClearSelectedServiceSession();
     }
 
     public void clearServiceSessions() {
-        serviceSessions = new ArrayList<>();
+        serviceSessionInstances = new ArrayList<>();
     }
 
     public void listnerServiceSessionListForRowSelectNew() {
+        System.out.println("listnerServiceSessionListForRowSelectNew");
         generateSessionsOnlyIdNew();
 //        generateSessionsOnlyId(); before Optimize
         listnerClearSelectedServiceSession();
@@ -1750,22 +1749,22 @@ public class BookingController implements Serializable {
         fillBillSessions();
         listnerClearSelectedBillSession();
         if (getSessionController().getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
-                && getSelectedServiceSession().getOriginatingSession().getForBillType() == BillType.XrayScan) {
-            getSelectedServiceSession().getOriginatingSession().setItemFees(fetchFee(getSelectedServiceSession().getOriginatingSession()));
+                && getSelectedServiceSessionInstance().getOriginatingSession().getForBillType() == BillType.XrayScan) {
+            getSelectedServiceSessionInstance().getOriginatingSession().setItemFees(fetchFee(getSelectedServiceSessionInstance().getOriginatingSession()));
         }
     }
 
     public void listnerStaffRowSelect() {
         getSelectedConsultants();
-        setSelectedServiceSession(null);
+        setSelectedServiceSessionInstance(null);
         serviceSessionLeaveController.setSelectedServiceSession(null);
         serviceSessionLeaveController.setCurrentStaff(staff);
     }
 
     public void listnerSessionRowSelect() {
-        for (ServiceSession ss : serviceSessions) {
-            if (ss.getSessionText().toLowerCase().contains(selectTextSession.toLowerCase())) {
-                selectedServiceSession = ss;
+        for (ServiceSessionInstance ss : serviceSessionInstances) {
+            if (ss.getOriginatingSession().getSessionText().toLowerCase().contains(selectTextSession.toLowerCase())) {
+                selectedServiceSessionInstance = ss;
             }
         }
     }
@@ -1778,7 +1777,7 @@ public class BookingController implements Serializable {
     }
 
     public void listnerClearSelectedServiceSession() {
-        selectedServiceSession = null;
+        selectedServiceSessionInstance = null;
         billSessions = null;
         selectedBillSession = null;
         getChannelCancelController().clearForNewBill();
@@ -1832,12 +1831,12 @@ public class BookingController implements Serializable {
         this.billSessions = billSessions;
     }
 
-    public ServiceSession getSelectedServiceSession() {
-        return selectedServiceSession;
+    public ServiceSessionInstance getSelectedServiceSessionInstance() {
+        return selectedServiceSessionInstance;
     }
 
-    public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
-        this.selectedServiceSession = selectedServiceSession;
+    public void setSelectedServiceSessionInstance(ServiceSessionInstance selectedServiceSessionInstance) {
+        this.selectedServiceSessionInstance = selectedServiceSessionInstance;
 
     }
 
@@ -1944,11 +1943,11 @@ public class BookingController implements Serializable {
     }
 
     public Boolean preSet() {
-        if (getSelectedServiceSession() == null) {
+        if (getSelectedServiceSessionInstance() == null) {
             UtilityController.addErrorMessage("Please select Service Session");
             return false;
         }
-        getChannelReportController().setServiceSession(selectedServiceSession);
+        getChannelReportController().setServiceSession(selectedServiceSessionInstance.getOriginatingSession());
 
         return true;
     }
@@ -1993,16 +1992,6 @@ public class BookingController implements Serializable {
         this.serealNo = serealNo;
     }
 
-    public ScheduleModel getEventModel() {
-        if (eventModel == null) {
-            eventModel = new DefaultScheduleModel();
-        }
-        return eventModel;
-    }
-
-    public void setEventModel(ScheduleModel eventModel) {
-        this.eventModel = eventModel;
-    }
 
     public ChannelScheduleEvent getEvent() {
         if (event == null) {

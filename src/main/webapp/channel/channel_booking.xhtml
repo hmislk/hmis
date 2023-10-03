@@ -60,8 +60,9 @@
                             filterMatchMode="contains"
                             style="text-wrap: avoid; text-overflow: clip; white-space: nowrap;">
                             <h:outputText id="lblConName" value="#{mys.person.nameWithTitle}" />
-                            <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}" 
-                                       showDelay="0" hideDelay="0" 
+                            <p:tooltip for="lblConName" value="#{mys.person.nameWithTitle}" 
+                                       showDelay="0" 
+                                       hideDelay="0" 
                                        ></p:tooltip>
                         </p:column>
                         <p:ajax  event="rowSelect" 
@@ -77,12 +78,12 @@
                         class="w-100"
                         lazy="false"
                         emptyMessage="No Sessions"
-                        value="#{bookingController.serviceSessions}" 
+                        value="#{bookingController.serviceSessionInstances}" 
                         rowKey="#{ses.transRowNumber}"
                         id="tblSessionsOfSelectedConsultant" 
                         var="ses"
                         selectionMode="single" 
-                        selection="#{bookingController.selectedServiceSession}"
+                        selection="#{bookingController.selectedServiceSessionInstance}"
                         scrollable="true" 
                         rowStyleClass="#{ses.deactivated ? 'redText':''}" 
                         scrollHeight="30vh">
@@ -183,12 +184,12 @@
                                         <p:outputLabel value="Amount" style="width: 200px!important;"/>
                                         <h:panelGroup id="lblSessionTotal">
                                             <p:outputLabel  
-                                                value="#{bookingController.selectedServiceSession.originatingSession.totalFfee}"
+                                                value="#{bookingController.selectedServiceSessionInstance.originatingSession.totalFfee}"
                                                 rendered="#{channelBillController.foriegn}">
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:outputLabel>
                                             <p:outputLabel  
-                                                value="#{bookingController.selectedServiceSession.originatingSession.totalFee}"
+                                                value="#{bookingController.selectedServiceSessionInstance.originatingSession.totalFee}"
                                                 rendered="#{!channelBillController.foriegn}">
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </p:outputLabel>
@@ -423,11 +424,11 @@
                                     </h:panelGrid> 
                                 </h:panelGrid>  
                             </p:tab>
-                            <p:tab  id="tabFees" title="Fees" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' and bookingController.selectedServiceSession.originatingSession.forBillType eq 'XrayScan'}" >
+                            <p:tab  id="tabFees" title="Fees" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative' and bookingController.selectedServiceSessionInstance.originatingSession.forBillType eq 'XrayScan'}" >
                                 <p:dataTable 
                                     lazy="false"
-                                    rendered="#{bookingController.selectedServiceSession.originatingSession.itemFees ne null}"
-                                    value="#{bookingController.selectedServiceSession.originatingSession.itemFees}" 
+                                    rendered="#{bookingController.selectedServiceSessionInstance.originatingSession.itemFees ne null}"
+                                    value="#{bookingController.selectedServiceSessionInstance.originatingSession.itemFees}" 
                                     var="f" rowStyleClass="#{(f.name.equals('Doctor Fee') or f.name.equals('Hospital Fee')) ? '':'noDisplayRow'}" >
                                     <p:column>
                                         <p:outputLabel value="#{f.name}" />
@@ -509,7 +510,7 @@
                     <p:panel id="panelSelectedBookinDetails">
 
                         <p:tabView id="detail" rendered="true" style="width: 800px!important;height: 450px!important;">
-                            
+
                             <p:tab title="Booking" id="booking" 
                                    rendered="#{webUserController.hasPrivilege('ChannelBookingBokking') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                 <h:panelGrid columns="2" >

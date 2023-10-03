@@ -19,12 +19,12 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
-public class SessionNumberGenerateConrtroller implements Serializable {
+public class SessionNumberGenerateController implements Serializable {
 
     @Inject
     SessionController sessionController;
@@ -62,17 +62,17 @@ public class SessionNumberGenerateConrtroller implements Serializable {
     public List<SessionNumberGenerator> completeSessionNumberGenerator(String qry) {
 
         String sql;
-        Map m=new HashMap();
+        Map m = new HashMap();
         sql = " SELECT sg FROM SessionNumberGenerator sg WHERE sg.retired=false"
                 + " and (sg.name) like '%" + qry.toUpperCase() + "%' "
                 + " and sg.speciality=:sp"
                 + " and sg.staff=:s "
                 + " order by sg.name";
-        
+
         m.put("sp", sheduleController.getSpeciality());
         m.put("s", sheduleController.getCurrentStaff());
 
-        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findByJpql(sql,m);
+        SessionNumberGeneratorlst = sessionNumberGeneratorFacade.findByJpql(sql, m);
 
         return SessionNumberGeneratorlst;
     }
@@ -80,22 +80,25 @@ public class SessionNumberGenerateConrtroller implements Serializable {
     /**
      *
      */
+    // Configuration and code by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
     @FacesConverter(forClass = SessionNumberGenerator.class)
-    public static class SessionNumberGenerateConrtrollerConverter implements Converter {
+    public static class SessionNumberGenerateControllerConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            SessionNumberGenerateConrtroller controller = (SessionNumberGenerateConrtroller) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "sessionNumberGenerateConrtroller");
+            SessionNumberGenerateController controller = (SessionNumberGenerateController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "sessionNumberGenerateController");
             return controller.getSessionNumberGeneratorFacade().find(getKey(value));
         }
 
         java.lang.Long getKey(String value) {
+            System.out.println("value = " + value);
             java.lang.Long key;
             key = Long.valueOf(value);
+            System.out.println("key = " + key);
             return key;
         }
 
@@ -110,16 +113,14 @@ public class SessionNumberGenerateConrtroller implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof Speciality) {
-                Speciality o = (Speciality) object;
-                return getStringKey(o.getId());
+            if (object instanceof SessionNumberGenerator) {  // Changed from Speciality to SessionNumberGenerator
+                SessionNumberGenerator o = (SessionNumberGenerator) object;  // Changed from Speciality to SessionNumberGenerator
+                return getStringKey(o.getId());  // Assuming getId() exists in SessionNumberGenerator
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + SessionNumberGenerateConrtroller.class.getName());
+                        + object.getClass().getName() + "; expected type: " + SessionNumberGenerateController.class.getName());
             }
         }
     }
-
-    
 
 }

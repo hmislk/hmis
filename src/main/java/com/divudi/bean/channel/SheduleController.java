@@ -18,6 +18,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -757,7 +758,7 @@ public class SheduleController implements Serializable {
 
     public void generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(List<Long> inputSessions, Date d) {
         int sessionDayCount = 0;
-        List<ServiceSession> createdSessions = new ArrayList<>();
+        List<ServiceSessionInstance> createdSessions = new ArrayList<>();
 
         if (inputSessions == null || inputSessions.isEmpty()) {
             return;
@@ -789,7 +790,7 @@ public class SheduleController implements Serializable {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
-                            ServiceSession newSs = new ServiceSession();
+                            ServiceSessionInstance newSs = new ServiceSessionInstance();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
@@ -813,10 +814,9 @@ public class SheduleController implements Serializable {
                         Calendar wdc = Calendar.getInstance();
                         wdc.setTime(nowDate);
                         if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
-                            ServiceSession newSs = new ServiceSession();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            ServiceSessionInstance newSs =  channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
-                                newSs = new ServiceSession();
+                                newSs = new ServiceSessionInstance();
 //                            System.err.println("Cretate New");
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -845,8 +845,7 @@ public class SheduleController implements Serializable {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
-                            ServiceSession newSs = new ServiceSession();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            ServiceSessionInstance newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -868,10 +867,9 @@ public class SheduleController implements Serializable {
                         Calendar wdc = Calendar.getInstance();
                         wdc.setTime(nowDate);
                         if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
-                            ServiceSession newSs = new ServiceSession();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            ServiceSessionInstance newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
-                                newSs = new ServiceSession();
+                                newSs = new ServiceSessionInstance();
 //                            System.err.println("Cretate New");
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }

@@ -4378,7 +4378,7 @@ public class ChannelReportController implements Serializable {
 
     public void fillNurseView() {
         nurseViewSessions = new ArrayList<>();
-        if (bookingController.getSelectedServiceSession() == null) {
+        if (bookingController.getSelectedServiceSessionInstance() == null) {
             UtilityController.addErrorMessage("Please Select Session");
             return;
         }
@@ -4388,7 +4388,7 @@ public class ChannelReportController implements Serializable {
                 + " type(bs.bill)=:class and "
                 //+ " bs.bill.refunded=false and "
                 + " bs.bill.billType in :tbs and "
-                + " bs.serviceSession.id=" + bookingController.getSelectedServiceSession().getId() + " order by bs.serialNo";
+                + " bs.serviceSession.id=" + bookingController.getSelectedServiceSessionInstance().getId() + " order by bs.serialNo";
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
         List<BillType> bts = new ArrayList<>();
@@ -4403,7 +4403,7 @@ public class ChannelReportController implements Serializable {
 
     public void fillNurseViewPb() {
         nurseViewSessions = new ArrayList<>();
-        if (bookingPastController.getSelectedServiceSession() == null) {
+        if (bookingPastController.getSelectedServiceSessionInstance() == null) {
             UtilityController.addErrorMessage("Please Select Session");
             return;
         }
@@ -4413,7 +4413,7 @@ public class ChannelReportController implements Serializable {
                 + " type(bs.bill)=:class and "
                 //+ " bs.bill.refunded=false and "
                 + " bs.bill.billType in :tbs and "
-                + " bs.serviceSession.id=" + bookingPastController.getSelectedServiceSession().getId() + " order by bs.serialNo";
+                + " bs.serviceSession.id=" + bookingPastController.getSelectedServiceSessionInstance().getId() + " order by bs.serialNo";
         HashMap hh = new HashMap();
         hh.put("class", BilledBill.class);
         List<BillType> bts = new ArrayList<>();

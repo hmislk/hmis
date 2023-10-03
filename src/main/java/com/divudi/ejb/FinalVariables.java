@@ -68,23 +68,13 @@ public class FinalVariables {
     public Integer getSessionSessionDayCounterLargest(List<ServiceSession> inputSessions) {
         int maxRowNumber = 0;
         for (ServiceSession ss : inputSessions) {
-//            //// // System.out.println("maxRowNumber = " + maxRowNumber);
-//            //// // System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
             if (maxRowNumber < ss.getMaxTableRows()) {
                 maxRowNumber = ss.getMaxTableRows();
-//                //// // System.out.println("maxRowNumber = " + maxRowNumber);
             }
         }
-        if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative) {
-            if (maxRowNumber != 0) {
-                return maxRowNumber;
-            } else {
-                maxRowNumber = 28;
-            }
-        } else if (maxRowNumber < 28) {
+        if (maxRowNumber == 0) {
             maxRowNumber = 28;
         }
-
         return maxRowNumber;
     }
 
@@ -131,7 +121,7 @@ public class FinalVariables {
         //VAT 15% Only Vat Value
         if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 0.152;
-             return 0.15;
+            return 0.15;
 //            return 0;
         } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
@@ -146,7 +136,7 @@ public class FinalVariables {
         //VAT 15% With Total
         if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Ruhuna) {
 //            return 1.152;
-             return 1;
+            return 1;
 //            return 1;
         } else if (sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Cooperative
                 || sessionController.getLoggedPreference().getApplicationInstitution() == ApplicationInstitution.Arogya) {
