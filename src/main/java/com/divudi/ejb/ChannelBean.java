@@ -588,7 +588,7 @@ public class ChannelBean {
         Integer tmp = 0;
         int rowIndex = 0;
         List<ServiceSession> sessions = new ArrayList<>();
-        int finalSessionDayCount = getFinalVariables().getSessionSessionDayCounterLargestById(inputSessions);
+        int finalSessionDayCount = 10;
         while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
             if (sessions.isEmpty()) {
                 for (Long s : inputSessions) {
@@ -785,8 +785,11 @@ public class ChannelBean {
     }
 
     public List<ServiceSessionInstance> fetchCreatedServiceSessions(Staff s, Date fd, Date td) {
-        //// // System.out.println("fetchCreatedServiceSessions");
+        System.out.println("fetchCreatedServiceSessions");
         String sql;
+        System.out.println("s = " + s);
+        System.out.println("fd = " + fd);
+        System.out.println("td = " + td);
         Map m = new HashMap();
         List<ServiceSessionInstance> tmp = new ArrayList<>();
         sql = "Select s "

@@ -1043,7 +1043,7 @@ public class BookingController implements Serializable {
             }
 
             calculateFee(originatingServiceSessions, channelBillController.getPaymentMethod());
-            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(originatingServiceSessions, sessionStartingDate);
+            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNew(originatingServiceSessions, getSessionStartingDate());
 //            generateSessionEvents(serviceSessionInstances);
             checkDoctorArival(originatingServiceSessions);
         }
@@ -1328,7 +1328,7 @@ public class BookingController implements Serializable {
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 //            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
 
-            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, sessionStartingDate);
+            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, getSessionStartingDate());
 //            generateSessionEvents(serviceSessionInstances);
 //            generateSessionEvents(serviceSessionInstances);
 //            generateSessionEvents(serviceSessionInstances);
@@ -1349,7 +1349,7 @@ public class BookingController implements Serializable {
         m.put("class", ServiceSession.class);
         m.put("nd", new Date());
         if (staff != null) {
-            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, sessionStartingDate);
+            serviceSessionInstances = getChannelBean().generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionIdNew(staff, getSessionStartingDate());
         }
         if (getSessionController().getLoggedUser().getWebUserPerson() != null) {
         }

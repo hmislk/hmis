@@ -78,24 +78,24 @@ public class FinalVariables {
         return maxRowNumber;
     }
 
-    public Integer getSessionSessionDayCounterLargestById(List<Long> inputSessions) {
-        int maxRowNumber = 0;
-        for (Long s : inputSessions) {
-            ServiceSession ss = serviceSessionFacade.find(s);
-//            //// // System.out.println("maxRowNumber = " + maxRowNumber);
-//            //// // System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
-            if (maxRowNumber < ss.getMaxTableRows()) {
-                maxRowNumber = ss.getMaxTableRows();
-//                //// // System.out.println("maxRowNumber = " + maxRowNumber);
-            }
-        }
-        if (maxRowNumber != 0) {
-            return maxRowNumber;
-        } else {
-            maxRowNumber = 14;
-            return maxRowNumber;
-        }
-    }
+//    public Integer getSessionSessionDayCounterLargestById(List<Long> inputSessions) {
+//        int maxRowNumber = 0;
+//        for (Long s : inputSessions) {
+//            ServiceSession ss = serviceSessionFacade.find(s);
+////            //// // System.out.println("maxRowNumber = " + maxRowNumber);
+////            //// // System.out.println("ss.getMaxTableRows() = " + ss.getMaxTableRows());
+//            if (maxRowNumber < ss.getMaxTableRows()) {
+//                maxRowNumber = ss.getMaxTableRows();
+////                //// // System.out.println("maxRowNumber = " + maxRowNumber);
+//            }
+//        }
+//        if (maxRowNumber != 0) {
+//            return maxRowNumber;
+//        } else {
+//            maxRowNumber = 14;
+//            return maxRowNumber;
+//        }
+//    }
 
     public double getCahnnelingDurationMinute() {
         return 10.0;
