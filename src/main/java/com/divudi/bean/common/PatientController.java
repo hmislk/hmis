@@ -471,9 +471,13 @@ public class PatientController implements Serializable {
         } else {
             searchPatientByDetails();
         }
-        if (searchedPatients == null) {
-            JsfUtil.addErrorMessage("No Matches. Please use different criteria.");
-            return "";
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
+
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+            return navigateToOpdPatientProfile();
         }
         clearSearchDetails();
         return "";
@@ -559,34 +563,34 @@ public class PatientController implements Serializable {
 
         j = "select p "
                 + " from Patient p "
-                + " where p.retired=false and ";
+                + " where p.retired=false ";
 
         if (searchName != null && !searchName.trim().equals("")) {
-            j += " (p.person.name) like :name ";
+            j += " and (p.person.name) like :name ";
             m.put("name", "%" + searchName.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPatientCode != null && !searchPatientCode.trim().equals("")) {
-            j += " (p.code) like :name ";
+            j += " and (p.code) like :name ";
             m.put("name", "%" + searchPatientCode.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhone != null && !searchPhone.trim().equals("")) {
-            j += " (p.person.phone =:phone or p.person.mobile =:phone)";
+            j += " and (p.person.phone =:phone or p.person.mobile =:phone)";
             m.put("phone", searchPhone);
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchNic != null && !searchNic.trim().equals("")) {
-            j += " p.person.nic =:nic";
+            j += " and p.person.nic =:nic";
             m.put("nic", searchNic);
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhn != null && !searchPhn.trim().equals("")) {
-            j += " p.phn =:phn";
+            j += " and p.phn =:phn";
             m.put("phn", searchPhn);
             atLeastOneCriteriaIsGiven = true;
         }
@@ -1000,6 +1004,16 @@ public class PatientController implements Serializable {
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
+        return "/opd/patient_edit";
+    }
+
+    public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
+        current = null;
+        getCurrent();
+        getCurrent().getPerson().setName(name);
+        getCurrent().getPerson().setNic(nic);
+        getCurrent().getPerson().setPhone(phone);
+        getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit";
     }
 
