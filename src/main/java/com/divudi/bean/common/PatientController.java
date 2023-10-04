@@ -472,7 +472,7 @@ public class PatientController implements Serializable {
             searchPatientByDetails();
         }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
-            JsfUtil.addErrorMessage("No Matches. Please use different criteria.");
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
             return navigateToAddNewPatientForOpd(getSearchName(),getSearchNic(),getSearchPhone());
             
         }
