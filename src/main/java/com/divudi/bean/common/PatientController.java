@@ -337,7 +337,7 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient";
     }
-    
+
     public String navigateToAdmitFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -347,7 +347,7 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission";
     }
-    
+
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -367,9 +367,9 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient_edit";
     }
-    
+
     public String navigateToOpdPatientEditFromId() {
-        if(patientId==null){
+        if (patientId == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
@@ -380,7 +380,7 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient_edit";
     }
-    
+
     public String navigateToOpdBillFromOpdPatient() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -388,7 +388,7 @@ public class PatientController implements Serializable {
         }
         return opdBillController.navigateToNewOpdBill(current);
     }
-    
+
     public String navigateToOpdBillForCashier() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -460,7 +460,7 @@ public class PatientController implements Serializable {
         clearSearchDetails();
         return "";
     }
-    
+
     public String searchPatientForOpd() {
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -473,8 +473,11 @@ public class PatientController implements Serializable {
         }
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria");
-            return navigateToAddNewPatientForOpd(getSearchName(),getSearchNic(),getSearchPhone());
-            
+            return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
+
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+            return navigateToOpdPatientProfile();
         }
         clearSearchDetails();
         return "";
@@ -560,34 +563,34 @@ public class PatientController implements Serializable {
 
         j = "select p "
                 + " from Patient p "
-                + " where p.retired=false and ";
+                + " where p.retired=false ";
 
         if (searchName != null && !searchName.trim().equals("")) {
-            j += " (p.person.name) like :name ";
+            j += " and (p.person.name) like :name ";
             m.put("name", "%" + searchName.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPatientCode != null && !searchPatientCode.trim().equals("")) {
-            j += " (p.code) like :name ";
+            j += " and (p.code) like :name ";
             m.put("name", "%" + searchPatientCode.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhone != null && !searchPhone.trim().equals("")) {
-            j += " (p.person.phone =:phone or p.person.mobile =:phone)";
+            j += " and (p.person.phone =:phone or p.person.mobile =:phone)";
             m.put("phone", searchPhone);
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchNic != null && !searchNic.trim().equals("")) {
-            j += " p.person.nic =:nic";
+            j += " and p.person.nic =:nic";
             m.put("nic", searchNic);
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhn != null && !searchPhn.trim().equals("")) {
-            j += " p.phn =:phn";
+            j += " and p.phn =:phn";
             m.put("phn", searchPhn);
             atLeastOneCriteriaIsGiven = true;
         }
@@ -820,8 +823,6 @@ public class PatientController implements Serializable {
         patientSelected();
         return "/emr/patient_basic_info";
     }
-    
-    
 
     public String toPatientFromSearchPatientsProfile() {
         if (current == null) {
@@ -999,13 +1000,14 @@ public class PatientController implements Serializable {
         getYearMonthDay();
         return "/emr/patient";
     }
-    
+
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
         return "/opd/patient_edit";
     }
-    public String navigateToAddNewPatientForOpd(String name,String nic,String phone) {
+
+    public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
         current = null;
         getCurrent();
         getCurrent().getPerson().setName(name);
@@ -1125,16 +1127,15 @@ public class PatientController implements Serializable {
         return "/membership/add_family";
     }
 
-    
-    public String saveAndNavigateToOpdPatientProfile(){
-        if(current==null){
+    public String saveAndNavigateToOpdPatientProfile() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
         saveSelected(current);
         return "/opd/patient";
     }
-    
+
     public void saveSelected(Patient p) {
         if (p == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
@@ -1774,8 +1775,8 @@ public class PatientController implements Serializable {
     public void setAgeDateComponant(Integer ageDateComponant) {
         this.ageDateComponant = ageDateComponant;
     }
-    
-     public PracticeBookingController getPracticeBookingController() {
+
+    public PracticeBookingController getPracticeBookingController() {
         return practiceBookingController;
     }
 
@@ -1851,8 +1852,6 @@ public class PatientController implements Serializable {
         this.patientId = patientId;
     }
 
-    
-    
     /**
      *
      * Set all Patients to null
