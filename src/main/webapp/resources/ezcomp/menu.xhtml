@@ -620,8 +620,15 @@
                     <p:menuitem  ajax="false" action="/store/store_admin"  value="Administration" rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                 </p:submenu>
 
-                <p:submenu  icon="fa fa-fw fa-calendar-check" rendered="#{webUserController.hasPrivilege('Channelling')}">                                
-                    <p:menuitem  ajax="false"  value="Channel Booking"  action="/channel/channel_booking" actionListener="#{bookingController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" ></p:menuitem>
+                <p:submenu
+                    icon="fa fa-fw fa-calendar-check" 
+                    rendered="#{webUserController.hasPrivilege('Channelling')}">                                
+                    <p:menuitem 
+                        ajax="false"  
+                        value="Channel Booking"  
+                        action="#{channelBookingController.navigateToChannelBookingFromMenu()}" 
+                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" >
+                    </p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Future Booking"  action="/channel/channel_booking_future" actionListener="#{bookingController.makeNull}" rendered="false" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Past Bookings"  action="/channel/channel_booking_past" actionListener="#{bookingPastController.makeNull}" rendered="#{webUserController.hasPrivilege('ChannellingPastBooking')}" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Booked List"  action="/channel/channel_booked_list" actionListener="#{bookingPastController.makeNull}" rendered="false" ></p:menuitem>

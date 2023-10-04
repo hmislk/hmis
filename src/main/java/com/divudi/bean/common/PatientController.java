@@ -337,7 +337,7 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient";
     }
-    
+
     public String navigateToAdmitFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -347,7 +347,7 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission";
     }
-    
+
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -367,9 +367,9 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient_edit";
     }
-    
+
     public String navigateToOpdPatientEditFromId() {
-        if(patientId==null){
+        if (patientId == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
@@ -380,7 +380,7 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient_edit";
     }
-    
+
     public String navigateToOpdBillFromOpdPatient() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -388,7 +388,7 @@ public class PatientController implements Serializable {
         }
         return opdBillController.navigateToNewOpdBill(current);
     }
-    
+
     public String navigateToOpdBillForCashier() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -460,7 +460,7 @@ public class PatientController implements Serializable {
         clearSearchDetails();
         return "";
     }
-    
+
     public String searchPatientForOpd() {
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -819,8 +819,6 @@ public class PatientController implements Serializable {
         patientSelected();
         return "/emr/patient_basic_info";
     }
-    
-    
 
     public String toPatientFromSearchPatientsProfile() {
         if (current == null) {
@@ -998,7 +996,7 @@ public class PatientController implements Serializable {
         getYearMonthDay();
         return "/emr/patient";
     }
-    
+
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
@@ -1115,16 +1113,15 @@ public class PatientController implements Serializable {
         return "/membership/add_family";
     }
 
-    
-    public String saveAndNavigateToOpdPatientProfile(){
-        if(current==null){
+    public String saveAndNavigateToOpdPatientProfile() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
         saveSelected(current);
         return "/opd/patient";
     }
-    
+
     public void saveSelected(Patient p) {
         if (p == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
@@ -1764,8 +1761,8 @@ public class PatientController implements Serializable {
     public void setAgeDateComponant(Integer ageDateComponant) {
         this.ageDateComponant = ageDateComponant;
     }
-    
-     public PracticeBookingController getPracticeBookingController() {
+
+    public PracticeBookingController getPracticeBookingController() {
         return practiceBookingController;
     }
 
@@ -1841,8 +1838,6 @@ public class PatientController implements Serializable {
         this.patientId = patientId;
     }
 
-    
-    
     /**
      *
      * Set all Patients to null
@@ -1913,8 +1908,10 @@ public class PatientController implements Serializable {
                 Patient o = (Patient) object;
                 return getStringKey(o.getId());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName());
+                String error = "object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName();
+                System.out.println("error = " + error);
+                return null;
             }
         }
     }
