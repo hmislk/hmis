@@ -4330,9 +4330,11 @@ public class SearchController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
         m.put("bType", BillType.OpdBill);
-        m.put("ins", getSessionController().getInstitution());
+        m.put("dep", getSessionController().getDepartment());
 
-        sql = "select bi from BillItem bi where bi.bill.institution=:ins "
+        sql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.department=:dep "
                 + " and bi.bill.billType=:bType "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
