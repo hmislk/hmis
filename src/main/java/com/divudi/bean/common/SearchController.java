@@ -193,6 +193,10 @@ public class SearchController implements Serializable {
     public String smslist() {
         return "/analytics/sms_list";
     }
+    
+    public String smsfaildlist() {
+        return "/analytics/sms_faild";
+    }
 
     public String navigateToListOtherInstitutionBills() {
         bills = null;
