@@ -13,6 +13,7 @@ import com.divudi.data.CalculationType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
+import com.divudi.data.MessageType;
 import com.divudi.data.Sex;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
@@ -1301,6 +1302,7 @@ public class PatientReportController implements Serializable {
             e.setPatientReport(currentPatientReport);
             e.setPatientInvestigation(currentPtIx);
             e.setCreatedAt(new Date());
+            e.setSmsType(MessageType.LabReport);
             e.setCreater(sessionController.getLoggedUser());
             e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
             e.setSendingMessage(smsBody(currentPatientReport));
