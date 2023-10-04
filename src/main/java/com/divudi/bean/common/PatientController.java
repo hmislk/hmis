@@ -473,7 +473,8 @@ public class PatientController implements Serializable {
         }
         if (searchedPatients == null) {
             JsfUtil.addErrorMessage("No Matches. Please use different criteria.");
-            return "";
+            return navigateToAddNewPatientForOpd(getSearchName(),getSearchNic(),getSearchPhone());
+            
         }
         clearSearchDetails();
         return "";
@@ -1002,6 +1003,15 @@ public class PatientController implements Serializable {
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
+        return "/opd/patient_edit";
+    }
+    public String navigateToAddNewPatientForOpd(String name,String nic,String phone) {
+        current = null;
+        getCurrent();
+        getCurrent().getPerson().setName(name);
+        getCurrent().getPerson().setNic(nic);
+        getCurrent().getPerson().setPhone(phone);
+        getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit";
     }
 
