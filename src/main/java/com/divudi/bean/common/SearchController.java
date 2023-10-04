@@ -189,6 +189,10 @@ public class SearchController implements Serializable {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
         return "/index";
     }
+    
+    public String smslist() {
+        return "/analytics/sms_list";
+    }
 
     public String navigateToListOtherInstitutionBills() {
         bills = null;
@@ -214,7 +218,7 @@ public class SearchController implements Serializable {
         bills = null;
         return "/list_bills";
     }
-
+    
     public void listAllBills() {
         String sql;
         Map temMap = new HashMap();
