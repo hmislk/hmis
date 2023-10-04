@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/dataAdmin/admin_data_administration.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form">
+                <p:panelGrid columns="2" >
+                    <p:outputLabel value="From" ></p:outputLabel>
+                    <p:datePicker value="#{patientController.fromDate}" ></p:datePicker>
+                    <p:outputLabel value="To" ></p:outputLabel>
+                    <p:datePicker value="#{patientController.toDate}" ></p:datePicker>
+
+                    <p:commandButton value="Download Patients" ajax="false"
+                                     action="#{patientController.downloadAllPatients}"></p:commandButton>
+                    <p:commandButton value="Download Phone Numbers" ajax="false"
+                                     action="#{patientController.downloadPatientsPhoneNumbers()}"></p:commandButton>
+                </p:panelGrid>
+
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>
