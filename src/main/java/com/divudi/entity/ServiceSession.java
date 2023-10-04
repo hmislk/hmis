@@ -249,8 +249,6 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransStartTime() {
         Calendar st = Calendar.getInstance();
         Calendar start = Calendar.getInstance();
-//        //// // System.out.println("sessionAt = " + sessionAt);
-//        //// // System.out.println("startingTime = " + startingTime);
         if (sessionAt == null || startingTime == null) {
             return null;
         }

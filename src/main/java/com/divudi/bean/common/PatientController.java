@@ -1922,8 +1922,10 @@ public class PatientController implements Serializable {
                 Patient o = (Patient) object;
                 return getStringKey(o.getId());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName());
+                String error = "object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName();
+                System.out.println("error = " + error);
+                return null;
             }
         }
     }

@@ -39,29 +39,35 @@ import javax.persistence.TemporalType;
  *
  * @author Dushan
  */
-@Named(value = "smsController")
+@Named
 @SessionScoped
 public class SmsController implements Serializable {
 
+    /*
+    EJB
+     */
     @EJB
     SmsFacade smsFacade;
-
     @EJB
-    SmsManagerEjb smsManager;
-
+    private SmsManagerEjb smsManager;
+    /*
+    Controllers
+     */
     @Inject
     SessionController sessionController;
     @Inject
     CommonFunctions commonFunctions;
-
+    /*
+    Class Variables
+     */
     List<Sms> smses;
     List<SmsSummeryRow> smsSummeryRows;
-
     ReportKeyWord reportKeyWord;
-
     private String number;
     private String message;
     private String messageOutput;
+    private Date fromDate;
+    private Date toDate;
 
     /**
      * Creates a new instance of SmsController
@@ -72,126 +78,33 @@ public class SmsController implements Serializable {
     public void sendSmsAwaitingToSendInDatabase() {
         String j = "Select e from Sms e where e.sentSuccessfully=false and e.retired=false";
         List<Sms> smses = getSmsFacade().findByJpql(j);
-//        if (false) {
-//            Sms e = new Sms();
-//            e.getSentSuccessfully();
-//            e.getInstitution();
-//        }
         for (Sms e : smses) {
             e.setSentSuccessfully(Boolean.TRUE);
             getSmsFacade().edit(e);
-
-            boolean sentSuccessfully = sendSms(e.getReceipientNumber(), e.getSendingMessage(),
-                    e.getInstitution().getSmsSendingUsername(),
-                    e.getInstitution().getSmsSendingPassword(),
-                    e.getInstitution().getSmsSendingAlias());
+            boolean sentSuccessfully = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
             e.setSentSuccessfully(sentSuccessfully);
             e.setSentAt(new Date());
             getSmsFacade().edit(e);
         }
-
-    }
-
-    public static String executePost(String targetURL, Map<String, Object> parameters) {
-        HttpURLConnection connection = null;
-        if (parameters != null && !parameters.isEmpty()) {
-            targetURL += "?";
-        }
-        Set s = parameters.entrySet();
-        Iterator it = s.iterator();
-        while (it.hasNext()) {
-            Map.Entry m = (Map.Entry) it.next();
-            Object pVal = m.getValue();
-            String pPara = (String) m.getKey();
-            targetURL += pPara + "=" + pVal.toString() + "&";
-        }
-        if (parameters != null && !parameters.isEmpty()) {
-            targetURL += "last=true";
-        }
-        try {
-            //Create connection
-            URL url = new URL(targetURL);
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-
-            connection.setUseCaches(false);
-            connection.setDoOutput(true);
-            //Send request
-            DataOutputStream wr = new DataOutputStream(
-                    connection.getOutputStream());
-            wr.writeBytes(targetURL);
-            wr.flush();
-            wr.close();
-
-            //Get Response  
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-            StringBuilder response = new StringBuilder(); // or StringBuffer if Java version 5+
-            String line;
-            while ((line = rd.readLine()) != null) {
-                response.append(line);
-                response.append('\r');
-            }
-            rd.close();
-            return response.toString();
-        } catch (Exception e) {
-            return null;
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
-        }
     }
 
     public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
-
-        //// // System.out.println("number = " + number);
-        //// // System.out.println("message = " + message);
-        //// // System.out.println("username = " + username);
-        Map m = new HashMap();
-        m.put("userName", username);
-        m.put("password", password);
-        m.put("userAlias", sendingAlias);
-        m.put("number", number);
-        m.put("message", message);
-
-        String res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
-        if (res == null) {
-            return false;
-        } else if (res.toUpperCase().contains("200")) {
-            return true;
-        } else {
-            return false;
-        }
-
+        return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
     }
 
     public boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
+        return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
+    }
 
-        //// // System.out.println("number = " + number);
-        //// // System.out.println("message = " + message);
-        //// // System.out.println("username = " + username);
-        Map m = new HashMap();
-        m.put("userName", username);
-        m.put("password", password);
-        m.put("userAlias", sendingAlias);
-        m.put("number", number);
-        m.put("message", message);
-        m.put("promo", "yes");
+    public boolean sendSms(String number, String message) {
+        return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
+    }
 
-        String res = executePost("http://localhost:7070/sms/faces/index.xhtml", m);
-        if (res == null) {
-            return false;
-        } else if (res.toUpperCase().contains("200")) {
-            return true;
-        } else {
-            return false;
-        }
-
+    public boolean sendSmsPromo(String number, String message) {
+        return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
     }
 
     public void sendSmsToNumberList(String sendingNo, ApplicationInstitution ai, String msg, Bill b, MessageType smsType) {
-
         if (sendingNo.contains("077") || sendingNo.contains("076")
                 || sendingNo.contains("071") || sendingNo.contains("070")
                 || sendingNo.contains("072")
@@ -200,13 +113,9 @@ public class SmsController implements Serializable {
         } else {
             return;
         }
-
         Sms e = new Sms();
         e.setSentSuccessfully(Boolean.TRUE);
-
-        boolean sent = sendSmsPromo(sendingNo, msg, getSessionController().getInstitution().getSmsSendingUsername(),
-                getSessionController().getInstitution().getSmsSendingPassword(),
-                getSessionController().getInstitution().getSmsSendingAlias());
+        boolean sent = sendSmsPromo(sendingNo, msg);
 
         if (sent) {
             e.setSentSuccessfully(true);
@@ -237,18 +146,12 @@ public class SmsController implements Serializable {
         e.setInstitution(getSessionController().getInstitution());
         e.setSentSuccessfully(false);
         getSmsFacade().create(e);
-        smsManager.sendSms(e.getReceipientNumber(), e.getSendingMessage(),
-                e.getInstitution().getSmsSendingUsername(),
-                e.getInstitution().getSmsSendingPassword(),
-                e.getInstitution().getSmsSendingAlias());
-
+        smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
         UtilityController.addSuccessMessage("SMS Sent");
-
     }
-
+    
     public void createSmsTable() {
         long lng = getCommonFunctions().getDayCount(getReportKeyWord().getFromDate(), getReportKeyWord().getToDate());
-
         if (Math.abs(lng) > 2 && !getReportKeyWord().isAdditionalDetails()) {
             UtilityController.addErrorMessage("Date Range is too Long");
             return;
@@ -302,6 +205,24 @@ public class SmsController implements Serializable {
 
     }
 
+    public void fillAllSms(){
+        System.out.println("fillAllSms");
+        String j ="select s "
+                + " from Sms s "
+                + " where s.createdAt between :fd and :td ";
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        smses = smsFacade.findByJpql(j, m);
+    }
+    
+    
+    public List<Sms> allsms() {
+        return getSmsFacade().findAll();
+    }
+
     public List<SmsSummeryRow> getSmsSummeryRows() {
         return smsSummeryRows;
     }
@@ -340,6 +261,36 @@ public class SmsController implements Serializable {
 
     public void setMessageOutput(String messageOutput) {
         this.messageOutput = messageOutput;
+    }
+
+    public SmsManagerEjb getSmsManager() {
+        return smsManager;
+    }
+
+    public void setSmsManager(SmsManagerEjb smsManager) {
+        this.smsManager = smsManager;
+    }
+
+    public Date getFromDate() {
+        if(fromDate==null){
+            fromDate= CommonFunctions.getStartOfDay();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if(toDate==null){
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     public class SmsSummeryRow {
