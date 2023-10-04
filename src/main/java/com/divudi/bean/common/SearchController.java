@@ -190,12 +190,17 @@ public class SearchController implements Serializable {
         return "/index";
     }
     
-    public String smslist() {
+    public String navigateToSmsList() {
         return "/analytics/sms_list";
     }
     
+<<<<<<< HEAD
     public String smsfaildlist() {
         return "/analytics/sms_faild";
+=======
+    public String navigateToFailedSmsList() {
+        return "/analytics/sms_list_failed";
+>>>>>>> 0a3688403c798f73ffaaf8874b1ced9dbd3bae88
     }
 
     public String navigateToListOtherInstitutionBills() {
