@@ -228,10 +228,10 @@ public class SmsController implements Serializable {
     }
     
      public void fillAllFaildSms(){
-        String j = "SELECT s "
-        + "FROM Sms s "
-        + "WHERE s.sentSuccessfully = false "
-        + "AND s.sentDate BETWEEN :fd AND :td";
+        String j = "select s "
+        + "from Sms s "
+        + "where s.sentSuccessfully = false "
+        + "AND s.createdAt between :fd and :td";
 
         Map m = new HashMap();
         m.put("fd", fromDate);
@@ -239,6 +239,8 @@ public class SmsController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("j = " + j);
         faildsms=smsFacade.findByJpql(j, m);
+
+          System.out.println("testingpackage........");
     }
     
     
