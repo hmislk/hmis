@@ -61,6 +61,15 @@ public class SmsController implements Serializable {
     Class Variables
      */
     List<Sms> smses;
+    List<Sms> faildsms;
+
+    public List<Sms> getFaildsms() {
+        return faildsms;
+    }
+
+    public void setFaildsms(List<Sms> faildsms) {
+        this.faildsms = faildsms;
+    }
     List<SmsSummeryRow> smsSummeryRows;
     ReportKeyWord reportKeyWord;
     private String number;
@@ -216,6 +225,20 @@ public class SmsController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("j = " + j);
         smses = smsFacade.findByJpql(j, m);
+    }
+    
+     public void fillAllFaildSms(){
+        String j = "SELECT s "
+        + "FROM Sms s "
+        + "WHERE s.sentSuccessfully = false "
+        + "AND s.sentDate BETWEEN :fd AND :td";
+
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        faildsms=smsFacade.findByJpql(j, m);
     }
     
     
