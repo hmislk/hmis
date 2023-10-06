@@ -146,6 +146,13 @@
                                                                      styleClass="mx-1 mb-2">
                                                         <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                     </p:commandButton>
+                                                    
+                                                    <p:commandButton value="Billing for Cashier"
+                                                                     action="#{patientController.navigateToBillingForCashierFromPatientProfile()}"
+                                                                     ajax="false"
+                                                                     styleClass="mx-1 mb-2">
+                                                        <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    </p:commandButton>
 
                                                 </div>
                                             </div>
