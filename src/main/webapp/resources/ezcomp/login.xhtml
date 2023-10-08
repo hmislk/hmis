@@ -20,10 +20,20 @@
                                 <div class="col-lg-6" >
                                     <div class="card-body p-md-5 mx-md-4">
                                         <div class="text-center">
-                                            <h:graphicImage 
-                                                library="image" 
-                                                name="logo.jpg" 
-                                                style="width: 185px;" alt="logo"></h:graphicImage>
+                                            <h:graphicImage
+                                                rendered="#{not empty sessionController.applicationPreference.logoUrl}"
+                                                value="#{sessionController.applicationPreference.logoUrl}"
+                                                style="width: 185px;"
+                                                alt="logo"
+                                                />
+                                            <h:graphicImage
+                                                rendered="#{empty sessionController.applicationPreference.logoUrl}"
+                                                library="image"
+                                                name="logo.jpg"
+                                                style="width: 185px;"
+                                                alt="logo"
+                                                />
+
                                         </div>
                                         <h:form>
                                             <div class="form-outline mb-4">
@@ -72,11 +82,28 @@
                                     <div class="text-white px-3 py-4 p-md-5 mx-md-4" >
 
                                         <h4 class="mb-4">
-                                            <h:outputText value="#{bundle.hims}" class="text-white" ></h:outputText>
+                                            <h:outputText
+                                                rendered="#{not empty sessionController.applicationPreference.loggingHeader}"
+                                                value="#{sessionController.applicationPreference.loggingHeader}" class="text-white" ></h:outputText>
+                                            <h:outputText
+                                                rendered="#{empty sessionController.applicationPreference.loggingHeader}"
+                                                value="#{bundle.hims}" class="text-white" ></h:outputText>
                                         </h4>
-                                        <p class="small mb-0 text-start">
-                                            #{bundle.hims_tagline_contents}
+                                        <p class="small mb-0 text-start"
+                                           >
+                                            <h:outputText 
+                                                rendered="#{not empty sessionController.applicationPreference.loggingText}"
+                                                value ="#{sessionController.applicationPreference.loggingText}">
+                                               
+                                            </h:outputText>
+                                            <h:outputText 
+                                                rendered="#{empty sessionController.applicationPreference.loggingText}"
+                                                value ="#{bundle.hims_tagline_contents}">
+                                               
+                                            </h:outputText>
+                                            
                                         </p>
+                                        
                                     </div>
                                 </div>
                             </div>
