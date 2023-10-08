@@ -239,8 +239,6 @@ public class SmsController implements Serializable {
         System.out.println("m = " + m);
         System.out.println("j = " + j);
         faildsms=smsFacade.findByJpql(j, m);
-
-          System.out.println("testingpackage........");
     }
     
     
