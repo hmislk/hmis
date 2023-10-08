@@ -13,6 +13,7 @@ import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
 import com.divudi.facade.SmsFacade;
+import com.divudi.facade.util.JsfUtil;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -62,6 +63,8 @@ public class SmsController implements Serializable {
      */
     List<Sms> smses;
     List<Sms> faildsms;
+    private Sms selectedSms;
+    
 
     public List<Sms> getFaildsms() {
         return faildsms;
@@ -240,6 +243,15 @@ public class SmsController implements Serializable {
         System.out.println("j = " + j);
         faildsms=smsFacade.findByJpql(j, m);
     }
+     
+      public void sentUnsentSms() {
+        if (selectedSms == null){
+            JsfUtil.addErrorMessage("No SMS selected");
+            return;
+        }
+        
+        smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
+    }
     
     
     public List<Sms> allsms() {
@@ -314,6 +326,14 @@ public class SmsController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public Sms getSelectedSms() {
+        return selectedSms;
+    }
+
+    public void setSelectedSms(Sms selectedSms) {
+        this.selectedSms = selectedSms;
     }
 
     public class SmsSummeryRow {

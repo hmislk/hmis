@@ -58,18 +58,15 @@
                             <p:column headerText="Message" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.sendingMessage}"/>
                             </p:column>
+                            <p:column headerText="Phone Number" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.receipientNumber}"/>
+                            </p:column>
                             <p:column headerText="Action" styleClass="alignTop" width="15">
-                                <p:commandButton value="Send Now">
-
+                                <p:commandButton value="Send Now" actionListener="#{smsController.sentUnsentSms}">
+                                    
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
-
-
-
-
-
-
                     </p:panel>
                 </h:form>
 
