@@ -247,7 +247,6 @@ public class SmsController implements Serializable {
     public void sentUnsentSms() {
         if (selectedSms == null) {
             JsfUtil.addErrorMessage("No SMS selected");
-            System.out.println("Abcd");
             return;
         }
         boolean sendSms=smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
