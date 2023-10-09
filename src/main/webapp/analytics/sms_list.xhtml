@@ -10,26 +10,6 @@
             <ui:define name="report">
                 <h:form >
 
-
-                    <p:dataTable rowIndexVar="i" id="tblBills" 
-                                 value="#{smsController.smses}"
-                                 reflow="true"
-                                 var="sms"  
-                                 style="min-width: 100%;"  
-                                 paginator="true"
-                                 rows="10"
-                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15"
-                                 >
-                        <p:column headerText="ID" styleClass="alignTop" width="15">
-                            <h:outputLabel value="#{sms.id}"/>
-                        </p:column>
-                        <p:column headerText="SMS Type" styleClass="alignTop" width="15">
-                            <h:outputLabel value="#{sms.smsType}"/>
-                        </p:column>
-                    </p:dataTable>
-
-
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="All SMS List"/>                          

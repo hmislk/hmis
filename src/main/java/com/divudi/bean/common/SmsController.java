@@ -13,6 +13,7 @@ import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
 import com.divudi.facade.SmsFacade;
+import com.divudi.facade.util.JsfUtil;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -61,6 +62,17 @@ public class SmsController implements Serializable {
     Class Variables
      */
     List<Sms> smses;
+    List<Sms> faildsms;
+    private Sms selectedSms;
+    private Boolean bool;
+
+    public List<Sms> getFaildsms() {
+        return faildsms;
+    }
+
+    public void setFaildsms(List<Sms> faildsms) {
+        this.faildsms = faildsms;
+    }
     List<SmsSummeryRow> smsSummeryRows;
     ReportKeyWord reportKeyWord;
     private String number;
@@ -149,7 +161,7 @@ public class SmsController implements Serializable {
         smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
         UtilityController.addSuccessMessage("SMS Sent");
     }
-    
+
     public void createSmsTable() {
         long lng = getCommonFunctions().getDayCount(getReportKeyWord().getFromDate(), getReportKeyWord().getToDate());
         if (Math.abs(lng) > 2 && !getReportKeyWord().isAdditionalDetails()) {
@@ -205,9 +217,9 @@ public class SmsController implements Serializable {
 
     }
 
-    public void fillAllSms(){
+    public void fillAllSms() {
         System.out.println("fillAllSms");
-        String j ="select s "
+        String j = "select s "
                 + " from Sms s "
                 + " where s.createdAt between :fd and :td ";
         Map m = new HashMap();
@@ -217,8 +229,32 @@ public class SmsController implements Serializable {
         System.out.println("j = " + j);
         smses = smsFacade.findByJpql(j, m);
     }
-    
-    
+
+    public void fillAllFaildSms() {
+        String j = "select s "
+                + "from Sms s "
+                + "where s.sentSuccessfully = false "
+                + "AND s.createdAt between :fd and :td";
+
+        Map m = new HashMap();
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
+        faildsms = smsFacade.findByJpql(j, m);
+    }
+
+    public void sentUnsentSms() {
+        if (selectedSms == null) {
+            JsfUtil.addErrorMessage("No SMS selected");
+            System.out.println("Abcd");
+            return;
+        }
+
+        smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
+
+    }
+
     public List<Sms> allsms() {
         return getSmsFacade().findAll();
     }
@@ -272,8 +308,8 @@ public class SmsController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
-            fromDate= CommonFunctions.getStartOfDay();
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
         }
         return fromDate;
     }
@@ -283,7 +319,7 @@ public class SmsController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate==null){
+        if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
@@ -291,6 +327,14 @@ public class SmsController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
+    }
+
+    public Sms getSelectedSms() {
+        return selectedSms;
+    }
+
+    public void setSelectedSms(Sms selectedSms) {
+        this.selectedSms = selectedSms;
     }
 
     public class SmsSummeryRow {
