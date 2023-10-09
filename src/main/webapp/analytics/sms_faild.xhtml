@@ -62,10 +62,12 @@
                                 <h:outputLabel value="#{sms.receipientNumber}"/>
                             </p:column>
                             <p:column headerText="Action" styleClass="alignTop" width="15">
-                                <p:commandButton value="Send Now" actionListener="#{smsController.sentUnsentSms}">
+                                <p:commandButton value="Send Now" actionListener="#{smsController.setSelectedSms(sms)}" action="#{smsController.sentUnsentSms}">
                                 </p:commandButton>
+
                             </p:column>
                         </p:dataTable>
+
                     </p:panel>
                 </h:form>
 
