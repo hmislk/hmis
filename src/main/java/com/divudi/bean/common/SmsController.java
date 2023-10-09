@@ -250,9 +250,10 @@ public class SmsController implements Serializable {
             System.out.println("Abcd");
             return;
         }
-
-        smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
-
+        boolean sendSms=smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
+        if(sendSms){
+            getSmsFacade().edit(selectedSms);
+        }
     }
 
     public List<Sms> allsms() {
