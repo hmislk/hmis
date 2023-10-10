@@ -189,11 +189,10 @@ public class SearchController implements Serializable {
         JsfUtil.addSuccessMessage("Sarched From Menubar" + "\n" + menuBarSearchText);
         return "/index";
     }
-    
+
     public String navigateToSmsList() {
         return "/analytics/sms_list";
     }
-    
 
     public String navigateToFailedSmsList() {
         return "/analytics/sms_faild";
@@ -224,7 +223,7 @@ public class SearchController implements Serializable {
         bills = null;
         return "/list_bills";
     }
-    
+
     public void listAllBills() {
         String sql;
         Map temMap = new HashMap();
@@ -1363,7 +1362,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-       
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - staff(/faces/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true)");
     }
 

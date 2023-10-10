@@ -12,12 +12,12 @@
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
-    <cc:implementation>
+    <cc:implementation >
         
-            <div class="row p-1">
+            <div class="row">
                 <div class="col-md-4 p-1">
 
-                    <p:selectOneMenu id="cmbTitle" value="#{cc.attrs.patient.person.title}" placeholder="Title" class="form-control w-100">
+                    <p:selectOneMenu id="cmbTitle"  placeholder="Title" class="form-control w-100">
                         <f:selectItem itemLabel="Select Title" />
                         <f:selectItems value="#{enumController.title}" />
                     </p:selectOneMenu>
@@ -26,7 +26,7 @@
                     <p:inputText autocomplete="off" id="txtNewPtName" value="#{cc.attrs.patient.person.name}" class="form-control w-100" style="width: 200px; text-transform: capitalize;" placeholder="Name"></p:inputText>
                 </div>
                 <div class="col-md-4 p-1">
-                    <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.patient.person.sex}"  class="form-control w-100">
+                    <p:selectOneMenu id="txtNewSex" class="form-control w-100">
                         <f:selectItem itemLabel="Select Sex" />
                         <f:selectItems value="#{enumController.sex}" />
                     </p:selectOneMenu>
@@ -35,12 +35,12 @@
             </div>
 
             <div class="row mt-2">
-                <div class="col-md-4 p-1">
-                    <p:inputText autocomplete="off" placeholder="Year (DOB)" id="year" value="#{appointmentController.yearMonthDay.year}" class="form-control w-100">
+                <div class="col-md-12 p-1">
+                    <p:inputText autocomplete="off" placeholder="Year (DOB)" id="year" value="#{patientController.current.person.ageAsString}" class="form-control w-100">
                         <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
                     </p:inputText>
                 </div>
-                <div class="col-md-4 p-1">
+<!--                <div class="col-md-4 p-1">
                     <p:inputText autocomplete="off" id="month" placeholder="Month (DOB)" value="#{appointmentController.yearMonthDay.month}" class="form-control w-100">
                         <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
                     </p:inputText>
@@ -49,12 +49,12 @@
                     <p:inputText autocomplete="off" id="day" placeholder="Day (DOB)" value="#{appointmentController.yearMonthDay.day}" class="form-control w-100">
                         <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
                     </p:inputText>
-                </div>
+                </div>-->
             </div>
 
             <div class="row mt-2 ">
                 <div class="col-12 p-1">
-                    <p:autoComplete  id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta"  itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.patient.person.area}"  placeholder="Address" ></p:autoComplete>
+                    <p:inputText  id="atxtNewPtArea" autocomplete="off" class="form-control w-100" value="#{cc.attrs.patient.person.address}"  placeholder="Address" ></p:inputText>
                 </div>
             </div>
 

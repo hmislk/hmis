@@ -24,7 +24,7 @@
                                 <p:commandButton id="btnSearch3" ajax="false" value="Search Not Paid Only" action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
                                 <h:outputLabel />
                                 <p:commandButton  ajax="false" value="Pharmacy Payment" action="/pharmacy/pharmacy_search_pre_bill.xhtml"/>
-                                
+
                                 <p:spacer height="30"/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/><h:outputLabel/>
 
                                 <h:outputLabel value="Bill No"/>
@@ -62,8 +62,8 @@
                             <p:column headerText="Bill No" >
                                 <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
                             </p:column>   
-                             <p:column headerText="Name" >
-                                 <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
+                            <p:column headerText="Name" >
+                                <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
                             </p:column>   
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
@@ -103,7 +103,7 @@
                                                  disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
                                 </p:commandButton>
                             </p:column>
-                            
+
                             <p:column headerText="Reprint">
                                 <p:commandButton ajax="false"  
                                                  value="Reprint" 
