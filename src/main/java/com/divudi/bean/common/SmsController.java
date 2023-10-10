@@ -250,7 +250,7 @@ public class SmsController implements Serializable {
             return;
         }
         boolean sendSms=smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
-        if(sendSms){
+        if(sendSms==true){
             getSmsFacade().edit(selectedSms);
         }
     }

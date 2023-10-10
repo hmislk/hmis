@@ -18,7 +18,7 @@
                 <p:focus id="focusIx" for="acIx" />
 
                 <h:panelGroup rendered="#{!billPackageMedicalController.printPreview}" styleClass="alignTop" >
-                    <p:panel style="min-height: 600px; position:relative;"  >
+                    <p:panel class="w-100"  >
                         <f:facet name="header" >
                             <h:panelGrid columns="17"  >
                                 <h:outputLabel value="OPD Medical Packages" />
@@ -52,11 +52,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <p:panel class="w-100">
-                                    <h:panelGrid columns="1" >
+                                    <h:panelGrid columns="1" class="w-100">
 
-                                        <h:panelGroup id="panelPatient" >
+                                        <h:panelGroup id="panelPatient" class="w-100">
 
-                                            <p:tabView id="tvPt" style="min-height: 250px;"  >
+                                            <p:tabView id="tvPt" class="w-100"  >
                                                 <p:ajax event="tabChange"  process="@this" listener="#{billPackageMedicalController.onTabChange}" />
 
                                                 <p:tab id="tabNewPt" title="New Patient"  >
@@ -95,7 +95,7 @@
 
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="panelIx" >
+                                        <h:panelGroup id="panelIx" class="w-100">
 
 
                                             <p:panel id='pIxAdd' header="Items Requests" style="min-height: 350px;"  >                                        
