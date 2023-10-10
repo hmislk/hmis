@@ -107,6 +107,8 @@ public class OpdPreBillController implements Serializable {
     BillFeePaymentFacade billFeePaymentFacade;
     @Inject
     private EnumController enumController;
+    @Inject
+    private OpdPreBillController opdPreBillController;
     @EJB
     BillEjb billEjb;
     private boolean printPreview;
@@ -187,6 +189,7 @@ public class OpdPreBillController implements Serializable {
     Date sessionDate;
     String strTenderedValue;
     private YearMonthDay yearMonthDay;
+    private Patient current;
     private PaymentMethodData paymentMethodData;
     @EJB
     private CashTransactionBean cashTransactionBean;
@@ -578,12 +581,41 @@ public class OpdPreBillController implements Serializable {
         ////// // System.out.println("Out Print");
     }
 
+    private Patient savePatient(Patient p) {
+
+        if (p == null) {
+            return null;
+        }
+        if (p.getPerson() == null) {
+            return null;
+        }
+        
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreater(sessionController.getLoggedUser());
+            p.getPerson().setCreatedAt(new Date());
+            personFacade.create(p.getPerson());
+        } else {
+            personFacade.edit(p.getPerson());
+        }
+        
+        if (p.getId() == null) {
+            p.setCreater(sessionController.getLoggedUser());
+            p.setCreatedAt(new Date());
+            patientFacade.create(p);
+        } else {
+            patientFacade.edit(p);
+        }
+        
+        return p;
+    }
+    
     public void settleBill() {
         if (errorCheck()) {
             return;
         }
 
-        savePatient();
+        Patient p = savePatient(getSearchedPatient());
+        
 
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             PreBill temp = new PreBill();
@@ -914,20 +946,20 @@ public class OpdPreBillController implements Serializable {
         }
 
         if (!getLstBillEntries().get(0).getBillItem().getItem().isPatientNotRequired()) {
-            if (getPatientTabId().equals("tabSearchPt")) {
+            //if (getPatientTabId().equals("tabSearchPt")) {
                 if (getSearchedPatient() == null) {
                     UtilityController.addErrorMessage("Plese Select Patient");
                     return true;
                 }
-            }
+           // }
 
-            if (getPatientTabId().equals("tabNewPt")) {
-                if (getNewPatient().getPerson().getName() == null
-                        || getNewPatient().getPerson().getName().trim().equals("")) {
-                    UtilityController.addErrorMessage("Can not bill without Patient Name");
-                    return true;
-                }
-            }
+            //if (getPatientTabId().equals("tabNewPt")) {
+//                if (getNewPatient().getPerson().getName() == null
+//                        || getNewPatient().getPerson().getName().trim().equals("")) {
+//                    UtilityController.addErrorMessage("Can not bill without Patient Name");
+//                    return true;
+//                }
+            //}
 
             boolean checkAge = false;
             for (BillEntry be : getLstBillEntries()) {
@@ -976,6 +1008,18 @@ public class OpdPreBillController implements Serializable {
 
         
         return false;
+    }
+    
+    public String navigateToBillingForCashierFromMenu(){
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            Patient p =new Patient();
+            setCurrent(p);
+        }
+          opdPreBillController.prepareNewBill();
+          opdPreBillController.setSearchedPatient(getCurrent());
+        return "/opd_pre_bill";
+        
     }
 
     public PaymentSchemeController getPaymentSchemeController() {
@@ -1911,5 +1955,13 @@ public class OpdPreBillController implements Serializable {
 
     public void setCommonController(CommonController commonController) {
         this.commonController = commonController;
+    }
+
+    public Patient getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(Patient current) {
+        this.current = current;
     }
 }
