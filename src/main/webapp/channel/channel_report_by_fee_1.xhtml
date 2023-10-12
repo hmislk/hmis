@@ -7,47 +7,46 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                
+
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
     <ui:define name="subContent">
         <h:panelGroup rendered="true" >
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel id="billFeeReport"  header="Channel Total By Fee Type">
-                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
-                        <h:outputLabel value="From Date"/>
+                    <p:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date" class="mx-1"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
 
-                        <h:outputLabel value="To Date"/>
+                        <h:outputLabel value="To Date" class="mx-1"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
-                        </h:panelGrid> 
-                    <h:panelGrid columns="4" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    <h:panelGrid columns="4" styleClass="noPrintButton" class="mt-2 mb-2">
                         <p:spacer width="70" height="1"/>
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createChannelFees()}">
-
-                        </p:commandButton>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
-                            <p:printer target="reportPrint"  />
+                        <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createChannelFees()}" style="margin-right: 10px;" />
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px;">
+                            <p:printer target="reportPrint" />
                         </p:commandButton>
                         <p:commandButton actionListener="#{channelReportController.createChannelFees()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                            <p:dataExporter type="xlsx" target="tbl2" fileName="hr_report_department"  />
+                            <p:dataExporter type="xlsx" target="tbl2" fileName="hr_report_department" />
                         </p:commandButton>
+
                     </h:panelGrid>
 
                     <p:panel id="reportPrint">
                         <p:dataTable value="#{channelReportController.valueList}" var="s" id="tbl2" >
                             <f:facet name="header" >
-                                <p:outputLabel value="Income By Feetype By Session Date" />
-                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>                          
-                                    <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>
+                                <p:outputLabel value="Income By Fee type By Session Date " />
+                                <h:outputLabel class="ml-3" value=" From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel  value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel  value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                </h:outputLabel>
                             </f:facet>
                             <p:column>
                                 <f:facet name="header" >
@@ -110,10 +109,10 @@
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
+
+                            <f:facet name="footer" >
+                                <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            </f:facet>
                         </p:dataTable>
                     </p:panel>
                 </p:panel>
