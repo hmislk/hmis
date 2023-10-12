@@ -27,7 +27,7 @@
                                              ajax="false">
                             </p:commandButton>
                         </f:facet>
-                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                        <p:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -42,22 +42,23 @@
                             <p:outputLabel value="Only Summery" />
                             <p:selectBooleanCheckbox value="#{channelReportController.summery}" />
 
-                        </h:panelGrid>
-                        <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
-                            <p:spacer width="50" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelHospitalIncomeByCreatedDateWithDoc()}"/>
+                        </p:panelGrid>
+                        
+                        <h:panelGrid columns="6" class="mt-2">
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelHospitalIncomeByCreatedDateWithDoc()}"/>
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelHospitalIncomeBySessionDateWithDoc()}"/>
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelHospitalIncomeBySessionDateWithDoc()}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                            <p:commandButton style="margin-right: 10px;" ajax="false" value="Print" styleClass="noPrintButton"  >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="tbl,tblscn" fileName="channel_hospital_income"  />
                             </p:commandButton> 
-
-
+                        </h:panelGrid>
+                        
+                        <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
                             <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
