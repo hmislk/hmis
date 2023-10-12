@@ -8,8 +8,8 @@
       xmlns:ui="http://java.sun.com/jsf/facelets">
 
     <!-- INTERFACE -->
-    <cc:interface> 	 
-        <cc:attribute name="bill" />  
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />  
         <cc:attribute name="duplicate" />
         <cc:attribute name="hosCopy" />   	 
         <cc:attribute name="showProfessional" />
@@ -17,11 +17,22 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet library="css" name="printing.css" />
-        <div>
-            <p:panel   id="gpBillPreview"  style="margin: auto; padding: 0px; font-size: 14px!important;" >
-                <div class="a4bill" >
+<!--                <h:outputStylesheet library="css" name="printing.css"/>-->
 
+
+        <h:panelGroup id="gpBillPreview" >
+            <div  class="container-fluid" >
+                <div>
+                    <div>
+                        <div class="col-12 text-center">
+                            <h1 class="bg-danger"><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h1>
+                            <h2><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h2>
+                            <h3>#{cc.attrs.bill.institution.phone}</h3>
+                            <h4>#{cc.attrs.bill.institution.fax}</h4>
+                            <h4>#{cc.attrs.bill.institution.email}</h4>
+                            <h4>#{cc.attrs.bill.institution.web}</h4>
+                        </div>
+                    </div>
 
                     <table class="headingPrinting" >
                         <tr>
@@ -492,8 +503,8 @@ DUE AMOUNT
                                         </h:outputLabel>
                                 </div>-->
 
+            </div>
+        </h:panelGroup>
 
-            </p:panel>
-        </div>
     </cc:implementation>
 </html>
