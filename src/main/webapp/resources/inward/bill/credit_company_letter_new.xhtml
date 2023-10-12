@@ -9,6 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" /> 
         <cc:attribute name="bill" />
     </cc:interface>
 
@@ -37,6 +38,16 @@
             </div>
             <div class="d-flex justify-content-center">
                 <div class="p-5">
+                     <div>
+                        <div class="text-center">
+                            <h3 class=""><h:outputLabel value="#{cc.attrs.bill.institution.name}" /></h3>
+                            <h4><h:outputLabel value="#{cc.attrs.bill.institution.address}" /></h4>
+                            <h5>#{cc.attrs.bill.institution.phone}</h5>
+                            <h5>#{cc.attrs.bill.institution.fax}</h5>
+                            <h5>#{cc.attrs.bill.institution.email}</h5>
+                            <h5>#{cc.attrs.bill.institution.web}</h5>
+                        </div>
+                    </div>
                 <table >
                     <tr>
                         <td>

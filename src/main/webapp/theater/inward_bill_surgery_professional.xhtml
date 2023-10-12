@@ -14,14 +14,15 @@
 
                 <p:panel style="min-height: 600px; position:relative;"  >
                     <f:facet name="header" >              
-                        Surgery Professional(Theatre)              
-                        <p:commandButton value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" >
-                        </p:commandButton>
-                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Surgery Professional (Theatre)</span>
+                            <p:commandButton value="New Bill" ajax="false" actionListener="#{inwardProfessionalBillController.makeNull()}" />
+                        </div>
+
                     </f:facet>
 
-                    <h:panelGrid columns="2" >
-                        <h:panelGrid columns="1" >
+                    <div class="row">
+                        <div class="col-md-6">
                             <p:panel header="Patient Details">
                                 <h:outputLabel value="Type Surgery Name or BHT : "/>
                                 <p:autoComplete forceSelection="true" 
@@ -67,39 +68,36 @@
 
                                         <h:outputText value="Speciality"/>
                                         <p:autoComplete    forceSelection="true" id="cmbSpe" 
-                                                        value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}" 
-                                                        completeMethod="#{specialityController.completeSpeciality}" var="sp" 
-                                                        itemLabel="#{sp.name}" 
-                                                        itemValue="#{sp}" size="30"  style="width: 400px;">
+                                                           value="#{inwardProfessionalBillController.proEncounterComponent.billFee.speciality}" 
+                                                           completeMethod="#{specialityController.completeSpeciality}" var="sp" 
+                                                           itemLabel="#{sp.name}" 
+                                                           itemValue="#{sp}" size="30"  style="width: 400px;">
                                             <f:ajax event="itemSelect" execute="cmbSpe" render="cmbDoc pIxAdd" />
                                         </p:autoComplete>
 
 
                                         <h:outputText value="Doctor/Staff"/>
                                         <p:autoComplete   forceSelection="true" id="cmbDoc" 
-                                                        value="#{inwardProfessionalBillController.proEncounterComponent.billFee.staff}" 
-                                                        completeMethod="#{inwardProfessionalBillController.completeItems}" var="st" 
-                                                        itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30" 
-                                                        style="width: 400px;">
+                                                          value="#{inwardProfessionalBillController.proEncounterComponent.billFee.staff}" 
+                                                          completeMethod="#{inwardProfessionalBillController.completeItems}" var="st" 
+                                                          itemLabel="#{st.person.nameWithTitle}" itemValue="#{st}" size="30" 
+                                                          style="width: 400px;">
                                             <f:ajax event="itemSelect" execute="cmbDoc" render="pIxAdd"  />
                                         </p:autoComplete>
 
                                         <h:outputLabel value="Fee"/>
                                         <p:inputText autocomplete="off" id="prof" value="#{inwardProfessionalBillController.proEncounterComponent.billFee.feeValue}"/>
-                                        <p:commandButton ajax="false" update="surgery"  
-                                                         value="Add Professional Fee"  
-                                                        action="#{inwardProfessionalBillController.addProfessionalFee()}"
-                                                         disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
-                                    </p:panelGrid>
+                                    </p:panelGrid><br/>
+                                    <p:commandButton ajax="false" update="surgery"  
+                                                     value="Add Professional Fee"  
+                                                     action="#{inwardProfessionalBillController.addProfessionalFee()}"
+                                                     disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
+
                                 </p:panel>
 
                             </h:panelGroup>
-
-                        </h:panelGrid>
-
-
-                        <h:panelGrid columns="1" >
-
+                        </div>
+                        <div class="col-md-6">
                             <h:panelGroup id="panelBillItems" >
                                 <p:dataTable value="#{inwardProfessionalBillController.proEncounterComponents}"   var="c" >
                                     <p:column>
@@ -140,18 +138,18 @@
                                     </p:column>     
                                     <p:column headerText="Update">
                                         <p:commandButton ajax="false" value="Update"  
-                                                        action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
+                                                         action="#{inwardProfessionalBillController.updateProFee(c.billFee)}"
                                                          disabled="#{c.billFee.id eq null or inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
                                     </p:column>
 
                                     <p:column headerText="Remove">
                                         <p:commandButton ajax="false" value="Remove"  
                                                          rendered="#{c.billFee.id eq null}"
-                                                        action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
+                                                         action="#{inwardProfessionalBillController.removeProEncFromList(c)}"
                                                          disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
                                         <p:commandButton ajax="false" value="Remove"  
                                                          rendered="#{c.billFee.id ne null}"
-                                                        action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
+                                                         action="#{inwardProfessionalBillController.removeProEncFromDbase(c)}"
                                                          disabled="#{inwardProfessionalBillController.batchBill.patientEncounter.paymentFinalized}" />
                                     </p:column>
                                 </p:dataTable>
@@ -159,7 +157,7 @@
 
                             <h:panelGroup id="panelBillTotals" >
 
-                                <p:panel header="Bill Details" id="pBillDetails" style="padding: 5px; margin: 10px;" >
+                                <p:panel header="Bill Details" id="pBillDetails" class="w-100" >
                                     <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                         <h:outputLabel value="Total" ></h:outputLabel>
                                         <h:outputLabel id="tot" value="#{inwardProfessionalBillController.current.total}" >
@@ -170,13 +168,8 @@
                                 </p:panel>
                             </h:panelGroup>
 
-
-
-
-                        </h:panelGrid>
-
-
-                    </h:panelGrid>
+                        </div>
+                    </div>
 
                 </p:panel>
 

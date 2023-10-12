@@ -189,10 +189,6 @@
                         </p:panel>
 
 
-
-
-
-
                         <h:panelGroup id="claimablePatientCopy"  rendered="false">                  
                             <bi:finalBill   bill="#{inwardSearch.bill}" showProfessional="true"/>
                         </h:panelGroup>
@@ -201,12 +197,12 @@
                             <bi:finalBill_vat   bill="#{inwardSearch.bill}"   showProfessional="true"/>
                         </h:panelGroup>
 
-                        <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
+                        <h:panelGroup id="professionalAndFinaBill" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
                             <bi:finalBill  bill="#{inwardSearch.bill}" hosCopy="true"/>
                             <bi:finalProfessionalBill bill="#{inwardSearch.bill}" hosCopy="true" />
                             <bi:finalBill_1 bill="#{inwardSearch.bill}" hosCopy="true"/>
                         </h:panelGroup>
-                        <h:panelGroup id="professionalAndFinaBillDup" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
+                        <h:panelGroup id="professionalAndFinaBillDup" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
                             <bi:finalBill  bill="#{inwardSearch.bill}" duplicate="true"/>
                             <bi:finalProfessionalBill bill="#{inwardSearch.bill}" duplicate="true" />
                             <bi:finalBill_1 bill="#{inwardSearch.bill}" duplicate="true"/>
