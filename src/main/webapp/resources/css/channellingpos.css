@@ -47,7 +47,7 @@
     .a4bill{
         page-break-after:always!important; 
         font-family: sans-serif!important; 
-        font-size: 11px!important; 
+/*        font-size: 11px!important; */
         position: relative!important;  
         margin: 0px!important; 
         width: 95%;
