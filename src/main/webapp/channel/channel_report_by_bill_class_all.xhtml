@@ -54,11 +54,11 @@
                         <p:outputLabel value="Channel Bill List" />
                         <br></br>
                         <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                        <h:outputLabel  value="#{channelReportController.fromDate}" >
+                        <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
                             <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                         </h:outputLabel>                          
                         <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel  value="#{channelReportController.toDate}" >
+                        <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
                             <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                         </h:outputLabel>
                     </f:facet>
