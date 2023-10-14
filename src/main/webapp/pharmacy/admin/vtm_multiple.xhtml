@@ -13,6 +13,7 @@
 
             <!-- For VTMs -->
             <p:dataTable 
+                id="tbl"
                 value="#{pharmacyController.vtms}" 
                 var="i"
                 selection="#{pharmacyController.vtmsSelected}"
@@ -25,15 +26,22 @@
                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                 >
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center justify-content-between">
                         <h:outputText value="VTMs" />
-                        <p:commandButton 
+                    <div class="d-flex justify-content-end align-items-center">
+                        <h:commandButton
+                            class="btn btn-success mx-2"
+                            value="Download">
+                            <p:dataExporter type="xlsx" target="tbl" fileName="vtm_list"/> 
+                        </h:commandButton>
+                        <h:commandButton 
+                            class="btn btn-danger"
                             value="Remove Selected" 
                             action="#{pharmacyController.deleteMultipleVtms()}"
-                            ajax="false"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" 
                             />
+                    </div>
                     </div>
                 </f:facet>
                 <p:column 
@@ -46,15 +54,15 @@
                     filterMatchMode="contains">
                     <h:outputText value="#{i.name}" ></h:outputText>
                 </p:column>
-                <p:column headerText="Actions" >
-                    <p:commandButton 
-                        ajax="false" 
+                <p:column headerText="Actions" exportable="false">
+                    <h:commandButton
+                        class="btn btn-warning text-white"
                         value="Delete" 
                         action="#{pharmacyController.deleteSingleVtm()}" >
                         <f:setPropertyActionListener 
                             value="#{i}" 
                             target="#{pharmacyController.vtm}" ></f:setPropertyActionListener>
-                    </p:commandButton>
+                    </h:commandButton>
                 </p:column>
             </p:dataTable>
 
