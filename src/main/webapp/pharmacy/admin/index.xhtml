@@ -99,7 +99,7 @@
                                                 class="w-100" 
                                                 ajax="false" 
                                                 value="VMPPs" 
-                                                action="#{pharmacyController.navigateToVmpMultiple()}" />
+                                                action="#{pharmacyController.navigateToVmppMultiple()}" />
                                             <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -156,7 +156,7 @@
                                                 action="#{dataUploadBean.toUploadAmpsMin()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="2) Institutions">
+                                    <p:tab title="Institutions">
 
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Manufacturers" action="/pharmacy/pharmacy_manufacturer" ></p:commandButton>
@@ -165,23 +165,23 @@
                                             <p:commandButton class="w-100" ajax="false" value="Item Suppliers" action="/pharmacy/pharmacy_items_distributors" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="3) Categories">
+                                    <p:tab title="Categories">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="/pharmacy/pharmacy_discard_category" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="4) Odering">
+                                    <p:tab title="Odering">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Manage Reordering Data" action="pharmacy_set_reorder_manage" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="5) Check Entered Data">
+                                    <p:tab title="Check Entered Data">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Item Distributor" action="pharmacy_item_by_distributor" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="6) Error Checking">
+                                    <p:tab title="Error Checking">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection" action="pharmacy_error_checking" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection By Date" action="pharmacy_error_checking_date" ></p:commandButton>                                   
@@ -199,7 +199,7 @@
                                             </h:panelGroup>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="7) Issue To Unit">
+                                    <p:tab title="Issue To Unit">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="1) Correction of Issue To Unit (Discount To Margin)" 
                                                              action="#{pharmacyItemExcelManager.correctIssueToUnit1()}" />
@@ -210,7 +210,7 @@
 
                                         </div>
                                     </p:tab>
-                                    <p:tab title="8) Major Stock Adjustment">
+                                    <p:tab title="Major Stock Adjustment">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="1)Stock Variant Report (Before)" 
                                                              action="pharmacy_variant_category_stock_by_item" />
@@ -218,7 +218,7 @@
                                                              action="pharmacy_variant_ajustment_pre_list" />
                                         </div>
                                     </p:tab>
-                                    <p:tab title="9) Bulk Update">
+                                    <p:tab title="Bulk Update">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Update Bulk Categery" 
                                                              action="pharmacy_update_categery_bulk" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
@@ -228,7 +228,7 @@
                                                              action="pharmacy_report_non_moving_items" actionListener="#{pharmacyUpdateBulkController.calerAll()}" />
                                         </div> 
                                     </p:tab>
-                                    <p:tab title="10) Set up">
+                                    <p:tab title="Set up">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="01. Check Item Differences with other Database" action="pharmacy_item_mismatch_report" />
                                             <p:commandButton class="w-100" ajax="false" value="02. Import from Excel" action="pharmacy_item_import" />
