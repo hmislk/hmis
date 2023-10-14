@@ -17,7 +17,7 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="All Channel List">
-                    <h:panelGrid columns="2" styleClass="noPrintButton" id="pg1"> 
+                    <p:panelGrid columns="2" styleClass="noPrintButton" id="pg1"> 
                         <h:outputLabel value="From Date"/>
                         <p:datePicker id="frmDate" 
                                       value="#{channelReportController.fromDate}" 
@@ -36,19 +36,15 @@
                                       yearNavigator="true"
                                       pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:datePicker>
-                    </h:panelGrid>
+                    </p:panelGrid>
 
-                    <h:panelGrid columns="4">
-                        <p:spacer width="70" height="1"/>
-                        <p:commandButton ajax="false" id="btnRefresh" value="Process" 
+                    <h:panelGrid columns="2" class="mt-2">
+                        <p:commandButton class="mx-2" ajax="false" id="btnRefresh" value="Process" 
                                          action="#{channelReportController.channelAllBillList()}">
                         </p:commandButton>
-
-
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                             <p:dataExporter type="xls" target="tbl1" fileName="channel_bill_list"  />
                         </p:commandButton>
-
                     </h:panelGrid>
                 </p:panel>
 
@@ -58,12 +54,12 @@
                         <p:outputLabel value="Channel Bill List" />
                         <br></br>
                         <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                        <h:outputLabel  value="#{channelReportController.fromDate}" >
-                            <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a"/>
+                        <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                         </h:outputLabel>                          
                         <h:outputLabel value="&emsp;&emsp;To :"/>
-                        <h:outputLabel  value="#{channelReportController.toDate}" >
-                            <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a"/>
+                        <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                         </h:outputLabel>
                     </f:facet>
 
@@ -79,7 +75,7 @@
                             <p:outputLabel value="Crteated Date" />
                         </f:facet>
                         <p:outputLabel value="#{b.createdAt}" >
-                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"></f:convertDateTime>
+                            <f:convertDateTime pattern="dd-MM-yyyy"></f:convertDateTime>
                         </p:outputLabel>
                     </p:column>
                     <p:column style="text-align: left;"  >
@@ -87,7 +83,7 @@
                             <p:outputLabel value="Appoinment Date" />
                         </f:facet>
                         <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd-MM-yyyy" ></f:convertDateTime>
                         </p:outputLabel>
                     </p:column>
                     <p:column>
@@ -108,7 +104,7 @@
                             <p:outputLabel value="Paid At" />
                         </f:facet>
                         <p:outputLabel value="#{b.paidBill.createdAt}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy hh:mm:ss a" ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd-MM-yyyy" ></f:convertDateTime>
                         </p:outputLabel>
                     </p:column>
 
