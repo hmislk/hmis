@@ -752,12 +752,14 @@ public class DataUploadBean {
             Double issueMultipliesQuantity = null;
 
             Cell idCell = row.getCell(0);
+            System.out.println("idCell = " + idCell);
             if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                 id = (long) idCell.getNumericCellValue();
                 vmp.setItemId(id);
             }
 
             Cell nameCell = row.getCell(1);
+            System.out.println("nameCell = " + nameCell);
             if (nameCell != null && nameCell.getCellType() == CellType.STRING) {
                 vmpName = nameCell.getStringCellValue();
                 output.append("vmpName").append(vmpName).append("/n");
@@ -777,18 +779,21 @@ public class DataUploadBean {
             }
 
             Cell vtmCell = row.getCell(2);
+            System.out.println("vtmCell = " + vtmCell);
             if (vtmCell != null && vtmCell.getCellType() == CellType.STRING) {
                 vtmName = vtmCell.getStringCellValue();
                 vtm = vtmController.findAndSaveVtmByName(vtmName);
             }
 
             Cell dosageFormCell = row.getCell(3);
+            System.out.println("dosageFormCell = " + dosageFormCell);
             if (dosageFormCell != null && dosageFormCell.getCellType() == CellType.STRING) {
                 dosageFormName = dosageFormCell.getStringCellValue();
                 dosageForm = categoryController.findAndCreateCategoryByName(dosageFormName);
             }
 
             Cell strengthUnitCell = row.getCell(4);
+            System.out.println("strengthUnitCell = " + strengthUnitCell);
             if (strengthUnitCell != null && strengthUnitCell.getCellType() == CellType.STRING) {
                 strengthUnitName = strengthUnitCell.getStringCellValue();
                 strengthUnit = measurementUnitController.findAndSaveMeasurementUnitByName(strengthUnitName);
@@ -797,6 +802,7 @@ public class DataUploadBean {
             }
 
             Cell issueUnitCell = row.getCell(5);
+            System.out.println("issueUnitCell = " + issueUnitCell);
             if (issueUnitCell != null && issueUnitCell.getCellType() == CellType.STRING) {
                 issueUnitName = issueUnitCell.getStringCellValue();
                 issueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueUnitName);
@@ -805,6 +811,7 @@ public class DataUploadBean {
             }
 
             Cell strengthUnitsPerIssueUnitCell = row.getCell(6);
+            System.out.println("strengthUnitsPerIssueUnitCell = " + strengthUnitsPerIssueUnitCell);
             if (strengthUnitsPerIssueUnitCell != null) {
                 // Check the cell type before retrieving the value
                 if (strengthUnitsPerIssueUnitCell.getCellType() == CellType.NUMERIC) {
@@ -824,11 +831,13 @@ public class DataUploadBean {
             }
 
             Cell issueUnitsPerPackCell = row.getCell(7);
+            System.out.println("issueUnitsPerPackCell = " + issueUnitsPerPackCell);
             if (issueUnitsPerPackCell != null && issueUnitsPerPackCell.getCellType() == CellType.NUMERIC) {
                 issueUnitsPerPack = issueUnitsPerPackCell.getNumericCellValue();
             }
 
             Cell packUnitCell = row.getCell(8);
+            System.out.println("packUnitCell = " + packUnitCell);
             if (packUnitCell != null && packUnitCell.getCellType() == CellType.STRING) {
                 packUnitName = packUnitCell.getStringCellValue();
                 packUnit = measurementUnitController.findAndSaveMeasurementUnitByName(packUnitName);
@@ -837,11 +846,13 @@ public class DataUploadBean {
             }
 
             Cell minIQtyCell = row.getCell(9);
+            System.out.println("minIQtyCell = " + minIQtyCell);
             if (minIQtyCell != null && minIQtyCell.getCellType() == CellType.NUMERIC) {
                 minimumIssueQuantity = minIQtyCell.getNumericCellValue();
             }
 
             Cell minimumIssueUnitCell = row.getCell(10);
+            System.out.println("minimumIssueUnitCell = " + minimumIssueUnitCell);
             if (minimumIssueUnitCell != null && minimumIssueUnitCell.getCellType() == CellType.STRING) {
                 minimumIssueUnitName = minimumIssueUnitCell.getStringCellValue();
                 minimumIssueUnit = measurementUnitController.findAndSaveMeasurementUnitByName(minimumIssueUnitName);
@@ -850,11 +861,13 @@ public class DataUploadBean {
             }
 
             Cell issueMultipliesQuentityCell = row.getCell(11);
+            System.out.println("issueMultipliesQuentityCell = " + issueMultipliesQuentityCell);
             if (issueMultipliesQuentityCell != null && issueMultipliesQuentityCell.getCellType() == CellType.NUMERIC) {
                 issueMultipliesQuantity = issueMultipliesQuentityCell.getNumericCellValue();
             }
 
             Cell issueMultipliesUnitNameCell = row.getCell(12);
+            System.out.println("issueMultipliesUnitNameCell = " + issueMultipliesUnitNameCell);
             if (issueMultipliesUnitNameCell != null && issueMultipliesUnitNameCell.getCellType() == CellType.STRING) {
                 issueMultipliesUnitName = issueMultipliesUnitNameCell.getStringCellValue();
                 issueMultipliesUnit = measurementUnitController.findAndSaveMeasurementUnitByName(issueMultipliesUnitName);
