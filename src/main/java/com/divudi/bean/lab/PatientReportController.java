@@ -1663,6 +1663,18 @@ public class PatientReportController implements Serializable {
     }
 
     public void createNewReport(PatientInvestigation pi) {
+        if(pi==null){
+            JsfUtil.addErrorMessage("No Patient Report");
+            return ;
+        }
+        if(pi.getInvestigation()==null){
+            JsfUtil.addErrorMessage("No Investigation for Patient Report");
+            return ;
+        }
+        if(pi.getInvestigation().getReportedAs()==null){
+            JsfUtil.addErrorMessage("No Reported as for Investigation for Patient Report");
+            return ;
+        }
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;
         currentPtIx = pi;
