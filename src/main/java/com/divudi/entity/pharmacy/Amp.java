@@ -19,6 +19,7 @@ public class Amp extends PharmaceuticalItem implements Serializable {
     
     @ManyToOne
     private Atm atm;
+    
 
     @Override
     public Vmp getVmp() {
