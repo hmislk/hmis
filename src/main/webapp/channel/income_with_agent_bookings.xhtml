@@ -33,13 +33,11 @@
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
-                            <h:outputLabel/>
-                            <p:commandButton value="Process" action="#{channelReportController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
-
                         </p:panelGrid>
+                        <p:commandButton class="mt-2 mb-2" value="Process" action="#{channelReportController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
 
 
-                        <p:panel header="Income With Agent Booking" class="mt-2">
+                        <p:panel header="Income With Agent Booking" >
 
 
                             <p:dataTable  value="#{channelReportController.rowBundle.rows}" var="r" >
@@ -126,7 +124,7 @@
 
                                     </p:row>
                                 </p:columnGroup>
-                                
+
                             </p:dataTable>
 
                         </p:panel>
