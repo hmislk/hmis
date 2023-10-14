@@ -23,7 +23,7 @@
 
                             <h:outputLabel value="Cashier Summary Report - &nbsp;&nbsp; #{channelReportController.webUser.webUserPerson.name}"/>
                         </f:facet>
-                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                        <p:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -41,47 +41,31 @@
                                 <f:selectItems value="#{enumController.feeTypes}"/>                                                               
                             </p:selectOneMenu>
 
-                        </h:panelGrid>
-                        <p:panel id="reportPrint">
-                            <p:spacer width="50" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.getUsersWithFeeType}"/>
+                        </p:panelGrid>
+                        
+                        <h:panelGrid columns="4" class="mt-2 mb-2">
+                            <p:commandButton style="margin-right: 10px" id="btnRefresh" ajax="false" value="Refresh" styleClass="noPrintButton" action="#{channelReportController.getUsersWithFeeType}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Print" styleClass="noPrintButton"  >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
-                            <p:commandButton actionListener="#{channelReportController.getUsersWithFeeType}" ajax="false" value="Excel" styleClass="noPrintButton">
+                            <p:commandButton style="margin-right: 10px" actionListener="#{channelReportController.getUsersWithFeeType}" ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
-
-
-                            <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
-
-                                <h:panelGroup>
-
-                                    <h:outputLabel value="From" />
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To" />
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
-                                    </h:outputLabel>
-
-                                </h:panelGroup >
-
-                            </h:panelGrid>
-
+                        </h:panelGrid>
+                        
+                        <p:panel id="reportPrint" >
                             <p:dataTable value="#{channelReportController.listBilledBillFees}" var="b" id="tbl" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Bill Fees With Fee Types &emsp; #{channelReportController.webUser.webUserPerson.name}" />
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column style="text-align: left;" >
@@ -150,9 +134,7 @@
                                     <p:outputLabel value="Cancelled" rendered="#{b.bill.cancelled==true}"/>
                                     <p:outputLabel value="Refunded" rendered="#{b.bill.refunded==true}"/>                        
                                 </p:column>  
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
+                                
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
