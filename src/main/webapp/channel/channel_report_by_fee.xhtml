@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                
+
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -19,7 +19,7 @@
                 <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill Fees">
 
                 </p:panel>
-                <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                <p:panelGrid columns="2" styleClass="noPrintButton" > 
                     <h:outputLabel value="From Date"/>
                     <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                     </p:calendar>
@@ -29,14 +29,15 @@
                     </p:calendar>
                     <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                     <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                    forceSelection="true"
-                                    var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                    value="#{channelReportController.webUser}" >
+                                     forceSelection="true"
+                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                     value="#{channelReportController.webUser}" >
                     </p:autoComplete>
-                    <h:outputLabel/>
-                    <p:commandButton id="btnRefresh" ajax="false" value="Process" action="#{channelReportController.createFeeTypeBillFeeList()}">
-                    </p:commandButton>
-                </h:panelGrid>
+                </p:panelGrid>
+
+                <p:commandButton 
+                    id="btnRefresh" ajax="false" value="Process" action="#{channelReportController.createFeeTypeBillFeeList()}" class="mt-2 mb-2">
+                </p:commandButton>
 
                 <p:panel id="billFeeData">
 
@@ -46,14 +47,14 @@
                         <f:facet name="header">
                             <p:outputLabel value="BILL FEES  &emsp; #{channelReportController.webUser.webUserPerson.name}" ></p:outputLabel>
                             <p:outputLabel value="Billed Bill Total - #{channelReportController.billedBillTotal}" style="float: right"></p:outputLabel>
-                                    <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>                          
-                                    <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>
+                            <h:outputLabel value="From : " style=" white-space:pre-line;"/>
+                            <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                            </h:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -93,7 +94,7 @@
                                     <p:outputLabel value="App. Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{bf.bill.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd-MM-yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" >
@@ -112,13 +113,13 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bf.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss"/>
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bf.bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
 
@@ -201,7 +202,7 @@
                                     <p:outputLabel value="App. Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{bf.bill.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd-MM-yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" >
@@ -220,13 +221,13 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bf.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss"/>
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bf.bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
 
@@ -309,7 +310,7 @@
                                     <p:outputLabel value="App. Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{bf.bill.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd-MM-yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" >
@@ -328,13 +329,13 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bf.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh mm a"/>
+                                    <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss"/>
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bf.bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bf.bill.cancelled}" value="#{bf.bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
 
@@ -381,9 +382,7 @@
                         <p:outputLabel value="Refund Bill Total"></p:outputLabel>
                         <p:outputLabel value="#{channelReportController.refundBillTotal}"></p:outputLabel>
                     </p:panelGrid>
-                    <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
+                    
                 </p:panel>
             </h:form>
         </h:panelGroup>
