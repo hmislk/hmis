@@ -17,7 +17,7 @@
                                          id="acSpeciality"
                                          completeMethod="#{specialityController.completeSpeciality}"
                                          var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                          >
+                                         >
                             <!--<f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"/>-->
                         </p:autoComplete>
                     </p:tab>
@@ -97,10 +97,14 @@
                                         <f:convertDateTime pattern="dd MMMM yyyy" />
                                     </p:outputLabel>
                                     <p:outputLabel value="Session Number"></p:outputLabel>
-                                    <p:autoComplete forceSelection="true" value="#{channelSessionWizard.current.sessionNumberGenerator}" 
-                                                    completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
-                                                    var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                    >                            
+                                    <p:autoComplete 
+                                        forceSelection="true" 
+                                        value="#{channelSessionWizard.current.sessionNumberGenerator}" 
+                                        completeMethod="#{sessionNumberGenerateController.completeSessionNumberGenerator}" 
+                                        var="mysp" 
+                                        itemLabel="#{mysp.name}" 
+                                        itemValue="#{mysp}"
+                                        >                            
                                     </p:autoComplete>
                                     <p:outputLabel value="Refundable"/>
                                     <p:selectBooleanCheckbox value="#{channelSessionWizard.current.refundable}"/>
@@ -168,7 +172,7 @@
                                                   completeMethod="#{channelSessionWizard.completeDoctors}" 
                                                   var="mys" itemLabel="#{mys.person.nameWithTitle}" 
                                                   itemValue="#{mys}"
-                                                  
+
                                                   rendered="#{i.feeType eq 'Staff'}">   
                                 </p:autoComplete> 
                             </p:column>

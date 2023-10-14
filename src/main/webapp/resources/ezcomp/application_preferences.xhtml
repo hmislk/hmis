@@ -34,6 +34,17 @@
                             <h:outputLabel value="Template Name" ></h:outputLabel>
                             <h:inputText
                                 value="#{sessionController.currentPreference.themeName}" />
+                            
+                           
+                            <h:outputLabel value="Logo URL" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.logoUrl}" />
+                            <h:outputLabel value="Logging Header" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.loggingHeader}" />
+                            <h:outputLabel value="Logging Text" ></h:outputLabel>
+                            <h:inputText
+                                value="#{sessionController.currentPreference.loggingText}" />
 
 
                             <p:commandButton id="btnWeb" 

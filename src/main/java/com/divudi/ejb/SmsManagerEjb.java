@@ -165,7 +165,7 @@ public class SmsManagerEjb {
         String res = executePost("http://localhost:8080/sms/faces/index.xhtml", m);
         if (res == null) {
             return false;
-        } else if (res.toUpperCase().contains("200")) {
+        } else if (res.toUpperCase().contains("OK")) {
             return true;
         } else {
             return false;
@@ -184,9 +184,10 @@ public class SmsManagerEjb {
         m.put(pf.getSmsMessageParameterName(), message);
 
         String res = executePost(pf.getSmsUrl(), m);
+        System.out.println(res);
         if (res == null) {
             return false;
-        } else if (res.toUpperCase().contains("200")) {
+        } else if (res.toUpperCase().contains("OK")) {
             return true;
         } else {
             return false;

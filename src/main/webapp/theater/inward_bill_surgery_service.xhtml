@@ -19,16 +19,15 @@
                     <f:facet name="header">
                         Surgery Service(Theatre)
                     </f:facet>
-                    <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                    <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"  class="btn-primary mx-1" >
                     </p:commandButton>
                     <p:defaultCommand target="btnSettle"/>
 
-                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" />
+                    <p:commandButton action="#{billBhtController.makeNull}" ajax="false" value="New Bill" class="btn-primary mx-1" />
 
-
-                    <h:panelGrid columns="2" >
-                        <h:panelGrid columns="1" >
-
+        
+                    <div class="row p-1">
+                        <div class="col-md-6">
                             <h:panelGroup id="panelPatient" >
 
                                 <p:panel header="Patient Details">
@@ -69,13 +68,13 @@
                             <h:panelGroup id="panelIx" >
 
 
-                                <p:panel id='pIxAdd' header="Items Requests">
+                                <p:panel id='pIxAdd' header="Items Requests" class="w-100">
                                     <p:focus  context="acIx"/>
                                     <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" 
                                                     value="#{billBhtController.currentBillItem.item}"
                                                     completeMethod="#{itemController.completeTheatreItems}"
                                                     var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
-                                                    size="30"  style="width: 400px;">
+                                                    size="30"  style="width: 400px; padding-bottom: 5px">
                                         <p:column>
                                             <h:outputLabel value="#{ix.name}"/>
                                         </p:column>
@@ -88,17 +87,19 @@
                                         </p:column>  
                                         <p:ajax event="itemSelect" process="acIx" update="@all" />
                                     </p:autoComplete>
-
+                                    
                                     <p:inputText autocomplete="off" id="txtQty"
                                                  rendered="#{billBhtController.currentBillItem.item.requestForQuentity}"
                                                  value="#{billBhtController.currentBillItem.qty}" >
                                     </p:inputText>
 
-
-                                    <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" ></p:inputTextarea>
-                                    <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" >
-                                       
+                                  
+                                    <p:inputTextarea id="txtDesc" value="#{billBhtController.currentBillItem.descreption}" class="w-100"></p:inputTextarea>
+                                    <div class="p-1">
+                                        <p:commandButton ajax="false" id="btnAddIx" value="Add" action="#{billBhtController.addToBillSurgery()}" >
                                     </p:commandButton> 
+                                    </div>
+                                    
 
 
                                     <p:watermark for="txtQty" value="Quentity" ></p:watermark>
@@ -106,10 +107,9 @@
 
                                 </p:panel>
                             </h:panelGroup>
-
-                        </h:panelGrid>
-
-                        <h:panelGrid columns="1">
+                        </div>
+                        <div class="col-md-6">
+                            <h:panelGrid columns="1">
                             <h:panelGroup id="panelBillItems" >
                                 <p:tabView id="tblBillItem" >
                                     <p:tab id="tabBillItems" title="Bill Items" >
@@ -230,7 +230,18 @@
                                 </p:panel>
                             </h:panelGroup>
                         </h:panelGrid>
-                    </h:panelGrid>
+                        </div>
+                    </div>
+                        
+<!--                    <h:panelGrid columns="2" >
+                        <h:panelGrid columns="1" >
+
+                            
+
+                        </h:panelGrid>
+
+                        
+                    </h:panelGrid>-->
                 </p:panel>
 
                 <h:panelGroup rendered="#{billBhtController.printPreview}" >

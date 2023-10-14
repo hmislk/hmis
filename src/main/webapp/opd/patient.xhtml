@@ -85,6 +85,12 @@
                                 </p:panelGrid>
                             </div>
                             <div  class="col-md-4 d-flex flex-column  gap-2" >
+                                <p:commandButton value="Admit" 
+                                                 action="#{patientController.navigateToAdmitFromPatientProfile()}" 
+                                                 ajax="false" 
+                                                 styleClass="mx-2">
+
+                                </p:commandButton>
                                 <p:commandButton value="OPD Bill" 
                                                  action="#{patientController.navigateToOpdBillFromOpdPatient()}" 
                                                  ajax="false"
@@ -100,6 +106,12 @@
                                 <p:commandButton value="Refunds" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="Lab Reports" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
+                                </p:commandButton>
+                                <p:commandButton value="Inward Appointments"
+                                                 action="#{patientController.navigateToInwardAppointmentFromPatientProfile()}"
+                                                 ajax="false"
+                                                 styleClass="mx-2">
+
                                 </p:commandButton>
                             </div>
 

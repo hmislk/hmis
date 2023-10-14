@@ -23,6 +23,7 @@ import com.divudi.entity.ItemFee;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Person;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
 import com.divudi.facade.BillFacade;
@@ -58,7 +59,7 @@ public class BookingPastController implements Serializable {
 
     private Speciality speciality;
     private Staff staff;
-    private ServiceSession selectedServiceSession;
+    private ServiceSessionInstance selectedServiceSessionInstance;
     private BillSession selectedBillSession;
     private Date date;
     private double doctorTotal;
@@ -74,7 +75,7 @@ public class BookingPastController implements Serializable {
     String selectTextConsultant = "";
     String selectTextSession = "";
     ////////////////////
-    private List<ServiceSession> serviceSessions;
+    private List<ServiceSessionInstance> serviceSessionInstances;
     private List<BillSession> billSessions;
     private List<BillSession> filltredBillSession;
     ////////////////////
@@ -203,9 +204,9 @@ public class BookingPastController implements Serializable {
     public void makeNull() {
         speciality = null;
         staff = null;
-        selectedServiceSession = null;
+        selectedServiceSessionInstance = null;
         /////////////////////
-        serviceSessions = null;
+        serviceSessionInstances = null;
         billSessions = null;
     }
 
@@ -297,10 +298,10 @@ public class BookingPastController implements Serializable {
 
         return flag;
     }
-    
+
     public void listnerMarkAbsent() {
-        Date td=getCommonFunctions().getEndOfDay();
-        Date fd=getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
+        Date td = getCommonFunctions().getEndOfDay();
+        Date fd = getCommonFunctions().getStartOfDay(getSelectedBillSession().getSessionDate());
         long lng = getCommonFunctions().getDayCount(fd, td);
         if (Math.abs(lng) > 2) {
             UtilityController.addErrorMessage("Date Range is too Long");
@@ -309,7 +310,7 @@ public class BookingPastController implements Serializable {
         if (getSelectedBillSession().isAbsent()) {
             getSelectedBillSession().setAbsentMarkedAt(new Date());
             getSelectedBillSession().setAbsentMarkedUser(getSessionController().getLoggedUser());
-        }else{
+        } else {
             getSelectedBillSession().setAbsentUnmarkedAt(new Date());
             getSelectedBillSession().setAbsentUnmarkedUser(getSessionController().getLoggedUser());
         }
@@ -318,13 +319,13 @@ public class BookingPastController implements Serializable {
         ////// // System.out.println(getSelectedBillSession().getBill().getPatient());
         if (getSelectedBillSession().isAbsent()) {
             UtilityController.addSuccessMessage("Mark As Absent");
-            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+            if (getSelectedBillSession().getBill().getPaidBill() != null) {
                 getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(true);
                 getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
             }
-        }else{
+        } else {
             UtilityController.addSuccessMessage("Mark As Present");
-            if (getSelectedBillSession().getBill().getPaidBill()!=null) {
+            if (getSelectedBillSession().getBill().getPaidBill() != null) {
                 getSelectedBillSession().getBill().getPaidBill().getSingleBillSession().setAbsent(false);
                 getBillSessionFacade().edit(getSelectedBillSession().getBill().getPaidBill().getSingleBillSession());
             }
@@ -357,7 +358,7 @@ public class BookingPastController implements Serializable {
 //    public void fillBillSessions(SelectEvent event) {
 //        selectedBillSession = null;
 //        setSelectedServiceSession(null);
-//        selectedServiceSession = ((ServiceSession) event.getObject());
+//        selectedServiceSessionInstance = ((ServiceSession) event.getObject());
 //
 //        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
 //        List<BillType> bts = Arrays.asList(billTypes);
@@ -376,10 +377,9 @@ public class BookingPastController implements Serializable {
 //        hh.put("ss", getSelectedServiceSession());
 //        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
 //    }
-    
     public void fillBillSessions() {
         selectedBillSession = null;
-//        selectedServiceSession = ((ServiceSession) event.getObject());
+//        selectedServiceSessionInstance = ((ServiceSession) event.getObject());
 
         BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff};
         List<BillType> bts = Arrays.asList(billTypes);
@@ -395,8 +395,8 @@ public class BookingPastController implements Serializable {
         HashMap hh = new HashMap();
         hh.put("bt", bts);
         hh.put("class", BilledBill.class);
-        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
-        hh.put("ss", getSelectedServiceSession());
+        hh.put("ssDate", getSelectedServiceSessionInstance().getSessionDate());
+        hh.put("ss", getSelectedServiceSessionInstance());
         billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.TIMESTAMP);
 
     }
@@ -405,8 +405,8 @@ public class BookingPastController implements Serializable {
 //        date = null;
 //        date = ((Date) event.getObject());
         selectedBillSession = null;
-        billSessions=new ArrayList();
-        serviceSessions = new ArrayList<>();
+        billSessions = new ArrayList();
+        serviceSessionInstances = new ArrayList<>();
 
         Date currenDate = new Date();
         if (getDate().after(currenDate)) {
@@ -421,10 +421,10 @@ public class BookingPastController implements Serializable {
 //            c.setTime(getDate());
 //            int wd = c.get(Calendar.DAY_OF_WEEK);
 //            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-//            serviceSessions = getServiceSessionFacade().findByJpql(sql);
-            serviceSessions=fetchCreatedServiceSession(staff, date);
-            int a=0;
-            for (ServiceSession s : serviceSessions) {
+//            serviceSessionInstances = getServiceSessionFacade().findByJpql(sql);
+            serviceSessionInstances = fetchCreatedServiceSession(staff, date);
+            int a = 0;
+            for (ServiceSessionInstance s : serviceSessionInstances) {
                 s.setTransDisplayCountWithoutCancelRefund(channelBean.getBillSessionsCountWithOutCancelRefund(s, s.getSessionDate()));
                 s.setTransCreditBillCount(channelBean.getBillSessionsCountCrditBill(s, s.getSessionDate()));
                 s.setTransRowNumber(a++);
@@ -432,7 +432,7 @@ public class BookingPastController implements Serializable {
         }
 
         billSessions = new ArrayList<>();
-        setSelectedServiceSession(null);
+        setSelectedServiceSessionInstance(null);
 
     }
 
@@ -517,28 +517,26 @@ public class BookingPastController implements Serializable {
         Double[] dbl = Arrays.copyOf(obj, obj.length, Double[].class);
         return dbl;
     }
-    
-    public List<ServiceSession> fetchCreatedServiceSession(Staff s, Date d) {
+
+    public List<ServiceSessionInstance> fetchCreatedServiceSession(Staff s, Date d) {
         String sql;
         Map m = new HashMap();
-        sql = "Select s From ServiceSession s where s.retired=false "
+        sql = "Select s From ServiceSessionInstance s where s.retired=false "
                 + " and s.staff=:staff "
                 + " and s.originatingSession is not null "
                 + " and s.sessionDate=:d "
-                + " and type(s)=:class "
                 + " order by s.sessionWeekday,s.startingTime ";
         m.put("d", d);
         m.put("staff", s);
-        m.put("class", ServiceSession.class);
         return getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
         setStaff(null);
-        billSessions=null;
+        billSessions = null;
     }
-    
+
     public List<Staff> getSelectedConsultants() {
         String sql;
         Map m = new HashMap();
@@ -624,13 +622,13 @@ public class BookingPastController implements Serializable {
         return consultants;
     }
 
-    public Staff getStaff() {        
+    public Staff getStaff() {
         return staff;
     }
 
     public void setStaff(Staff staff) {
         this.staff = staff;
-        makeBillSessionNull();        
+        makeBillSessionNull();
     }
 
     public StaffFacade getStaffFacade() {
@@ -641,24 +639,12 @@ public class BookingPastController implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public List<ServiceSession> getServiceSessions() {
-//        serviceSessions = new ArrayList<ServiceSession>();
-//        String sql = "";
-//
-//        if (staff != null) {
-//            Calendar c = Calendar.getInstance();
-//            c.setTime(getDate());
-//            int wd = c.get(Calendar.DAY_OF_WEEK);
-//            sql = "Select s From ServiceSession s where s.retired=false and s.staff.id=" + getStaff().getId() + " and s.sessionWeekday=" + wd;
-//            serviceSessions = getServiceSessionFacade().findByJpql(sql);
-//        }
-
-        return serviceSessions;
+    public List<ServiceSessionInstance> getServiceSessionInstances() {
+        return serviceSessionInstances;
     }
 
-    public void setServiceSessions(List<ServiceSession> serviceSessions) {
-
-        this.serviceSessions = serviceSessions;
+    public void setServiceSessionInstances(List<ServiceSessionInstance> serviceSessionInstances) {
+        this.serviceSessionInstances = serviceSessionInstances;
     }
 
     public ServiceSessionFacade getServiceSessionFacade() {
@@ -709,14 +695,12 @@ public class BookingPastController implements Serializable {
         this.billSessions = billSessions;
     }
 
-    public ServiceSession getSelectedServiceSession() {
-        return selectedServiceSession;
+    public ServiceSessionInstance getSelectedServiceSessionInstance() {
+        return selectedServiceSessionInstance;
     }
 
-    public void setSelectedServiceSession(ServiceSession selectedServiceSession) {
-//        makeBillSessionNull();
-//        calTotal();
-        this.selectedServiceSession = selectedServiceSession;
+    public void setSelectedServiceSessionInstance(ServiceSessionInstance selectedServiceSessionInstance) {
+        this.selectedServiceSessionInstance = selectedServiceSessionInstance;
     }
 
     public List<Staff> getConsultants() {
@@ -847,12 +831,11 @@ public class BookingPastController implements Serializable {
     }
 
     public Boolean preSet() {
-        if (getSelectedServiceSession() == null) {
+        if (getSelectedServiceSessionInstance() == null) {
             UtilityController.addErrorMessage("Please select Service Session");
             return false;
         }
-
-        getChannelReportController().setServiceSession(selectedServiceSession);
+        getChannelReportController().setServiceSession(selectedServiceSessionInstance.getOriginatingSession());
         return true;
     }
 
@@ -871,10 +854,10 @@ public class BookingPastController implements Serializable {
         return date;
     }
 
-    public void setDate(Date date) {        
+    public void setDate(Date date) {
         this.date = date;
         makeBillSessionNull();
-        serviceSessions = new ArrayList<>();
+        serviceSessionInstances = new ArrayList<>();
 
     }
 

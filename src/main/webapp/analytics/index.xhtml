@@ -45,8 +45,8 @@
                                     </p:tab>
                                     <p:tab title="SMS Reports">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="SMS List" action="#"  styleClass="linkButton"></p:commandButton>
-                                            <p:commandButton ajax="false" value="SMS faild list" action="report_list_lab_tests"  styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="SMS faild list" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>    
                                     

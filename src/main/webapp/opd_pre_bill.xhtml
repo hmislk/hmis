@@ -81,8 +81,91 @@
 
                                 <p:panel  style="background-color: grey;" >
                                     <h:panelGroup id="panelPatient" >
+                                        <table >
+                                                    <tr >
+                                                        <td >
+                                                            <p:outputLabel value="Title &amp; Name" ></p:outputLabel>
+                                                        </td>
+                                                        <td> : </td>
+                                                        <td >
+                                                            <p:selectOneMenu  id="cmbTitle"  
+                                                                              value="#{opdPreBillController.searchedPatient.person.title}"  >
+                                                                <f:selectItem itemLabel="Select Title" />
+                                                                <f:selectItems value="#{opdPreBillController.title}"/>
+                                                            </p:selectOneMenu>
 
-                                        <p:tabView id="tvPt" activeIndex="#{opdPreBillController.patientSearchTab}"  >
+                                                        </td>
+                                                        <td  >
+                                                            <p:inputText autocomplete="off"  id="txtNewPtName" 
+                                                                         value="#{opdPreBillController.searchedPatient.person.name}" 
+                                                                         style="width: 350px;text-transform:capitalize;">
+                                                            </p:inputText>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td>
+                                                            <p:outputLabel value="Sex &amp; Age" ></p:outputLabel>
+                                                        </td>
+                                                        <td> : </td>
+                                                        <td>
+                                                            <p:selectOneMenu id="txtNewSex"  value="#{opdPreBillController.searchedPatient.person.sex}" >
+                                                                <f:selectItem itemLabel="Select Sex"/>
+                                                                <f:selectItems value="#{opdPreBillController.sex}"/>
+                                                            </p:selectOneMenu>
+                                                        </td>
+                                                        <td>
+                                                            <h:panelGrid columns="4">
+                                                                <p:inputText autocomplete="off"  id="year"  
+                                                                             value="#{opdPreBillController.searchedPatient.person.ageYearsComponent}" 
+                                                                             style="width: 50px; ">
+                                                                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" 
+
+                                                                            listener="#{opdPreBillController.dateChangeListen()}"  />
+                                                                </p:inputText>
+                                                                <p:inputText autocomplete="off" id="month"
+                                                                             style="width: 50px; " value="#{opdPreBillController.searchedPatient.person.ageMonthsComponent}">
+                                                                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{opdPreBillController.dateChangeListen()}"  />
+                                                                </p:inputText>
+                                                                <p:inputText autocomplete="off" id="day" 
+                                                                             style="width: 50px;" value="#{opdPreBillController.yearMonthDay.day}">
+                                                                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{opdPreBillController.searchedPatient.person.ageDaysComponent}" />
+                                                                </p:inputText>
+                                                                <p:calendar  value="#{opdPreBillController.searchedPatient.person.dob}" 
+                                                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                             style="width: 100px!important;"
+                                                                             styleClass="shortinput">
+                                                                    <f:ajax event="dateSelect" />
+                                                                </p:calendar>
+                                                            </h:panelGrid>
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td >
+                                                            <h:outputLabel value="Phone,Area &amp; Nic"/>
+                                                        </td>
+                                                        <td> : </td>
+                                                        <td >
+                                                            <p:inputText  id="txtNewPtPhone" 
+                                                                         autocomplete="off" maxlength="11" 
+                                                                         value="#{opdPreBillController.searchedPatient.person.phone}"
+                                                                         style="width: 100px;">
+                                                            </p:inputText>
+                                                        </td>
+                                                        <td  >
+                                                            <p:autoComplete id="acNewPtArea" 
+                                                                            completeMethod="#{areaController.completeArea}" 
+                                                                            var="pta" itemLabel="#{pta.name}" styleClass="shortinput"
+                                                                            itemValue="#{pta}" forceSelection="true" 
+                                                                            value="#{opdPreBillController.searchedPatient.person.area}" ></p:autoComplete>
+                                                            <p:inputText  value="#{opdPreBillController.searchedPatient.person.nic}" />
+                                                        </td>
+
+                                                    </tr>
+                                                </table>
+
+<!--                                        <p:tabView id="tvPt" activeIndex="#{opdPreBillController.patientSearchTab}"  >
                                             <p:ajax event="tabChange"   process="@this"  
                                                     update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} "
                                                     listener="#{opdPreBillController.onTabChange}" />
@@ -233,7 +316,7 @@
 
                                             </p:tab>
 
-                                        </p:tabView>
+                                        </p:tabView>-->
 
                                     </h:panelGroup>
                                 </p:panel>

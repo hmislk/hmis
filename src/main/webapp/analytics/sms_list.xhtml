@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form >
+
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="All SMS List"/>                          
+                        </f:facet>
+                        <h:panelGrid columns="2" >
+                            <h:outputLabel value="From Date"/>
+                            <p:datePicker styleClass="dateTimePicker" 
+                                          id="fromDate" 
+                                          value="#{smsController.fromDate}" 
+                                          showTime="true"
+                                          pattern="dd MMMM yyyy hh:mm" >      
+                            </p:datePicker>
+                            <h:outputLabel value="To Date"/>
+                            <p:datePicker id="toDate" value="#{smsController.toDate}" 
+                                          showTime="true"
+                                          pattern="dd MMMM yyyy hh:mm" >                                                                              
+                            </p:datePicker>
+                            <p:commandButton id="btnSearch" 
+                                             ajax="false" 
+                                             value="Search" 
+                                             action="#{smsController.fillAllSms}"/>
+                            <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+                        <p:dataTable rowIndexVar="i" id="tblBills" 
+                                     value="#{smsController.smses}"
+                                     reflow="true"
+                                     var="sms"  
+                                     style="min-width: 100%;"  
+                                     paginator="true"
+                                     rows="10"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                                     >
+                            <p:column headerText="No" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.createdAt}">
+                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm" ></f:convertDateTime>
+                                </h:outputLabel>
+                            </p:column>
+                            <p:column headerText="SMS Type" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.smsType}"/>
+                            </p:column>
+                            <p:column headerText="Message" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.sendingMessage}"/>
+                            </p:column>
+                            <p:column headerText="Success" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.sentSuccessfully}"/>
+                            </p:column>
+                        </p:dataTable>
+
+
+
+
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

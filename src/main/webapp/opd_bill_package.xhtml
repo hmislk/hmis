@@ -19,7 +19,7 @@
             <h:form id="form">
                 <p:focus id="focusIx" for="acIx" />
                 <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop" >
-                    <p:panel style="min-height: 600px; position:relative;"  >
+                    <p:panel class="w-100" >
                         <f:facet name="header" >
                             <h:panelGrid columns="17"  >
                                 <h:outputLabel value="OPD Packages" />
@@ -66,7 +66,7 @@
                                                 <p:tab id="tabNewPt" title="New Patient" class="w-100" >
                                                     <ez:patientDetail class="w-100"/>
                                                 </p:tab>
-                                                <p:tab id="tabSearchPt" title="Search Patient">
+                                                <p:tab id="tabSearchPt" title="Search Patient" class="w-100">
 
                                                     <h:panelGrid columns="1" >
                                                         <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" 
@@ -99,7 +99,7 @@
 
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="panelIx" >
+                                        <h:panelGroup id="panelIx" class="w-100">
 
 
                                             <p:panel id='pIxAdd' header="Items Requests"  >                                        

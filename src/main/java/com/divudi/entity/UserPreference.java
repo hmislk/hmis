@@ -119,6 +119,10 @@ public class UserPreference implements Serializable {
     boolean channelBillDouble = false;
     private boolean hasAwebsiteAsFrontEnd = false;
     private String themeName;
+    private String logoUrl;
+    private String loggingHeader;
+    @Lob
+    private String loggingText;
     private boolean channelDoctorArivalMsgSend = false;
     String microBiologyFont;
     String logoName;
@@ -854,6 +858,30 @@ public class UserPreference implements Serializable {
 
     public void setSmsMessageParameterName(String smsMessageParameterName) {
         this.smsMessageParameterName = smsMessageParameterName;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getLoggingHeader() {
+        return loggingHeader;
+    }
+
+    public void setLoggingHeader(String loggingHeader) {
+        this.loggingHeader = loggingHeader;
+    }
+
+    public String getLoggingText() {
+        return loggingText;
+    }
+
+    public void setLoggingText(String loggingText) {
+        this.loggingText = loggingText;
     }
     
     

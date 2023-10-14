@@ -190,6 +190,15 @@ public class SearchController implements Serializable {
         return "/index";
     }
 
+    public String navigateToSmsList() {
+        return "/analytics/sms_list";
+    }
+
+    public String navigateToFailedSmsList() {
+        return "/analytics/sms_faild";
+
+    }
+
     public String navigateToListOtherInstitutionBills() {
         bills = null;
         return "/analytics/other_institution_bills";
@@ -1353,7 +1362,7 @@ public class SearchController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-       
+
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - staff(/faces/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true)");
     }
 
@@ -4322,9 +4331,11 @@ public class SearchController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
         m.put("bType", BillType.OpdBill);
-        m.put("ins", getSessionController().getInstitution());
+        m.put("dep", getSessionController().getDepartment());
 
-        sql = "select bi from BillItem bi where bi.bill.institution=:ins "
+        sql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.department=:dep "
                 + " and bi.bill.billType=:bType "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
