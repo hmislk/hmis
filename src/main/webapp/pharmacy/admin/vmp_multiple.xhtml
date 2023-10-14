@@ -11,6 +11,7 @@
 
             <!-- For VMPs -->
             <p:dataTable 
+                id="tblvmp"
                 value="#{pharmacyController.vmps}" 
                 var="i"
                 selection="#{pharmacyController.vmpsSelected}"
@@ -23,15 +24,22 @@
                 rowsPerPageTemplate="5,10,{ShowAll|'All'}"
                 >
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center justify-content-between">
                         <h:outputText value="VMPs" />
-                        <p:commandButton 
+                    <div class="d-flex justify-content-end align-items-center">
+                        <h:commandButton
+                            class="btn btn-success mx-2"
+                            value="Download">
+                            <p:dataExporter type="xlsx" target="tblvmp" fileName="vmp_list"/> 
+                        </h:commandButton>
+                        <h:commandButton 
                             value="Remove Selected" 
+                            class="btn btn-danger"
                             action="#{pharmacyController.deleteMultipleVmps()}"
-                            ajax="false"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
                                         return false;" 
                             />
+                    </div>
                     </div>
                 </f:facet>
                 <p:column 
@@ -44,15 +52,15 @@
                     filterMatchMode="contains">
                     <h:outputText value="#{i.name}" ></h:outputText>
                 </p:column>
-                <p:column headerText="Actions" >
-                    <p:commandButton 
-                        ajax="false" 
+                <p:column headerText="Actions" exportable="false" >
+                    <h:commandButton
+                        class="btn btn-warning text-white"
                         value="Delete" 
                         action="#{pharmacyController.deleteSingleVmp()}" >
                         <f:setPropertyActionListener 
                             value="#{i}" 
                             target="#{pharmacyController.vmp}" ></f:setPropertyActionListener>
-                    </p:commandButton>
+                    </h:commandButton>
                 </p:column>
             </p:dataTable>
 
