@@ -110,7 +110,7 @@ public class ItemsDistributorsController implements Serializable {
         }
     }
 
-    public void addToPackage() {
+    public void addItemToDistributor() {
         if (getCurrentInstituion() == null) {
             UtilityController.addErrorMessage("Please select a package");
             return;
@@ -136,6 +136,7 @@ public class ItemsDistributorsController implements Serializable {
         }
         UtilityController.addSuccessMessage("Added");
         recreateModel();
+        listItemForDistributer();
     }
 
     public void removeFromPackage() {
@@ -228,7 +229,12 @@ public class ItemsDistributorsController implements Serializable {
      *
      * @return
      */
-    public List<ItemsDistributors> getItems() {
+    
+    public List<ItemsDistributors> getItems() {  
+        return items;
+    }
+    
+    public void listItemForDistributer(){
         String temSql;
         HashMap hm = new HashMap();
 
@@ -245,7 +251,6 @@ public class ItemsDistributorsController implements Serializable {
         if (items == null) {
             items = new ArrayList<>();
         }
-        return items;
     }
 
     public void createItemDistributorTable() {

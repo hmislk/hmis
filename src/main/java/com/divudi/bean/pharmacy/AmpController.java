@@ -74,6 +74,7 @@ public class AmpController implements Serializable {
     private String tabId = "tabVmp";
     private VirtualProductIngredient addingVtmInVmp;
     private Vmp currentVmp;
+    
     @EJB
     private VmpFacade vmpFacade;
     @EJB
