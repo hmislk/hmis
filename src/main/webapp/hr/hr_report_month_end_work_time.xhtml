@@ -41,7 +41,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportBySalaryGenerationMethod()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

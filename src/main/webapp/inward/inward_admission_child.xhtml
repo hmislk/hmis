@@ -32,8 +32,8 @@
                                          style="width: 400px;">                            
                         </p:autoComplete>
 
-                        <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit" onclick="onSubmitButton();" />
-                        <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>
+                        <p:commandButton id="admt" action="#{admissionController.saveSelected}" ajax="false" value="Admit"  />
+                        <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
                         <p:defaultCommand target="admt"/>
 
                         <p:watermark for="bh" value="BHT No"/>
@@ -199,7 +199,7 @@
                 </h:panelGrid>
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" onclick="onSubmitButton();"/>                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 

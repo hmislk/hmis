@@ -19,11 +19,11 @@
                     <f:facet name="header" >
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Inward Final Bill" />                          
-                            <p:commandButton  value="Save Intrim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                            <p:commandButton  value="Save Interim" action="#{intrimPrintController.saveIntrimBill}" ajax="false"
+                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                             </p:commandButton>
-                            <p:commandButton value="Print Intrim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" >
-                                <p:printer target="intrim" ></p:printer>
+                            <p:commandButton value="Print Interim" ajax="false" disabled="#{intrimPrintController.currentBill.id eq null}" >
+                                <p:printer target="Interim" ></p:printer>
                             </p:commandButton>
                         </h:panelGrid>
                     </f:facet>       
@@ -79,7 +79,7 @@
                         <p:column headerText="Adjusted Value">
                             <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedValue}">
                                 <f:convertNumber pattern="#,##0.00" />  
-                                <p:ajax event="blur" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('intrim',view).clientId}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
+                                <p:ajax event="blur" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('Interim',view).clientId}" listener="#{intrimPrintController.calAdjustedTotal()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="Previous Print Adjusted Value">
@@ -90,7 +90,7 @@
                     </p:dataTable> 
 
 
-                    <h:panelGroup id="intrim" styleClass="noBorder">                  
+                    <h:panelGroup id="Interim" styleClass="noBorder">                  
                         <bi:intrimBill  bill="#{intrimPrintController.currentBill}"/>
                     </h:panelGroup>
 

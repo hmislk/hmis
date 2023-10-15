@@ -20,7 +20,7 @@
                             <p:commandButton  value="Return" 
                                              action="#{storeBhtIssueReturnController.settle}" 
                                             ajax="false" 
-                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();" >
+                                              style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"  >
                             </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" rendered="#{webUserController.hasPrivilege('ShowInwardFee')}" /> 
                             <p:outputLabel id="total"  value="#{storeBhtIssueReturnController.returnBill.total}" style="float: right;"
@@ -73,7 +73,7 @@
             </h:panelGroup>
 
             <p:panel rendered="#{storeBhtIssueReturnController.printPreview}">
-                <p:commandButton ajax="false" action="store_search_sale_bill_bht" value="Store Issue Search" actionListener="#{storeBhtIssueReturnController.makeNull}" onclick="onSubmitButton();" />                    
+                <p:commandButton ajax="false" action="store_search_sale_bill_bht" value="Store Issue Search" actionListener="#{storeBhtIssueReturnController.makeNull}"  />                    
                 <p:commandButton value="Print Return Bill" ajax="false" action="#"  >
                     <p:printer target="gpBillPreview1" ></p:printer>
                 </p:commandButton>

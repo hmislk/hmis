@@ -78,14 +78,14 @@
 
                         <p:panelGrid columns="2">
                             <p:commandButton ajax="false" value="Process by Added Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;" onclick="onSubmitButton();" />
+                                             action="#{mdInwardReportController.createItemWithFeeByAddedDate}" style="float: right;"  />
                             <p:commandButton ajax="false" value="Process by Discharge Date" 
-                                             action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" onclick="onSubmitButton();"
+                                             action="#{mdInwardReportController.createItemWithFeeByDischargeDate}" style="float: right;"  />
+                            <p:commandButton ajax="false" value="Excel Admit Date" styleClass="noPrintButton" 
                                              actionListener="#{mdInwardReportController.createItemWithFeeByAddedDate}">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton" onclick="onSubmitButton();" 
+                            <p:commandButton ajax="false" value="Excel Discharge Date" styleClass="noPrintButton"  
                                              actionListener="#{mdInwardReportController.createItemWithFeeByDischargeDate}">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="report_md_inward_item" />
                             </p:commandButton>

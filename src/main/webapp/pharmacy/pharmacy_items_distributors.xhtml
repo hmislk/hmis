@@ -18,6 +18,7 @@
 
             <p:panel header="Item Suppliers">
                 <p:defaultCommand target="btnAdd"/>
+                
                 <h:panelGrid columns="7" >
                     <p:outputLabel value="Supplier "/>
                     <p:spacer width="30" height="1" ></p:spacer>
@@ -46,9 +47,11 @@
                         </p:column>
                     </p:autoComplete>  
                     <p:watermark for="acItem" value="Select Item to Add" ></p:watermark>
-                    <h:commandButton id="btnAdd" value="Add" action="#{itemsDistributorsController.addToPackage()}">
+                    <h:commandButton id="btnAdd" value="Add" action="#{itemsDistributorsController.addItemToDistributor()}">
                     </h:commandButton>
 
+                    <h:commandButton value="List Items" action="#{itemsDistributorsController.listItemForDistributer()}">
+                    </h:commandButton>
 
                 </h:panelGrid>
 

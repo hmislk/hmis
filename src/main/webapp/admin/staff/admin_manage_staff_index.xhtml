@@ -10,51 +10,53 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
+                <div class="row">
+                    <div class="col-md-3">
+                        <p:panel header="Manage Staff" >
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{navigationController.adminStaffMenuIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title="Metadata">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  class="w-100" ajax="false" value="Doctor Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="All Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>
+                                        </div>
+                                    </p:tab>
 
-                <h:form>
+                                    <p:tab title="Staff">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  class="w-100" ajax="false" value="Doctors" action="#{navigationController.navigateToAdminDoctor()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Consultant" action="#{navigationController.navigateToAdminDoctorConsultant()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Staff" action="../../hr/hr_staff_admin"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{navigationController.navigateToViewStaffSignatures()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToAdminStaffSignature()}"/>
+                                        </div>
+                                    </p:tab>
 
-                    <p:panel header="Manage Staff" >
-                        <div class="row">
-                            <div class="col-md-3">
-                                <p:accordionPanel>
-                                    <p:tab>
-                                    <div class="d-grid gap-2">
-                                        <p:commandButton  class="w-100" ajax="false" value="Doctor Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Doctors" action="#{navigationController.navigateToAdminDoctor()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Consultant" action="#{navigationController.navigateToAdminDoctorConsultant()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="All Specialities" action="#{navigationController.navigateToAdminDoctorSpeciality()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Staff" action="../../hr/hr_staff_admin"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="View Staff Signatures" action="#{navigationController.navigateToViewStaffSignatures()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Add Signature for staff" action="#{navigationController.navigateToAdminStaffSignature()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Connect staff to user" action="#{navigationController.navigateToAdminUserStaff()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Staff List " action="#{navigationController.navigateToStaffList()}"/>
-                                        <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="#{navigationController.navigateToPersonInstitution()}"/>
-                                        <br />
-                                        <p:commandButton  class="w-100" ajax="false" value="Bulk Delete Staff" action="#{navigationController.navigateToStaffBulkDelete()}" onclick="onSubmitButton();"/>
-                                        <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/consultant/List" value="Show All Consultant Items"/>
-                                        <br />
-                                        <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/doctor/List" value="Show All Doctor Items"/>
-                                        <br />
-                                        <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
-                                        <br />
-                                        <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/speciality/List" value="Show All Speciality Items"/>
-                                    </div>
-                                    </p:tab></p:accordionPanel>   
+                                    <p:tab title="Setup">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton  class="w-100" ajax="false" value="Connect staff to user" action="#{navigationController.navigateToAdminUserStaff()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Staff List " action="#{navigationController.navigateToStaffList()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Add Channelling Consultants to Institutions" action="#{navigationController.navigateToPersonInstitution()}"/>
+                                            <p:commandButton  class="w-100" ajax="false" value="Bulk Delete Staff" action="#{navigationController.navigateToStaffBulkDelete()}" />
+                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/consultant/List" value="Show All Consultant Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/doctor/List" value="Show All Doctor Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/doctorSpeciality/List" value="Show All DoctorSpeciality Items"/>
+                                            <p:commandButton  class="w-100" ajax="false" action="../../channelling/maintanance/speciality/List" value="Show All Speciality Items"/>
+                                        </div>
+                                    </p:tab>
 
-                            </div>
+                                </p:accordionPanel>
+                            </h:form>
+                        </p:panel>
+                    </div>
 
-                            <div class="col-md-9">
-                                <ui:insert name="subcontent">
+                    <div class="col-md-9">
+                        <ui:insert name="subcontent">
 
-                                </ui:insert>
-                            </div>
-                        </div>
-
-
-                    </p:panel>
-
-
-                </h:form>
+                        </ui:insert>
+                    </div>
+                </div>
             </ui:define>
 
 

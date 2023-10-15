@@ -190,6 +190,15 @@ public class SearchController implements Serializable {
         return "/index";
     }
 
+    public String navigateToSmsList() {
+        return "/analytics/sms_list";
+    }
+
+    public String navigateToFailedSmsList() {
+        return "/analytics/sms_faild";
+
+    }
+
     public String navigateToListOtherInstitutionBills() {
         bills = null;
         return "/analytics/other_institution_bills";
@@ -1297,7 +1306,33 @@ public class SearchController implements Serializable {
     double netTotalValue;
 
     public void createPharmacyStaffBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createPharmacyStaffBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         Map m = new HashMap();
         m.put("bt", BillType.PharmacyPre);
@@ -1322,8 +1357,13 @@ public class SearchController implements Serializable {
         for (Bill b : bills) {
             netTotalValue += b.getNetTotal();
         }
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - staff(/faces/pharmacy/pharmacy_report_staff_issue_bill.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue - staff(/faces/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true)");
     }
 
     public void createPharmacyTableRe() {
@@ -4291,9 +4331,11 @@ public class SearchController implements Serializable {
         m.put("toDate", toDate);
         m.put("fromDate", fromDate);
         m.put("bType", BillType.OpdBill);
-        m.put("ins", getSessionController().getInstitution());
+        m.put("dep", getSessionController().getDepartment());
 
-        sql = "select bi from BillItem bi where bi.bill.institution=:ins "
+        sql = "select bi "
+                + " from BillItem bi "
+                + " where bi.bill.department=:dep "
                 + " and bi.bill.billType=:bType "
                 + " and bi.createdAt between :fromDate and :toDate ";
 
@@ -7164,7 +7206,7 @@ public class SearchController implements Serializable {
 
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Intrim Bill Search(/faces/inward/inward_search_intrim.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Interim Bill Search(/faces/inward/inward_search_intrim.xhtml)");
 
     }
 

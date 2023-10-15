@@ -257,7 +257,7 @@
                                                                 <f:facet name="header">No</f:facet>
                                                                     #{rowIndex+1}
                                                             </p:column>
-                                                            <p:column  style="min-width: 10em; text-align: left;" >
+                                                            <p:column  style="min-width: 9em; text-align: left;" >
                                                                 <f:facet name="header">
                                                                     <h:outputText style="min-width: 10em;" value="Item" />
                                                                 </f:facet>
@@ -265,11 +265,11 @@
 
                                                             </p:column>
 
-                                                            <p:column  style="width: 7em; text-align: left;" >
+                                                            <p:column  style="width: 6em; text-align: left;" >
                                                                 <f:facet name="header">Department</f:facet>
                                                                     #{bi.billItem.item.department.name}
                                                             </p:column>
-                                                            <p:column style="width: 4em;">
+                                                            <p:column style="width: 6em;">
                                                                 <f:facet name="header">Priority</f:facet>
                                                                 <p:selectOneMenu value="#{bi.billItem.priority}"    >
                                                                     <p:ajax event="blur" process="@this" ></p:ajax>
@@ -277,7 +277,7 @@
                                                                     <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
                                                                 </p:selectOneMenu>
                                                             </p:column>
-                                                            <p:column style="width: 5em;">
+                                                            <p:column style="width: 4em;">
                                                                 <f:facet name="header">Fee</f:facet>
                                                                 <h:outputText value="#{bi.billItem.netValue}">
                                                                     <f:convertNumber pattern="#,##0.00" />
@@ -313,7 +313,7 @@
                                                             </p:column>
                                                             <p:column>
                                                                 <f:facet name="header">Fee</f:facet>
-                                                                <h:inputText autocomplete="off"  required="true" requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
+                                                                <h:inputText class="w-100" autocomplete="off"  required="true" requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
                                                                              id="txtFeeVal" 
                                                                              value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
                                                                     <f:convertNumber pattern="#,##0.00" />
@@ -367,6 +367,7 @@
                                                             event="change"
                                                             listener="#{opdBillController.changeListener()}"/>
                                                 </p:selectOneMenu>
+                                                &nbsp;
                                                 <p:selectOneMenu   id="cmbPs" value="#{opdBillController.paymentScheme}">     
                                                     <f:selectItem itemLabel="Select Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
@@ -378,11 +379,11 @@
                                                 </p:selectOneMenu>
                                                 <h:commandButton  value="Settle"
                                                                   action="#{opdBillController.settleOpdBill()}" 
-                                                                  class="btn btn-success  m-1 p-2"
+                                                                  class="btn btn-success  mx-2 p-2" style="width: 100px;"
                                                                   >
                                                 </h:commandButton>
                                                 <h:commandButton value="New Bill" 
-                                                                 class="btn btn-warning m-1 p-2"
+                                                                 class="btn btn-warning mx-2 p-2 " style="width: 100px;"
                                                                  action="#{opdBillController.navigateToNewOpdBill()}" 
                                                                  >
                                                 </h:commandButton>

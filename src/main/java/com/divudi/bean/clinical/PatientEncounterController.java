@@ -218,6 +218,22 @@ public class PatientEncounterController implements Serializable {
 
     private UploadedFile uploadedFile;
 
+    public void calculateBmi() {
+        if (current == null) {
+            return;
+        }
+        if (current.getHeight() == null) {
+            return;
+        }
+        if (current.getWeight() == null) {
+            return;
+        }
+        Double htInMeters = current.getHeight()/100;
+        Double wtInKgs = current.getWeight();
+        Double bmi = wtInKgs / (Math.pow(htInMeters, 2));
+        current.setBmi(bmi);
+    }
+
     public StreamedContent getImage() throws IOException {
         FacesContext context = FacesContext.getCurrentInstance();
 
@@ -2716,9 +2732,7 @@ public class PatientEncounterController implements Serializable {
     public void setUploadedFile(UploadedFile uploadedFile) {
         this.uploadedFile = uploadedFile;
     }
-    
-    
-    
+
     @FacesConverter(forClass = PatientEncounter.class)
     public static class PatientEncounterConverter implements Converter {
 

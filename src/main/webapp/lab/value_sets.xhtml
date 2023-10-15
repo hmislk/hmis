@@ -38,7 +38,7 @@
                                 <h:outputLabel value="Value" ></h:outputLabel>
                                 <h:panelGroup >
                                     <p:inputText autocomplete="off" id="txtAdd" value="#{investigationItemController.addingString}" maxlength="250" />
-                                    <p:commandButton id="btnAdd" value="Add" process="txtAdd acIx acIiv btnAdd" update="txtAdd lstIi lstIi" action="#{investigationItemController.addValueToIxItem()}" onclick="onSubmitButton();" >
+                                    <p:commandButton id="btnAdd" value="Add" process="txtAdd acIx acIiv btnAdd" update="txtAdd lstIi lstIi" action="#{investigationItemController.addValueToIxItem()}"  >
                                     </p:commandButton> 
 
                                 </h:panelGroup>
@@ -59,7 +59,7 @@
                                     </p:inputText>
                                 </p:column>
                                 <p:column >
-                                    <p:commandButton ajax="false" value="Remove" action="#{investigationItemController.removeInvestigationItemValue }" onclick="onSubmitButton();"  >
+                                    <p:commandButton ajax="false" value="Remove" action="#{investigationItemController.removeInvestigationItemValue }"   >
                                         <f:setPropertyActionListener value="#{iivt}" target="#{investigationItemController.removingItem}" />
                                     </p:commandButton>
                                 </p:column>

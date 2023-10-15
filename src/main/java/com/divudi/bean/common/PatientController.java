@@ -1,7 +1,15 @@
 package com.divudi.bean.common;
 
+// Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
+import com.divudi.bean.inward.AdmissionController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.web.CaptureComponentController;
@@ -41,8 +49,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
@@ -118,12 +128,21 @@ public class PatientController implements Serializable {
     CaptureComponentController captureComponentController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    OpdPreBillController opdPreBillController;
+    @Inject
+    AdmissionController admissionController;
+    @Inject
+    AppointmentController appointmentController;
     /**
      *
      * Class Variables
      *
      *
      */
+
+    Date fromDate;
+    Date toDate;
     private static final long serialVersionUID = 1L;
     private Patient current;
     Long patientId;
@@ -163,6 +182,116 @@ public class PatientController implements Serializable {
     private Integer ageYearComponant;
     private Integer ageMonthComponant;
     private Integer ageDateComponant;
+
+    public void downloadAllPatients() {
+        List<Patient> downloadingPatients;
+        String j = "select p "
+                + " from Patient p "
+                + " where p.retired=:ret "
+                + " and p.createdAt between :fd and :td "
+                + " order by p.id";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        downloadingPatients = getFacade().findByJpql(j, m, 10000);
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Patients");
+        Row header = sheet.createRow(0);
+
+        String[] columns = {"ID", "Name", "Phone", "Mobile", "NIC", "DOB", "Address", "Email"};
+
+        for (int i = 0; i < columns.length; i++) {
+            Cell headerCell = header.createCell(i);
+            headerCell.setCellValue(columns[i]);
+        }
+
+        int rowNum = 1;
+        for (Patient p : downloadingPatients) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(p.getId());
+            row.createCell(1).setCellValue(p.getPerson().getName());
+            row.createCell(2).setCellValue(p.getPerson().getPhone());
+            row.createCell(3).setCellValue(p.getPerson().getMobile());
+            row.createCell(4).setCellValue(p.getPerson().getNic());
+            row.createCell(5).setCellValue(p.getPerson().getAddress());
+            row.createCell(6).setCellValue(p.getPerson().getEmail());
+        }
+
+        HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance()
+                .getExternalContext().getResponse();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
+
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        FacesContext.getCurrentInstance().responseComplete();
+    }
+
+    public void downloadPatientsPhoneNumbers() {
+        Set<String> uniqueContactNumbers = new HashSet<>();
+
+        String mobileQuery = "select p.person.mobile from Patient p where p.retired=:ret"
+                + " and p.createdAt between :fd and :td "
+                + " order by p.person.mobile";
+        String phoneQuery = "select p.person.phone from Patient p where p.retired=:ret "
+                + " and p.createdAt between :fd and :td "
+                + "order by p.person.phone";
+
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+
+        List<String> mobileNumbers = getFacade().findString(mobileQuery, m);
+        List<String> phoneNumbers = getFacade().findString(phoneQuery, m);
+
+        uniqueContactNumbers.addAll(mobileNumbers);
+        uniqueContactNumbers.addAll(phoneNumbers);
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Patients");
+        Row header = sheet.createRow(0);
+
+        String[] columns = {"No", "Phone"};
+
+        for (int i = 0; i < columns.length; i++) {
+            Cell headerCell = header.createCell(i);
+            headerCell.setCellValue(columns[i]);
+        }
+
+        int rowNum = 1;
+        for (String p : uniqueContactNumbers) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(rowNum + 1);
+            row.createCell(1).setCellValue(p);
+        }
+
+        HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance()
+                .getExternalContext().getResponse();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
+
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        FacesContext.getCurrentInstance().responseComplete();
+    }
+
+    private CellStyle dateCellStyle(Workbook workbook) {
+        CreationHelper createHelper = workbook.getCreationHelper();
+        CellStyle dateCellStyle = workbook.createCellStyle();
+        dateCellStyle.setDataFormat(createHelper.createDataFormat().getFormat("dd-MM-yyyy"));
+        return dateCellStyle;
+    }
 
     public void calculateAgeComponantsFromDob(Patient p) {
         if (p == null || p.getPerson() == null || p.getPerson().getDob() == null) {
@@ -333,6 +462,37 @@ public class PatientController implements Serializable {
         return "/opd/patient";
     }
 
+    public String navigateToAdmitFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        admissionController.prepereToAdmitNewPatient();
+        admissionController.getCurrent().setPatient(current);
+        return "/inward/inward_admission";
+    }
+
+    public String navigateToInwardAppointmentFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        appointmentController.prepereForInwardAppointPatient();
+        appointmentController.setSearchedPatient(getCurrent());
+        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/inward/inward_appointment";
+    }
+    
+    public String navigateToBillingForCashierFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+          opdPreBillController.prepareNewBill();
+          opdPreBillController.setSearchedPatient(getCurrent());
+        return "/opd_pre_bill";
+    }
     public String navigateToOpdPatientEdit() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -340,9 +500,9 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient_edit";
     }
-    
+
     public String navigateToOpdPatientEditFromId() {
-        if(patientId==null){
+        if (patientId == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
@@ -353,7 +513,7 @@ public class PatientController implements Serializable {
         }
         return "/opd/patient_edit";
     }
-    
+
     public String navigateToOpdBillFromOpdPatient() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -361,7 +521,7 @@ public class PatientController implements Serializable {
         }
         return opdBillController.navigateToNewOpdBill(current);
     }
-    
+
     public String navigateToOpdBillForCashier() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -433,7 +593,7 @@ public class PatientController implements Serializable {
         clearSearchDetails();
         return "";
     }
-    
+
     public String searchPatientForOpd() {
         if (searchBillId != null && !searchBillId.trim().equals("")) {
             searchByBill();
@@ -444,9 +604,13 @@ public class PatientController implements Serializable {
         } else {
             searchPatientByDetails();
         }
-        if (searchedPatients == null) {
-            JsfUtil.addErrorMessage("No Matches. Please use different criteria.");
-            return "";
+        if (searchedPatients == null || searchedPatients.isEmpty()) {
+            JsfUtil.addErrorMessage("No Matches. Please use different criteria");
+            return navigateToAddNewPatientForOpd(getSearchName(), getSearchNic(), getSearchPhone());
+
+        } else if (searchedPatients.size() == 1) {
+            setCurrent(searchedPatients.get(0));
+            return navigateToOpdPatientProfile();
         }
         clearSearchDetails();
         return "";
@@ -532,34 +696,34 @@ public class PatientController implements Serializable {
 
         j = "select p "
                 + " from Patient p "
-                + " where p.retired=false and ";
+                + " where p.retired=false ";
 
         if (searchName != null && !searchName.trim().equals("")) {
-            j += " (p.person.name) like :name ";
+            j += " and (p.person.name) like :name ";
             m.put("name", "%" + searchName.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPatientCode != null && !searchPatientCode.trim().equals("")) {
-            j += " (p.code) like :name ";
+            j += " and (p.code) like :name ";
             m.put("name", "%" + searchPatientCode.toLowerCase() + "%");
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhone != null && !searchPhone.trim().equals("")) {
-            j += " (p.person.phone =:phone or p.person.mobile =:phone)";
+            j += " and (p.person.phone =:phone or p.person.mobile =:phone)";
             m.put("phone", searchPhone);
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchNic != null && !searchNic.trim().equals("")) {
-            j += " p.person.nic =:nic";
+            j += " and p.person.nic =:nic";
             m.put("nic", searchNic);
             atLeastOneCriteriaIsGiven = true;
         }
 
         if (searchPhn != null && !searchPhn.trim().equals("")) {
-            j += " p.phn =:phn";
+            j += " and p.phn =:phn";
             m.put("phn", searchPhn);
             atLeastOneCriteriaIsGiven = true;
         }
@@ -792,8 +956,6 @@ public class PatientController implements Serializable {
         patientSelected();
         return "/emr/patient_basic_info";
     }
-    
-    
 
     public String toPatientFromSearchPatientsProfile() {
         if (current == null) {
@@ -971,10 +1133,20 @@ public class PatientController implements Serializable {
         getYearMonthDay();
         return "/emr/patient";
     }
-    
+
     public String navigateToAddNewPatientForOpd() {
         current = null;
         getCurrent();
+        return "/opd/patient_edit";
+    }
+
+    public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
+        current = null;
+        getCurrent();
+        getCurrent().getPerson().setName(name);
+        getCurrent().getPerson().setNic(nic);
+        getCurrent().getPerson().setPhone(phone);
+        getCurrent().getPerson().setMobile(phone);
         return "/opd/patient_edit";
     }
 
@@ -1088,16 +1260,15 @@ public class PatientController implements Serializable {
         return "/membership/add_family";
     }
 
-    
-    public String saveAndNavigateToOpdPatientProfile(){
-        if(current==null){
+    public String saveAndNavigateToOpdPatientProfile() {
+        if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return "";
         }
         saveSelected(current);
         return "/opd/patient";
     }
-    
+
     public void saveSelected(Patient p) {
         if (p == null) {
             UtilityController.addErrorMessage("No Current. Error. NOT SAVED");
@@ -1737,8 +1908,8 @@ public class PatientController implements Serializable {
     public void setAgeDateComponant(Integer ageDateComponant) {
         this.ageDateComponant = ageDateComponant;
     }
-    
-     public PracticeBookingController getPracticeBookingController() {
+
+    public PracticeBookingController getPracticeBookingController() {
         return practiceBookingController;
     }
 
@@ -1802,6 +1973,28 @@ public class PatientController implements Serializable {
         return currentRelation;
     }
 
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfMonth();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
     public void setCurrentRelation(Relation currentRelation) {
         this.currentRelation = currentRelation;
     }
@@ -1814,8 +2007,6 @@ public class PatientController implements Serializable {
         this.patientId = patientId;
     }
 
-    
-    
     /**
      *
      * Set all Patients to null
@@ -1886,8 +2077,10 @@ public class PatientController implements Serializable {
                 Patient o = (Patient) object;
                 return getStringKey(o.getId());
             } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName());
+                String error = "object " + object + " is of type "
+                        + object.getClass().getName() + "; expected type: " + PatientController.class.getName();
+                System.out.println("error = " + error);
+                return null;
             }
         }
     }

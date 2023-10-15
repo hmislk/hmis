@@ -43,9 +43,9 @@
 
                         </h:panelGrid>
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}"   ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}"   ></p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >

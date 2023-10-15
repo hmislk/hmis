@@ -8,16 +8,26 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml" >
+        <ui:composition template="/channel/channel_reports.xhtml" >
 
-            <ui:define name="content">
+            <ui:define name="subContent">
                 <h:form>
                     <p:panel header="Income By Institution with agent bookings" >
                         <p:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
-                            <p:calendar value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                showTime="true"
+                                value="#{channelReportController.fromDate}" 
+                                pattern="dd MMMM yyyy HH:mm:ss"></p:datePicker> 
                             <h:outputLabel value="To : " />
-                            <p:calendar value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:datePicker 
+                                class="w-100"
+                                inputStyleClass="form-control"
+                                showTime="true"
+                                value="#{channelReportController.toDate}" 
+                                pattern="dd MMMM yyyy HH:mm:ss"></p:datePicker>
                             <h:outputLabel  value="Institution"  ></h:outputLabel>
                             <p:autoComplete  value="#{channelReportController.institution}" 
                                              completeMethod="#{institutionController.completeIns}" 
@@ -29,23 +39,23 @@
                         </p:panelGrid>
 
 
-                        <p:panel header="Income With Agent Booking">
-                            
-                             
+                        <p:panel header="Income With Agent Booking" class="mt-2">
+
+
                             <p:dataTable  value="#{channelReportController.rowBundle.rows}" var="r" >
                                 <f:facet name="header">
-                                   
-                                <h:outputLabel value="#{channelReportController.institution.name}"/>
+
+                                    <h:outputLabel value="#{channelReportController.institution.name}"/>
                                     <h:outputLabel value="From : " />
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </f:facet>
-                                
+
                                 <p:columnGroup type="header" >
                                     <p:row>
                                         <p:column rowspan="2" headerText="Detail" >
@@ -95,7 +105,7 @@
                                     <p:outputLabel value="#{r.value}" ></p:outputLabel>
                                 </p:column>
 
-                                <p:columnGroup type="footer" >
+                                <p:columnGroup type="footer"  >
                                     <p:row>
                                         <p:column  footerText="Total" >
                                         </p:column>
@@ -116,9 +126,7 @@
 
                                     </p:row>
                                 </p:columnGroup>
-                                <f:facet name="footer" >
-                                    <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                                </f:facet>
+                                
                             </p:dataTable>
 
                         </p:panel>

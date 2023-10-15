@@ -12,7 +12,7 @@
         <h:form id="print">
             <p:tabView style="min-height:300px;" styleClass="noPrintButton">
                 <p:tab title="Staff List" >
-                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" />
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Salary Cycle : "/>
                         <p:selectOneMenu id="advanced" 

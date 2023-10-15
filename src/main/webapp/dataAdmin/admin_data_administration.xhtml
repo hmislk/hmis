@@ -29,6 +29,15 @@
                                                              action="#{searchController.toListAllBills}" 
                                                              rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
 
+
+                                            <p:commandButton value="Downlods"
+                                                             ajax="false"
+                                                             class="btn btn-block"
+                                                             action="/dataAdmin/downloads" 
+
+                                                             rendered="#{webUserController.hasPrivilege('Search')}"></p:commandButton>
+
+
                                         </div>
 
 
@@ -144,7 +153,7 @@
                                         </p:panelGrid>
                                     </p:tab>
 
-                                
+
 
                                 </p:accordionPanel>
                             </p:panel>

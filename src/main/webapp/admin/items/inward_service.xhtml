@@ -58,7 +58,7 @@
                                 <h:outputLabel value="Active" rendered="#{!inwardServiceController.current.inactive}" style="color: green;"></h:outputLabel>
                                 <h:outputLabel value="Inactive" rendered="#{inwardServiceController.current.inactive}" style="color: red;"></h:outputLabel>
                                 <p:commandButton style="float:right;" id="btnSave" value="Save"  action="#{inwardServiceController.saveSelected()}" styleClass="buttons"
-                                                 ajax="false" onclick="onSubmitButton();"  >
+                                                 ajax="false"   >
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSave"/>
 

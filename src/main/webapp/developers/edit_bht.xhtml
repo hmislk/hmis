@@ -38,11 +38,11 @@
                                 <h:outputLabel  value="Cancelled"  rendered="#{myItem.retired}"/>
                             </p:column>
                         </p:autoComplete>   
-                        <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}" onclick="onSubmitButton();" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <p:commandButton ajax="false" value="Update" action="#{bhtEditController.save}"  rendered="#{webUserController.hasPrivilege('Developers')}">
 
                         </p:commandButton>
 
-                        <p:commandButton  value="Clear" action="#{bhtEditController.makeNull}" ajax="false" onclick="onSubmitButton();">
+                        <p:commandButton  value="Clear" action="#{bhtEditController.prepereForInwardAppointPatient}" ajax="false" >
                         </p:commandButton>
 
 

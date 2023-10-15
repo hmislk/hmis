@@ -62,7 +62,7 @@
                                         <h:panelGrid id="gpSelectButtons" columns="3"  >                     
                                             <p:commandButton ajax="false" id="btnAdd" value="Add New Session" 
                                                              action="#{sheduleController.prepareAdd()}" 
-                                                             styleClass="buttons" onclick="onSubmitButton();" >
+                                                             styleClass="buttons"  >
                                                 <f:ajax render="btnAdd  btnDelete btnSave lstSelect gpDetail" execute="" >
                                                 </f:ajax>
                                             </p:commandButton>
@@ -87,13 +87,13 @@
                                         <h:panelGrid columns="3" >
                                             <p:commandButton ajax="false" id="btnSave" value="Save"  
                                                              action="#{sheduleController.saveSelected}"
-                                                             styleClass="buttons" onclick="onSubmitButton();">
+                                                             styleClass="buttons" >
 
                                             </p:commandButton>
                                             <p:commandButton value="Go To Channel Booking"
                                                              rendered="#{webUserController.hasPrivilege('Developers')}"
                                                              action="/channel/channel_booking" 
-                                                             ajax="false" onclick="onSubmitButton();" />
+                                                             ajax="false"  />
                                         </h:panelGrid>
 
 
@@ -268,7 +268,7 @@
                                                     <p:outputLabel value="Session Number"></p:outputLabel>
 
                                                     <p:autoComplete forceSelection="true" value="#{sheduleController.current.sessionNumberGenerator}" 
-                                                                    completeMethod="#{sessionNumberGenerateConrtroller.completeSessionNumberGenerator}" 
+                                                                    completeMethod="#{sessionNumberGenerateController.completeSessionNumberGenerator}" 
                                                                     var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
                                                                     >                            
                                                     </p:autoComplete>

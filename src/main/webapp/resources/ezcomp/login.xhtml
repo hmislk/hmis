@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui">
 
@@ -11,88 +10,108 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:form id="formLogin">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-md-8 col-lg-6 col-sm-10 col-xs-12 mt-5">
-                        <div class="card">
-                            <div class="card-header d-flex align-items-center">
-                                <div class="flex-grow-1">
-                                    <h4>Please Login</h4>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-3 d-flex align-items-center">
-                                        <h:graphicImage library="image" name="lock.png" alt="Logo" styleClass="img-fluid mx-auto my-2"/>
-                                    </div>
+        <h:outputStylesheet library="css" name="login.css" ></h:outputStylesheet>
+        <section class="h-100 gradient-form" style="background-color: #eeee;">
+            <div class="container py-5 h-100" >
+                <div class="row d-flex justify-content-center align-items-center h-100" >
+                    <div class="col-xl-10" >
+                        <div class="card rounded-3 text-black" >
+                            <div class="row g-0" >
+                                <div class="col-lg-6" >
+                                    <div class="card-body p-md-5 mx-md-4">
+                                        <div class="text-center">
+                                            <h:graphicImage
+                                                rendered="#{not empty sessionController.applicationPreference.logoUrl}"
+                                                value="#{sessionController.applicationPreference.logoUrl}"
+                                                style="width: 185px;"
+                                                alt="logo"
+                                                />
+                                            <h:graphicImage
+                                                rendered="#{empty sessionController.applicationPreference.logoUrl}"
+                                                library="image"
+                                                name="logo.jpg"
+                                                style="width: 185px;"
+                                                alt="logo"
+                                                />
 
-                                    <div class="col-md-9">
+                                        </div>
+                                        <h:form>
+                                            <div class="form-outline mb-4">
+                                                <label class="form-label m-1" for="txtUserName">User Name</label>
+                                                <p:inputText id="txtUserName"
+                                                             required="true" 
+                                                             styleClass="w-100"
+                                                             requiredMessage="Enter a Username"
+                                                             autocomplete="off" value="#{sessionController.userName}" 
+                                                             class="form-control w-100">
+                                                </p:inputText>
+                                            </div>
+                                            <div class="form-outline mb-4">   
+                                                <label class="form-label m-1" for="pwd">Password</label>
 
-                                        <div class="row w-100">
-                                            <div class="col">
-                                                <div class="form-group">
-                                                    <label for="txtUserName">Username:</label>
-                                                    <h:inputText autocomplete="off" id="txtUserName"
-                                                                 value="#{sessionController.userName}"
-                                                                 required="true"
-                                                                 requiredMessage="Username is required"
-                                                                 class="form-control"></h:inputText>
-                                                    <h:message for="txtUserName" style="color:red;" />
-                                                </div>
+                                                <p:password id="pwd"  size="100"     
+                                                            toggleMask="true"
+                                                            value="#{sessionController.passord}" 
+                                                            class="form-control w-100"
+                                                            required="true"
+                                                            requiredMessage="Please enter a password"
+                                                            >
+                                                </p:password>
                                             </div>
-                                        </div>
-                                        <div class="row w-100" >
-                                            <div class="col" >
-                                                <div class="form-group">
-                                                    <label for="txtPassword">Password:</label>
-                                                    <h:inputSecret id="txtPassword" value="#{sessionController.passord }"
-                                                                   required="true"
-                                                                   requiredMessage="Password is required"
-                                                                   class="form-control"></h:inputSecret>
-                                                    <h:message for="txtPassword" style="color:red;" />
-                                                </div>
+
+
+                                            <div class="text-center pt-1 mb-5 pb-1">
+                                                <p:commandButton class="btn m-1 w-75 btn"
+                                                                 value="Login"
+                                                                 ajax="false"
+                                                                 action="#{sessionController.loginActionWithoutDepartment()}" >
+                                                </p:commandButton>    
                                             </div>
-                                        </div>
-                                        <div class="row w-100 mt-3">
-                                            <div class="col d-flex justify-content-end">
-                                                <p:commandButton value="Login" id="btnLogin"
-                                                                 action="#{sessionController.loginActionWithoutDepartment()}"
-                                                                 class="btn btn-primary mb-3"
-                                                                 ajax="false"></p:commandButton>
-                                            </div>
-                                        </div>
+
+
+
+
+
+                                        </h:form>
+
+
+
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-footer d-flex align-items-center">
-                                <h:commandLink rendered="#{applicationController.hasAwebsiteAsFrontEnd}"
-                                    action="#{sessionController.redirectToLandingPage}" 
-                                               class="btn btn-secondary"
-                                               immediate="true">
-                                    <h:graphicImage style="height: 2em;" library="image" name="home.png" alt="Home" styleClass="img-fluid"/>
-                                </h:commandLink>
+                                <div class="col-lg-6 d-flex align-items-center gradient-custom-2" >
+                                    <div class="text-white px-3 py-4 p-md-5 mx-md-4" >
+
+                                        <h4 class="mb-4">
+                                            <h:outputText
+                                                rendered="#{not empty sessionController.applicationPreference.loggingHeader}"
+                                                value="#{sessionController.applicationPreference.loggingHeader}" class="text-white" ></h:outputText>
+                                            <h:outputText
+                                                rendered="#{empty sessionController.applicationPreference.loggingHeader}"
+                                                value="#{bundle.hims}" class="text-white" ></h:outputText>
+                                        </h4>
+                                        <p class="small mb-0 text-start"
+                                           >
+                                            <h:outputText 
+                                                rendered="#{not empty sessionController.applicationPreference.loggingText}"
+                                                value ="#{sessionController.applicationPreference.loggingText}">
+                                               
+                                            </h:outputText>
+                                            <h:outputText 
+                                                rendered="#{empty sessionController.applicationPreference.loggingText}"
+                                                value ="#{bundle.hims_tagline_contents}">
+                                               
+                                            </h:outputText>
+                                            
+                                        </p>
+                                        
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </h:form>
-
-        <h:panelGroup rendered="false" >
-            <h:form >
-
-                <div class="text-center pt-1 mb-5 pb-1">
-                    <p:commandButton class="btn m-1 w-75 btn"
-                                     value="Check"
-                                     ajax="false"
-                                     action="#{webUserController.checkUsersExists()}" >
-                    </p:commandButton>  
-
-                    <h1>#{webUserController.usersExists}</h1>
-                </div>
-            </h:form>
-        </h:panelGroup>
+        </section>
 
     </cc:implementation>
 </html>

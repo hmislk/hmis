@@ -8,62 +8,65 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="controller" />
+        <cc:attribute name="patient" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
-    <cc:implementation>
-    <div class="row">
-        <div class="col-md-4 p-1">
-            <p:selectOneMenu id="cmbTitle" value="#{cc.attrs.controller.newPatient.person.title}" placeholder="Title" class="form-control w-100">
-                <f:selectItem itemLabel="Select Title" />
-                <f:selectItems value="#{cc.attrs.controller.title}" />
-            </p:selectOneMenu>
-        </div>
-        <div class="col-md-4 p-1">
-            <p:inputText autocomplete="off" id="txtNewPtName" value="#{cc.attrs.controller.newPatient.person.name}" class="form-control w-100" style="width: 200px; text-transform: capitalize;" placeholder="Age"></p:inputText>
-        </div>
-        <div class="col-md-4 p-1">
-            <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.controller.newPatient.person.sex}" style="width: 200px;" class="form-control w-100">
-                <f:selectItem itemLabel="Select Sex" />
-                <f:selectItems value="#{cc.attrs.controller.sex}" />
-            </p:selectOneMenu>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-md-4 p-1">
-            <p:inputText autocomplete="off" placeholder="Year (DOB)" id="year" value="#{cc.attrs.controller.yearMonthDay.year}" class="form-control w-100">
-                <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
-            </p:inputText>
-        </div>
-        <div class="col-md-4 p-1">
-            <p:inputText autocomplete="off" id="month" placeholder="Month (DOB)" value="#{cc.attrs.controller.yearMonthDay.month}" class="form-control w-100">
-                <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
-            </p:inputText>
-        </div>
-        <div class="col-md-4 p-1">
-            <p:inputText autocomplete="off" id="day" placeholder="Day (DOB)" value="#{cc.attrs.controller.yearMonthDay.day}" class="form-control w-100">
-                <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{cc.attrs.controller.dateChangeListen()}" />
-            </p:inputText>
-        </div>
-    </div>
-
-    <div class="row mt-2">
-        <div class="col-md-9 p-1">
-            <p:autoComplete id="acNewPtArea" completeMethod="#{areaController.completeArea}" var="pta" class="w-100" itemLabel="#{pta.name}" itemValue="#{pta}" forceSelection="true" value="#{cc.attrs.controller.newPatient.person.area}"  placeholder="Address" ></p:autoComplete>
-        </div>
+    <cc:implementation >
         
-    </div>
+            <div class="row">
+                <div class="col-md-4 p-1">
 
-    <div class="row mt-2">
-        <div class="col-md-6 p-1">
-            <p:inputText id="txtNewPtPhone" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}" placeholder="Mobile"></p:inputText>
-        </div>
-        <div class="col-md-6 p-1">
-            <p:inputText id="txtNewPtNic" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.nic}" placeholder="NIC"></p:inputText>
-        </div>
-    </div>
-</cc:implementation>
+                    <p:selectOneMenu id="cmbTitle"  placeholder="Title" class="form-control w-100">
+                        <f:selectItem itemLabel="Select Title" />
+                        <f:selectItems value="#{enumController.title}" />
+                    </p:selectOneMenu>
+                </div>
+                <div class="col-md-4 p-1">
+                    <p:inputText autocomplete="off" id="txtNewPtName" value="#{cc.attrs.patient.person.name}" class="form-control w-100" style="width: 200px; text-transform: capitalize;" placeholder="Name"></p:inputText>
+                </div>
+                <div class="col-md-4 p-1">
+                    <p:selectOneMenu id="txtNewSex" class="form-control w-100">
+                        <f:selectItem itemLabel="Select Sex" />
+                        <f:selectItems value="#{enumController.sex}" />
+                    </p:selectOneMenu>
+                </div>
+
+            </div>
+
+            <div class="row mt-2">
+                <div class="col-md-12 p-1">
+                    <p:inputText autocomplete="off" placeholder="Year (DOB)" id="year" value="#{patientController.current.person.ageAsString}" class="form-control w-100">
+                        <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
+                    </p:inputText>
+                </div>
+<!--                <div class="col-md-4 p-1">
+                    <p:inputText autocomplete="off" id="month" placeholder="Month (DOB)" value="#{appointmentController.yearMonthDay.month}" class="form-control w-100">
+                        <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
+                    </p:inputText>
+                </div>
+                <div class="col-md-4 p-1">
+                    <p:inputText autocomplete="off" id="day" placeholder="Day (DOB)" value="#{appointmentController.yearMonthDay.day}" class="form-control w-100">
+                        <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
+                    </p:inputText>
+                </div>-->
+            </div>
+
+            <div class="row mt-2 ">
+                <div class="col-12 p-1">
+                    <p:inputText  id="atxtNewPtArea" autocomplete="off" class="form-control w-100" value="#{cc.attrs.patient.person.address}"  placeholder="Address" ></p:inputText>
+                </div>
+            </div>
+
+            <div class="row mt-2 ">
+                <div class="col-md-6 p-1">
+                    <p:inputText id="txtNewPtPhone" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.patient.person.phone}" placeholder="Mobile"></p:inputText>
+                </div>
+                <div class="col-md-6 p-1">
+                    <p:inputText id="txtNewPtNic" class="form-control w-100" autocomplete="off" maxlength="11" value="#{cc.attrs.patient.person.nic}" placeholder="NIC"></p:inputText>
+                </div>
+            </div>
+       
+    </cc:implementation>
 
 </html>

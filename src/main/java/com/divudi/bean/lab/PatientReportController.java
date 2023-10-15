@@ -13,6 +13,7 @@ import com.divudi.data.CalculationType;
 import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
+import com.divudi.data.MessageType;
 import com.divudi.data.Sex;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
@@ -96,8 +97,8 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -260,8 +261,6 @@ public class PatientReportController implements Serializable {
         return "/mobile/my_test_results";
 
     }
-
-   
 
     public void sendEmail() {
 
@@ -582,11 +581,16 @@ public class PatientReportController implements Serializable {
         }
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
-            if(priv.getInvestigationItem().getFormatString()!=null && !priv.getInvestigationItem().getFormatString().trim().equals("")){
-                if(priv.getInvestigationItem().getIxItemValueType()==InvestigationItemValueType.Varchar){
+            if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
+                if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
                     priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
+                } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
+                    Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
+                    Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
+                    priv.setDoubleValue(numberWithFormatter);
+                    priv.setStrValue(numberWithFormatter + "");
                 }
             }
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
@@ -1093,6 +1097,127 @@ public class PatientReportController implements Serializable {
         return b;
     }
 
+    public String generateQrCodeLink(PatientReport r) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String temId = currentPatientReport.getId() + "";
+        temId = getSecurityController().encrypt(temId);
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+        String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+        ed = getSecurityController().encrypt(ed);
+        try {
+            ed = URLEncoder.encode(ed, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+        return url;
+    }
+
+    public String generateQrCodeDetails(PatientReport r) {
+        if (r != null) {
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.MONTH, 1);
+
+            // Ensure currentPatientReport is not null
+            if (currentPatientReport != null) {
+                String temId = currentPatientReport.getId() + "";
+                temId = getSecurityController().encrypt(temId);
+                try {
+                    temId = URLEncoder.encode(temId, "UTF-8");
+                } catch (UnsupportedEncodingException ex) {
+                    // Handle the exception
+                }
+            }
+
+            // Ensure all chained method calls do not result in null
+            if (r.getPatientInvestigation() != null
+                    && r.getPatientInvestigation().getBillItem() != null
+                    && r.getPatientInvestigation().getBillItem().getBill() != null
+                    && r.getPatientInvestigation().getBillItem().getBill().getPatient() != null
+                    && r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson() != null) {
+
+                // Initialize variables to store values
+                String patientName = "";
+                String patientAge = "";
+                String patientSex = "";
+                String patientAddress = "";
+                String identityNumber = "";
+                String investigationName = "";
+
+                // Retrieve values if not null
+                if (r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getName() != null) {
+                    patientName = r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getName();
+                }
+
+                if (r.getPatientInvestigation().getBillItem().getBill().getBillDate() != null) {
+                    patientAge = r.getPatientInvestigation().getBillItem().getBill().getPatient().getAgeOnBilledDate(r.getPatientInvestigation().getBillItem().getBill().getBillDate());
+                }
+
+                if (r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex() != null) {
+                    patientSex = r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex().name();
+                }
+
+                if (r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getAddress() != null) {
+                    patientAddress = r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getAddress();
+                }
+
+                if (r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNic() != null) {
+                    identityNumber = r.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getNic();
+                }
+
+                if (r.getPatientInvestigation().getInvestigation().getName() != null) {
+                    investigationName = r.getPatientInvestigation().getInvestigation().getName();
+                }
+
+                // Construct the URL
+                String temId = ""; // Initialize temId
+                if (currentPatientReport != null) {
+                    temId = currentPatientReport.getId() + "";
+                    temId = getSecurityController().encrypt(temId);
+                    try {
+                        temId = URLEncoder.encode(temId, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        // Handle the exception
+                    }
+                }
+
+                String ed = commonController.getDateFormat(c.getTime(), "ddMMMMyyyyhhmmss");
+                ed = getSecurityController().encrypt(ed);
+                try {
+                    ed = URLEncoder.encode(ed, "UTF-8");
+                } catch (UnsupportedEncodingException ex) {
+                    // Handle the exception
+                }
+
+                String url = commonController.getBaseUrl() + "faces/requests/report.xhtml?id=" + temId + "&user=" + ed;
+
+                // Create the QR code contents using the variables and URL
+                String qrCodeContents = "Patient Name: " + patientName + "\n"
+                        + "Patient Age: " + patientAge + "\n"
+                        + "Patient Sex: " + patientSex + "\n";
+
+                if (!patientAddress.isEmpty()) {
+                    qrCodeContents += "Patient Address: " + patientAddress + "\n";
+                }
+
+                if (!identityNumber.isEmpty()) {
+                    qrCodeContents += "Identity Number: " + identityNumber + "\n";
+                }
+
+                qrCodeContents += "Investigation Name: " + investigationName + "\n";
+                qrCodeContents += "URL: " + url;
+
+                return qrCodeContents;
+            }
+        }
+
+        // Return an empty string if any of the objects is null
+        return "";
+    }
+
     public BooleanMessage canApproveThePatientReport(PatientReport prForApproval) {
         //System.out.println("canApproveThePatientReport");
         BooleanMessage bm = new BooleanMessage();
@@ -1206,19 +1331,14 @@ public class PatientReportController implements Serializable {
         currentPatientReport.setApproveDepartment(getSessionController().getLoggedUser().getDepartment());
         currentPatientReport.setApproveInstitution(getSessionController().getLoggedUser().getInstitution());
         currentPatientReport.setApproveUser(getSessionController().getLoggedUser());
+        currentPatientReport.setQrCodeContentsDetailed(generateQrCodeDetails(currentPatientReport));
+        currentPatientReport.setQrCodeContentsLink(generateQrCodeLink(currentPatientReport));
         getFacade().edit(currentPatientReport);
         getStaffController().setCurrent(getSessionController().getLoggedUser().getStaff());
         getTransferController().setStaff(getSessionController().getLoggedUser().getStaff());
 
-        UserPreference pf;
+        UserPreference pf = getSessionController().getApplicationPreference();
 
-        if (getSessionController().getLoggedPreference() != null) {
-            pf = getSessionController().getLoggedPreference();
-        } else if (getSessionController().getUserPreference() != null) {
-            pf = getSessionController().getUserPreference();
-        } else {
-            pf = null;
-        }
         if (pf != null && pf.getSentEmailWithInvestigationReportApproval()) {
             if (CommonController.isValidEmail(currentPtIx.getBillItem().getBill().getPatient().getPerson().getEmail())) {
                 AppEmail e;
@@ -1245,7 +1365,7 @@ public class PatientReportController implements Serializable {
             }
         }
 
-        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
             Sms e = new Sms();
             e.setPending(true);
             e.setCreatedAt(new Date());
@@ -1255,7 +1375,7 @@ public class PatientReportController implements Serializable {
             e.setPatientInvestigation(currentPtIx);
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
             e.setSendingMessage(smsBody(currentPatientReport));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
@@ -1302,7 +1422,7 @@ public class PatientReportController implements Serializable {
             return;
         }
 
-        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone().trim().equals("")) {
+        if (!currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber().trim().equals("")) {
             Sms e = new Sms();
             e.setCreatedAt(new Date());
             e.setCreater(sessionController.getLoggedUser());
@@ -1310,17 +1430,19 @@ public class PatientReportController implements Serializable {
             e.setPatientReport(currentPatientReport);
             e.setPatientInvestigation(currentPtIx);
             e.setCreatedAt(new Date());
+            e.setSmsType(MessageType.LabReport);
             e.setCreater(sessionController.getLoggedUser());
-            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getPhone());
+            e.setReceipientNumber(currentPtIx.getBillItem().getBill().getPatient().getPerson().getSmsNumber());
             e.setSendingMessage(smsBody(currentPatientReport));
             e.setDepartment(getSessionController().getLoggedUser().getDepartment());
             e.setInstitution(getSessionController().getLoggedUser().getInstitution());
-            e.setSentSuccessfully(false);
+            e.setPending(false);
             getSmsFacade().create(e);
-            smsManager.sendSms(e.getReceipientNumber(), e.getSendingMessage(),
-                    e.getInstitution().getSmsSendingUsername(),
-                    e.getInstitution().getSmsSendingPassword(),
-                    e.getInstitution().getSmsSendingAlias());
+
+            boolean sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(),
+                    sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sent);
+            getSmsFacade().edit(e);
         }
 
         UtilityController.addSuccessMessage("SMS Sent");

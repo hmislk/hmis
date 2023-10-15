@@ -62,7 +62,7 @@ public enum BillNumberSuffix {
     //Inward
     INWPAY,//Payment Bill
     INWFINAL,//Inward Final
-    INWINTRIM,//Inward Intrim    
+    INWINTRIM,//Inward Interim    
     INWPRO,//Professional
     INWSER,//Service
     INWREF,//Refund
@@ -116,66 +116,41 @@ public enum BillNumberSuffix {
         } else {
             String suffix = this.toString();
             switch (this) {
-                case ADJ:
-                    break;
-                case AGNCAN:
-                    break;
-                case AGNCN:
-                    break;
-                case AGNCNCAN:
-                    break;
-                case AGNDN:
-                    break;
-                case AGNDNCAN:
-                    break;
-                case AGNPAY:
-                    break;
+                case ADJ:break;
+                case AGNCAN:break;
+                case AGNCN:break;
+                case AGNCNCAN:break;
+                case AGNDN:break;
+                case AGNDNCAN:break;
+                case AGNPAY:break;
                 case CAN:
                     suffix = "C";
                     break;
                 case CCCAN:
                     suffix = "CC";
                     break;
-                case CCCN:
-                    break;
-                case CCCNCAN:
-                    break;
-                case CCDN:
-                    break;
-                case CCDNCAN:
-                    break;
+                case CCCN:break;
+                case CCCNCAN:break;
+                case CCDN:break;
+                case CCDNCAN:break;
                 case CCPAY:
                     suffix = "CP";
                     break;
-                case CHNPROPAY:
+                case CHNPROPAY:break;
+                case CRDCAN:break;
+                case CRDPAY:break;
+                case CSIN:break;
+                case CSINCAN:break;
+                case CSOUT:break;
+                case CSOUTCAN:break;
+                case DI:break;
+                case DIC:break;
+                case DRADJ:break;
+                case E:break;
+                case ECAN:break;
+                case GRN:suffix = "G";
                     break;
-                case CRDCAN:
-                    break;
-                case CRDPAY:
-                    break;
-                case CSIN:
-                    break;
-                case CSINCAN:
-                    break;
-                case CSOUT:
-                    break;
-                case CSOUTCAN:
-                    break;
-                case DI:
-                    break;
-                case DIC:
-                    break;
-                case DRADJ:
-                    break;
-                case E:
-                    break;
-                case ECAN:
-                    break;
-                case GRN:
-                    suffix = "G";
-                    break;
-                case GRNCAN:
-                    suffix = "GC";
+                case GRNCAN:suffix = "GC";
                     break;
                 case GRNRET:
                     suffix = "GR";
@@ -204,65 +179,35 @@ public enum BillNumberSuffix {
                 case INWPRO:
                     suffix = "WP";
                     break;
-                case INWREF:
-                    break;
-                case INWREFCAN:
-                    break;
-                case INWSER:
-                    break;
-                case ISS:
-                    break;
-                case ISSCAN:
-                    break;
-                case MJADJ:
-                    break;
-                case NONE:
-                    break;
-                case PACK:
-                    break;
-                case PHCAN:
-                    break;
-                case PHDIRRET:
-                    break;
-                case PHISSCAN:
-                    break;
-                case PHISSRET:
-                    break;
-                case PHISSUE:
-                    break;
-                case PHISSUEREQ:
-                    break;
-                case PHPUR:
-                    break;
-                case PHRET:
-                    break;
-                case PHSAL:
-                    break;
-                case PHTI:
-                    break;
-                case PHTICAN:
-                    break;
-                case PHTR:
-                    break;
-                case PHTRCAN:
-                    break;
-                case PHTRQ:
-                    break;
-                case PO:
-                    break;
-                case POCAN:
-                    break;
-                case POR:
-                    break;
-                case SALE:
-                    suffix = "S";
-                    break;
-                case SALCAN:
-                    suffix = "SC";
-                    break;
-
+                case INWREF:break;
+                case INWREFCAN:break;
+                case INWSER:break;
+                case ISS:break;
+                case ISSCAN:break;
+                case MJADJ:break;
+                case NONE:break;
+                case PACK:break;
+                case PHCAN:break;
+                case PHDIRRET:break;
+                case PHISSCAN:break;
+                case PHISSRET:break;
+                case PHISSUE:break;
+                case PHISSUEREQ:break;
+                case PHPUR:break;
+                case PHRET:break;
+                case PHSAL:break;
+                case PHTI:break;
+                case PHTICAN:break;
+                case PHTR:break;
+                case PHTRCAN:break;
+                case PHTRQ:break;
+                case PO:break;
+                case POCAN:break;
+                case POR:break;
+                case SALE: suffix = "S"; break;
+                case SALCAN: suffix = "SC"; break;
                 default:
-                    suffix = "O";
+                    suffix = this.toString();
             }
 
             return suffix;

@@ -15,35 +15,35 @@
                             <h:outputLabel value="INWARD CREDIT DUE"/>
 
                             <h:panelGrid columns="2">
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar id="fromDate" value="#{creditCompanyDueController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                <h:outputLabel value="From Date &emsp;"/>
+                                <p:datePicker id="fromDate" class="w-100" value="#{creditCompanyDueController.fromDate}" showTime="true" pattern="dd MMMM yyyy hh mm ss a" >
                                     <f:ajax event="dateSelect" execute="toDate @this"  render="lst"/>
-                                </p:calendar>
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{creditCompanyDueController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                                </p:datePicker>
+                                <h:outputLabel value="To Date &emsp;"/>
+                                <p:datePicker id="toDate" class="w-100" value="#{creditCompanyDueController.toDate}" showTime="true" pattern="dd MMMM yyyy hh mm ss a" >
                                     <f:ajax event="dateSelect" execute="@this fromDate"  render="lst"/>
-                                </p:calendar>
-                                <h:outputLabel value="With Out Due Update"/>
+                                </p:datePicker>
+                                <h:outputLabel value="With Out Due Update &emsp;"/>
                                 <p:selectBooleanCheckbox value="#{creditCompanyDueController.withOutDueUpdate}" />
                                 <p:spacer width="100" height="1"/>                                
                             </h:panelGrid>
-                            <p:commandButton ajax="false" value="Process DUE" action="#{creditCompanyDueController.createInwardCreditDue()}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                            <p:commandButton class="mx-2" ajax="false" value="Process DUE" action="#{creditCompanyDueController.createInwardCreditDue()}" />
+                            <p:commandButton class="mx-2" ajax="false" value="Print"  >
                                 <p:printer target="lst"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                            <p:commandButton class="mx-2" actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel"  >
                                 <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"  />
                             </p:commandButton> 
                         </f:facet>
                         <p:dataTable id="lst" value="#{creditCompanyDueController.institutionEncounters}" var="i">
                             <f:facet name="header">
                                 <h:outputLabel value="Due Search(Credit Company)"/>
-                                <h:outputLabel value=" From : " style="white-space: pre-line"/>
+                                <h:outputLabel value=" From :&emsp;" style="white-space: pre-line"/>
                                 <h:outputLabel value="#{creditCompanyDueController.fromDate}">
                                     <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
-                                <h:outputLabel value="&emsp;&emsp;To :"/>
+                                <h:outputLabel value="&emsp;&emsp;To :&emsp;"/>
                                 <h:outputLabel value="#{creditCompanyDueController.toDate}">
                                     <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
                                 </h:outputLabel>
@@ -228,7 +228,7 @@
 
                         </p:dataTable>
                         <f:facet name="footer" >
-                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                            <h:outputLabel class="my-2" value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
                         </f:facet>
                     </p:panel>
                 </h:form>

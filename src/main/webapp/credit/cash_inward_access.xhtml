@@ -28,13 +28,13 @@
                         
                     </h:panelGrid>
                         
-                        <p:commandButton ajax="false" value="Process Cash ACCESS" action="#{creditCompanyDueController.createInwardCashAccess()}" onclick="onSubmitButton();"/>
+                        <p:commandButton class="my-2" ajax="false" value="Process Cash ACCESS" action="#{creditCompanyDueController.createInwardCashAccess()}" />
                         
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                        <p:commandButton class="m-2" ajax="false" value="Print">
                             <p:printer target="lst"  />
                         </p:commandButton>
 
-                        <p:commandButton actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel" styleClass="noPrintButton" >
+                        <p:commandButton class="my-2" actionListener="#{creditCompanyDueController.createInwardCreditDue()}" ajax="false" value="Excel" styleClass="noPrintButton" >
                             <p:dataExporter type="xlsx" target="lst" fileName="Due Search(Credit Company)"  />
                         </p:commandButton>
 

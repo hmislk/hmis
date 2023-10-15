@@ -18,7 +18,7 @@
                      
                         <p:panel>
                             <f:facet name="header">
-                                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{hrmVariablesController.saveSelected()}" styleClass="buttons" style="float:right;" onclick="onSubmitButton();">
+                                <p:commandButton id="btnSave" ajax="false" value="Save" action="#{hrmVariablesController.saveSelected()}" styleClass="buttons" style="float:right;" >
                                    
                                 </p:commandButton>
                             </f:facet>
@@ -50,7 +50,7 @@
                                 <p:inputText autocomplete="off" value="#{hrmVariablesController.currentPayeeTaxRange.toSalary}"  />
                                 <h:outputText value="Tax Rate" ></h:outputText>
                                 <p:inputText autocomplete="off" value="#{hrmVariablesController.currentPayeeTaxRange.taxRate}"  />
-                                <p:commandButton ajax="false" value="Add" action="#{hrmVariablesController.addTaxRange}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Add" action="#{hrmVariablesController.addTaxRange}" />
                             </h:panelGrid>
                         </p:panel>
                         <p:panel id="gpDetail2">

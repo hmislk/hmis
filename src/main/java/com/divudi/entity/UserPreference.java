@@ -119,6 +119,10 @@ public class UserPreference implements Serializable {
     boolean channelBillDouble = false;
     private boolean hasAwebsiteAsFrontEnd = false;
     private String themeName;
+    private String logoUrl;
+    private String loggingHeader;
+    @Lob
+    private String loggingText;
     private boolean channelDoctorArivalMsgSend = false;
     String microBiologyFont;
     String logoName;
@@ -138,6 +142,15 @@ public class UserPreference implements Serializable {
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
+    private String smsUrl;
+    private String smsUsername;
+    private String smsPassword;
+    private String smsUserAlias;
+    private String smsUsernameParameterName;
+    private String smsPasswordParameterName;
+    private String smsUserAliasParameterName;
+    private String smsPhoneNumberParameterName;
+    private String smsMessageParameterName;
 
     private boolean familyMembership;
     private boolean membershipExpires;
@@ -150,6 +163,8 @@ public class UserPreference implements Serializable {
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
+    private String pharmacyBillFooter;
+    private String pharmacyBillHeader;
 
     public ApplicationInstitution getApplicationInstitution() {
         if (applicationInstitution == null) {
@@ -458,6 +473,8 @@ public class UserPreference implements Serializable {
     public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
         this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
     }
+    
+    
 
     public boolean isPharmacyBillWithOutItem() {
         return pharmacyBillWithOutItem;
@@ -754,5 +771,122 @@ public class UserPreference implements Serializable {
     public void setOpdBillTemplate(String opdBillTemplate) {
         this.opdBillTemplate = opdBillTemplate;
     }
+
+    public String getPharmacyBillFooter() {
+        return pharmacyBillFooter;
+    }
+
+    public void setPharmacyBillFooter(String pharmacyBillFooter) {
+        this.pharmacyBillFooter = pharmacyBillFooter;
+    }
+
+    public String getPharmacyBillHeader() {
+        return pharmacyBillHeader;
+    }
+
+    public void setPharmacyBillHeader(String pharmacyBillHeader) {
+        this.pharmacyBillHeader = pharmacyBillHeader;
+    }
+
+    public String getSmsUrl() {
+        return smsUrl;
+    }
+
+    public void setSmsUrl(String smsUrl) {
+        this.smsUrl = smsUrl;
+    }
+
+    public String getSmsUsername() {
+        return smsUsername;
+    }
+
+    public void setSmsUsername(String smsUsername) {
+        this.smsUsername = smsUsername;
+    }
+
+    public String getSmsPassword() {
+        return smsPassword;
+    }
+
+    public void setSmsPassword(String smsPassword) {
+        this.smsPassword = smsPassword;
+    }
+
+    public String getSmsUsernameParameterName() {
+        return smsUsernameParameterName;
+    }
+
+    public void setSmsUsernameParameterName(String smsUsernameParameterName) {
+        this.smsUsernameParameterName = smsUsernameParameterName;
+    }
+
+    public String getSmsPasswordParameterName() {
+        return smsPasswordParameterName;
+    }
+
+    public void setSmsPasswordParameterName(String smsPasswordParameterName) {
+        this.smsPasswordParameterName = smsPasswordParameterName;
+    }
+
+    public String getSmsUserAlias() {
+        return smsUserAlias;
+    }
+
+    public void setSmsUserAlias(String smsUserAlias) {
+        this.smsUserAlias = smsUserAlias;
+    }
+
+    public String getSmsUserAliasParameterName() {
+        return smsUserAliasParameterName;
+    }
+
+    public void setSmsUserAliasParameterName(String smsUserAliasParameterName) {
+        this.smsUserAliasParameterName = smsUserAliasParameterName;
+    }
+
+    public String getSmsPhoneNumberParameterName() {
+        return smsPhoneNumberParameterName;
+    }
+
+    public void setSmsPhoneNumberParameterName(String smsPhoneNumberParameterName) {
+        this.smsPhoneNumberParameterName = smsPhoneNumberParameterName;
+    }
+
+    public String getSmsMessageParameterName() {
+        return smsMessageParameterName;
+    }
+
+    public void setSmsMessageParameterName(String smsMessageParameterName) {
+        this.smsMessageParameterName = smsMessageParameterName;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getLoggingHeader() {
+        return loggingHeader;
+    }
+
+    public void setLoggingHeader(String loggingHeader) {
+        this.loggingHeader = loggingHeader;
+    }
+
+    public String getLoggingText() {
+        return loggingText;
+    }
+
+    public void setLoggingText(String loggingText) {
+        this.loggingText = loggingText;
+    }
+    
+    
+    
+    
+    
 
 }

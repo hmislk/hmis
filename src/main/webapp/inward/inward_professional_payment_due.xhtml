@@ -50,7 +50,7 @@
                                 <p:printer target="tblFee" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{searchController.createDueFeeTableInwardAll()}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{searchController.createDueFeeTableInwardAll()}">
                                 <p:dataExporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton> 
                         </h:panelGrid>

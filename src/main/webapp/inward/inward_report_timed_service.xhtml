@@ -41,12 +41,12 @@
                         <p:watermark for="it" value="Timed Item"/>
 
 
-                        <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}" onclick="onSubmitButton();"  />
+                        <p:commandButton ajax="false" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}"   />
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" actionListener="#{inwardTimedItemController.createTimeServiceList}">
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  actionListener="#{inwardTimedItemController.createTimeServiceList}">
                             <p:dataExporter type="xlsx" target="tbl" fileName="inward_report_timed_service" />
                         </p:commandButton>
                     </p:panel>

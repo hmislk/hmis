@@ -32,7 +32,7 @@
                                             completeMethod="#{creditCompanyController.completeCredit}" var="ix" 
                                             itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 300px;">
                             </p:autoComplete>
-                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Process Due" action="#{creditCompanyDueController.createOpdCreditDueBillItem}" />
                             <p:commandButton value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="lst" fileName="credit_company_opd_due_by_bill_item"  />
                             </p:commandButton>

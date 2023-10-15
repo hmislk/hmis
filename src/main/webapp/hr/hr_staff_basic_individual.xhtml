@@ -48,8 +48,8 @@
                             <h:outputLabel value="BR Value"/>
                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.dblValue}"/>
 
-                            <p:commandButton id="btnAdd" value="Save" action="#{staffBasicController.save}" ajax="false" onclick="onSubmitButton();"/>
-                            <p:commandButton value="Clear" action="#{staffBasicController.makeNull}" ajax="false" onclick="onSubmitButton();" />
+                            <p:commandButton id="btnAdd" value="Save" action="#{staffBasicController.save}" ajax="false" />
+                            <p:commandButton value="Clear" action="#{staffBasicController.makeNull}" ajax="false"  />
 
                         </h:panelGrid>
                     </p:panel>
@@ -62,7 +62,7 @@
                 <p:panel>
                     <f:facet name="header">
                         <h:outputLabel value="Basic List"/>
-                        <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Refresh" action="#{staffBasicController.makeItemNul}" ajax="false" style="float: right;" />
 
                     </f:facet>
                     <h:panelGrid columns="2" >
@@ -86,7 +86,7 @@
 
                         <h:panelGrid columns="3"> 
                             <p:commandButton ajax="false" value="Fill" action="#{staffBasicController.createBasicTable}" />
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb7" fileName="hr_staff_basic_individual"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -224,13 +224,13 @@
                             </p:column>
 
                             <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
-                                <p:commandButton ajax="false" value="Remove" action="#{staffBasicController.remove}" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="Remove" action="#{staffBasicController.remove}" >
                                     <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column>  
 
                             <p:column style="width:6%" exportable="false" styleClass="noPrintButton">  
-                                <p:commandButton ajax="false" value="View" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="View" >
                                     <f:setPropertyActionListener target="#{staffBasicController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column> 
