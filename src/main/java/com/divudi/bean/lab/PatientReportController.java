@@ -586,6 +586,11 @@ public class PatientReportController implements Serializable {
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
                     priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
+                } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
+                    Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
+                    Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
+                    priv.setDoubleValue(numberWithFormatter);
+                    priv.setStrValue(numberWithFormatter + "");
                 }
             }
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
