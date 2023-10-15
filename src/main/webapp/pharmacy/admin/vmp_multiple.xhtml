@@ -46,11 +46,97 @@
                     selectionMode="multiple" width="50" >
                 </p:column>
                 <p:column 
-                    headerText="Name" 
+                    headerText="ID" 
+                    sortBy="#{i.id}"
+                    filterBy="#{i.id}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.id}" ></h:outputText>
+                </p:column>
+                <p:column 
                     sortBy="#{i.name}"
                     filterBy="#{i.name}"
                     filterMatchMode="contains">
+                    <f:facet name="header">
+                        <h:outputText value="VMP Name"></h:outputText>
+                    </f:facet>
                     <h:outputText value="#{i.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="VTM Name" 
+                    sortBy="#{i.vtm.name}"
+                    filterBy="#{i.vtm.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.vtm.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Dosage Form" 
+                    sortBy="#{i.dosageForm.name}"
+                    filterBy="#{i.dosageForm.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.dosageForm.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Strength Unit" 
+                    sortBy="#{i.strengthUnit.name}"
+                    filterBy="#{i.strengthUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.strengthUnit.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Issue Unit" 
+                    sortBy="#{i.issueUnit.name}"
+                    filterBy="#{i.issueUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.issueUnit.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Strength Units per Issue Unit" 
+                    sortBy="#{i.strengthOfAnIssueUnit}"
+                    filterBy="#{i.strengthOfAnIssueUnit}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.strengthOfAnIssueUnit}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Issue Units Per Pack" 
+                    sortBy="#{i.issueUnitsPerPackUnit}"
+                    filterBy="#{i.issueUnitsPerPackUnit}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.issueUnitsPerPackUnit}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Pack Unit" 
+                    sortBy="#{i.packUnit.name}"
+                    filterBy="#{i.packUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.packUnit.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Min Issue Quantity" 
+                    sortBy="#{i.minimumIssueQuantity}"
+                    filterBy="#{i.minimumIssueQuantity}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.minimumIssueQuantity}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Min Issue Unit" 
+                    sortBy="#{i.minimumIssueQuantityUnit.name}"
+                    filterBy="#{i.minimumIssueQuantityUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.minimumIssueQuantityUnit.name}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Issue Multiplies Quantity" 
+                    sortBy="#{i.issueMultipliesQuantity}"
+                    filterBy="#{i.issueMultipliesQuantity}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.issueMultipliesQuantity}" ></h:outputText>
+                </p:column>
+                <p:column 
+                    headerText="Issue Multiplies Unit" 
+                    sortBy="#{i.issueMultipliesUnit.name}"
+                    filterBy="#{i.issueMultipliesUnit.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.issueMultipliesUnit.name}" ></h:outputText>
                 </p:column>
                 <p:column headerText="Actions" exportable="false" >
                     <h:commandButton
@@ -64,6 +150,8 @@
                 </p:column>
             </p:dataTable>
 
+            
+            
         </h:form>
     </ui:define>
 </ui:composition>

@@ -27,62 +27,44 @@
                                              ajax="false">
                             </p:commandButton>
                         </f:facet>
-                        <h:panelGrid columns="2" styleClass="noPrintButton" >
+                        <p:panelGrid  columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
-
                             <p:outputLabel value="Paid Only" />
                             <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
+                        </p:panelGrid>
 
-                        </h:panelGrid>
-                        <p:panel id="reportPrint">
-                            <p:spacer width="50" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountByCreatedDate}"/>
+                        <h:panelGrid columns="6" class="mt-2">
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh" ajax="false" value="By Created Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountByCreatedDate}"/>
                             <p:defaultCommand target="btnRefresh"/>
-                            <p:commandButton id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountBySessionDate}"/>
+                            <p:commandButton style="margin-right: 10px;" id="btnRefresh1" ajax="false" value="By Session Date" styleClass="noPrintButton" action="#{channelReportController.createChannelPatientCountBySessionDate}"/>
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                            <p:commandButton style="margin-right: 10px;" ajax="false" value="Print" styleClass="noPrintButton"  >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Cashier_Detailed_Report"  />
-                            </p:commandButton> 
+                            </p:commandButton>
+                        </h:panelGrid>
 
-
-                            <h:panelGrid columns="2" styleClass="printBlock"  style="min-width: 100%;">
-
-                                <h:panelGroup>
-                                    
-                                    <h:outputLabel value="From" />
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To" />
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
-                                    </h:outputLabel>
-
-                                </h:panelGroup >
-
-                            </h:panelGrid>
+                        <p:panel id="reportPrint" class="mt-2">
 
                             <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
                                     <h:outputLabel value="Channel Patient Count"/><br/>
                                     <h:outputLabel value=" From :"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                    <h:outputLabel class="ml-2"   value="#{channelReportController.fromDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>                          
-                                    <h:outputLabel value=" To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                    <h:outputLabel class="ml-5"  value=" To :"/>
+                                    <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
+                                        <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column style="text-align: left;" >
