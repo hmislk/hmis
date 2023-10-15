@@ -62,6 +62,10 @@
                         </h:outputLabel>
                     </h:panelGroup>                   
                 </p:column> 
+                <p:column headerText="Ordered Department" >
+                    <h:outputLabel value="#{p.fromDepartment.name}" >                                      
+                    </h:outputLabel>
+                </p:column>
 
                 <p:column headerText="Approve by" >
                     <h:commandLink action="pharmacy_reprint_po" >
@@ -69,6 +73,7 @@
                         </h:outputLabel>
                         <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                     </h:commandLink>
+
                     <br/>
                     <h:panelGroup rendered="#{p.cancelled}" >
                         <h:outputLabel style="color: red;" value="Cancelled by " />
