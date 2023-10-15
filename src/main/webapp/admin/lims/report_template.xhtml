@@ -85,17 +85,29 @@
 
                                     <p:panel  id="pNameDetails" >
 
-                                        <p:panelGrid  columns="2">
+                                        <p:panelGrid  columns="2" class="w-100">
                                             <h:outputText value="Name"   />
-                                            <p:inputText style="min-width: 400px!important;" autocomplete="off" id="lblIiName" value="#{commonReportItemController.current.name}" >
+                                            <p:inputText 
+                                                class="w-100"
+                                                autocomplete="off" 
+                                                id="lblIiName" 
+                                                value="#{commonReportItemController.current.name}" >
                                                 <f:ajax event="keyup" execute="lblIiName" render=":#{p:resolveFirstComponentWithId('pPreview',view).clientId}"/>
                                             </p:inputText>
 
                                             <h:outputText value="Content"/>
-                                            <h:selectOneListbox id="cmbReportItemType" value="#{commonReportItemController.current.reportItemType}" size="1" >
+                                            <p:selectOneMenu 
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                id="cmbReportItemType" 
+                                                value="#{commonReportItemController.current.reportItemType}" >
                                                 <f:selectItem itemLabel="No Content"/>
-                                                <f:selectItems value="#{enumController.reportItemTypes}" var="rit" itemLabel="#{rit.label}" itemValue="#{rit}" ></f:selectItems>
-                                            </h:selectOneListbox>
+                                                <f:selectItems 
+                                                    value="#{enumController.reportItemTypes}" 
+                                                    var="rit" 
+                                                    itemLabel="#{rit.label}" 
+                                                    itemValue="#{rit}" ></f:selectItems>
+                                            </p:selectOneMenu>
 
 
                                         </p:panelGrid>
@@ -107,6 +119,7 @@
                                                 <f:selectItem itemLabel="HTML Componant" itemValue="Css"/>
                                                 <f:selectItem itemLabel="Horizontal Barcode" itemValue="Barcode"/>
                                                 <f:selectItem itemLabel="Vertical Barcode" itemValue="BarcodeVertical"/>
+                                                <f:selectItem itemLabel="QR Code" itemValue="QrCode"/>
                                             </p:selectOneMenu>
                                             <div style="min-width: 20px;"></div>
                                             <h:outputText value="Value Type"/>
@@ -234,7 +247,7 @@
                                     </p:commandButton>
                                     <p:dataTable value="#{investigationController.investigationWithSelectedFormat}"
                                                  var="i" rowKey="#{i.id}" 
-                                                 
+
                                                  >
                                         <p:column >
                                             <p:commandLink value="#{i.name}" ajax="false" action="investigation"
