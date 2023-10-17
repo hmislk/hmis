@@ -1295,7 +1295,7 @@ public class OpdBillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-//        sendSms();
+        sendSms();
         return "/opd/opd_bill_print?faces-redirect=true";
     }
 
