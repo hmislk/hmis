@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                
+
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -18,30 +18,31 @@
                 <p:panel>
                     <f:facet name="header" >
                         <h:outputLabel value="Department wise Bill report"/> 
-                        </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar  id="fromDate" value="#{channelReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
-                            </p:calendar>
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
-                            </p:calendar>
-                            <h:outputLabel/>
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportController.createDepartmentBills()}"/>
-                        </h:panelGrid>
-                    
+                    </f:facet>
+                    <p:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar  id="fromDate" value="#{channelReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" >      
+                        </p:calendar>
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" >                                                                              
+                        </p:calendar>
+                    </p:panelGrid>
+                    <h:panelGrid class="my-2">
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportController.createDepartmentBills()}"/>
+                    </h:panelGrid>
+
 
                     <p:dataTable value="#{channelReportController.depBills}" var="db" >
                         <f:facet name="header">
                             <h:outputLabel value="All Department Bill Summary"/>
-                             <h:outputLabel value="From : " style=" white-space:pre-line;"/>
-                                    <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>                          
-                                    <h:outputLabel value="&emsp;&emsp;To :"/>
-                                    <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
-                                    </h:outputLabel>
+                            <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
+                            <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                            </h:outputLabel>                          
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                            </h:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >
                             <p:row>
@@ -72,7 +73,7 @@
                                     <p:outputLabel value="App. Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: right;" >
@@ -97,7 +98,7 @@
                                 <h:panelGroup rendered="#{b.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancelledBill.createdAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy hh mm a"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
 
