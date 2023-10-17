@@ -27,7 +27,7 @@
                                              ajax="false">
                             </p:commandButton>
                         </f:facet>
-                        <p:panelGrid columns="2" styleClass="noPrintButton" >
+                        <p:panelGrid columns="4" class="w-100" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
                             </p:calendar>
@@ -58,7 +58,7 @@
                             </p:commandButton> 
                         </h:panelGrid>
                         
-                        <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                        <p:panel id="reportPrint" >
                             <p:dataTable value="#{channelReportController.bookingCountSummryRows}" var="b" id="tbl" >
                                 <f:facet name="header" >
                                     <h:outputLabel value="#{sessionController.institution.name}"/> <br/>
