@@ -15,9 +15,9 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="Channel Bill List">
-                    <p:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <p:panelGrid columns="4" class="w-100" > 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
