@@ -238,7 +238,7 @@ public class SmsController implements Serializable {
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
-        m.put("sus", true);
+        m.put("suc", true);
         System.out.println("m = " + m);
         System.out.println("j = " + j);
         faildsms = smsFacade.findByJpql(j, m);
