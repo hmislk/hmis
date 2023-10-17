@@ -39,6 +39,13 @@
                                                      action="#{opdBillController.navigateToNewOpdBill()}" 
                                                      style="margin-right: 10px;">
                                     </p:commandButton>
+                                    <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" >                           
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" >                          
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" style="float: right;"
+                                                     onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                                 return false;"/>
                                 </div>
                             </div>
                             <div class="row" >
@@ -68,7 +75,7 @@
                                                         <bi:A4_paper_with_headings bill="#{b}"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                
+
                                                 <!--Buddhika-->
                                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
                                                     <ui:repeat value="#{opdBillController.bills}" var="b">
