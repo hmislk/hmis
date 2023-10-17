@@ -1145,7 +1145,7 @@ public class OpdBillController implements Serializable {
         }
     }
 
-    public void sendSms() {
+    public void sendSmsOnOpdBillSettling(UserPreference ap) {
         Sms s = new Sms();
         s.setPending(false);
         s.setBill(batchBill);
@@ -1158,7 +1158,7 @@ public class OpdBillController implements Serializable {
         s.setSendingMessage(messageBody);
         s.setSmsType(MessageType.OpdBillSettle);
         getSmsFacade().create(s);
-        UserPreference ap = sessionController.getApplicationPreference();
+
         boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
         if (sent) {
             s.setSentSuccessfully(true);
@@ -1255,7 +1255,11 @@ public class OpdBillController implements Serializable {
         if (!executeSettleBillActions()) {
             return "";
         }
-        sendSms();
+        
+        UserPreference ap = sessionController.getApplicationPreference();
+        if (!ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
+            sendSmsOnOpdBillSettling(ap);
+        }
 
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();

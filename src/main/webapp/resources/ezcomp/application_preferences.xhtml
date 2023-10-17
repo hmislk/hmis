@@ -122,6 +122,15 @@
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
+                
+                  <p:tab title="OPD" >
+                    <p:panel header="OPD" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Template for SMS on OPD Bill Settling"></h:outputLabel>
+                            <h:inputTextarea value="#{sessionController.currentPreference.smsTemplateForOpdBillSetting}" ></h:inputTextarea>
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
 
                 <p:tab title="Miscellaneous" >
                     <p:panel header="Miscellaneous" >

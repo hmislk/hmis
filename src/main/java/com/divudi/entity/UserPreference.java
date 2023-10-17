@@ -30,67 +30,61 @@ public class UserPreference implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
     /*
     Owner
-    */
+     */
     @ManyToOne
     WebUser webUser;
     @ManyToOne
     Department department;
     @ManyToOne
     Institution institution;
-    
+
     /*
     EHR
-    */
+     */
     String abbreviationForHistory;
     String abbreviationForExamination;
     String abbreviationForInvestigations;
     String abbreviationForTreatments;
     String abbreviationForManagement;
-    
-    
+
     /*
     Pharmacy
-    */
+     */
     @Lob
     String pharmacyRetailBillTemplate;
     @Lob
     String pharmacyWholesaleBillTemplate;
-    
-    
+
     /*
     Inpatients
-    */
+     */
     @Lob
     private String inwardDepositBillTemplate;
     @Lob
     private String inwardDepositCancelBillTemplate;
-    
+
     /*
     Channelling
-    */
-    
+     */
     @Lob
     String channellingBillTemplate;
-    
-    
-   
-    
+
     @Lob
     String channellingCancellationBillTemplate;
     @Lob
     String channelingDoctorPaymentBillTemplate;
-    
-    
+
     /*
     OPD
-    */
+     */
     @Lob
     String opdBillForCashierTemplate;
+    @Lob
+    private String smsTemplateForOpdBillSetting;
 
-    
     boolean institutionSpecificItems = false;
     @Lob
     private String opdBillTemplate;
@@ -188,6 +182,8 @@ public class UserPreference implements Serializable {
         this.paymentMethodAllowedInInwardMatrix = paymentMethodAllowedInInwardMatrix;
     }
 
+    
+    
     public boolean isChannelBillDouble() {
         return channelBillDouble;
     }
@@ -472,14 +468,10 @@ public class UserPreference implements Serializable {
     public boolean isPartialPaymentOfOpdPreBillsAllowed() {
         return partialPaymentOfOpdPreBillsAllowed;
     }
-    
-    
 
     public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
         this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
     }
-    
-    
 
     public boolean isPharmacyBillWithOutItem() {
         return pharmacyBillWithOutItem;
@@ -896,10 +888,13 @@ public class UserPreference implements Serializable {
     public void setSmsAuthenticationType(RestAuthenticationType smsAuthenticationType) {
         this.smsAuthenticationType = smsAuthenticationType;
     }
-    
-    
-    
-    
-    
+
+    public String getSmsTemplateForOpdBillSetting() {
+        return smsTemplateForOpdBillSetting;
+    }
+
+    public void setSmsTemplateForOpdBillSetting(String smsTemplateForOpdBillSetting) {
+        this.smsTemplateForOpdBillSetting = smsTemplateForOpdBillSetting;
+    }
 
 }
