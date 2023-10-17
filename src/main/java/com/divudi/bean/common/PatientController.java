@@ -734,7 +734,8 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("Ät least one search criteria should be given");
             return;
         }
-
+        System.out.println("m = " + m);
+        System.out.println("j = " + j);
         searchedPatients = getFacade().findByJpql(j, m);
 
     }
