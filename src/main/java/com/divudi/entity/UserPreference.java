@@ -8,6 +8,7 @@ package com.divudi.entity;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.RestAuthenticationType;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -151,6 +152,8 @@ public class UserPreference implements Serializable {
     private String smsUserAliasParameterName;
     private String smsPhoneNumberParameterName;
     private String smsMessageParameterName;
+    @Enumerated
+    private RestAuthenticationType smsAuthenticationType;
 
     private boolean familyMembership;
     private boolean membershipExpires;
@@ -469,6 +472,8 @@ public class UserPreference implements Serializable {
     public boolean isPartialPaymentOfOpdPreBillsAllowed() {
         return partialPaymentOfOpdPreBillsAllowed;
     }
+    
+    
 
     public void setPartialPaymentOfOpdPreBillsAllowed(boolean partialPaymentOfOpdPreBillsAllowed) {
         this.partialPaymentOfOpdPreBillsAllowed = partialPaymentOfOpdPreBillsAllowed;
@@ -882,6 +887,14 @@ public class UserPreference implements Serializable {
 
     public void setLoggingText(String loggingText) {
         this.loggingText = loggingText;
+    }
+
+    public RestAuthenticationType getSmsAuthenticationType() {
+        return smsAuthenticationType;
+    }
+
+    public void setSmsAuthenticationType(RestAuthenticationType smsAuthenticationType) {
+        this.smsAuthenticationType = smsAuthenticationType;
     }
     
     

@@ -94,6 +94,11 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{opdBillController.billLight}"/>
                                         </p:commandLink>
                                     </p:column>
+                                    <p:column headerText="Bill No" sortBy="#{bill.billNo}" filterBy="#{bill.billNo}">
+                                        <h:commandLink action="/bill_reprint" value="#{bill.billNo}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billLight}"/>
+                                        </h:commandLink>  
+                                    </p:column>
                                     <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
