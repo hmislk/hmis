@@ -231,9 +231,10 @@ public class SmsController implements Serializable {
     }
 
     public void fillAllFaildSms() {
+        // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
         String j = "select s "
                 + "from Sms s "
-                + "where s.sentSuccessfully !=:suc "
+                + "where s.sentSuccessfully <> :suc "
                 + "AND s.createdAt between :fd and :td";
         Map m = new HashMap();
         m.put("fd", fromDate);
@@ -241,7 +242,7 @@ public class SmsController implements Serializable {
         m.put("suc", true);
         System.out.println("m = " + m);
         System.out.println("j = " + j);
-        faildsms = smsFacade.findByJpql(j, m);
+        faildsms = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
     public void sentUnsentSms() {
