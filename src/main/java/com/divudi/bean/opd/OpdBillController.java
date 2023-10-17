@@ -130,13 +130,6 @@ public class OpdBillController implements Serializable {
     @EJB
     private SmsManagerEjb smsManagerEjb;
 
-    public SmsManagerEjb getSmsManagerEjb() {
-        return smsManagerEjb;
-    }
-
-    public void setSmsManagerEjb(SmsManagerEjb smsManagerEjb) {
-        this.smsManagerEjb = smsManagerEjb;
-    }
     /**
      * Controllers
      */
@@ -165,7 +158,6 @@ public class OpdBillController implements Serializable {
     /**
      * Class Variables
      */
-    //Interface Data
     private PaymentScheme paymentScheme;
     private PaymentMethod paymentMethod;
     private Patient patient;
@@ -244,12 +236,12 @@ public class OpdBillController implements Serializable {
         return "/opd/patient_search";
     }
 
-    public String navigateToSearchOpdBills(){
-        batchBill=null;
-        bills=null;
+    public String navigateToSearchOpdBills() {
+        batchBill = null;
+        bills = null;
         return "/opd/opd_bill_search?faces-redirect=true";
     }
-    
+
     public void searchDepartmentOpdBillLights() {
         System.out.println("searchDepartmentOpdBillLights");
         Date startTime = new Date();
@@ -284,7 +276,7 @@ public class OpdBillController implements Serializable {
             return null;
         }
         System.out.println("tb.getBillType() = " + tb.getBillType());
-        if(tb.getBillType()==null){
+        if (tb.getBillType() == null) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
         }
@@ -293,10 +285,9 @@ public class OpdBillController implements Serializable {
             bills = new ArrayList<>();
             return "";
         }
-        
+
         Long batchBillId = null;
-        
-        
+
         if (tb.getBackwardReferenceBill() != null) {
             batchBillId = tb.getBackwardReferenceBill().getId();
         }
@@ -1155,55 +1146,29 @@ public class OpdBillController implements Serializable {
     }
 
     public void sendSms() {
-        if (getPatient().getPerson() == null) {
-            UtilityController.addErrorMessage("Nothing to send sms");
-            return;
-        }
-//        Bill bill = current.getBillItem().getBill();
-//        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getSmsNumber()== null) {
-//            JsfUtil.addErrorMessage("System Error");
-//            return;
-//        }
-        
         Sms s = new Sms();
         s.setPending(false);
-        s.setBill(bill);
+        s.setBill(batchBill);
         s.setCreatedAt(new Date());
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
-//        s.setPatientInvestigation(current);
-       
         s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
-
         String messageBody = "Dear Sir/Madam, You have Added new OPD Bill";
-         
         s.setSendingMessage(messageBody);
-        s.setSentSuccessfully(true);
-        s.setSmsType(MessageType.LabReport);
+        s.setSmsType(MessageType.OpdBillSettle);
         getSmsFacade().create(s);
-        
         UserPreference ap = sessionController.getApplicationPreference();
-
-      
         boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
-
         if (sent) {
             s.setSentSuccessfully(true);
             getSmsFacade().edit(s);
-            
-//            getCurrent().getBillItem().getBill().setSmsed(true);
-//            getCurrent().getBillItem().getBill().setSmsedAt(new Date());
-//            getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
-//            getFacade().edit(current);
-//            getCurrent().getBillItem().getBill().getSentSmses().add(s);
-//            billFacade.edit(getCurrent().getBillItem().getBill());
             UtilityController.addSuccessMessage("Sms send");
         } else {
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
-//        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
+
     public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -1290,12 +1255,14 @@ public class OpdBillController implements Serializable {
         if (!executeSettleBillActions()) {
             return "";
         }
+        sendSms();
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
-        sendSms();
+
         return "/opd/opd_bill_print?faces-redirect=true";
     }
 
@@ -1362,13 +1329,13 @@ public class OpdBillController implements Serializable {
         setPrintigBill();
         checkBillValues();
         commonController.printReportDetails(null, null, startTime, "OPD Billing(/faces/opd_bill.xhtml)");
-        if (bills != null) {
-            if (!bills.isEmpty()) {
-                for (Bill tb : bills) {
-                    tb.setBillTemplate(sessionController.getDepartmentPreference().getOpdBillTemplate());
-                }
-            }
-        }
+//        if (bills != null) {
+//            if (!bills.isEmpty()) {
+//                for (Bill tb : bills) {
+//                    tb.setBillTemplate(sessionController.getDepartmentPreference().getOpdBillTemplate());
+//                }
+//            }
+//        }
         return true;
 
     }
@@ -1461,7 +1428,7 @@ public class OpdBillController implements Serializable {
 
         tmp.setNetTotal(dbl);
         getBillFacade().edit(tmp);
-
+        setBatchBill(tmp);
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(tmp, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
     }
@@ -2166,6 +2133,10 @@ public class OpdBillController implements Serializable {
         p.setBill(bill);
         setPaymentMethodData(p, pm);
         return p;
+    }
+
+    private SmsManagerEjb getSmsManagerEjb() {
+        return smsManagerEjb;
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {

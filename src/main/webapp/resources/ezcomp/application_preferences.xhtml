@@ -62,6 +62,12 @@
                         <h:outputLabel value="SMS URL" ></h:outputLabel>
                         <h:inputText class="w-100"
                                      value="#{sessionController.currentPreference.smsUrl}" />
+                        
+                        <h:outputLabel value="Authentication" ></h:outputLabel>
+                        <h:selectOneMenu class="w-100"
+                                         value="#{sessionController.currentPreference.smsAuthenticationType}" >
+                            <f:selectItems value="#{enumController.restAuthenticationTypes}" ></f:selectItems>
+                        </h:selectOneMenu>
 
 
                         <h:outputLabel value="SMS Username Parameter Name" ></h:outputLabel>
