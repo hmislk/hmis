@@ -1145,7 +1145,7 @@ public class OpdBillController implements Serializable {
         }
     }
 
-    public void sendSmsOnOpdBillSettling(UserPreference ap) {
+    public void sendSmsOnOpdBillSettling(UserPreference ap, String smsMessage) {
         Sms s = new Sms();
         s.setPending(false);
         s.setBill(batchBill);
@@ -1154,7 +1154,7 @@ public class OpdBillController implements Serializable {
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
         s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
-        String messageBody = "Dear Sir/Madam, You have Added new OPD Bill";
+        String messageBody = smsMessage;
         s.setSendingMessage(messageBody);
         s.setSmsType(MessageType.OpdBillSettle);
         getSmsFacade().create(s);
@@ -1257,8 +1257,8 @@ public class OpdBillController implements Serializable {
         }
         
         UserPreference ap = sessionController.getApplicationPreference();
-        if (!ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
-            sendSmsOnOpdBillSettling(ap);
+        if (ap.getSmsTemplateForOpdBillSetting()!= null && !ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
+            sendSmsOnOpdBillSettling(ap, ap.getSmsTemplateForOpdBillSetting());
         }
 
         Date endTime = new Date();
