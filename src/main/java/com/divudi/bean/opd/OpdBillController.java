@@ -9,6 +9,7 @@ import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
+import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
@@ -19,6 +20,7 @@ import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.ejb.StaffBean;
 import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
@@ -40,7 +42,9 @@ import com.divudi.entity.Payment;
 import com.divudi.entity.PaymentScheme;
 import com.divudi.entity.Person;
 import com.divudi.entity.PriceMatrix;
+import com.divudi.entity.Sms;
 import com.divudi.entity.Staff;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.membership.MembershipScheme;
@@ -55,6 +59,7 @@ import com.divudi.facade.PatientEncounterFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PaymentFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.divudi.light.common.BillLight;
 import java.io.Serializable;
@@ -120,6 +125,18 @@ public class OpdBillController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    private SmsFacade SmsFacade;
+    @EJB
+    private SmsManagerEjb smsManagerEjb;
+
+    public SmsManagerEjb getSmsManagerEjb() {
+        return smsManagerEjb;
+    }
+
+    public void setSmsManagerEjb(SmsManagerEjb smsManagerEjb) {
+        this.smsManagerEjb = smsManagerEjb;
+    }
     /**
      * Controllers
      */
@@ -1137,6 +1154,56 @@ public class OpdBillController implements Serializable {
         }
     }
 
+    public void sendSms() {
+        if (getPatient().getPerson() == null) {
+            UtilityController.addErrorMessage("Nothing to send sms");
+            return;
+        }
+//        Bill bill = current.getBillItem().getBill();
+//        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getSmsNumber()== null) {
+//            JsfUtil.addErrorMessage("System Error");
+//            return;
+//        }
+        
+        Sms s = new Sms();
+        s.setPending(false);
+        s.setBill(bill);
+        s.setCreatedAt(new Date());
+        s.setCreater(sessionController.getLoggedUser());
+        s.setDepartment(sessionController.getLoggedUser().getDepartment());
+        s.setInstitution(sessionController.getLoggedUser().getInstitution());
+//        s.setPatientInvestigation(current);
+       
+        s.setReceipientNumber(getPatient().getPerson().getSmsNumber());
+
+        String messageBody = "Dear Sir/Madam, You have Added new OPD Bill";
+         
+        s.setSendingMessage(messageBody);
+        s.setSentSuccessfully(true);
+        s.setSmsType(MessageType.LabReport);
+        getSmsFacade().create(s);
+        
+        UserPreference ap = sessionController.getApplicationPreference();
+
+      
+        boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
+
+        if (sent) {
+            s.setSentSuccessfully(true);
+            getSmsFacade().edit(s);
+            
+//            getCurrent().getBillItem().getBill().setSmsed(true);
+//            getCurrent().getBillItem().getBill().setSmsedAt(new Date());
+//            getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
+//            getFacade().edit(current);
+//            getCurrent().getBillItem().getBill().getSentSmses().add(s);
+//            billFacade.edit(getCurrent().getBillItem().getBill());
+            UtilityController.addSuccessMessage("Sms send");
+        } else {
+            JsfUtil.addErrorMessage("Sending SMS Failed.");
+        }
+//        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+    }
     public boolean putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -1228,6 +1295,7 @@ public class OpdBillController implements Serializable {
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
         auditEventApplicationController.logAuditEvent(auditEvent);
+        sendSms();
         return "/opd/opd_bill_print?faces-redirect=true";
     }
 
@@ -2764,6 +2832,14 @@ public class OpdBillController implements Serializable {
 
     public void setReminingCashPaid(double reminingCashPaid) {
         this.reminingCashPaid = reminingCashPaid;
+    }
+
+    public SmsFacade getSmsFacade() {
+        return SmsFacade;
+    }
+
+    public void setSmsFacade(SmsFacade SmsFacade) {
+        this.SmsFacade = SmsFacade;
     }
 
 }
