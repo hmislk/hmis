@@ -105,7 +105,8 @@
                                                         ajax="false" 
                                                         value="To Refund" 
                                                         action="#{billSearch.navigateToRefundOpdBill()}" 
-                                                        disabled="#{b.cancelled}" >                          
+                                                        disabled="#{b.cancelled}" >  
+                                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
