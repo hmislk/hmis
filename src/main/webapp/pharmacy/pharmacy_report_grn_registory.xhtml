@@ -17,26 +17,35 @@
                         <f:facet name="header" >
                             <h:outputLabel value="GRN Registry"/>                                 
                         </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From Date"/>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h:outputLabel value="From Date"/>&nbsp;&nbsp;
                             <p:calendar styleClass="dateTimePicker" id="fromDate" 
-                                        value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" />
-                            <h:outputLabel value="To Date"/>
+                                        value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" class="w-100 p-2"/>
+                            </div>
+                            <div class="col-md-4">
+                                <h:outputLabel value="To Date"/>&nbsp;&nbsp;
                             <p:calendar styleClass="dateTimePicker" id="toDate" 
-                                        value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" />
-                            <h:outputLabel value="Department"/>
+                                        value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" class="w-100 p-2"/>
+                            </div>
+                        </div>
+                        <p:spacer height="3"/>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h:outputLabel value="Department"/>&nbsp;
                             <au:department value="#{searchController.reportKeyWord.department}" />
-                            <h:outputLabel value="Distributor"/>
+                            </div>
+                            <div class="col-md-4">
+                                 <h:outputLabel value="Distributor"/>
                             <p:autoComplete converter="deal" placeholder="Distributor"
                                             value="#{searchController.reportKeyWord.institution}"  
                                             forceSelection="true"
                                             completeMethod="#{storeDealorController.completeDealor}"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                             </p:autoComplete>
-                            <!--                            <h:outputLabel value="Item"/>
-                                                        <au:comp-->
-
-                        </h:panelGrid>
+                            </div>
+                        </div>
+                        <p:spacer height="3"/>
                         <h:panelGrid columns="3" >
                             <p:commandButton id="btnSearch" ajax="false" value="Process" action="#{searchController.createGRNRegistory}"/>
                             <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
@@ -46,6 +55,8 @@
                                 <p:dataExporter type="xlsx" target="tblBills" fileName="QB_Export"/>
                             </p:commandButton>
                         </h:panelGrid>
+                     
+                        <p:spacer height="3"/>
                         <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
                             <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
                                 <f:facet name="header">
