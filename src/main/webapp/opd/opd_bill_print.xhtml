@@ -97,11 +97,15 @@
                                                     <p:commandButton ajax="false" 
                                                                      value="To Cancel" 
                                                                      action="#{billSearch.toCancelOpdBill}" 
-                                                                     disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" >                           
+                                                                     disabled="#{b.cancelled or b.refundedBill ne null}" >                           
                                                         <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
 
-                                                    <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" >                          
+                                                    <p:commandButton 
+                                                        ajax="false" 
+                                                        value="To Refund" 
+                                                        action="/bill_refund" 
+                                                        disabled="#{b.cancelled}" >                          
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
