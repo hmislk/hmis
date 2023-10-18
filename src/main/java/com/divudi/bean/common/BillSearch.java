@@ -2163,6 +2163,18 @@ public class BillSearch implements Serializable {
 //        bill.setTransError(flag);
     }
 
+    public String toCancelOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItems();
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        return "/opd/bill_cancel";
+    }
+
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
     }
