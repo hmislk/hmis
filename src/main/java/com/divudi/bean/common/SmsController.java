@@ -227,21 +227,22 @@ public class SmsController implements Serializable {
         m.put("td", toDate);
         System.out.println("m = " + m);
         System.out.println("j = " + j);
-        smses = smsFacade.findByJpql(j, m);
+        smses = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
     public void fillAllFaildSms() {
+        // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI
         String j = "select s "
                 + "from Sms s "
-                + "where s.sentSuccessfully = false "
+                + "where s.sentSuccessfully <> :suc "
                 + "AND s.createdAt between :fd and :td";
-
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("suc", true);
         System.out.println("m = " + m);
         System.out.println("j = " + j);
-        faildsms = smsFacade.findByJpql(j, m);
+        faildsms = smsFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
     }
 
     public void sentUnsentSms() {
@@ -249,8 +250,8 @@ public class SmsController implements Serializable {
             JsfUtil.addErrorMessage("No SMS selected");
             return;
         }
-        boolean sendSms=smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
-        if(sendSms==true){
+        boolean sendSms = smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
+        if (sendSms == true) {
             getSmsFacade().edit(selectedSms);
         }
     }

@@ -62,6 +62,12 @@
                         <h:outputLabel value="SMS URL" ></h:outputLabel>
                         <h:inputText class="w-100"
                                      value="#{sessionController.currentPreference.smsUrl}" />
+                        
+                        <h:outputLabel value="Authentication" ></h:outputLabel>
+                        <h:selectOneMenu class="w-100"
+                                         value="#{sessionController.currentPreference.smsAuthenticationType}" >
+                            <f:selectItems value="#{enumController.restAuthenticationTypes}" ></f:selectItems>
+                        </h:selectOneMenu>
 
 
                         <h:outputLabel value="SMS Username Parameter Name" ></h:outputLabel>
@@ -113,6 +119,15 @@
 
 
 
+                        </h:panelGrid>
+                    </p:panel>
+                </p:tab>
+                
+                  <p:tab title="OPD" >
+                    <p:panel header="OPD" >
+                        <h:panelGrid columns="2" styleClass="alignTop" >
+                            <h:outputLabel value="Template for SMS on OPD Bill Settling"></h:outputLabel>
+                            <h:inputTextarea value="#{sessionController.currentPreference.smsTemplateForOpdBillSetting}" ></h:inputTextarea>
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
