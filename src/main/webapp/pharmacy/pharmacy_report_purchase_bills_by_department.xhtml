@@ -15,17 +15,22 @@
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="Purchase Bill List">
-
-                    <h:panelGrid columns="2" style="noPrintButton">
-                        <h:outputLabel value="From"/>
-                        <p:calendar id="frmDate" value="#{pharmacyPurchaseController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h:outputLabel value="From"/><p:spacer width="50"/>
+                            <p:calendar id="frmDate" value="#{pharmacyPurchaseController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
                         </p:calendar>
-
-                        <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" value="#{pharmacyPurchaseController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        </div>
+                        <div class="col-md-5">
+                            <h:outputLabel value="To"/>&nbsp;&nbsp;
+                        <p:calendar id="toDate" value="#{pharmacyPurchaseController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
                         </p:calendar>
-
-                        <h:outputLabel  value="Department"  ></h:outputLabel>
+                        </div>
+                    </div>
+                    <p:spacer height="5"/>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h:outputLabel  value="Department"  ></h:outputLabel>&nbsp;
                         <p:autoComplete  value="#{pharmacyPurchaseController.department}"  
                                          completeMethod="#{departmentController.completeDept}" var="dept"
                                          itemValue="#{dept}" itemLabel="#{dept.name}" 
@@ -34,9 +39,11 @@
                         </p:autoComplete>
 
                         <p:defaultCommand target="btnRefresh"/>
-
-                    </h:panelGrid>
-
+                        </div>
+                        
+                    </div>
+                    
+                    <p:spacer height="5"/>
                     <h:panelGrid columns="5">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill All" 
                                          styleClass="noPrintButton" 
@@ -63,7 +70,7 @@
 
 
 
-                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
+<!--                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
 
                         <h:outputLabel value="Purchase Detailed Report "/>
                         <h:outputLabel/>
@@ -79,8 +86,9 @@
                         <h:outputLabel  value="#{pharmacyPurchaseController.toDate}" style="float: right" >
                             <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                         </h:outputLabel>
-                    </h:panelGrid>
+                    </h:panelGrid>-->
 
+<p:spacer height="5"/>
 
                     <p:dataTable id="bills"  
                                  value="#{pharmacyPurchaseController.billListWithTotals.bills}" 
