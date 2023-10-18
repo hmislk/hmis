@@ -7,7 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
-                
+
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
@@ -18,35 +18,47 @@
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="Channelling Bills By Single Cashier">
 
-                    <h:panelGrid columns="2" >
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
+                    <div class="row p-2">
+                        <div class="col-md-4">
+                            <h:outputLabel value="From Date"/>
 
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
-                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                        forceSelection="true"
-                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                        value="#{channelReportController.webUser}" ></p:autoComplete>
+                            <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-4">
+                            </p:calendar>
+                        </div>
+                        <div class="col-md-4">
+                            <h:outputLabel value="To Date"/>
+                            <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-4" >
+                            </p:calendar>
+                        </div>
+                        <div class="col-md-4">
+                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;&nbsp;
+                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                             forceSelection="true"
+                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                             value="#{channelReportController.webUser}"></p:autoComplete>
 
-                    </h:panelGrid>
-                    <p:panel id="reportPrint" >
-                        <h:panelGrid columns="5" >
-                            <p:spacer width="50" height="1"/>
-                            <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" style="float: right;"/>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <p:commandButton id="btnRefresh" ajax="false" value="Process" styleClass="noPrintButton" action="#{channelReportController.createChannelCashierBillList}" />
                             <p:defaultCommand target="btnRefresh"/>
 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton ml-2 mb-2 w-10" >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
-                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton actionListener="#{channelReportController.createChannelCashierBillList}" ajax="false" value="Excel" styleClass="noPrintButton ml-2 mb-2 "  >
                                 <p:dataExporter type="xlsx" target="tbl,tb2,tb3" fileName="Cashier_Detailed_Report"  />
                             </p:commandButton> 
-                        </h:panelGrid>
+                        </div>
+                    </div>
+
+                    <p:panel id="reportPrint" >
+
+
+
 
                         <p:panel>
                             <p:dataTable id="tbl"  value="#{channelReportController.billedBillList.bills}" var="b">
