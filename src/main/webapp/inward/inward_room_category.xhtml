@@ -25,8 +25,8 @@
                         <div class="col-6">
                             <h:panelGrid id="gpSelect" columns="1" class="w-100" >
                                 <p:panel>
-                                    <h:panelGrid id="gpSelectText" class="w-100" >
-                                        <p:selectOneListbox  id="lstSelect"  value="#{roomCategoryController.current}" class="w-100">
+                                    <h:panelGrid id="gpSelectText" class="w-100 overflow-auto" >
+                                        <p:selectOneListbox  id="lstSelect"  value="#{roomCategoryController.current}" class="w-100 overflow-auto">
                                             <f:selectItems  value="#{roomCategoryController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                             <f:ajax render="gpDetail" execute="lstSelect" >
                                             </f:ajax>
@@ -49,10 +49,10 @@
                                 <h:panelGrid id="gpDetail" columns="1">
                                     <h:panelGrid id="gpDetailText" columns="2">
                                         <h:outputText id="lblName" value="Name" ></h:outputText>
-                                        <h:inputText autocomplete="off" id="txtName" value="#{roomCategoryController.current.name}"  ></h:inputText>
+                                        <p:inputText class="mx-2 w-100" autocomplete="off" id="txtName" value="#{roomCategoryController.current.name}"  ></p:inputText>
                                     </h:panelGrid>
                                     <h:panelGrid id="gpDetailButtons" columns="2">
-                                        <h:commandButton id="btnSave" value="Save" action="#{roomCategoryController.saveSelected()}" class="btn btn-primary">
+                                        <h:commandButton  id="btnSave" value="Save" action="#{roomCategoryController.saveSelected()}" class="btn btn-primary mt-1">
                                             <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail selectFocus"  execute="gpDetail" >
                                             </f:ajax>
                                         </h:commandButton>
