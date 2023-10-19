@@ -2163,6 +2163,32 @@ public class BillSearch implements Serializable {
 //        bill.setTransError(flag);
     }
 
+    public String navigateToCancelOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItems();
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview=false;
+        return "/opd/bill_cancel";
+    }
+    
+    public String navigateToRefundOpdBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+        paymentMethod = bill.getPaymentMethod();
+        createBillItems();
+        boolean flag = billController.checkBillValues(bill);
+        bill.setTransError(flag);
+        printPreview=false;
+        return "/opd/bill_refund";
+    }
+
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
     }

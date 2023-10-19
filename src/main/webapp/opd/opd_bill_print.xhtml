@@ -7,7 +7,8 @@
       xmlns:phi="http://java.sun.com/jsf/composite/pharmacy"
       xmlns:bi="http://java.sun.com/jsf/composite/bill"
       xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod"
-      xmlns:pat="http://java.sun.com/jsf/composite/patient">
+      xmlns:pat="http://java.sun.com/jsf/composite/patient"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -39,10 +40,9 @@
                                                      action="#{opdBillController.navigateToNewOpdBill()}" 
                                                      style="margin-right: 10px;">
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="To Cancel" action="/bill_cancel" disabled="#{billSearch.bill.cancelled or billSearch.bill.refundedBill ne null}" >                           
-                                    </p:commandButton>
-                                    <p:commandButton ajax="false" value="To Refund" action="/bill_refund" disabled="#{billSearch.bill.cancelled}" >                          
-                                    </p:commandButton>
+
+
+
                                     <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" style="float: right;"
                                                      onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                                  return false;"/>
@@ -92,6 +92,21 @@
                                             <p:dataTable value="#{opdBillController.bills}" var="b" >
                                                 <p:column headerText="Bill No" >
                                                     <h:outputText value="#{b.id}" ></h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Actions" >
+                                                    <p:commandButton ajax="false" 
+                                                                     value="To Cancel" 
+                                                                     action="#{billSearch.navigateToCancelOpdBill}" 
+                                                                     disabled="#{b.cancelled or b.refundedBill ne null}" >                           
+                                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+
+                                                    <p:commandButton 
+                                                        ajax="false" 
+                                                        value="To Refund" 
+                                                        action="#{billSearch.navigateToRefundOpdBill()}" 
+                                                        disabled="#{b.cancelled}" >                          
+                                                    </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
                                         </div>
