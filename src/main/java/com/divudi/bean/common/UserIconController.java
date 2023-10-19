@@ -225,6 +225,7 @@ public class UserIconController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
+        userIcons = fillUserIcons(user);
     }
 
     public List<UserIcon> getUserIcons() {
