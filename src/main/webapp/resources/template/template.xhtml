@@ -32,9 +32,6 @@
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"></link>
-
-        <!--<h:outputStylesheet library="css" name="maincss.css"/>-->
-
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
@@ -51,6 +48,49 @@
                     <h:panelGroup rendered ="#{sessionController.logged}"  >
                         <h:panelGroup rendered="#{sessionController.department ne null}" >
                             <ez:menu/>
+                            <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                            <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                            <h:form>
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <ul class="list-group list-group-horizontal">
+
+                                            <p:commandLink
+                                                class="list-group-item shadow-sm  p-0 m-2" style="height: 50px;"
+                                                action="#{opdBillController.navigateToSearchPatients()}">
+                                                <h:graphicImage library="icons" name="lookup_and_add.png" style="max-height: 100%; width: auto;"/>
+                                            </p:commandLink>
+
+                                            <p:commandLink class="list-group-item shadow-sm p-0 m-2" style="height: 50px;" action="#{opdBillController.navigateToSearchPatients()}">
+                                                <h:graphicImage library="icons" name="register.png" style="height: 100%; width: auto;"/>
+                                            </p:commandLink>
+
+                                        </ul>
+                                    </div>
+                                </div>
+                            </h:form>
+                            <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                            <h:form>
+                                <div class="container-fluid">
+                                    <div class="row">
+                                        <ul class="list-group">
+                                            <li class="list-group-item p-0 m-2" style="height: 50px;">
+                                                <p:commandLink action="#{opdBillController.navigateToSearchPatients()}">
+                                                    <h:graphicImage library="icons" name="lookup_and_add.png" style="max-height: 100%; width: auto;"/>
+                                                </p:commandLink>
+                                            </li>
+                                            <li class="list-group-item p-0 m-2" style="height: 50px;">
+                                                <p:commandLink action="#{opdBillController.navigateToSearchPatients()}">
+                                                    <h:graphicImage library="icons" name="register.png" style="max-height: 100%; width: auto;"/>
+                                                </p:commandLink>
+                                            </li>
+                                            <!-- Add more items here -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </h:form>
+9
+
                             <ui:insert name="content">
                             </ui:insert>
                         </h:panelGroup>
