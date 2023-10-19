@@ -146,9 +146,14 @@ public class UserIconController implements Serializable {
     }
 
     private void fillUserIcons() {
-        if (user == null) {
+        userIcons = fillUserIcons(user);
+    }
+
+    public List<UserIcon> fillUserIcons(WebUser u) {
+        List<UserIcon> uis = null;
+        if (u == null) {
             userIcons = null;
-            return;
+            return uis;
         }
         String Jpql = "select i "
                 + " from UserIcon i "
@@ -156,11 +161,13 @@ public class UserIconController implements Serializable {
                 + " and i.webUser=:u ";
         Map m = new HashMap();
         m.put("ret", false);
-        m.put("u", user);
-        userIcons = getFacade().findByJpql(Jpql, m);
-        Collections.sort(userIcons, new UserIconOrderComparator());
+        m.put("u", u);
+        uis = getFacade().findByJpql(Jpql, m);
+        Collections.sort(uis, new UserIconOrderComparator());
+        return uis;
     }
 
+    
     public void save(UserIcon ui) {
         if (ui == null) {
             return;
@@ -218,6 +225,7 @@ public class UserIconController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
+        userIcons = fillUserIcons(user);
     }
 
     public List<UserIcon> getUserIcons() {

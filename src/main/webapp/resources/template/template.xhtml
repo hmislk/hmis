@@ -48,48 +48,7 @@
                     <h:panelGroup rendered ="#{sessionController.logged}"  >
                         <h:panelGroup rendered="#{sessionController.department ne null}" >
                             <ez:menu/>
-                            <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-                            <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-                            <h:form>
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <ul class="list-group list-group-horizontal">
-
-                                            <p:commandLink
-                                                class="list-group-item shadow-sm  p-0 m-2" style="height: 50px;"
-                                                action="#{opdBillController.navigateToSearchPatients()}">
-                                                <h:graphicImage library="icons" name="lookup_and_add.png" style="max-height: 100%; width: auto;"/>
-                                            </p:commandLink>
-
-                                            <p:commandLink class="list-group-item shadow-sm p-0 m-2" style="height: 50px;" action="#{opdBillController.navigateToSearchPatients()}">
-                                                <h:graphicImage library="icons" name="register.png" style="height: 100%; width: auto;"/>
-                                            </p:commandLink>
-
-                                        </ul>
-                                    </div>
-                                </div>
-                            </h:form>
-                            <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-                            <h:form>
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <ul class="list-group">
-                                            <li class="list-group-item p-0 m-2" style="height: 50px;">
-                                                <p:commandLink action="#{opdBillController.navigateToSearchPatients()}">
-                                                    <h:graphicImage library="icons" name="lookup_and_add.png" style="max-height: 100%; width: auto;"/>
-                                                </p:commandLink>
-                                            </li>
-                                            <li class="list-group-item p-0 m-2" style="height: 50px;">
-                                                <p:commandLink action="#{opdBillController.navigateToSearchPatients()}">
-                                                    <h:graphicImage library="icons" name="register.png" style="max-height: 100%; width: auto;"/>
-                                                </p:commandLink>
-                                            </li>
-                                            <!-- Add more items here -->
-                                        </ul>
-                                    </div>
-                                </div>
-                            </h:form>
-9
+                            <ez:user_icon_bar/>
 
                             <ui:insert name="content">
                             </ui:insert>
