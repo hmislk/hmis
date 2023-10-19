@@ -86,6 +86,8 @@ public class WebUserController implements Serializable {
     private StaffController staffController;
     @Inject
     private UserPrivilageController userPrivilageController;
+    @Inject
+    UserIconController userIconController;
     /**
      * Class Variables
      */
@@ -759,6 +761,15 @@ public class WebUserController implements Serializable {
         }
         getUserPaymentSchemeController().setSelectedUser(selected);
         return "/admin/users/user_payment_schemes";
+    }
+
+    public String navigateToManageUserIcons() {
+        if (selected == null) {
+            JsfUtil.addErrorMessage("Please select a user");
+            return "";
+        }
+        userIconController.setUser(selected);
+        return "/admin/users/user_icons";
     }
 
     public String toManageSignature() {

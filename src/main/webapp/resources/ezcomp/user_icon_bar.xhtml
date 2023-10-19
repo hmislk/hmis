@@ -1,0 +1,59 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+        <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+
+        <h:panelGroup rendered="#{sessionController.userIcons ne null}" >
+
+            <h:form>
+                <div class="container-fluid">
+                    <div class="row">
+                        <ul class="list-group list-group-horizontal">
+                            <ui:repeat value="#{sessionController.userIcons}" var="i" >
+                                <p:commandLink
+                                    rendered="#{i.icon eq 'Patient_Lookup'}"
+                                    class="list-group-item shadow-sm  p-0 m-2" style="height: 50px;"
+                                    action="#{opdBillController.navigateToSearchPatients()}">
+                                    <h:graphicImage library="icons" name="lookup_and_add.png" style="max-height: 100%; width: auto;"/>
+                                </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{i.icon eq 'Patient_Add_New'}"
+                                    class="list-group-item shadow-sm p-0 m-2" 
+                                    style="height: 50px;" 
+                                    action="#{opdBillController.navigateToSearchPatients()}">
+                                    <h:graphicImage library="icons" name="register.png" style="height: 100%; width: auto;"/>
+                                </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{i.icon eq 'New_Opd_Bill'}"
+                                    class="list-group-item shadow-sm p-0 m-2" 
+                                    style="height: 50px;" 
+                                    action="#{opdBillController.navigateToSearchPatients()}">
+                                    <h:graphicImage library="icons" name="opd_billing.png" style="height: 100%; width: auto;"/>
+                                </p:commandLink>
+                                <p:commandLink 
+                                    rendered="#{i.icon eq 'Search_Opd_Bill'}"
+                                    class="list-group-item shadow-sm p-0 m-2" 
+                                    style="height: 50px;" 
+                                    action="#{opdBillController.navigateToSearchPatients()}">
+                                    <h:graphicImage library="icons" name="search_opd_bill.png" style="height: 100%; width: auto;"/>
+                                </p:commandLink>
+                            </ui:repeat>
+                        </ul>
+                    </div>
+                </div>
+            </h:form>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>
