@@ -192,6 +192,11 @@ public class PatientReportItemValue implements Serializable {
     }
 
     public String getDisplayValue() {
+        if(this.strValue!=null && !this.strValue.trim().equals("")){
+            displayValue=this.strValue;
+        }else{
+            displayValue=getValue();
+        }
         return displayValue;
     }
     
