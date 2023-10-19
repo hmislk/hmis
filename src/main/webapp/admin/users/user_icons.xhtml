@@ -28,9 +28,6 @@
                         <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
                         <h:panelGroup id="displayUserIcons">
                             <p:dataTable var="userIcon" value="#{userIconController.userIcons}" rowKey="#{userIcon.id}">
-                                <p:column headerText="ID">
-                                    <h:outputText value="#{userIcon.id}" />
-                                </p:column>
                                 <p:column headerText="Icon">
                                     <h:outputText value="#{userIcon.icon}" />
                                 </p:column>
