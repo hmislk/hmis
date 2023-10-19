@@ -16,31 +16,29 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Doctor Leave Report" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+                    
                 </f:facet>
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <p:outputLabel value="Consultant" />
                         <au:completeConsultant value="#{channelReportTempController.reportKeyWord.staff}" />
-                        <h:panelGrid columns="2">
-                            <p:commandButton action="#{channelReportTempController.createConsultantLeaves}" value="Fill" ajax="false" ></p:commandButton> 
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    <h:panelGrid columns="2" class="my-2">
+                        <p:commandButton style="margin-right: 10px" action="#{channelReportTempController.createConsultantLeaves}" value="Fill" ajax="false" ></p:commandButton> 
+                            <p:commandButton style="margin-right: 10px" ajax="false" value="Print" styleClass="noPrintButton">
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                         </h:panelGrid>
-                    </h:panelGrid> 
+                    
                 </p:panel>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                <p:panel id="reportPrint" >
                     <p:dataTable value="#{channelReportTempController.serviceSessionLeaves}" var="d" id="tbl1" rowIndexVar="i"
                                  rowStyleClass="#{d.retired ? 'crossLine':''}">
                         <f:facet name="header">
@@ -52,12 +50,12 @@
                             </h:panelGroup>
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
-                            <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                            <p:outputLabel class="ml-5" value="  To : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
 
@@ -74,7 +72,7 @@
                                 <p:outputLabel value="Leave Date" />
                             </f:facet>
                             <h:outputLabel value="#{d.sessionDate}">
-                                <f:convertDateTime parent="YYYY/MM/dd" />
+                                <f:convertDateTime parent="dd MMM yyyy" />
                             </h:outputLabel>
                         </p:column>
                         <p:column>
@@ -82,7 +80,7 @@
                                 <p:outputLabel value="Leave Session" />
                             </f:facet>
                             <h:outputLabel value="#{d.originatingSession.sessionTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm:ss" />
                             </h:outputLabel>
                         </p:column>
                         <p:column>
@@ -103,11 +101,11 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{d.createdAt}" >
-                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                             <br/>
                             <p:outputLabel value="#{d.retiredAt}" rendered="#{d.retired}" style="color: red;" >
-                                <f:convertDateTime pattern="yyy MMMM dd - hh:mm:ss a" />
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </p:column>
 
