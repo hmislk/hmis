@@ -42,9 +42,12 @@ public class PatientReportItemValue implements Serializable {
     String fileName;
     String fileType;
     Double doubleValue;
+    
 
     @Transient
     private String value;
+    @Transient
+    private String displayValue;
 
     public String getStrValue() {
         if (strValue != null) {
@@ -187,4 +190,15 @@ public class PatientReportItemValue implements Serializable {
         }
         return value;
     }
+
+    public String getDisplayValue() {
+        if(this.strValue!=null && !this.strValue.trim().equals("")){
+            displayValue=this.strValue;
+        }else{
+            displayValue=getValue();
+        }
+        return displayValue;
+    }
+    
+    
 }
