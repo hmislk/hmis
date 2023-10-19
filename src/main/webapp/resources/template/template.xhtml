@@ -39,38 +39,38 @@
 
     </h:head>
     <h:body style="height: 90vh;" class="bg-light">
-        <div class="container-fluid" >
-            <div class="row" >
-                <div class="col-12" >
-                    <h:panelGroup rendered="#{!sessionController.firstLogin}" >
-                        <h:panelGroup rendered ="#{not sessionController.logged}"  >
-                            <ui:insert name="login">
-                                <ez:login/>
+
+        <div class="row" >
+            <div class="col-12" >
+                <h:panelGroup rendered="#{!sessionController.firstLogin}" >
+                    <h:panelGroup rendered ="#{not sessionController.logged}"  >
+                        <ui:insert name="login">
+                            <ez:login/>
+                        </ui:insert>
+                    </h:panelGroup>
+                    <h:panelGroup rendered ="#{sessionController.logged}"  >
+                        <h:panelGroup rendered="#{sessionController.department ne null}" >
+                            <ez:menu/>
+                            <ui:insert name="content">
                             </ui:insert>
                         </h:panelGroup>
-                        <h:panelGroup rendered ="#{sessionController.logged}"  >
-                            <h:panelGroup rendered="#{sessionController.department ne null}" >
-                                <ez:menu/>
-                                <ui:insert name="content">
-                                </ui:insert>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{sessionController.department eq null}" >
-                                <ez:select_department/>
-                            </h:panelGroup>
-                            <ez:footer/>
+                        <h:panelGroup rendered="#{sessionController.department eq null}" >
+                            <ez:select_department/>
                         </h:panelGroup>
+                        <ez:footer/>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{sessionController.firstLogin}" >
-                        <ez:first_login/>
-                    </h:panelGroup>
-                </div>
-            </div>
-            <div class="row" >
-                <div class="col-12" >
-                    <p:messages id="publicGrowl" showDetail="true" ></p:messages>
-                </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{sessionController.firstLogin}" >
+                    <ez:first_login/>
+                </h:panelGroup>
             </div>
         </div>
+        <div class="row" >
+            <div class="col-12" >
+                <p:messages id="publicGrowl" showDetail="true" ></p:messages>
+            </div>
+        </div>
+
 
 
 

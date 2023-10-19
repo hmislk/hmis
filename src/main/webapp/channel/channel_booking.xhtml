@@ -354,7 +354,12 @@
                                     </p:inputText>
 
                                     <h:outputLabel value="Phone"/>
-                                    <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{channelBookingController.searchPatient.person.phone}">
+                                    <p:inputText  
+                                        id="txtNewPtPhone" 
+                                        autocomplete="off"  
+                                        validatorMessage="Please enter a valid phone number (numbers only)"
+                                        value="#{channelBookingController.searchPatient.person.phone}">
+                                        <f:validateRegex pattern="^[0-9]*$"/>
                                     </p:inputText>
                                     <h:outputLabel value="Sex"/>
                                     <p:selectOneMenu id="txtNewSex"  value="#{channelBookingController.searchPatient.person.sex}" style="width: 200px;">
@@ -983,7 +988,12 @@
                                         <f:selectItems value="#{billController.title}"/>
                                     </p:selectOneMenu>
                                     <p:outputLabel value="Name"/>
-                                    <p:inputText autocomplete="off" value="#{channelBookingController.selectedBillSession.bill.patient.person.name}" />
+                                    <p:inputText 
+                                        autocomplete="off" 
+                                        validatorMessage="Please enter a valid phone number (numbers only)"
+                                        value="#{channelBookingController.selectedBillSession.bill.patient.person.name}" >
+                                        <f:validateRegex pattern="^[0-9]*$"/>
+                                    </p:inputText>
                                     <h:outputLabel value="Phone"/>
                                     <p:inputText  autocomplete="off" maxlength="11" value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}">
                                     </p:inputText>

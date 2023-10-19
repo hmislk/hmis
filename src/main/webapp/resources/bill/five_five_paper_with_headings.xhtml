@@ -16,54 +16,54 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <h:outputStylesheet>
-                    /* Styles for screen display */
-                    .page {
-                    
-                    }
-                    .d-flex {
-                    display: flex;
-                    }
-                    .flex-grow-1 {
-                    flex: 1;
-                    }
-                    .bill-item {
-                    border: 1px solid #ddd;
-                    margin: 20px;
-                    padding: 20px;
-                    background-color: whitesmoke;
-                    box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
-                    page-break-after: always;
-                    }
+            /* Styles for screen display */
+            .page {
 
-                    /* Styles for print */
-                    @media print {
-                    .bill-item {
-                    page-break-after: always;
-                    margin: 0px;
-                    padding: 0px
-                    }
-                    .page {
-                    border: none;
-                    background-color: transparent;
-                    box-shadow: none;
-                    margin: 0px;
-                    padding: 0px
-                    }
-                    }
-                </h:outputStylesheet>
+            }
+            .d-flex {
+            display: flex;
+            }
+            .flex-grow-1 {
+            flex: 1;
+            }
+            .bill-item {
+            border: 1px solid #ddd;
+            margin: 20px;
+            padding: 20px;
+            background-color: whitesmoke;
+            box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
+            page-break-after: always;
+            }
 
-       
+            /* Styles for print */
+            @media print {
+            .bill-item {
+            page-break-after: always;
+            margin: 0px;
+            padding: 0px
+            }
+            .page {
+            border: none;
+            background-color: transparent;
+            box-shadow: none;
+            margin: 0px;
+            padding: 0px
+            }
+            }
+        </h:outputStylesheet>
 
 
-       
+
+
+
         <div  >
 
-            <div >
+            <div style="text-align: center; font-weight: 600">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
-            <div  >
+            <div  style="text-align: center; font-weight: 600">
                 <div>
                     <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
                 </div>
@@ -77,7 +77,7 @@
                 </div>
             </div>
 
-            <div >
+            <div style="text-align: center; font-weight: 600; font-size: 20px">
                 <h:outputLabel value="RECEIPT"   />    
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
@@ -235,14 +235,12 @@
             </div>
 
 
-            <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
-                <div >
-                    <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                   />
-                    </div>
+            <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}">
+                <div style="text-align: center; font-size: 30px;">
+                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" width="300px" height="100px" />
                 </div>
             </h:panelGroup>
+
 
             <div  >
 

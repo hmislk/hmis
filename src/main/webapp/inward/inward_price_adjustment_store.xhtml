@@ -16,7 +16,7 @@
                     <p:panel header="Inward Price Adjustment Matrix- Store" id="reportPrint">
 
                         <p:panel header="Add new adjustment" >
-                            <p:panelGrid columns="2" >
+                            <p:panelGrid columns="2" class="w-100" >
                                 <h:outputLabel value="Department :" />
                                 <p:autoComplete value="#{inwardPriceAdjustmntController.department}" 
                                                 forceSelection="true"
@@ -60,19 +60,21 @@
                                 <p:commandButton id="btnAdd" value="Add" ajax="false" action="#{inwardPriceAdjustmntController.saveSelected}"   >
                                 </p:commandButton>
 
-                                <p:defaultCommand target="btnAdd"/>
+<!--                                <p:defaultCommand target="btnAdd"/>-->
                             </p:panelGrid>
-                            <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyStore()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
+                            <div class="my-2">
+                                <p:commandButton actionListener="#{inwardPriceAdjustmntController.createCategroyStore()}" ajax="false" value="Excel" styleClass="noPrintButton" >
                                 <p:dataExporter type="xlsx" target="inwd" fileName="Price_metrix_pharmacy"  />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyStore()}"  />
+                                <p:commandButton class="mx-1" ajax="false" value="Fill" action="#{inwardPriceAdjustmntController.createCategroyStore()}"  />
                             <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
+                            </div>
 
                         </p:panel>
 
-                        <p:panel header="Price Matrix" >
+                        <p:panel header="Price Matrix" class="mt-1" >
 
                             <p:dataTable id="inwd" value="#{inwardPriceAdjustmntController.items}"
                                          filteredValue="#{inwardPriceAdjustmntController.filterItems}"

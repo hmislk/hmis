@@ -16,50 +16,63 @@
             <h:form>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" header="GRN Summary by Supplier">
 
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h:outputLabel value="From Date"/>&nbsp;&nbsp;
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
+                            </p:calendar>
+                        </div>
+                        <div class="col-md-5">
+                            <h:outputLabel value="To Date"/>&nbsp;&nbsp;
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
+                            </p:calendar>
 
-                    <p:panelGrid columns="2" style="noPrintButton">
-                        <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
+                        </div>
+                    </div>
+                    <p:spacer height="5"/>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h:outputLabel  value="Department"  ></h:outputLabel>&nbsp;
+                            <p:autoComplete  value="#{commonReport.department}"  
+                                             completeMethod="#{departmentController.completeDept}" var="dept"
+                                             itemValue="#{dept}" itemLabel="#{dept.name}" 
+                                             forceSelection="true" rendered="true"
+                                             requiredMessage="You must select a department" >
+                            </p:autoComplete>
+                        </div>
+                        <div class="col-md-6">
+                            <h:outputLabel  value="Supplier"  ></h:outputLabel>&nbsp;&nbsp;
+                            <p:autoComplete converter="deal" 
+                                            value="#{commonReport.institution}"
+                                            completeMethod="#{dealerController.completeDealor}"
+                                            forceSelection="true" rendered="true"
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
-                        <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
-                        </p:calendar>
+                        </div>
+                    </div>
+                    <p:spacer height="5"/>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h:outputLabel value="Reference Institution"/>&nbsp;&nbsp;
+                            <p:autoComplete  value="#{commonReport.referenceInstitution}"
+                                             completeMethod="#{institutionController.completeCompany}" 
+                                             forceSelection="true"
+                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
 
-                        <h:outputLabel  value="Department"  ></h:outputLabel>
-                        <p:autoComplete  value="#{commonReport.department}"  
-                                         completeMethod="#{departmentController.completeDept}" var="dept"
-                                         itemValue="#{dept}" itemLabel="#{dept.name}" 
-                                         forceSelection="true" rendered="true"
-                                         requiredMessage="You must select a department" >
-                        </p:autoComplete>
+                            <p:defaultCommand target="btnRefresh"/>
+                        </div>
 
-                        <h:outputLabel  value="Supplier"  ></h:outputLabel>
-                        <p:autoComplete converter="deal" 
-                                        value="#{commonReport.institution}"
-                                        completeMethod="#{dealerController.completeDealor}"
-                                         forceSelection="true" rendered="true"
-                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-                        
-                        <h:outputLabel value="Reference Institution"/>
-                        <p:autoComplete  value="#{commonReport.referenceInstitution}"
-                                        completeMethod="#{institutionController.completeCompany}" 
-                                        forceSelection="true"
-                                        var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
-
-                        <p:defaultCommand target="btnRefresh"/>
-
-                    </p:panelGrid>
-                    
+                    </div>
+                    <p:spacer height="5"/>
                     <h:panelGrid columns="3">
                         <p:commandButton id="btnRefresh" ajax="false" value="Fill" 
                                          styleClass="noPrintButton" 
-                                        actionListener="#{commonReport.createGrnDetailTableByDealor()}"
+                                         actionListener="#{commonReport.createGrnDetailTableByDealor()}"
                                          style="float: right;" /> 
-                        
+
                         <p:commandButton actionListener="#{commonReport.createGrnDetailTableByDealor()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
-                                <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
-                            </p:commandButton>
+                            <p:dataExporter type="xlsx" target="billed,cancelled,refunded,returnCancelled,sum," fileName="report_grn_detail_by_supplier"  />
+                        </p:commandButton>
 
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" 
                                          style="float: right;" >
@@ -67,7 +80,7 @@
                         </p:commandButton>
                     </h:panelGrid>
 
-
+                    <p:spacer height="5"/>
                     <p:dataTable id="billed"  value="#{commonReport.grnBilled.bills}" var="b" 
                                  rendered="#{commonReport.grnBilled.bills.size()!=0}" 
                                  sortBy="#{b.billType}"  >
@@ -99,14 +112,14 @@
                             </f:facet> 
                             <h:outputLabel value="#{b.invoiceNumber}"/>
                         </p:column>
-                        
+
                         <p:column headerText="Referenace Institution" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Referenace Institution"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.referenceInstitution.name}"/>
                         </p:column>
-                        
+
                         <p:column headerText="Created At"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Created At"/>
@@ -150,7 +163,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
-                        
+
                         <p:column headerText="Sale Value Cash" style=" text-align: right"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Sale Value Cash"/>
@@ -170,7 +183,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
-                        
+
                         <p:column headerText="Remark" >
                             <f:facet name="header">  
                                 <h:outputLabel value="Remark"/>
@@ -197,7 +210,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column style="text-align: right;" footerText="#{commonReport.grnBilled.saleCash}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{commonReport.grnBilled.saleCash}">
@@ -282,7 +295,7 @@
                             <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
 
                         </p:column>
-                        
+
                         <p:column headerText="Sale Value Cash"  style=" text-align: right"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Sale Value Cash"/>
@@ -328,7 +341,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column style="text-align: right;" footerText="#{commonReport.grnCancelled.bills}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{commonReport.grnCancelled.saleCash}">
@@ -423,7 +436,7 @@
                             </h:outputLabel>
                             <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
                         </p:column>
-                        
+
                         <p:column headerText="Sale Value Cash" style=" text-align: right"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Sale Value Cash"/>
@@ -469,7 +482,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column style="text-align: right;" footerText="#{commonReport.grnReturn.saleCash}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{commonReport.grnReturn.saleCash}">
@@ -485,7 +498,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                             </p:row>  
                         </p:columnGroup>  
 
@@ -555,7 +568,7 @@
                             <h:outputLabel rendered="#{b1.paymentMethod!='Credit'}" value="0.00"/>
 
                         </p:column>
-                        
+
                         <p:column headerText="Sale Value Cash"  style=" text-align: right"  >
                             <f:facet name="header">  
                                 <h:outputLabel value="Sale Value Cash"/>
@@ -601,8 +614,8 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
-                                
+
+
                                 <p:column style="text-align: right;" footerText="#{commonReport.grnReturnCancel.bills}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{commonReport.grnReturnCancel.saleCash}">
@@ -639,7 +652,7 @@
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </p:column>
-                        
+
                         <p:column style="font-weight: bold;text-align:right;" >
                             <h:outputLabel value="#{i.value2}">
                                 <f:convertNumber pattern="#,##0.00" />
