@@ -9,6 +9,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.Icon;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
@@ -47,6 +48,9 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
+import javax.el.ELContext;
+import javax.el.ExpressionFactory;
+import javax.el.MethodExpression;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -156,6 +160,20 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String navigateToLoginPage() {
 
         return "/index1.xhtml";
+    }
+
+    public String getActionForIcon(Icon icon) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ELContext elContext = context.getELContext();
+        ExpressionFactory factory = context.getApplication().getExpressionFactory();
+
+        // Fetch action string from the enum
+        String actionExpression = icon.getAction();
+
+        // Convert the string to an actual method binding
+        MethodExpression methodExpression = factory.createMethodExpression(elContext, actionExpression, String.class, new Class[0]);
+
+        return (String) methodExpression.invoke(elContext, null);
     }
 
     public String getLandingPageOld() {
@@ -1257,7 +1275,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         setLoggedUser(null);
         loggableDepartments = null;
         loggableInstitutions = null;
-        userIcons=null;
+        userIcons = null;
         setLogged(false);
         setActivated(false);
         getPharmacySaleController().clearForNewBill();
@@ -1834,6 +1852,4 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.userIcons = userIcons;
     }
 
-    
-    
 }

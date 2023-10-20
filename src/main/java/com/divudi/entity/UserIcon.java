@@ -24,7 +24,7 @@ public class UserIcon implements Serializable {
     
     @ManyToOne
     private WebUser webUser;
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private Icon icon;
     private boolean retired;
     private double orderNumber;
