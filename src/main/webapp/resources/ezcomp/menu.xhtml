@@ -93,10 +93,10 @@
                             rendered="#{webUserController.hasPrivilege('Opd')}"
                             icon="fa fa-cash-register">
 
-                            <p:menuitem 
+<!--                            <p:menuitem 
                                 ajax="false" 
                                 value="Accept Payments"
-                                icon="fas fa-money-bill"></p:menuitem>
+                                icon="fas fa-money-bill"></p:menuitem>-->
 
                             <p:menuitem 
                                 ajax="false" 
@@ -190,7 +190,7 @@
                         </p:submenu>
                         <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" icon="fa fa-file-medical" rendered="true" />
                         <p:menuitem ajax="false" action="/reportCashier/report_cashier" value="Summaries" icon="fa fa-list-alt"></p:menuitem>
-                        <p:submenu 
+<!--                        <p:submenu 
                             id="smOpdManager"
                             label="Manager"
                             rendered="#{webUserController.hasPrivilege('Opd')}"
@@ -209,7 +209,7 @@
                                 value="Bill Awaiting For Cancel" 
                                 icon="fa fa-times-circle"
                                 rendered="#{webUserController.hasPrivilege('OpdCancel')}" ></p:menuitem>
-                        </p:submenu>
+                        </p:submenu>-->
                     </p:submenu>
                     <p:submenu id="smMembership"  icon="fa fa-fw fa-id-card"  rendered="#{webUserController.hasPrivilege('MemberShip')}">
                         <p:menuitem ajax="false" action="#{patientController.toAddAFamily()}" value="Add Family" rendered="#{webUserController.hasPrivilege('MemberShip')}" ></p:menuitem>
