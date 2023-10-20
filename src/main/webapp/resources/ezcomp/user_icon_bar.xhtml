@@ -22,6 +22,7 @@
                         <ul class="list-group list-group-horizontal">
                             <ui:repeat value="#{sessionController.userIcons}" var="i">
                                 <p:commandLink
+                                    title="#{i.icon}"
                                     ajax="false"
                                     class="list-group-item shadow-sm p-0 m-2" 
                                     style="height: 50px;"
