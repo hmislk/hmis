@@ -62,8 +62,8 @@
                                         value="Can settle without referral details"
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.opdSettleWithoutReferralDetails}" ></p:selectBooleanButton>
 
@@ -168,7 +168,10 @@
                             </p:tab>
                             <p:tab title="In-ward" >
                                 <p:panel header="Inward" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" >
+                                    <p:panelGrid columns="2" styleClass="alignTop" >
+                                        <p:inputTextarea
+                                            class="w-100"
+                                            value="#{sessionController.currentPreference.inwardDepositBillTemplate}" />
                                         <h:panelGroup >
                                             <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
                                             Available Fields
@@ -204,8 +207,8 @@
                                             {bill_date}
                                             {bill_time}
                                         </h:panelGroup>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" />
-
+                                        
+                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}" />
                                         <h:panelGroup >
                                             <h:outputLabel value="Inward Deposit Cancel Bill Template" ></h:outputLabel>
                                             Available Fields
@@ -241,8 +244,7 @@
                                             {bill_date}
                                             {bill_time}
                                         </h:panelGroup>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}" />
-
+                                        
 
                                         <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
@@ -259,7 +261,7 @@
                                         <h:outputLabel value="Change Admission Fee in Interim Bill"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
 
-                                    </h:panelGrid>
+                                    </p:panelGrid>
 
                                 </p:panel>
                             </p:tab>

@@ -177,7 +177,8 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
+            <version>20230618</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
