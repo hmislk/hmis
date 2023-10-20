@@ -108,10 +108,10 @@
 
                                             <h:panelGrid columns="1">
                                                 <p:outputLabel/>
-                                            <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                              action="#{pharmacySaleController3.addBillItemNew()}" 
-                                                              process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
-                                                              update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:commandButton>
+                                                <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
+                                                                  action="#{pharmacySaleController3.addBillItemNew()}" 
+                                                                  process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId}" 
+                                                                  update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:commandButton>
 
                                             </h:panelGrid>
                                             <h:panelGrid columns="1" >
@@ -480,7 +480,6 @@
                                                                      var="mys" 
                                                                      itemLabel="#{mys.person.nameWithTitle}" 
                                                                      itemValue="#{mys}"
-                                                                     converter="stfcon" 
                                                                      disabled="#{pharmacySaleController3.paymentMethod ne 'Credit' }">
                                                         <p:column headerText="Name" >
                                                             <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>

@@ -15,26 +15,22 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Channel &amp; Scan Count" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+
                 </f:facet>
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" id="pg1">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <h:outputLabel value="Institution"/>
                         <p:autoComplete value="#{channelReportTempController.institution}" completeMethod="#{institutionController.completeCompany}"
                                         var="c" itemLabel="#{c.name}" itemValue="#{c}" forceSelection="true" >
                         </p:autoComplete>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pg1" >
+
                         <h:outputLabel value="Scan"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.scan}" >
                             <p:ajax event="change" process="@this" update=":#{p:resolveFirstComponentWithId('pan3',view).clientId} pg1" />
@@ -43,22 +39,18 @@
                         <p:selectBooleanCheckbox value="#{channelReportTempController.sessoinDate}" />
                         <h:outputLabel value="Only Paid"/> 
                         <p:selectBooleanCheckbox value="#{channelReportTempController.paid}" />
-                    </h:panelGrid> 
-                    <h:panelGrid columns="3">
-                        <h:panelGroup id="pan2">
-                            <h:panelGrid columns="2" >
-                                <p:commandButton action="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Process" ajax="false" />
-                            </h:panelGrid>
-                        </h:panelGroup>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton style="margin-right: 10px" id="pan2" action="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Process" ajax="false" />                           
+                        <p:commandButton style="margin-right: 10px" ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
-                        <p:commandButton actionListener="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Excel" ajax="false">
+                        <p:commandButton style="margin-right: 10px" actionListener="#{channelReportTempController.createSpecilityWiseDoctorAppoinmentCount}" value="Excel" ajax="false">
                             <p:dataExporter type="xlsx" target="tbl1" fileName="channel_count"  />
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
-                <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
+                <p:panel id="reportPrint" >
                     <p:dataTable value="#{channelReportTempController.channelSummeryDateRangeBillTotalTables}" var="s" id="tbl1" >
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
@@ -69,13 +61,13 @@
                             </h:panelGroup>
                             <p:outputLabel value="Count" />
                             <br></br>
-                            <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="MMMM yyyy" />
+                            <p:outputLabel  value="From : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
-                            <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="MMMM yyyy" />
+                            <p:outputLabel class="ml-5" value="  To : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >

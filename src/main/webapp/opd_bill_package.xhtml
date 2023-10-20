@@ -44,7 +44,7 @@
                                     <pa:slip paymentMethodData="#{billPackageController.paymentMethodData}"/>
                                 </h:panelGroup>
 
-                                <p:commandButton value="Settle" action="#{billPackageController.settleBill}" ajax="false"  >
+                                <p:commandButton value="Settle" action="#{billPackageController.settleBill}" ajax="false"  class="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="New Bill" ajax="false" action="opd_bill_package" actionListener="#{billPackageController.prepareNewBill()}" >
                                 </p:commandButton>
@@ -102,9 +102,10 @@
                                         <h:panelGroup id="panelIx" class="w-100">
 
 
-                                            <p:panel id='pIxAdd' header="Items Requests"  >                                        
-                                                <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" value="#{billPackageController.currentBillItem.item}" completeMethod="#{itemController.completePackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"   
-                                                                required="true" requiredMessage="Please add item">
+                                            <p:panel id='pIxAdd' header="Items Requests"  >  
+                                               
+                                                <p:autoComplete widgetVar="aIx" id="acIx" forceSelection="true" value="#{billPackageController.currentBillItem.item}" completeMethod="#{itemController.completePackage}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}"    
+                                                                required="true" requiredMessage="Please add item" size="60">
                                                     <p:column>
                                                         #{ix.name}
                                                     </p:column>
@@ -113,7 +114,7 @@
                                                     </p:column>
 
                                                 </p:autoComplete>
-                                                <p:commandButton id="btnAddIx" value="Add" action="#{billPackageController.addToBill()}" >
+                                                <p:commandButton id="btnAddIx" value="Add" class="mx-2" action="#{billPackageController.addToBill()}" >
                                                     <f:ajax execute="acIx btnAddIx" render="focusIx tblBillItem  pBillDetails pIxAdd" />
                                                 </p:commandButton>
 
@@ -165,7 +166,7 @@
                                                     <p:tab title="Refering Doctor" class="w-100">
                                                         <p:autoComplete forceSelection="true" id="cmbDoc" value="#{billPackageController.referredBy}" completeMethod="#{doctorController.completeDoctor}" var="ix" itemLabel="#{ix.person.name}" itemValue="#{ix}" size="30"  >
                                                         </p:autoComplete>
-                                                        <p:commandButton id="btnAddNewDoc" type="button" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
+                                                        <p:commandButton id="btnAddNewDoc" type="button" class="mx-2" value="Add New Doctor" onclick="dlg.show();" actionListener="#{doctorController.prepareAdd}" process="btnAddNewDoc" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />  
                                                     </p:tab>
                                                     <p:tab title="Company" class="w-100">
                                                         <p:autoComplete id="creditCom" forceSelection="true" value="#{billPackageController.creditCompany}"  completeMethod="#{creditCompanyController.completeCredit}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  >

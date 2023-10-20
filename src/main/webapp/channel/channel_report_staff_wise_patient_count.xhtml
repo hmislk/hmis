@@ -22,22 +22,18 @@
                 </f:facet>
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
-                    </h:panelGrid>
+                    </p:panelGrid>
 
-                    <h:panelGrid columns="3">
-                        <h:panelGroup id="pan2">
-                            <h:panelGrid columns="2" >
-                                <p:commandButton action="#{channelReportTempController.createStaffWiseChannelBillTypeCountTable()}" value="Process" ajax="false" />
-                            </h:panelGrid>
-                        </h:panelGroup>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton style="margin-right: 10px" id="pan2" action="#{channelReportTempController.createStaffWiseChannelBillTypeCountTable()}" value="Process" ajax="false" />
+                        <p:commandButton style="margin-right: 10px" ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton> 
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
@@ -53,12 +49,12 @@
                             <p:outputLabel value="Staff Wise Patient Count" />
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="MMMM yyyy" />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
-                            <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="MMMM yyyy" />
+                            <p:outputLabel class="ml-5" value="  To : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
                         <p:column>

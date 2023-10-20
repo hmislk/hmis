@@ -1,7 +1,7 @@
 /*
  * Author : Dr. M H B Ariyaratne
  *
- * Acting Consultant (Health Informatics), Department of Health Services, Southern Province
+ * Consultant (Health Informatics)
  * (94) 71 5812399
  * Email : buddhika.ari@gmail.com
  */
@@ -9,6 +9,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.data.DepartmentType;
+import com.divudi.data.Icon;
 import com.divudi.data.InstitutionType;
 import com.divudi.data.Privileges;
 import com.divudi.ejb.ApplicationEjb;
@@ -18,6 +19,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Logins;
 import com.divudi.entity.Person;
+import com.divudi.entity.UserIcon;
 import com.divudi.entity.UserPreference;
 import com.divudi.entity.WebUser;
 import com.divudi.entity.WebUserDashboard;
@@ -46,11 +48,12 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.PreDestroy;
 import javax.ejb.EJB;
+import javax.el.ELContext;
+import javax.el.ExpressionFactory;
+import javax.el.MethodExpression;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
@@ -109,6 +112,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUserController webUserController;
     @Inject
     PersonController personController;
+    @Inject
+    UserIconController userIconController;
     /**
      * Properties
      */
@@ -129,6 +134,7 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     private List<Department> loggableDepartments;
     private List<Institution> loggableInstitutions;
+    private List<UserIcon> userIcons;
 
     Institution institution;
     private List<WebUserDashboard> dashboards;
@@ -154,6 +160,20 @@ public class SessionController implements Serializable, HttpSessionListener {
     public String navigateToLoginPage() {
 
         return "/index1.xhtml";
+    }
+
+    public String getActionForIcon(Icon icon) {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ELContext elContext = context.getELContext();
+        ExpressionFactory factory = context.getApplication().getExpressionFactory();
+
+        // Fetch action string from the enum
+        String actionExpression = icon.getAction();
+
+        // Convert the string to an actual method binding
+        MethodExpression methodExpression = factory.createMethodExpression(elContext, actionExpression, String.class, new Class[0]);
+
+        return (String) methodExpression.invoke(elContext, null);
     }
 
     public String getLandingPageOld() {
@@ -792,6 +812,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
                     loggableInstitutions = fillLoggableInstitutions();
+                    userIcons = userIconController.fillUserIcons(u);
                     setLogged(Boolean.TRUE);
                     setActivated(u.isActivated());
                     setRole(u.getRole());
@@ -907,6 +928,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
             loggableInstitutions = fillLoggableInstitutions();
+            userIcons = userIconController.fillUserIcons(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -948,6 +970,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             setLoggedUser(u);
             loggableDepartments = fillLoggableDepts();
             loggableInstitutions = fillLoggableInstitutions();
+            userIcons = userIconController.fillUserIcons(u);
             setLogged(Boolean.TRUE);
             setActivated(u.isActivated());
             setRole(u.getRole());
@@ -998,6 +1021,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                     setLoggedUser(u);
                     loggableDepartments = fillLoggableDepts();
                     loggableInstitutions = fillLoggableInstitutions();
+                    userIcons = userIconController.fillUserIcons(u);
                     dashboards = webUserController.listWebUserDashboards(u);
                     loadDashboards();
                     setLogged(true);
@@ -1251,6 +1275,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         setLoggedUser(null);
         loggableDepartments = null;
         loggableInstitutions = null;
+        userIcons = null;
         setLogged(false);
         setActivated(false);
         getPharmacySaleController().clearForNewBill();
@@ -1817,6 +1842,14 @@ public class SessionController implements Serializable, HttpSessionListener {
             loggableInstitutions = fillLoggableInstitutions();
         }
         return loggableInstitutions;
+    }
+
+    public List<UserIcon> getUserIcons() {
+        return userIcons;
+    }
+
+    public void setUserIcons(List<UserIcon> userIcons) {
+        this.userIcons = userIcons;
     }
 
 }

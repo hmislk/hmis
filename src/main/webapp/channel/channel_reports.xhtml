@@ -38,21 +38,14 @@
                                             <p:commandButton class="w-100" ajax="false" value="Bill Detail Summary()" action="/channel/channel_report_by_bill_class"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Department Bill Summary" action="/channel/channel_report_department_wise_bills"/>
                                             <p:commandButton class="w-100" ajax="false" value="All Channel Bills" action="/channel/channel_report_all_bills"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat_1" style="color: red;"/>
+                                            <p:commandButton class="w-100" ajax="false" value="All Channel Bill With Vat" action="/channel/channel_report_all_bills_for_vat_1"/>
                                             <p:commandButton class="w-100" ajax="false" value="Area Wise Count Report" action="/channel/channel_report_area_with_count" />
                                             <p:commandButton class="w-100" ajax="false" value="Card Summery Report" action="/channel/channel_card_summery_report" actionListener="#{channelReportController.clearAll}"/>
 
                                         </div>
 
                                     </p:tab>
-                                    <p:tab title="Cashier Reports">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Report" action="/reportCashier/report_cashier_detailed_by_user.xhtml" actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="Cashier Summary" action="/reportCashier/report_cashier_summery_by_user" actionListener="#{commonReport.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Cashier Report" action="/reportCashier/report_cashier_summery_all.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                            <p:commandButton class="w-100" ajax="false" value="All Cashier Summary " action="/reportCashier/report_cashier_summery_all_total_only.xhtml" actionListener="#{cashierReportController.recreteModal}"/>
-                                        </div>
-                                    </p:tab>
+                                    
                                     <p:tab title="Agent Reports"> 
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="Agent History" action="/channel/channel_report_agent_history"/>

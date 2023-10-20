@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:autocomplete="http://java.sun.com/jsf/composite/autocomplete"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!-- Sections designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+
+    <h:body>
+        <ui:composition template="/admin/users/index.xhtml">
+            <ui:define name="subcontent">
+
+                <!-- 1. Authorization Section -->
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('AdminManagingUsers') and not  sessionController.firstLogin }">
+                    You are NOT authorized
+                </h:panelGroup>
+
+                <!-- 2. Authorized Panel -->
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }">
+
+                    <h:form id="form">
+
+
+                        <!-- 2.1 Display User Icons Section -->
+                        <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                        <h:panelGroup id="displayUserIcons">
+                            <p:dataTable var="userIcon" value="#{userIconController.userIcons}" rowKey="#{userIcon.id}">
+                                <p:column headerText="Icon">
+                                    <h:outputText value="#{userIcon.icon}" />
+                                </p:column>
+                                <p:column headerText="Order">
+                                    <h:outputText value="#{userIcon.orderNumber}" />
+                                </p:column>
+                                <p:column headerText="Actions">
+                                    <h:panelGroup id="combinedActions">
+                                        <p:commandButton 
+                                            value="Move Up" 
+                                            action="#{userIconController.moveSelectedUserIconUp}" 
+                                            update=":form:displayUserIcons" >
+                                            <f:setPropertyActionListener value="#{userIcon}" target="#{userIconController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton value="Move Down" action="#{userIconController.moveSelectedUserIconDown}" update=":form:displayUserIcons" >
+                                            <f:setPropertyActionListener value="#{userIcon}" target="#{userIconController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                        <p:commandButton value="Remove" action="#{userIconController.removeUserIcon()}" update=":form:displayUserIcons" >
+                                            <f:setPropertyActionListener value="#{userIcon}" target="#{userIconController.current}" ></f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </h:panelGroup>
+                                </p:column>
+                            </p:dataTable>
+                        </h:panelGroup>
+
+
+                        <!-- 2.2 Combined Action Section (Move Up, Move Down, Remove) -->
+                        <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+
+
+
+                        <!-- 2.3 Add New Icon Section -->
+                        <!-- Section designed by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                        <h:panelGroup id="addNewIcon">
+                            <p:selectOneMenu value="#{userIconController.icon}" style="width:150px">
+                                <f:selectItems value="#{userIconController.icons}" />
+                            </p:selectOneMenu>
+                            <p:commandButton value="Add" action="#{userIconController.addUserIcon}" update="displayUserIcons" />
+                        </h:panelGroup>
+
+
+                    </h:form>
+
+                </h:panelGroup>
+
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+
+</html>

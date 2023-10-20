@@ -54,16 +54,16 @@
                                         value="Can settle without a phone number"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         class="form-control" 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.opdSettleWithoutPatientPhoneNumber}"/>
 
                                     <h:outputLabel 
                                         value="Can settle without referral details"
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.opdSettleWithoutReferralDetails}" ></p:selectBooleanButton>
 
@@ -72,8 +72,8 @@
                                         value="Can settle Lab Bills without referral details"
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.canSettleOpdBillWithInvestigationsWithoutReferringDoctor}" ></p:selectBooleanButton>
 
@@ -82,11 +82,11 @@
                                     <h:outputLabel value="Can settle without Cash Tendered amount"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         class="form-control"
-                                        offIcon="fas fa-check"
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times"
+                                        onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.opdSettleWithoutCashTendered}"/>
 
-                                    #{sessionController.currentPreference.opdSettleWithoutCashTendered}
+
 
                                     <h:outputLabel 
                                         class="form-label"
@@ -121,7 +121,7 @@
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        onIcon="fas fa-check"
                                         class="form-control"                                              
                                         value="#{sessionController.currentPreference.partialPaymentOfOpdBillsAllowed}" />
 
@@ -129,8 +129,8 @@
                                         value="Partial Payment of OPD For Cashier Bills" 
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         class="form-control"
                                         value="#{sessionController.currentPreference.partialPaymentOfOpdPreBillsAllowed}" />
 
@@ -139,8 +139,8 @@
                                         value="Allow to Change Payment Method During Settle"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         class="form-control"
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.allowtoChangePaymentMethodDuringPayment}" />
 
                                     <h:outputLabel 
@@ -148,17 +148,17 @@
                                         class="form-label"></h:outputLabel>
                                     <p:selectBooleanButton 
                                         class="form-control" 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.fiveFivePaperWithHeadings}"/>
 
                                     <h:outputLabel
                                         class="form-label w-100"
                                         value="Print Barcode in OPD Bill"></h:outputLabel>
                                     <p:selectBooleanButton 
-                                        class="form-control w-100" 
-                                        offIcon="fas fa-check" 
-                                        onIcon="fas fa-times"
+                                        class="form-control" 
+                                        offIcon="fas fa-times" 
+                                        onIcon="fas fa-check"
                                         value="#{sessionController.currentPreference.printBarcodeInOpdBill}"/>
 
 
@@ -168,81 +168,96 @@
                             </p:tab>
                             <p:tab title="In-ward" >
                                 <p:panel header="Inward" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" >
-                                        <h:panelGroup >
-                                            <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
-                                            Available Fields
-                                            {ins_id}<br/>
-                                            {dept_id}<br/>
-                                            {from_institution}<br/>
-                                            {from_department}<br/>
-                                            {to_institution}<br/>
-                                            {to_department}<br/>
-                                            {patient_name}<br/>
-                                            {patient_age}<br/>
-                                            {patient_sex}<br/>
-                                            {patient_address}<br/>
-                                            {patient_phone}<br/>
-                                            {patient_phn_number}<br/>
-                                            {admission_number}
-                                            {admission_date}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" class="w-100" rows="20"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h:panelGroup >
+                                                <h:outputLabel value="Inward Deposit Bill Template" ></h:outputLabel>
+                                                Available Fields
+                                                {ins_id}<br/>
+                                                {dept_id}<br/>
+                                                {from_institution}<br/>
+                                                {from_department}<br/>
+                                                {to_institution}<br/>
+                                                {to_department}<br/>
+                                                {patient_name}<br/>
+                                                {patient_age}<br/>
+                                                {patient_sex}<br/>
+                                                {patient_address}<br/>
+                                                {patient_phone}<br/>
+                                                {patient_phn_number}<br/>
+                                                {admission_number}
+                                                {admission_date}
 
-                                            {payment_method}
-                                            {gross_total}
-                                            {discount}
-                                            {net_total}
+                                                {payment_method}
+                                                {gross_total}
+                                                {discount}
+                                                {net_total}
 
-                                            {table_class}<br/>
-                                            {table_style}<br/>
-                                            {serial_class}<br/>
-                                            {serial_style}<br/>
+                                                {table_class}<br/>
+                                                {table_style}<br/>
+                                                {serial_class}<br/>
+                                                {serial_style}<br/>
 
-                                            {cancelled}
-                                            {returned}
+                                                {cancelled}
+                                                {returned}
 
-                                            {cashier_username}
-                                            {bill_date}
-                                            {bill_time}
-                                        </h:panelGroup>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" />
+                                                {cashier_username}
+                                                {bill_date}
+                                                {bill_time}
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
 
-                                        <h:panelGroup >
-                                            <h:outputLabel value="Inward Deposit Cancel Bill Template" ></h:outputLabel>
-                                            Available Fields
-                                            {ins_id}<br/>
-                                            {dept_id}<br/>
-                                            {from_institution}<br/>
-                                            {from_department}<br/>
-                                            {to_institution}<br/>
-                                            {to_department}<br/>
-                                            {patient_name}<br/>
-                                            {patient_age}<br/>
-                                            {patient_sex}<br/>
-                                            {patient_address}<br/>
-                                            {patient_phone}<br/>
-                                            {patient_phn_number}<br/>
-                                            {admission_number}
-                                            {admission_date}
 
-                                            {payment_method}
-                                            {gross_total}
-                                            {discount}
-                                            {net_total}
 
-                                            {table_class}<br/>
-                                            {table_style}<br/>
-                                            {serial_class}<br/>
-                                            {serial_style}<br/>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}"  rows="20" class="w-100"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h:panelGroup >
+                                                <h:outputLabel value="Inward Deposit Cancel Bill Template" ></h:outputLabel>
+                                                Available Fields
+                                                {ins_id}<br/>
+                                                {dept_id}<br/>
+                                                {from_institution}<br/>
+                                                {from_department}<br/>
+                                                {to_institution}<br/>
+                                                {to_department}<br/>
+                                                {patient_name}<br/>
+                                                {patient_age}<br/>
+                                                {patient_sex}<br/>
+                                                {patient_address}<br/>
+                                                {patient_phone}<br/>
+                                                {patient_phn_number}<br/>
+                                                {admission_number}
+                                                {admission_date}
 
-                                            {cancelled}
-                                            {returned}
+                                                {payment_method}
+                                                {gross_total}
+                                                {discount}
+                                                {net_total}
 
-                                            {cashier_username}
-                                            {bill_date}
-                                            {bill_time}
-                                        </h:panelGroup>
-                                        <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositCancelBillTemplate}" />
+                                                {table_class}<br/>
+                                                {table_style}<br/>
+                                                {serial_class}<br/>
+                                                {serial_style}<br/>
 
+                                                {cancelled}
+                                                {returned}
+
+                                                {cashier_username}
+                                                {bill_date}
+                                                {bill_time}
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+
+
+                                    <h:panelGrid columns="2" class="w-100">
 
                                         <h:outputLabel value="Paymentmehtod Allowed in Inward Matrix" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.paymentMethodAllowedInInwardMatrix}" />
@@ -259,8 +274,8 @@
                                         <h:outputLabel value="Change Admission Fee in Interim Bill"></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.inwardChangeAdmissionFee}"/>
 
-                                    </h:panelGrid>
 
+                                    </h:panelGrid>
                                 </p:panel>
                             </p:tab>
                             <p:tab title="Channel" >
@@ -365,32 +380,33 @@
 
                             </p:tab>
 
-                            <p:tab title="Miscellaneous" >
-                                <p:panel header="Miscellaneous" >
-                                    <h:panelGrid columns="2" styleClass="alignTop" >
+                            <p:tab title="Miscellaneous" class="w-100">
+                                <p:panel header="Miscellaneous" class="w-100">
+                                    <h:panelGrid columns="2" styleClass="alignTop" class="w-100">
 
                                         <h:outputLabel value="Family Membership"></h:outputLabel>
-                                        <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                                        <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offIcon="fas fa-check" onIcon="fas fa-times" ></p:selectBooleanButton>
 
                                         <h:outputLabel value="Membership Expires"></h:outputLabel>
-                                        <p:selectBooleanButton value="#{sessionController.currentPreference.membershipExpires}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
+                                        <p:selectBooleanButton value="#{sessionController.currentPreference.membershipExpires}" offIcon="fas fa-check" onIcon="fas fa-times" ></p:selectBooleanButton>
 
 
                                         <h:outputLabel value="Institution" ></h:outputLabel>
 
-                                        <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
+                                        <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" class="w-100">
                                             <f:selectItem itemLabel="Select Institution" />
                                             <f:selectItems var="institute" itemValue="#{institute}" value="#{enumController.applicationInstitutions}" ></f:selectItems>
                                         </p:selectOneMenu>
 
 
                                         <h:outputLabel value="Logo Name"></h:outputLabel>
-                                        <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
-                                        <p:watermark for="imgName" value="Eg- /abc.jpg" />
+                                        <p:inputText id="imgName" value="#{sessionController.currentPreference.logoName}" placeholder="Eg- /abc.jpg" class="w-100"/>
                                         <h:outputLabel value="Bill Proboda" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
                                         <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
                                         <p:selectBooleanButton class="form-control" offIcon="fas fa-check" onIcon="fas fa-times" value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
+
+
                                     </h:panelGrid>
                                 </p:panel>
                             </p:tab>
