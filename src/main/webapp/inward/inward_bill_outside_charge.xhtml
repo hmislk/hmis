@@ -17,120 +17,132 @@
                         <div class="d-flex align-items-center ">
                             <p:outputLabel class="w-100" value="Inward Additional Charge"/>
 
-                            <div class="d-flex justify-content-end w-100 ">
-                                <p:commandButton class="m-1" id="btnAdd" value="Add" ajax="false" action="#{inwardAdditionalChargeController.addCharge}" />
-                                <p:defaultCommand target="btnAdd"/>
-                                <p:commandButton class="m-1" value="Clear" ajax="false" action="#{inwardAdditionalChargeController.makeNull}" />
-                                <p:commandButton class="m-1" value="Go To Add Service" ajax="false" action="/inward/inward_bill_service" />
-                            </div>
+
                         </div>
 
                     </f:facet>
 
-                    <div class="row w-100">
-                        <div class="col-6 ">
-                            <p:panel header="BHT">
-                                <div class="row w-100">
-                                    <div class="col-6 d-flex">
-                                        <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                         value="#{inwardAdditionalChargeController.current.patientEncounter}"
-                                                         completeMethod="#{admissionController.completePatient}" 
-                                                         var="myItem" itemValue="#{myItem}" 
-                                                         itemLabel="#{myItem.bhtNo}" 
-                                                         size="30" >
-
-                                            <p:column>
-                                                <h:outputLabel value="#{myItem.bhtNo}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                            </p:column>
-                                            <p:column>
-                                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                            </p:column>  
-                                            <p:column>
-                                                <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                            </p:column>
-                                        </p:autoComplete> 
-                                        <div class="mx-2">
-                                            <p:commandButton value="Select" ajax="false" >
-                                            </p:commandButton>
-                                        </div>
-
-                                    </div>
 
 
+                    <p:panel header="BHT" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}">
+                        <div class="row w-100">
+                            <div class="col-6 d-flex">
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                 value="#{inwardAdditionalChargeController.current.patientEncounter}"
+                                                 completeMethod="#{admissionController.completePatient}" 
+                                                 var="myItem" itemValue="#{myItem}" 
+                                                 itemLabel="#{myItem.bhtNo}" 
+                                                 size="30" >
+
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.bhtNo}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>  
+                                    <p:column>
+                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                </p:autoComplete> 
+                                <div class="mx-2">
+                                    <p:commandButton value="Select" ajax="false" >
+                                    </p:commandButton>
                                 </div>
-
-                                <div class="row my-4">
-                                    <h:panelGroup id="panSearch2">
-                                        <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
-                                    </h:panelGroup>                   
-                                </div>
-
-
-                            </p:panel>
+                            </div>
                         </div>
+                    </p:panel>
 
-                        <div class="col-6">
-                            <p:panel header="Charge Detail">
-                                <div class="row">
-                                    <div class="row m-1">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <h:outputLabel value="Inward Charge Type"/>
+                    <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
+                        <div class="col-12">
+                            <h:panelGroup rendered="true" styleClass="opdPanel" >
+
+                                <p:panel >
+
+                                    <h:panelGrid columns="4" class="mb-2 d-flex justify-content-end">
+                                        <p:commandButton class="m-1" id="btnAdd" value="Add" ajax="false" action="#{inwardAdditionalChargeController.addCharge}" />
+                                        <p:defaultCommand target="btnAdd"/>
+                                        <p:commandButton class="m-1" value="Clear" ajax="false" action="#{inwardAdditionalChargeController.makeNull}" />
+                                        <p:commandButton class="m-1" value="Go To Add Service" ajax="false" action="/inward/inward_bill_service" />
+
+                                    </h:panelGrid>
+
+
+
+
+
+                                    <div class="row">
+                                        <div class="col-4 ">
+                                            <p:panel>
+                                                <h:panelGroup id="panSearch2">
+                                                    <in:bhtDetail admission="#{inwardAdditionalChargeController.current.patientEncounter}"/>
+                                                </h:panelGroup>
+                                            </p:panel>
 
                                         </div>
                                         <div class="col-8">
-                                            <div>
-                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" >
-                                                    <f:selectItem itemLabel="Please select Charge"/>
-                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                </p:selectOneMenu>
-                                            </div>
+                                            <p:panel header="Charge Detail">
+                                                <div class="row">
+                                                    <div class="row m-1">
+                                                        <div class="col-4 d-flex align-items-center">
+                                                            <h:outputLabel value="Inward Charge Type"/>
+
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <div>
+                                                                <p:selectOneMenu  value="#{inwardAdditionalChargeController.inwardChargeType}" >
+                                                                    <f:selectItem itemLabel="Please select Charge"/>
+                                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
+                                                                </p:selectOneMenu>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4 d-flex align-items-center">
+                                                            <h:outputLabel value="From Institution"/>
+                                                        </div>
+                                                        <div class="col-8 ">
+                                                            <p:autoComplete class="w-100" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                                            completeMethod="#{institutionController.completeIns}"
+                                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
+                                                                <p:column>
+                                                                    #{ix.name}
+                                                                </p:column>
+                                                                <p:column>
+                                                                    #{ix.institutionCode}
+                                                                </p:column>
+                                                            </p:autoComplete>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4 d-flex align-items-center">
+                                                            <p:outputLabel value="Amount"/>
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <p:inputText class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="row m-1">
+                                                        <div class="col-4">
+                                                            <p:outputLabel value="Description"/>
+                                                        </div>
+                                                        <div class="col-8">
+                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </p:panel>
                                         </div>
                                     </div>
 
-                                    <div class="row m-1">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <h:outputLabel value="From Institution"/>
-                                        </div>
-                                        <div class="col-8 ">
-                                            <p:autoComplete class="w-100" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
-                                                            completeMethod="#{institutionController.completeIns}"
-                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                                <p:column>
-                                                    #{ix.name}
-                                                </p:column>
-                                                <p:column>
-                                                    #{ix.institutionCode}
-                                                </p:column>
-                                            </p:autoComplete>
-                                        </div>
-                                    </div>
-
-                                    <div class="row m-1">
-                                        <div class="col-4 d-flex align-items-center">
-                                            <p:outputLabel value="Amount"/>
-                                        </div>
-                                        <div class="col-8">
-                                            <p:inputText class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
-                                        </div>
-                                    </div>
-
-                                    <div class="row m-1">
-                                        <div class="col-4">
-                                            <p:outputLabel value="Description"/>
-                                        </div>
-                                        <div class="col-8">
-                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </p:panel>
+                                </p:panel>
+                            </h:panelGroup>        
                         </div>
-
-                    </div>
-                    <h:panelGrid columns="2">
                     </h:panelGrid>
                 </p:panel>
             </h:form>
