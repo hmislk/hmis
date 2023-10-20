@@ -16,9 +16,11 @@
                         <div class="col-md-3">
                             <h:form>
                                 <p:accordionPanel activeIndex="#{cashierReportController.reportCashierIndex}">
-                                   <p:ajax process="@this" ></p:ajax>
+                                    <p:ajax process="@this" ></p:ajax>
                                     <p:tab title="Common Reports">
                                         <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Shift End Summary" action="#{cashierReportController.navigateToShiftEndSummary}" />
+                                            <p:commandButton class="w-100" ajax="false" value="Day End Summary" action="#{cashierReportController.navigateToDayEndSummary()}" />
                                             <p:commandButton class="w-100" ajax="false" 
                                                              value="Department All Cashier Report" 
                                                              action="#{cashierReportController.navigateToDepartmentAllCashierReport}" 

@@ -20,33 +20,13 @@
                 <div class="container-fluid">
                     <div class="row">
                         <ul class="list-group list-group-horizontal">
-                            <ui:repeat value="#{sessionController.userIcons}" var="i" >
+                            <ui:repeat value="#{sessionController.userIcons}" var="i">
                                 <p:commandLink
-                                    rendered="#{i.icon eq 'Patient_Lookup'}"
-                                    class="list-group-item shadow-sm  p-0 m-2" style="height: 50px;"
-                                    action="#{opdBillController.navigateToSearchPatients()}">
-                                    <h:graphicImage library="icons" name="lookup_and_add.png" style="max-height: 100%; width: auto;"/>
-                                </p:commandLink>
-                                <p:commandLink 
-                                    rendered="#{i.icon eq 'Patient_Add_New'}"
+                                    ajax="false"
                                     class="list-group-item shadow-sm p-0 m-2" 
-                                    style="height: 50px;" 
-                                    action="#{opdBillController.navigateToSearchPatients()}">
-                                    <h:graphicImage library="icons" name="register.png" style="height: 100%; width: auto;"/>
-                                </p:commandLink>
-                                <p:commandLink 
-                                    rendered="#{i.icon eq 'New_Opd_Bill'}"
-                                    class="list-group-item shadow-sm p-0 m-2" 
-                                    style="height: 50px;" 
-                                    action="#{opdBillController.navigateToSearchPatients()}">
-                                    <h:graphicImage library="icons" name="opd_billing.png" style="height: 100%; width: auto;"/>
-                                </p:commandLink>
-                                <p:commandLink 
-                                    rendered="#{i.icon eq 'Search_Opd_Bill'}"
-                                    class="list-group-item shadow-sm p-0 m-2" 
-                                    style="height: 50px;" 
-                                    action="#{opdBillController.navigateToSearchPatients()}">
-                                    <h:graphicImage library="icons" name="search_opd_bill.png" style="height: 100%; width: auto;"/>
+                                    style="height: 50px;"
+                                    action="#{sessionController.getActionForIcon(i.icon)}">
+                                    <h:graphicImage library="icons" name="#{i.icon.image}" style="max-height: 100%; width: auto;"/>
                                 </p:commandLink>
                             </ui:repeat>
                         </ul>
