@@ -292,6 +292,18 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
     }
+    
+    public String navigateToSearchOpdBillsOfLoggedDepartment() {
+        maxResult = 50;
+        bills = null;
+        aceptPaymentBills = null;
+        selectedBills = null;
+        billFees = null;
+        billItems = null;
+        patientInvestigations = null;
+        searchKeyword = null;
+        return "/opd/search_opd_billd_of_logged_department";
+    }
 
     public void makeListNull2() {
         billFeesDone = null;
