@@ -48,11 +48,9 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                    <div class="nonPrintBlock">
-                                        <p:commandButton value="Print" ajax="false" action="#"  >
-                                            <p:printer target="fiveFivePaperWithHeadingsA" ></p:printer>
-                                        </p:commandButton>
-                                    </div>
+                                    <p:commandButton value="PRINT" ajax="false"  icon="pi pi-print" >
+                                        <p:printer target="fiveFivePaperWithHeadingsA" ></p:printer>
+                                    </p:commandButton>
                                     <h:panelGroup id="fiveFivePaperWithHeadingsA">
                                         <ui:repeat value="#{opdBillController.bills}" var="b">
                                             <bi:five_five_paper_with_headings bill="#{b}"/>                        
@@ -145,7 +143,7 @@
                                     </p:commandButton>
                                     <p:commandButton ajax="false" value="Cancel All Bills of this Patient" action="#{billController.cancellAll}" style="float: right;"
                                                      onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
-                                                             return false;"/>
+                                                                 return false;"/>
                                 </div>
 
 
