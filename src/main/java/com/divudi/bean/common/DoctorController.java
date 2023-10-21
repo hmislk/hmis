@@ -325,6 +325,7 @@ public class DoctorController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
+            System.out.println("value = " + value);
             DoctorController controller = (DoctorController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "doctorController");
             return controller.getEjbFacade().find(getKey(value));
