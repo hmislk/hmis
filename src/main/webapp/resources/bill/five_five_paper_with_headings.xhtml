@@ -16,49 +16,12 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        
+        <link 
+            rel="stylesheet" 
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css"/>
 
-        <h:outputStylesheet>
-            /* Styles for screen display */
-            .page {
-
-            }
-            .d-flex {
-            display: flex;
-            }
-            .flex-grow-1 {
-            flex: 1;
-            }
-            .bill-item {
-            border: 1px solid #ddd;
-            margin: 20px;
-            padding: 20px;
-            background-color: whitesmoke;
-            box-shadow: 3px 3px 2px 0px rgba(128, 0, 0, 1);
-            page-break-after: always;
-            }
-
-            /* Styles for print */
-            @media print {
-            .bill-item {
-            page-break-after: always;
-            margin: 0px;
-            padding: 0px
-            }
-            .page {
-            border: none;
-            background-color: transparent;
-            box-shadow: none;
-            margin: 0px;
-            padding: 0px
-            }
-            }
-        </h:outputStylesheet>
-
-
-
-
-
-        <div  >
+        <div style="font-size: 13pt;" class="p-3 m-2"  >
 
             <div style="text-align: center; font-weight: 600">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
@@ -87,8 +50,8 @@
                 <hr></hr>                
             </div>
 
-            <div >
-                <table style="width: 99%!important;" >
+            <div style="text-align: center;">
+                <table  >
 
 
 
@@ -234,27 +197,27 @@
                 </table>
             </div>
 
+            <div style="text-align: center;">
+                <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}">
+                    <div style="text-align: center; font-size: 30px;">
+                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" width="300px" height="100px" />
+                    </div>
+                </h:panelGroup>
+            </div>
 
-            <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}">
-                <div style="text-align: center; font-size: 30px;">
-                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" width="300px" height="100px" />
-                </div>
-            </h:panelGroup>
+            <div class="w-100 center_content" style="text-align: center;" >
 
-
-            <div  >
-
-                <table width="100%" style="width: 100%;" >
+                <table   >
                     <tr>
                         <td colspan="2" style="text-align: center;" >
                             <hr/>
                         </td>
                     </tr>
                     <tr>
-                        <td style="width:55%!important;">
+                        <td  style="text-align: left;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                        <td  style="text-align: right; padding-right: 30px!important">
                             <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
                     </tr>
@@ -267,7 +230,7 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
-                                <td  style="overflow: visible;">
+                                <td  style="text-align: left;">
                                     <h:outputLabel  value="#{bip.searialNo+1} - #{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
@@ -329,7 +292,7 @@
 
             <div  >
 
-                <table style="width: 100%;">
+                <table >
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>

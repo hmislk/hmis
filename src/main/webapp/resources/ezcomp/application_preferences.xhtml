@@ -27,7 +27,7 @@
             <p:tabView orientation="left" >
                 <p:tab title="Frontend" >
                     <p:panel header="Website" >
-                        <h:panelGrid columns="2" styleClass="alignTop" >
+                        <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
                             <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
 
@@ -42,8 +42,12 @@
                             <h:outputLabel value="Logging Header" ></h:outputLabel>
                             <h:inputText
                                 value="#{sessionController.currentPreference.loggingHeader}" />
+                            
+                            
                             <h:outputLabel value="Logging Text" ></h:outputLabel>
-                            <h:inputText
+                            <p:textEditor 
+                                secure="false" 
+                                class="w-100" 
                                 value="#{sessionController.currentPreference.loggingText}" />
 
 
