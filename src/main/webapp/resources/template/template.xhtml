@@ -35,15 +35,20 @@
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
-    <h:body style="height: 90vh;" class="bg-light">
+    <h:body style="height: 90vh;" class="">
 
         <div class="row" >
             <div class="col-12" >
                 <h:panelGroup rendered="#{!sessionController.firstLogin}" >
                     <h:panelGroup rendered ="#{not sessionController.logged}"  >
-                        <ui:insert name="login">
-                            <ez:login/>
-                        </ui:insert>
+                        <h:panelGroup rendered="#{!applicationController.hasAwebsiteAsFrontEnd}" >
+                            <ui:insert name="login">
+                                <ez:login/>
+                            </ui:insert>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{applicationController.hasAwebsiteAsFrontEnd}" >
+                            <!--Need to redirect to /index1.xhtml-->
+                        </h:panelGroup>
                     </h:panelGroup>
                     <h:panelGroup rendered ="#{sessionController.logged}"  >
                         <h:panelGroup rendered="#{sessionController.department ne null}" >

@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.divudi</groupId>
-    <artifactId>horizon</artifactId>
+    <artifactId>arogyaohims</artifactId>
     <version>3.0.0</version>
     <packaging>war</packaging>
-    <name>horizon</name>
+    <name>arogyaohims</name>
     
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
@@ -116,11 +116,23 @@
             <version>2.6.12</version>
         </dependency>
        
+
+
+
+
+
+
+        
+       
+            
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.14.1</version>
         </dependency>
+
+
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -177,7 +189,7 @@
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20231013</version>
+            <version>20180813</version>
         </dependency>
         <dependency>
             <groupId>org.xhtmlrenderer</groupId>
