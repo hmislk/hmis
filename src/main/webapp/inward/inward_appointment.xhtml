@@ -25,12 +25,16 @@
                         <div class="row">
                             <div class="col-12">
 
-                                <p:selectOneMenu   id="cmbPs" value="#{appointmentController.currentBill.paymentMethod}">                                                                     
+                                <p:selectOneMenu   
+                                    id="cmbPs" 
+                                    value="#{appointmentController.currentBill.paymentMethod}">                                                                     
                                     <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                     <p:ajax process="cmbPs" update="pBillDetails creditCard cheque slip" event="change" />
                                 </p:selectOneMenu>
 
-                                <h:panelGroup id="creditCard" style="display: #{appointmentController.currentBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+                                <h:panelGroup 
+                                    id="creditCard" 
+                                    style="display: #{appointmentController.currentBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                     <pa:creditCard paymentMethodData="#{appointmentController.paymentMethodData}"/>
                                 </h:panelGroup>
 
@@ -69,7 +73,7 @@
                                                    class="form-label"/>
                                     <p:autoComplete forceSelection="true"
                                                     class="w-100"
-                                                    
+
                                                     inputStyleClass="w-100"
                                                     id="cmbDoc" 
                                                     value="#{appointmentController.currentBill.referredBy}"
