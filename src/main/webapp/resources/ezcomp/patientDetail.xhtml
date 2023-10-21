@@ -7,7 +7,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patient" type="com.divudi.entity."  />
+        <cc:attribute name="patient" type="com.divudi.entity.Patient"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -35,33 +35,33 @@
         <div class="row mt-2">
             <div class="col-md-4 p-1">
                 <p:outputLabel for="year" value="Age Year Part" ></p:outputLabel>
-                <p:inputText autocomplete="off" placeholder="Age Years Part" id="year" value="#{patientController.current.person.ageYearsComponent}" class="form-control w-100">
-                    <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
+                <p:inputText autocomplete="off" placeholder="Age Years Part" id="year" value="#{cc.attrs.patient.person.ageYearsComponent}" class="form-control w-100">
+                    <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" />
                 </p:inputText>
             </div>
             <div class="col-md-4 p-1">
                 <p:outputLabel for="year" value="Age Month Part" ></p:outputLabel>
-                <p:inputText autocomplete="off" id="month" placeholder="Age Month Part" value="#{patientController.current.person.ageMonthsComponent}" class="form-control w-100">
-                    <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
+                <p:inputText autocomplete="off" id="month" placeholder="Age Month Part" value="#{cc.attrs.patient.person.ageMonthsComponent}" class="form-control w-100">
+                    <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob"/>
                 </p:inputText>
             </div>
             <div class="col-md-4 p-1">
                 <p:outputLabel for="year" value="Age Days Part" ></p:outputLabel>
-                <p:inputText autocomplete="off" id="day" placeholder="Age Days Part" value="#{patientController.current.person.ageDaysComponent}" class="form-control w-100">
-                    <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" listener="#{appointmentController.dateChangeListen()}" />
+                <p:inputText autocomplete="off" id="day" placeholder="Age Days Part" value="#{cc.attrs.patient.person.ageDaysComponent}" class="form-control w-100">
+                    <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" />
                 </p:inputText>
             </div>
         </div>
         <div class="row mt-2">
             <div class="col-md-4 p-1">
                 <p:outputLabel value="Age" ></p:outputLabel>
-                <p:outputLabel id="txtAgeStr" value="#{patientController.current.person.ageAsString}" class="form-control w-100">
+                <p:outputLabel id="txtAgeStr" value="#{cc.attrs.patient.person.ageAsString}" class="form-control w-100">
                 </p:outputLabel>
             </div>
             <div class="col-md-4 p-1">
                 <p:outputLabel value="Date of Birth" ></p:outputLabel>
                 <p:datePicker id="calNewPtDob" 
-                              value="#{patientController.current.person.dob}"
+                              value="#{cc.attrs.patient.person.dob}"
                               inputStyleClass="w-100"
                               class="w-100">
                     <p:ajax process="@this" update="year month day txtAgeStr" ></p:ajax>

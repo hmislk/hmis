@@ -42,7 +42,11 @@
                                     <pa:slip paymentMethodData="#{appointmentController.paymentMethodData}"/>
                                 </h:panelGroup>
 
-                                <p:commandButton  value="Settle" action="#{appointmentController.settleBill}" ajax="false"   class="m-1">
+                                <p:commandButton  
+                                    value="Settle" 
+                                    action="#{appointmentController.settleBill}" 
+                                    ajax="false"   
+                                    class="m-1">
                                 </p:commandButton>
 
                                 <p:commandButton value="New Bill" ajax="false" action="#{appointmentController.prepareNewBill()}" >
@@ -55,7 +59,7 @@
                             <div class="col-md-6">
                                 <h:panelGroup id="panelPatient" >
                                     <p:panel header="Patient Details">
-                                        <ez:patientDetail  patient="#{appointmentController.searchedPatient}"/>
+                                        <ez:patientDetail   patient="#{appointmentController.searchedPatient}"/>
                                     </p:panel>
                                 </h:panelGroup>
                             </div>
@@ -65,6 +69,7 @@
                                                    class="form-label"/>
                                     <p:autoComplete forceSelection="true"
                                                     class="w-100"
+                                                    
                                                     inputStyleClass="w-100"
                                                     id="cmbDoc" 
                                                     value="#{appointmentController.currentBill.referredBy}"
