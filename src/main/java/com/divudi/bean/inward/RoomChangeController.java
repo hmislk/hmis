@@ -375,19 +375,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public Admission getCurrent() {
-        if (current == null) {
-            Person p = new Person();
-            Patient tPatient = new Patient();
-            tPatient.setPerson(p);
-
-            current = new Admission();
-            current.setPatient(tPatient);
-
-            Person g = new Person();
-            current.setGuardian(g);
-
-            addLinenCharge = 0.0;
-        }
+       
         return current;
     }
 
