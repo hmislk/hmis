@@ -15,23 +15,21 @@
             <p:panel>      
 
                 <p:panel header="Channel Report Of Consultants with Speciality wise">
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
 
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
 
                         </p:calendar>
-                    </h:panelGrid>
+                    </p:panelGrid>
 
-
-                    <h:panelGroup id="pan1">
-                        <h:panelGrid >
+                    <h:panelGrid class="my-2">
                             <p:commandButton action="#{channelReportTempController.createChannelReportDoctorWise()}" value="Count" ajax="false" />
                         </h:panelGrid>
-                    </h:panelGroup>
+                    
 
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
