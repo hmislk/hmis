@@ -21,8 +21,14 @@
                         <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" class="w-100 p-2">
                         </p:calendar>
                     </div>
+                    
+                </div>
+                
+                <p:spacer height="10"/>
+                
+                <div class="row">
                     <div class="col-md-4">
-                        <h:outputLabel value="Department"/>
+                        <h:outputLabel value="Department"/>&nbsp;&nbsp;
                         <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"   completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                         </p:autoComplete>
                     </div>

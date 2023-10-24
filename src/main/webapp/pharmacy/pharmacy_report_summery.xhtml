@@ -34,6 +34,19 @@
                     </p:commandButton>
                 </h:panelGrid>
 
+                <h:panelGrid styleClass="printBlock" columns="2">                   
+                    
+                    <h:outputLabel value="Pharmacy Report Summary"/>    
+                    <h:outputLabel/>
+                    <h:outputLabel value="From Date :  "/>
+                    <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>
+                    <h:outputLabel value="To Date"/>
+                    <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
+                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                    </h:outputLabel>                       
+                </h:panelGrid>
 
 
                 <p:spacer height="15"/>
