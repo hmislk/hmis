@@ -22,8 +22,25 @@
             <div  class="container-fluid" >
                 <h:outputStylesheet library="css" name="printingOpd.css"></h:outputStylesheet>
 
-                <div  class="fiveinchbill">
+                <div>
                     <h:panelGroup >
+                        <h:panelGroup layout="block" style="text-align: center;">
+                            <h:outputLabel value="#{cc.attrs.bill.department.printingName}" 
+                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)" />
+                            <br/>
+                            <h:outputLabel value="#{cc.attrs.bill.department.address}" style="font-weight: bold; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                            <br/>
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" style="font-weight: bold; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                            <p:spacer width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" style="font-weight: bold;  font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+                            <p:spacer width="10" ></p:spacer>
+                            <h:outputLabel value="#{cc.attrs.bill.department.fax}" style="font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>   
+                            <br/>    
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" style="font-size: var(--base-font-size);"/>
+                            <h:outputLabel value="RECEIPT" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>    
+                            <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/>
+                            <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" style="color: red; font-size: var(--header-font-size); font-family: var(--font-family)"/> 
+                        </h:panelGroup>
 
 
 
@@ -39,13 +56,14 @@
                                                                rendered="#{cc.attrs.bill.refundedBill.insId eq null and
                                     cc.attrs.bill.cancelledBill.insId eq null and cc.attrs.dup eq true}"/> 
      </div>-->
-                        <div class="m-2 m-2 px-5">
+                        <div class="m-0 px-5">
                             <div class="row">
-                                <div class="col-4 w-100 d-flex">
+                                <div class="col-5 w-100 d-flex">
                                     <div class="d-flex justify-content-between w-100">
-                                        <div class="text-left">
-                                            <h:outputLabel value="Receipt "/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="Receipt " style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
+                                        <p:spacer width="100"/>
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
@@ -53,33 +71,38 @@
 
                                             <h:outputLabel value="#{cc.attrs.bill.insId}" 
                                                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and
-                                                                       cc.attrs.bill.cancelledBill.insId eq null}"/> 
+                                                                       cc.attrs.bill.cancelledBill.insId eq null}"
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/> 
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-4  w-100 d-flex">
+                                <div class="col-2  w-100 d-flex">
 
                                 </div>
-                                <div class="col-4 w-100 d-flex">
+                                <div class="col-5 w-100 d-flex">
                                     <div class="d-flex justify-content-between w-100">
-                                        <div class="text-left">
-                                            <h:outputLabel value="Date"/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="Date" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
+                                        <p:spacer width="100"/>
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
                                         <div  class="w-100 text-left">
-                                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.createdAt}"
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
+                                            <h:outputLabel value="#{cc.attrs.bill.cancelledBill.createdAt} "
+                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" 
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                                 <f:convertDateTime pattern="dd/MM/yy"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="#{cc.attrs.bill.refundedBill.createdAt}"
-                                                           rendered="#{cc.attrs.bill.refundedBill.insId ne null}">
+                                                           rendered="#{cc.attrs.bill.refundedBill.insId ne null}"
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                                 <f:convertDateTime pattern="dd/MM/yy"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="#{cc.attrs.bill.createdAt}"
                                                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and 
-                                                                       cc.attrs.bill.cancelledBill.insId eq null }">
+                                                                       cc.attrs.bill.cancelledBill.insId eq null }"
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                                 <f:convertDateTime pattern="dd/MM/yy"/>
                                             </h:outputLabel>
                                         </div>
@@ -89,40 +112,45 @@
                         </div>
                         <div class="m-2 m-2 px-5">
                             <div class="row">
-                                <div class="col-4 d-flex">
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">
-                                        <div class="text-left">
-                                            <h:outputLabel value="BHT No"/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="BHT No" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
+                                        <p:spacer width="100"/>
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
                                         <div class="w-100 text-left">
-                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>                        
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>                        
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-4 d-flex"></div>
-                                <div class="col-4 d-flex">
+                                <div class="col-2 d-flex"></div>
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">           
-                                        <div class="text-left">
-                                            <h:outputLabel value="Time"/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="Time" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
+                                        <p:spacer width="100"/>
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
                                         <div class="w-100 text-left">
                                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.createdAt}"  
-                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
+                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                                 <f:convertDateTime pattern="hh:mm:a"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="#{cc.attrs.bill.refundedBill.createdAt}"  
-                                                           rendered="#{cc.attrs.bill.refundedBill.insId ne null}">
+                                                           rendered="#{cc.attrs.bill.refundedBill.insId ne null}"
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                                 <f:convertDateTime pattern="hh:mm:a"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" 
                                                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and 
-                                                                       cc.attrs.bill.cancelledBill.insId eq null }">
+                                                                       cc.attrs.bill.cancelledBill.insId eq null }"
+                                                           style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                                 <f:convertDateTime pattern="hh:mm:a"/>
                                             </h:outputLabel>
                                         </div>
@@ -135,44 +163,48 @@
 
                         <div class="m-2 m-2 px-5">
                             <div class="row">
-                                <div class="col-4 d-flex">
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">
-                                        <div class="text-left">
-                                            <h:outputLabel value="Age"/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="Age" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
+                                        <p:spacer class="100"/>
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
-                                        <div class="w-100 text-left">
+                                        <div class="w-100 text-left" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
                                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.age}"/>    
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-4 d-flex"></div>
-                                <div class="col-4 d-flex">
+                                <div class="col-2 d-flex"></div>
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">
-                                        <div class="text-left">
-                                            <h:outputLabel value="Referred By"/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="Referred By" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
+
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
+                                        </div >
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" class="w-100 text-left" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
-                                        <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" class="w-100 text-left" />
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="m-2 m-2 px-5">
                             <div class="row">
-                                <div class="col-12 d-flex">
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">
-                                        <div class="text-left">
-                                            <h:outputLabel value="Patient "/>
+                                        <div class="text-left w-100">
+                                            <h:outputLabel value="Patient " style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
                                         <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" class="w-100 text-left" />
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" class="w-100 text-left" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                     </div>
                                 </div>
 
@@ -180,35 +212,39 @@
                         </div>
                         <div class="m-2 m-2 px-5">
                             <div class="row">
-                                <div class="col-4 d-flex">
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">
                                         <div class="w-100 text-left">
-                                            <h:outputLabel value="Phone No"/>
+                                            <h:outputLabel value="Phone No" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
-                                        <div class="w-100 text-left">
+                                        <p:spacer class="100"/>
+                                        <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}" class="w-100 text-left" />
+                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}" class="w-100 text-left" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                     </div>
                                 </div>
-                                <div class="col-4 d-flex"></div>
-                                <div class="col-4 d-flex">
+                                <div class="col-2 d-flex"></div>
+                                <div class="col-5 d-flex">
                                     <div class="d-flex justify-content-between w-100">
                                         <div class="w-100 text-left">
-                                            <h:outputLabel value="Room"/>
+                                            <h:outputLabel value="Room" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
                                         </div>
-                                        <div class="w-100 text-left">
+                                        <p:spacer class="100"/>
+                                        <div class="text-left">
                                             <h:outputLabel value=":"/>
                                         </div>
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" class="w-100 text-left" />
+                                        
+                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" class="w-100 text-left" style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)"/>
+                                        
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="m-2 m-2 px-5">
+                        <div class="m-2 px-5 w-100">
                             <center>
-                                <div class="row">
+                                <div class="row w-100">
                                     <div>
                                         <table>
 
@@ -235,12 +271,12 @@
 
                                             <tr>
                                                 <td colspan="2" >
+
                                                     <div >
-                                                        <div>
-                                                            <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
-                                                                       />
-                                                        </div>
+                                                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" style="width: 200px;"
+                                                                   />
                                                     </div>
+
                                                 </td>
                                             </tr>
 
@@ -313,21 +349,21 @@
 
                         <div class="m-2 m-2 px-5">
                             <center>
-                            <div class="row">
-                                
-                                <div class="col-12 d-flex">
-                                    <div class="d-flex justify-content-between w-100">
-                                        <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}"  
-                                                       rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />
-                                        <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code}"
-                                                       rendered="#{cc.attrs.bill.refundedBill.insId ne null}"   />
-                                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" 
-                                                       rendered="#{cc.attrs.bill.refundedBill.insId eq null and
-                                                                   cc.attrs.bill.cancelledBill.insId eq null }"/>
-                                    </div>
+                                <div class="row">
 
+                                    <div class="col-12 d-flex">
+                                        <div class="d-flex justify-content-between w-100">
+                                            <h:outputLabel value="Cashier : #{cc.attrs.bill.cancelledBill.creater.code}"  
+                                                           rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" />
+                                            <h:outputLabel value="Cashier : #{cc.attrs.bill.refundedBill.creater.code}"
+                                                           rendered="#{cc.attrs.bill.refundedBill.insId ne null}"   />
+                                            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}" 
+                                                           rendered="#{cc.attrs.bill.refundedBill.insId eq null and
+                                                                       cc.attrs.bill.cancelledBill.insId eq null }"/>
+                                        </div>
+
+                                    </div>
                                 </div>
-                            </div>
                             </center>
                         </div>
 
