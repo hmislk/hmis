@@ -30,15 +30,19 @@
                             <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-4" >
                             </p:calendar>
                         </div>
-                        <div class="col-md-4">
-                            <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;&nbsp;
-                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                             forceSelection="true"
-                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                             value="#{channelReportController.webUser}"></p:autoComplete>
-
-                        </div>
                     </div>
+                        <div class="row p-2">
+                            <div class="col-md-4">
+                               
+                                    <h:outputLabel styleClass="noPrintButton" value="User Name"/>&nbsp;&nbsp;&nbsp;
+                                    <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                                     forceSelection="true"
+                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                                     value="#{channelReportController.webUser}"></p:autoComplete>
+
+                            </div>
+                        </div>
+                   
                     <div class="row">
                         <div class="col-md-12">
 

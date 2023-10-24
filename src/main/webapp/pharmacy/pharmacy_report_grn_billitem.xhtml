@@ -22,7 +22,7 @@
                         </p:calendar>
                     </div>
                 </div>
-                <p:spacer height="5"/>
+                <p:spacer height="10"></p:spacer>
                 <div class="row">
                     <div class="col-md-5">
                         <p:outputLabel value="Dealer"></p:outputLabel><p:spacer width="50"/> &nbsp;
@@ -36,7 +36,7 @@
                         <p:inputText value="#{pharmacySaleReport.searchKeyword.refBillNo}"></p:inputText>
                     </div>
                 </div>
-                <p:spacer height="5"/>
+                <p:spacer height="10"></p:spacer>
                 <div class="row">
                     <div class="col-md-5">
                         <p:outputLabel value="GRN Number"></p:outputLabel>&nbsp;&nbsp;
@@ -51,7 +51,7 @@
                         </p:autoComplete>
                     </div>
                 </div>
-                <p:spacer height="5"/>
+                <p:spacer height="10"></p:spacer>
                 <div class="row">
                     <div class="col-md-6">
                         <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createGRNBillItemTable()}"/>&nbsp;
@@ -69,15 +69,16 @@
                 <p:spacer height="30"/>
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billItems}" var="i" >
                     <f:facet name="header">
-                        <h:outputLabel value="From Date :  "/>
+                        <h:outputLabel value="From Date :  "/>&nbsp;&nbsp;
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
                         </h:outputLabel>
-                        <h:outputLabel value="To Date"/>
+                        &nbsp;&nbsp;
+                        <h:outputLabel value="To Date  :"/>&nbsp;&nbsp;
                         <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
                             <f:convertDateTime pattern="dd MMMM yyyy" />
                         </h:outputLabel><br/>                   
-                        <h:outputLabel value="Pharmacy GRN Bill Item Table"/>
+                        <h:outputLabel value="Pharmacy GRN Bill Item Table"/>&nbsp;&nbsp;
                     </f:facet>
                     <p:column headerText="PO Number">
                         <f:facet name="header" >
