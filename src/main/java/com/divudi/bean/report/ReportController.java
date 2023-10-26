@@ -132,6 +132,13 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/organism_antibiotic_sensitivity";
     }
+    
+    public String navigateToLabRegisterReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/lab_register";
+    }
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
