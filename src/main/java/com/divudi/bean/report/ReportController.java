@@ -47,6 +47,9 @@ public class ReportController implements Serializable {
     private Category category;
     private Item item;
     private Machine machine;
+    private String processBy;
+    private String ccName;
+    private String ccRoute;
 
     private List<Bill> bills;
     private List<ReportLabTestCount> reportLabTestCounts;
@@ -92,6 +95,13 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
         return "/reports/lab/test_count";
+    }
+    
+    public String navigateToLabPeakHourStatistics() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/peak_hour_statistics";
     }
 
     public String navigateToPoStatusReport() {
@@ -262,6 +272,30 @@ public class ReportController implements Serializable {
 
     public void setReportLabTestCounts(List<ReportLabTestCount> reportLabTestCounts) {
         this.reportLabTestCounts = reportLabTestCounts;
+    }
+
+    public String getCcRoute() {
+        return ccRoute;
+    }
+
+    public void setCcRoute(String ccRoute) {
+        this.ccRoute = ccRoute;
+    }
+
+    public String getCcName() {
+        return ccName;
+    }
+
+    public void setCcName(String ccName) {
+        this.ccName = ccName;
+    }
+
+    public String getProcessBy() {
+        return processBy;
+    }
+
+    public void setProcessBy(String processBy) {
+        this.processBy = processBy;
     }
 
 }
