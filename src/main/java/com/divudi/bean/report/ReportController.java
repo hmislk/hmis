@@ -7,9 +7,11 @@ import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
@@ -58,6 +60,11 @@ public class ReportController implements Serializable {
     private String visitType;
     private Patient patient;
     private String diagnosis;
+    private Doctor referingDoctor;
+    
+     private Investigation investigation;
+    
+    
    
 
     private List<Bill> bills;
@@ -118,6 +125,12 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
         return "/reports/lab/investigation_wise_report";
+    }
+    public String navigateToLabOrganismAntibioticSensitivityReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/organism_antibiotic_sensitivity";
     }
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
@@ -348,6 +361,22 @@ public class ReportController implements Serializable {
 
     public void setDiagnosis(String diagnosis) {
         this.diagnosis = diagnosis;
+    }
+
+    public Doctor getReferingDoctor() {
+        return referingDoctor;
+    }
+
+    public void setReferingDoctor(Doctor referingDoctor) {
+        this.referingDoctor = referingDoctor;
+    }
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
     }
 
 }
