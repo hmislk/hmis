@@ -594,8 +594,13 @@ public class InstitutionController implements Serializable {
 
     public void fillItems() {
         String j;
-        j = "select i from Institution i where i.retired=false order by i.name";
-        items = getFacade().findByJpql(j);
+        j = "select i "
+                + " from Institution i "
+                + " where i.retired=:ret"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        items = getFacade().findByJpql(j,m);
     }
 
     public void formatAgentSerial() {
