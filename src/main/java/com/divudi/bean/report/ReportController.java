@@ -50,6 +50,14 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
+    private String priorityType;
+    private String patientMrn;
+    private String investigation;
+    private String status;
+    private String refDocName;
+    private String totalAverage;
+    private String visit;
+    
 
     private List<Bill> bills;
     private List<ReportLabTestCount> reportLabTestCounts;
@@ -104,6 +112,13 @@ public class ReportController implements Serializable {
         return "/reports/lab/peak_hour_statistics";
     }
 
+    public String navigateToTurnAroundTimeDetails() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/turn_around_time_details";
+    }
+    
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -296,6 +311,62 @@ public class ReportController implements Serializable {
 
     public void setProcessBy(String processBy) {
         this.processBy = processBy;
+    }
+
+    public String getPriorityType() {
+        return priorityType;
+    }
+
+    public void setPriorityType(String priorityType) {
+        this.priorityType = priorityType;
+    }
+
+    public String getPatientMrn() {
+        return patientMrn;
+    }
+
+    public void setPatientMrn(String patientMrn) {
+        this.patientMrn = patientMrn;
+    }
+
+    public String getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(String investigation) {
+        this.investigation = investigation;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRefDocName() {
+        return refDocName;
+    }
+
+    public void setRefDocName(String refDocName) {
+        this.refDocName = refDocName;
+    }
+
+    public String getTotalAverage() {
+        return totalAverage;
+    }
+
+    public void setTotalAverage(String totalAverage) {
+        this.totalAverage = totalAverage;
+    }
+
+    public String getVisit() {
+        return visit;
+    }
+
+    public void setVisit(String visit) {
+        this.visit = visit;
     }
 
 }
