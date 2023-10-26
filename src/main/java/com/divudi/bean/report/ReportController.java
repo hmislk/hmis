@@ -2,12 +2,14 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.data.ReportLabTestCount;
+import com.divudi.data.Sex;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
@@ -50,6 +52,13 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
+    
+    private double investigationResult;
+    
+    private String visitType;
+    private Patient patient;
+    private String diagnosis;
+   
 
     private List<Bill> bills;
     private List<ReportLabTestCount> reportLabTestCounts;
@@ -104,6 +113,12 @@ public class ReportController implements Serializable {
         return "/reports/lab/peak_hour_statistics";
     }
 
+    public String navigateToLabInvetigationWiseReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/investigation_wise_report";
+    }
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -148,6 +163,7 @@ public class ReportController implements Serializable {
 
     }
 
+    
     public Department getFromDepartment() {
         return fromDepartment;
     }
@@ -226,6 +242,9 @@ public class ReportController implements Serializable {
         }
         return fromDate;
     }
+    public Sex[] getSex() {
+        return Sex.values();
+    }
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
@@ -296,6 +315,39 @@ public class ReportController implements Serializable {
 
     public void setProcessBy(String processBy) {
         this.processBy = processBy;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public double getInvestigationResult() {
+        return investigationResult;
+    }
+
+    public void setInvestigationResult(double investigationResult) {
+        this.investigationResult = investigationResult;
+    }
+
+    
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+
+    public void setDiagnosis(String diagnosis) {
+        this.diagnosis = diagnosis;
     }
 
 }
