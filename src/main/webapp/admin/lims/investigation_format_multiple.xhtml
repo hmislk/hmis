@@ -46,7 +46,6 @@
 
                                              >
                                     <p:column selectionMode="multiple" >
-
                                     </p:column>
                                     <p:column headerText="Item" sortBy="#{ixi.name}" filterBy="#{ixi.name}" >
                                         <p:outputLabel value="#{ixi.name}" ></p:outputLabel>
@@ -54,11 +53,17 @@
                                     <p:column headerText="Type"  sortBy="#{ixi.ixItemType}" filterBy="#{ixi.ixItemType}" >
                                         <p:outputLabel value="#{ixi.ixItemType}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Top"  sortBy="#{ixi.riTop}" >
+                                    <p:column headerText="Top"  sortBy="#{ixi.riTop}" filterBy="#{ixi.riTop}" >
                                         <p:outputLabel value="#{ixi.riTop}" ></p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Left"  sortBy="#{ixi.riLeft}"  >
+                                    <p:column headerText="Left"  sortBy="#{ixi.riLeft}" filterBy="#{ixi.riLeft}" >
                                         <p:outputLabel value="#{ixi.riLeft}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Font Size"  sortBy="#{ixi.riFontSize}" filterBy="#{ixi.riFontSize}" >
+                                        <p:outputLabel value="#{ixi.riFontSize}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Font"  sortBy="#{ixi.cssFontFamily}" filterBy="#{ixi.cssFontFamily}" >
+                                        <p:outputLabel value="#{ixi.cssFontFamily}" ></p:outputLabel>
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
