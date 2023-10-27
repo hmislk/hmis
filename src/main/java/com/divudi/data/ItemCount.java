@@ -1,26 +1,27 @@
 package com.divudi.data;
 
+import java.util.List;
+
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-public class ReportLabTestCount {
+public class ItemCount {
+
     private String category;
     private Integer serialNo;
     private String testName;
     private Long testCount;
 
-    public ReportLabTestCount() {
+    public ItemCount() {
     }
 
-    public ReportLabTestCount(String category, String testName, Long testCount) {
+    public ItemCount(String category, String testName, Long testCount) {
         this.category = category;
         this.testName = testName;
         this.testCount = testCount;
     }
 
-    
-    
     public String getCategory() {
         return category;
     }
@@ -52,7 +53,6 @@ public class ReportLabTestCount {
     public void setTestCount(Long testCount) {
         this.testCount = testCount;
     }
-    
-    
-    
+
+
 }

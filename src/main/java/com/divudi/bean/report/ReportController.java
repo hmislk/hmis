@@ -1,23 +1,21 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
-import com.divudi.data.ReportLabTestCount;
-import com.divudi.data.Sex;
+import com.divudi.data.CategoryCount;
+import com.divudi.data.ItemCount;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -51,51 +49,40 @@ public class ReportController implements Serializable {
     private Category category;
     private Item item;
     private Machine machine;
-    private String processBy;
-    private String ccName;
-    private String ccRoute;
-    
-    private double investigationResult;
-    
-    private String visitType;
-    private Patient patient;
-    private String diagnosis;
-    private Doctor referingDoctor;
-    
-     private Investigation investigation;
-    
-    
-   
 
     private List<Bill> bills;
-    private List<ReportLabTestCount> reportLabTestCounts;
+    private List<ItemCount> reportLabTestCounts;
+    private List<CategoryCount> reportList;
 
     public ReportController() {
     }
 
+    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
     public void processLabTestCount() {
-        String jpql = "select new com.divudi.data.ReportLabTestCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td ";
-
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-
-        jpql += " group by bi.item ";
+        jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
 
-        //String category, String testName, Long testCount
-//        BillItem bi = new BillItem();
-//        bi.getItem().getCategory().getName();
-//        bi.getBill().getBillDate();
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+        // Unchecked cast here
+        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
 
-        reportLabTestCounts = billItemFacade.findLightsByJpql(jpql, m);
-        System.out.println("reportLabTestCounts = " + reportLabTestCounts.size());
+        Map<String, CategoryCount> categoryReports = new HashMap<>();
+
+        for (ItemCount count : reportLabTestCounts) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
+                    .getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        }
+
+        // Convert the map values to a list to be used in the JSF page
+        reportList = new ArrayList<>(categoryReports.values());
     }
 
     public String navigateToAssetRegister() {
@@ -112,33 +99,7 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/test_count";
     }
-    
-    public String navigateToLabPeakHourStatistics() {
-        if (institutionController.getItems() == null) {
-            institutionController.fillItems();
-        }
-        return "/reports/lab/peak_hour_statistics";
-    }
 
-    public String navigateToLabInvetigationWiseReport() {
-        if (institutionController.getItems() == null) {
-            institutionController.fillItems();
-        }
-        return "/reports/lab/investigation_wise_report";
-    }
-    public String navigateToLabOrganismAntibioticSensitivityReport() {
-        if (institutionController.getItems() == null) {
-            institutionController.fillItems();
-        }
-        return "/reports/lab/organism_antibiotic_sensitivity";
-    }
-    
-    public String navigateToLabRegisterReport() {
-        if (institutionController.getItems() == null) {
-            institutionController.fillItems();
-        }
-        return "/reports/lab/lab_register";
-    }
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -182,8 +143,9 @@ public class ReportController implements Serializable {
         return "/reports/assest_transfer_report";
 
     }
-
     
+    
+
     public Department getFromDepartment() {
         return fromDepartment;
     }
@@ -262,9 +224,6 @@ public class ReportController implements Serializable {
         }
         return fromDate;
     }
-    public Sex[] getSex() {
-        return Sex.values();
-    }
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
@@ -305,85 +264,20 @@ public class ReportController implements Serializable {
         this.bills = bills;
     }
 
-    public List<ReportLabTestCount> getReportLabTestCounts() {
+    public List<ItemCount> getReportLabTestCounts() {
         return reportLabTestCounts;
     }
 
-    public void setReportLabTestCounts(List<ReportLabTestCount> reportLabTestCounts) {
+    public void setReportLabTestCounts(List<ItemCount> reportLabTestCounts) {
         this.reportLabTestCounts = reportLabTestCounts;
     }
 
-    public String getCcRoute() {
-        return ccRoute;
+    public List<CategoryCount> getReportList() {
+        return reportList;
     }
 
-    public void setCcRoute(String ccRoute) {
-        this.ccRoute = ccRoute;
-    }
-
-    public String getCcName() {
-        return ccName;
-    }
-
-    public void setCcName(String ccName) {
-        this.ccName = ccName;
-    }
-
-    public String getProcessBy() {
-        return processBy;
-    }
-
-    public void setProcessBy(String processBy) {
-        this.processBy = processBy;
-    }
-
-    public Patient getPatient() {
-        return patient;
-    }
-
-    public void setPatient(Patient patient) {
-        this.patient = patient;
-    }
-
-    public double getInvestigationResult() {
-        return investigationResult;
-    }
-
-    public void setInvestigationResult(double investigationResult) {
-        this.investigationResult = investigationResult;
-    }
-
-    
-    public String getVisitType() {
-        return visitType;
-    }
-
-    public void setVisitType(String visitType) {
-        this.visitType = visitType;
-    }
-
-    public String getDiagnosis() {
-        return diagnosis;
-    }
-
-    public void setDiagnosis(String diagnosis) {
-        this.diagnosis = diagnosis;
-    }
-
-    public Doctor getReferingDoctor() {
-        return referingDoctor;
-    }
-
-    public void setReferingDoctor(Doctor referingDoctor) {
-        this.referingDoctor = referingDoctor;
-    }
-
-    public Investigation getInvestigation() {
-        return investigation;
-    }
-
-    public void setInvestigation(Investigation investigation) {
-        this.investigation = investigation;
+    public void setReportList(List<CategoryCount> reportList) {
+        this.reportList = reportList;
     }
 
 }

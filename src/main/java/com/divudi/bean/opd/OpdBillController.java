@@ -1141,7 +1141,7 @@ public class OpdBillController implements Serializable {
                 getPatientFacade().edit(getPatient());
             }
         } else {
-
+            getPatientFacade().edit(getPatient());
         }
     }
 
@@ -1224,14 +1224,12 @@ public class OpdBillController implements Serializable {
     }
 
     public String settleOpdBill() {
+        //FOr Auditing
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-
         String url = request.getRequestURL().toString();
-
         String ipAddress = request.getRemoteAddr();
-
         AuditEvent auditEvent = new AuditEvent();
         auditEvent.setEventStatus("Started");
         long duration;
@@ -1240,7 +1238,6 @@ public class OpdBillController implements Serializable {
         if (sessionController != null && sessionController.getDepartment() != null) {
             auditEvent.setDepartmentId(sessionController.getDepartment().getId());
         }
-
         if (sessionController != null && sessionController.getInstitution() != null) {
             auditEvent.setInstitutionId(sessionController.getInstitution().getId());
         }
@@ -1255,9 +1252,9 @@ public class OpdBillController implements Serializable {
         if (!executeSettleBillActions()) {
             return "";
         }
-        
+
         UserPreference ap = sessionController.getApplicationPreference();
-        if (ap.getSmsTemplateForOpdBillSetting()!= null && !ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
+        if (ap.getSmsTemplateForOpdBillSetting() != null && !ap.getSmsTemplateForOpdBillSetting().trim().equals("")) {
             sendSmsOnOpdBillSettling(ap, ap.getSmsTemplateForOpdBillSetting());
         }
 
