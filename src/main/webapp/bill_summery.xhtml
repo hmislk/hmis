@@ -51,10 +51,10 @@
                                 <p:panel header="Bill Detail">
                                     <p:panelGrid columns="2">
                                         <h:outputText value="Bill No (Ins Id) :" ></h:outputText>
-                                        <h:outputText value="#{billSearch.billSearch.insId}" />
+                                        <p:inputText value="#{billSearch.billSearch.insId}" />
 
                                         <h:outputText value="Bill No (Dept Id) :" ></h:outputText>
-                                        <h:outputText value="#{billSearch.billSearch.deptId}" />
+                                        <p:inputText value="#{billSearch.billSearch.deptId}" />
 
                                         <h:outputText value="Billed bill:" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputText>
                                         <h:outputText value="#{billSearch.billSearch.billedBill.id}" rendered="#{billSearch.billSearch.billedBill ne null}" />
