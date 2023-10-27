@@ -91,13 +91,13 @@
                                         <p:commandLink id="billNo" 
                                                        ajax="false" 
                                                        value="#{bill.insId}" 
-                                                       action="#{searchController.navigateToViewOpdBillByBillLight()}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{searchController.billLight}"/>
+                                                       action="#{opdSearchController.navigateToViewOpdBillByBillLight()}">
+                                            <f:setPropertyActionListener value="#{bill}" target="#{opdSearchController.billLight}"/>
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Bill No" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}">
                                         <h:commandLink action="/bill_reprint" value="#{bill.deptId}">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.billLight}"/>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                         </h:commandLink>  
                                     </p:column>
                                     <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
