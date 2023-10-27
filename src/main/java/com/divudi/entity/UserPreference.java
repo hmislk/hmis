@@ -124,6 +124,8 @@ public class UserPreference implements Serializable {
     @Enumerated(EnumType.STRING)
     PaperType opdBillPaperType;
     @Enumerated(EnumType.STRING)
+    private PaperType inwardServiceBillPaperType;
+    @Enumerated(EnumType.STRING)
     PaperType pharmacyBillPaperType;
     @Enumerated(EnumType.STRING)
     PaperType channelBillPaperType;
@@ -896,5 +898,18 @@ public class UserPreference implements Serializable {
     public void setSmsTemplateForOpdBillSetting(String smsTemplateForOpdBillSetting) {
         this.smsTemplateForOpdBillSetting = smsTemplateForOpdBillSetting;
     }
+
+    public PaperType getInwardServiceBillPaperType() {
+        if(inwardServiceBillPaperType==null){
+            inwardServiceBillPaperType = PaperType.FiveFivePaper;
+        }
+        return inwardServiceBillPaperType;
+    }
+
+    public void setInwardServiceBillPaperType(PaperType inwardServiceBillPaperType) {
+        this.inwardServiceBillPaperType = inwardServiceBillPaperType;
+    }
+    
+    
 
 }
