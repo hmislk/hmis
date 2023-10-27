@@ -128,10 +128,7 @@
                     <p:panel>
 
                         <div class="nonPrintBlock">
-                            <p:commandButton value="Reprint" ajax="false" action="#" process="@this" 
-                                                         update="@all" 
-                                                         type="button"  
-                                                         >
+                            <p:commandButton value="Reprint" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
                             <p:commandButton value="Reprint(Cancel/Refund)" ajax="false" action="#" rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
