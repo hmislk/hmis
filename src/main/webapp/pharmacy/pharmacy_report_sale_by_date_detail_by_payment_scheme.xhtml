@@ -12,7 +12,7 @@
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Sale Detail by Discount Scheme - #{pharmacySaleReport.paymentScheme.name}">
                 <div class="row">
                     <div class="col-md-4">
-                        <h:outputLabel value="From Date"/>&nbsp;&nbsp;
+                        <h:outputLabel value="From Date"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a"  class="w-100 p-2">
                         </p:calendar>
                     </div>
@@ -22,10 +22,10 @@
                         </p:calendar>
                     </div>
                 </div>
-                <p:spacer height="5"/>
+                <p:spacer height="10"/>
                 <div class="row">
                     <div class="col-md-4">
-                        <h:outputLabel value="Department"/>&nbsp;&nbsp;
+                        <h:outputLabel value="Department"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <p:autoComplete styleClass="noPrintButton"  value="#{pharmacySaleReport.department}"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                         </p:autoComplete>
                     </div>
@@ -40,8 +40,12 @@
                                                             />-->
                         </p:selectOneMenu>
                     </div>
+                    
+                </div>
+                <p:spacer height="10"/>
+                <div class="row">
                     <div class="col-md-4">
-                        <h:outputLabel value="Discount Scheme"/>
+                        <h:outputLabel value="Discount Scheme"/>&nbsp;&nbsp;
                         <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleReport.paymentScheme}">   
                             <f:selectItem itemLabel="Discount Scheme"/>
                             <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
@@ -51,9 +55,8 @@
                                                             />-->
                         </p:selectOneMenu>
                     </div>
+
                 </div>
-
-
                 <h:panelGrid columns="3">
                     <p:commandButton ajax="false" value="Process" action="#{pharmacySaleReport.createSaleReportByDateDetailPaymentScheme()}" styleClass="noPrintButton"/>
                     <p:commandButton actionListener="#{pharmacySaleReport.createSaleReportByDateDetailPaymentScheme()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >

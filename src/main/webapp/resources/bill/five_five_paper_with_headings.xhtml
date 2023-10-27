@@ -139,7 +139,7 @@
 
             <!-- Barcode -->
             <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" style="text-align: center; width: 100%;" layout="block">
-                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" width="300px" height="100px" />
+                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" style="width:30%;" />
             </h:panelGroup>
 
             <hr/>

@@ -27,7 +27,7 @@
                             </p:calendar>
                         </div>
                     </div>
-                    <p:spacer height="5"/>
+                    <p:spacer height="10"></p:spacer>
                     <div class="row">
                         <div class="col-md-4">
                             <h:outputLabel  value="Department"></h:outputLabel>&nbsp;&nbsp;
@@ -68,9 +68,9 @@
 
 
 
-                    <!--                    <h:panelGrid columns="2" styleClass="printBlock" style="min-width: 100%;">
+                                        <h:panelGrid columns="2" styleClass="printBlock" >
                     
-                                            <h:outputLabel value="GRN Detailed Report "/>
+                                            <h:outputLabel value="GRN Detailed Report"/>
                                             <h:outputLabel/>
                                             <h:outputLabel value="Institution "/>
                                             <h:outputLabel value="#{commonReport.department.institution.name}"/>
@@ -81,21 +81,21 @@
                                                 <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                                             </h:outputLabel>                          
                                             <h:outputLabel value="To"/>
-                                            <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
+                                            <h:outputLabel  value="#{commonReport.toDate}" >
                                                 <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                                             </h:outputLabel>
-                                        </h:panelGrid>-->
+                                        </h:panelGrid>
 
                     <p:spacer height="5"/>
                     <p:dataTable id="billed"  value="#{commonReport.grnBilled.bills}" var="b" 
                                  rendered="#{commonReport.grnBilled.bills.size()!=0}" sortBy="#{b.billType}">
 
                         <f:facet name="header">  
-                            <h:outputLabel value="From" />
+                            <h:outputLabel value="From :" />&nbsp;&nbsp;
                             <h:outputLabel  value="#{commonReport.fromDate}" >
                                 <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                             </h:outputLabel>                          
-                            <h:outputLabel value="To"/>
+                            &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
                             <h:outputLabel  value="#{commonReport.toDate}" >
                                 <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
                             </h:outputLabel><br/>
