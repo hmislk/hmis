@@ -59,12 +59,12 @@
                 <p:dataTable id="sum1" value="#{pharmacySaleReport.billedSummery.bills}" var="i" >
                     <f:facet name="header">
                         <h:outputLabel value=" Sale Summary Report : "/>
-
-                        <h:outputLabel value="From  "/>
+                        <br/>
+                        <h:outputLabel value="From  :"/>&nbsp;&nbsp;
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                         </h:outputLabel>&#13;&nbsp;
-                        <h:outputLabel value="To  "/>
+                        <h:outputLabel value="To  :"/>&nbsp;&nbsp;
                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
                         </h:outputLabel>&#13;&nbsp;

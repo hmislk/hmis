@@ -23,17 +23,19 @@
         <style type="text/css">
             /* Define font size and font family variables */
             :root {
-                --base-font-size: 0.4cm;
+                --base-font-size: 0.6cm;
                 --header-font-size: 0.8cm;
-                --sub-header-font-size: 0.6cm;
+                --sub-header-font-size: 0.7cm;
                 --font-family: 'Verdana', 'Arial', sans-serif;
+                line-height: 0.1em;
             }
 
 
         </style>
 
 
-        <h:panelGroup id="gpPrint" layout="block" class="printStyle">
+        <h:panelGroup id="gpPrint" layout="block" class="printStyle" 
+                      style="padding:2cm; margin: 3cm; margin-right: 4cm; margin-top: 0cm;">
 
             <!-- Bill Header -->
             <!-- Bill Header -->
@@ -138,7 +140,7 @@
 
             <!-- Barcode -->
             <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" style="text-align: center; width: 100%;" layout="block">
-                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" width="300px" height="100px" />
+                <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" style="width:30%;" />
             </h:panelGroup>
 
             <hr/>
@@ -194,7 +196,8 @@
             <br/>
 
             <!-- Cashier -->
-            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" style="text-align: right; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
+            <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" 
+                           style="margin-top: 2cm; text-align: right; font-size: var(--sub-header-font-size); font-family: var(--font-family)"/>
 
         </h:panelGroup>
 

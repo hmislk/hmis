@@ -24,19 +24,21 @@
 
                 <h:form  >
                     <p:panel  >
-                        <f:facet name="header">
-                            <p:outputLabel value="Inward Payment Bill"/>
-                        </f:facet>
-    
+                        <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
+                            <f:facet name="header">
+                                <p:outputLabel value="Inward Payment Bill"/>
+                            </f:facet>
+
                             <h:panelGrid columns="10">
 
-                                <p:outputLabel value="Type to SelectBHT" ></p:outputLabel>
+                                <p:outputLabel value="Type to Select BHT" ></p:outputLabel>
                                 <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                                  value="#{bhtSummeryController.patientEncounter}"
                                                  completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
                                                  var="myItem" itemValue="#{myItem}" 
                                                  itemLabel="#{myItem.bhtNo}" 
-                                                 size="30"  >
+                                                 size="30"  
+                                                 class="mx-2">
                                     <p:column>
                                         #{myItem.bhtNo}
                                     </p:column>
@@ -54,16 +56,18 @@
                                                  value="Display Details" 
                                                  action="#{bhtSummeryController.createTables()}" >
                                 </p:commandButton>
-                                <p:spacer height="1" width="15" ></p:spacer>
 
-
+                            </h:panelGrid>
+                        </p:panel>
+                        
+                        
+                        <p:panel rendered="#{bhtSummeryController.patientEncounter ne null}">
+                            
+                            <h:panelGrid columns="3" class="mb-2 d-flex justify-content-end">
                                 <p:commandButton ajax="false" value="Clear"  action="#{bhtSummeryController.clear}"  />                                                
                                 <p:commandButton ajax="false" value="Settle Bill"  action="#{bhtSummeryController.toSettle()}"  />
                                 <p:commandButton ajax="false"   value="Print Bill" action="#{bhtSummeryController.toPrintItrim()}"  />
-
-
                             </h:panelGrid>
-
                             <h:panelGrid columns="1" rendered="#{bhtSummeryController.patientEncounter eq null}">
                                 Please select a BHT and Click Display Details
                             </h:panelGrid>
@@ -122,7 +126,7 @@
                                                  var="c" 
                                                  scrollHeight="350"
                                                  scrollable="true"
-                                                
+
                                                  >
                                         <p:column headerText="Charge Type" >
                                             <h:outputLabel value="#{c.inwardChargeType.label}"/>
@@ -714,8 +718,10 @@
                                 </p:tab>
 
                             </p:tabView>
+                        </p:panel>
 
-                       
+
+
 
 
 

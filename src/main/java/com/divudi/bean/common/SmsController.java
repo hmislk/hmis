@@ -12,20 +12,13 @@ import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.entity.Bill;
 import com.divudi.entity.Sms;
+import com.divudi.entity.UserPreference;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.util.JsfUtil;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -66,8 +59,35 @@ public class SmsController implements Serializable {
     private Sms selectedSms;
     private Boolean bool;
 
+    private String smsMessage;
+    private String smsNumber;
+    private String smsOutput;
+
     public List<Sms> getFaildsms() {
         return faildsms;
+    }
+
+    public void sentCheckSms() {
+        if (smsMessage == null) {
+            JsfUtil.addErrorMessage("Message?");
+            return;
+        }
+        if (smsNumber == null) {
+            JsfUtil.addErrorMessage("Message?");
+            return;
+        }
+        smsOutput = smsManager.sendSmsByApplicationPreferenceReturnString(smsNumber, smsMessage, sessionController.getApplicationPreference());
+
+        UserPreference pf = sessionController.getApplicationPreference();
+        smsOutput += "\n" + "Username Parameter : " + pf.getSmsUsernameParameterName();
+        smsOutput += "\n" + "Username : " + pf.getSmsUsername();
+        smsOutput += "\n" + "Passwprd Parameter : " + pf.getSmsPasswordParameterName();
+        smsOutput += "\n" + "Password : " + pf.getSmsPassword();
+        smsOutput += "\n" + "Alias Parameter : " + pf.getSmsUserAliasParameterName();
+        smsOutput += "\n" + "Alias : " + pf.getSmsUserAlias();
+        smsOutput += "\n" + "Number Parameter : " + pf.getSmsPhoneNumberParameterName();
+        smsOutput += "\n" + "Text Parameter : " + pf.getSmsMessageParameterName();
+
     }
 
     public void setFaildsms(List<Sms> faildsms) {
@@ -336,6 +356,38 @@ public class SmsController implements Serializable {
 
     public void setSelectedSms(Sms selectedSms) {
         this.selectedSms = selectedSms;
+    }
+
+    public String getSmsMessage() {
+        return smsMessage;
+    }
+
+    public void setSmsMessage(String smsMessage) {
+        this.smsMessage = smsMessage;
+    }
+
+    public String getSmsNumber() {
+        return smsNumber;
+    }
+
+    public void setSmsNumber(String smsNumber) {
+        this.smsNumber = smsNumber;
+    }
+
+    public String getSmsOutput() {
+        return smsOutput;
+    }
+
+    public void setSmsOutput(String smsOutput) {
+        this.smsOutput = smsOutput;
+    }
+
+    public Boolean getBool() {
+        return bool;
+    }
+
+    public void setBool(Boolean bool) {
+        this.bool = bool;
     }
 
     public class SmsSummeryRow {

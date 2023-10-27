@@ -16,10 +16,18 @@
     <cc:implementation>
         <p:panelGrid rendered="#{cc.attrs.patient.person ne null}" columns="2" >
             <!--            <p:outputLabel value="Title"/>-->
-            <p:selectOneMenu class="w-100" id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
+            
+            <p:inputText  id="cmbTitle" 
+                          autocomplete="off" maxlength="11" 
+                          value="#{cc.attrs.patient.person.title}"
+                          class="w-100"
+                          >
+            </p:inputText>
+            
+<!--            <p:selectOneMenu class="w-100" id="cmbTitle" value="#{cc.attrs.patient.person.title}"  >
                 <f:selectItem itemLabel="Select Title" />
                 <f:selectItems value="#{enumController.title}"/>
-            </p:selectOneMenu>
+            </p:selectOneMenu>-->
             <!--            <p:outputLabel value="Name"/>-->
             <p:inputText rendered="true"
                          autocomplete="off" 
@@ -30,38 +38,64 @@
             </p:inputText>
             <!--            <p:outputLabel value="NIC"/>-->
             <p:inputText  id="nic" 
-                         autocomplete="off" maxlength="11" 
-                         value="#{cc.attrs.patient.person.nic}"
-                         class="w-100"
-                         >
+                          autocomplete="off" maxlength="11" 
+                          value="#{cc.attrs.patient.person.nic}"
+                          class="w-100"
+                          >
             </p:inputText>
             <!--<p:outputLabel value="Sex"/>-->
-            <p:selectOneMenu class="w-100" id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" >
-                <f:selectItem itemLabel="Select Sex"/>
+            
+            <p:inputText  id="txtNewSex" 
+                          autocomplete="off" maxlength="11" 
+                          value="#{cc.attrs.patient.person.sex}"
+                          class="w-100"
+                          >
+            </p:inputText>
+            
+<!--            <p:selectOneMenu class="w-100" id="txtNewSex"  value="#{cc.attrs.patient.person.sex}" >
+                <f:selectItem itemLabel="Select Sex/>
                 <f:selectItems value="#{enumController.sex}"/>
-            </p:selectOneMenu>
+            </p:selectOneMenu>-->
 
             <!--<p:outputLabel value="Age"/>-->
             <h:panelGroup>
-                <p:inputText class="w-100" autocomplete="off"  id="year"  value="#{bhtEditController.yearMonthDay.year}">
-                    <f:ajax event="keyup" execute="@this month day" render="calNewPtDob" listener="#{bhtEditController.dateChangeListen()}"  />
-                </p:inputText>
-
-                <p:inputText class="w-100 my-1" autocomplete="off" id="month"     value="#{bhtEditController.yearMonthDay.month}">
-                    <f:ajax event="keyup" execute="@this year day" render="calNewPtDob" listener="#{bhtEditController.dateChangeListen()}"  />
-                </p:inputText>
-
-                <p:inputText class="w-100" autocomplete="off" id="day"     value="#{bhtEditController.yearMonthDay.day}">
-                    <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{bhtEditController.dateChangeListen()}" />
-                </p:inputText>
-                <br/>
-                <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
+                
+                    <p:outputLabel for="year" value="Years" ></p:outputLabel>
+                    <p:inputText autocomplete="off" placeholder="Age Years Part" id="year" value="#{cc.attrs.patient.person.ageYearsComponent}" class="form-control w-100">
+                        <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" />
+                    </p:inputText>
+                
+                
+                    <p:outputLabel for="year" value="Months" ></p:outputLabel>
+                <p:inputText autocomplete="off" id="month" placeholder="Age Month Part" value="#{cc.attrs.patient.person.ageMonthsComponent}" class="form-control w-100">
+                        <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob"/>
+                    </p:inputText>
+                
+                    <p:outputLabel for="year" value="Days" ></p:outputLabel>
+                    <p:inputText autocomplete="off" id="day" placeholder="Age Days Part" value="#{cc.attrs.patient.person.ageDaysComponent}" class="form-control w-100">
+                        <f:ajax event="keyup" execute="@this" render="txtAgeStr calNewPtDob" />
+                    </p:inputText>
+                
             </h:panelGroup>
             <!--<p:outputLabel value="Date of Birth"/>-->
-            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+<!--            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
                 <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
-            </p:calendar>
+            </p:calendar>-->
 
+            <h:panelGroup>
+                <p:outputLabel value="Date of Birth" ></p:outputLabel>
+                <p:datePicker id="calNewPtDob" 
+                              value="#{cc.attrs.patient.person.dob}"
+                              inputStyleClass="w-100"
+                              class="w-100">
+                    <p:ajax process="@this" update="year month day txtAgeStr" ></p:ajax>
+                </p:datePicker>
+                <p:outputLabel value="Age" ></p:outputLabel>
+                <p:outputLabel id="txtAgeStr" value="#{cc.attrs.patient.person.ageAsString}" class="form-control w-100">
+                </p:outputLabel>
+            </h:panelGroup>
+            
+            
             <!--<p:outputLabel value="Address"/>-->
             <p:inputTextarea class="w-100" id="address" value="#{cc.attrs.patient.person.address}"/>                                  
 
@@ -72,7 +106,7 @@
                 </p:inputText>
                 <!--<p:outputLabel value="Home Phone"/>-->
                 <p:inputText  class="my-1 w-100" id="hno"  autocomplete="off" maxlength="11" 
-                             value="#{cc.attrs.patient.person.phone}" >
+                              value="#{cc.attrs.patient.person.phone}" >
                 </p:inputText>
             </h:panelGroup>
         </p:panelGrid>    
