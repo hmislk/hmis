@@ -250,11 +250,12 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{reportController.navigateToLabPeakHourStatistics()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Sample Carrier" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Organism Antibiotic Sensitivity" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="Investigation Wise Research" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Organism Antibiotic Sensitivity" action="#{reportController.navigateToLabOrganismAntibioticSensitivityReport()}"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="Investigation Wise Research" action="#{reportController.navigateToLabInvetigationWiseReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="Annual Test Statistics" />
                                         <p:commandButton   class="w-100"  ajax="false" value="External Laboratary Work load" />
                                         <p:commandButton   class="w-100"  ajax="false" value="Investigation Month End Summary" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="Lab Register" action="#{reportController.navigateToLabRegisterReport()}"/>
                                     </div>
                                 </p:tab>
 

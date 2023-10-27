@@ -2,12 +2,16 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.data.ReportLabTestCount;
+import com.divudi.data.Sex;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
 import com.divudi.entity.Department;
+import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
+import com.divudi.entity.Patient;
+import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
@@ -50,14 +54,18 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
-    private String priorityType;
-    private String patientMrn;
-    private String investigation;
-    private String status;
-    private String refDocName;
-    private String totalAverage;
-    private String visit;
     
+    private double investigationResult;
+    
+    private String visitType;
+    private Patient patient;
+    private String diagnosis;
+    private Doctor referingDoctor;
+    
+     private Investigation investigation;
+    
+    
+   
 
     private List<Bill> bills;
     private List<ReportLabTestCount> reportLabTestCounts;
@@ -112,13 +120,25 @@ public class ReportController implements Serializable {
         return "/reports/lab/peak_hour_statistics";
     }
 
-    public String navigateToTurnAroundTimeDetails() {
+    public String navigateToLabInvetigationWiseReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/lab/turn_around_time_details";
+        return "/reports/lab/investigation_wise_report";
+    }
+    public String navigateToLabOrganismAntibioticSensitivityReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/organism_antibiotic_sensitivity";
     }
     
+    public String navigateToLabRegisterReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/lab_register";
+    }
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -163,6 +183,7 @@ public class ReportController implements Serializable {
 
     }
 
+    
     public Department getFromDepartment() {
         return fromDepartment;
     }
@@ -241,6 +262,9 @@ public class ReportController implements Serializable {
         }
         return fromDate;
     }
+    public Sex[] getSex() {
+        return Sex.values();
+    }
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
@@ -313,60 +337,53 @@ public class ReportController implements Serializable {
         this.processBy = processBy;
     }
 
-    public String getPriorityType() {
-        return priorityType;
+    public Patient getPatient() {
+        return patient;
     }
 
-    public void setPriorityType(String priorityType) {
-        this.priorityType = priorityType;
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
-    public String getPatientMrn() {
-        return patientMrn;
+    public double getInvestigationResult() {
+        return investigationResult;
     }
 
-    public void setPatientMrn(String patientMrn) {
-        this.patientMrn = patientMrn;
+    public void setInvestigationResult(double investigationResult) {
+        this.investigationResult = investigationResult;
     }
 
-    public String getInvestigation() {
+    
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+
+    public void setDiagnosis(String diagnosis) {
+        this.diagnosis = diagnosis;
+    }
+
+    public Doctor getReferingDoctor() {
+        return referingDoctor;
+    }
+
+    public void setReferingDoctor(Doctor referingDoctor) {
+        this.referingDoctor = referingDoctor;
+    }
+
+    public Investigation getInvestigation() {
         return investigation;
     }
 
-    public void setInvestigation(String investigation) {
+    public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getRefDocName() {
-        return refDocName;
-    }
-
-    public void setRefDocName(String refDocName) {
-        this.refDocName = refDocName;
-    }
-
-    public String getTotalAverage() {
-        return totalAverage;
-    }
-
-    public void setTotalAverage(String totalAverage) {
-        this.totalAverage = totalAverage;
-    }
-
-    public String getVisit() {
-        return visit;
-    }
-
-    public void setVisit(String visit) {
-        this.visit = visit;
     }
 
 }

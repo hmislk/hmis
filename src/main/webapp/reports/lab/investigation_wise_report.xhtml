@@ -11,10 +11,7 @@
             <ui:define name="subcontent">
 
                 <h:form >
-
-
-
-                    <p:panel header="Investigation Wise Report" >
+                     <p:panel header="Investigation Wise Report" >
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="From (Billed) Date" >
                             </p:outputLabel>
@@ -25,9 +22,13 @@
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="dd MMMM yyyy"></p:datePicker>
-
-
-
+                            <p:outputLabel value="Age" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.patient.age}">
+                                <f:selectItem itemLabel="Select Age to filter"/>
+                             </p:selectOneMenu>
+                            <p:spacer width="20"></p:spacer>
+                            
                             <p:outputLabel value="Institution/Branch" >
                             </p:outputLabel>
                             <p:selectOneMenu 
@@ -43,9 +44,9 @@
                                 <p:ajax process="@this" update="cmdDepartment"></p:ajax>
                             </p:selectOneMenu>
 
-                            <p:spacer></p:spacer>
+                            
 
-                            <p:outputLabel value="Laboratary Department">
+                            <p:outputLabel value="Department">
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdDepartment"
@@ -58,30 +59,46 @@
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}"></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Test Result" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.investigationResult}">
+                                <f:selectItem itemLabel="Select Age to filter"/>
+                             </p:selectOneMenu>
+
+
+
+                            <p:outputLabel value="Gender" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                               value=""
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="Gender"></f:selectItem>
+                                <f:selectItems value="#{reportController.sex}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Diagnosis">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                value="#{reportController.diagnosis}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="Select Dignosis"></f:selectItem>
+                                
+                            </p:selectOneMenu>
 
                             <p:outputLabel value="Visit"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.visitType}">
+                            <p:selectOneMenu value="">
                                 <f:selectItem itemLabel="All visits"/>
                             </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
-                            
-                            <p:outputLabel value="Process By"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.processBy}">
-                                <f:selectItem itemLabel="Invoice Time"/>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="CC Name"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItem itemLabel="CC name"/>
-                            </p:selectOneMenu>
-                            
                             <p:spacer></p:spacer>
-                            
-                            <p:outputLabel value="CC Route"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccRoute}">
-                                <f:selectItem itemLabel="CC Route"/>
-                            </p:selectOneMenu>
+                            <p:spacer></p:spacer>
 
                             <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>
@@ -89,6 +106,9 @@
                         </h:panelGrid>
                         
                         <h:panelGrid columns="2">
+                            <h:outputLabel value="Institution/Branch :  "/>
+                            <h:outputLabel value="#{reportController.institution}"  ></h:outputLabel>
+                            
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
                                         <f:convertDateTime pattern="dd MMMM yyyy" />
@@ -99,76 +119,60 @@
                                         <f:convertDateTime pattern="dd MMMM yyyy" />
                             </h:outputLabel>
                             
-                            <h:outputLabel value="Institution/Branch :  "/>
-                            <h:outputLabel value="#{reportController.institution}"  >
-                                        
+                            <p:outputLabel value="Investigation" >
+                            </p:outputLabel>
+                            <p:outputLabel 
+                                value="#{reportController.investigationResult}">
+                                
+                            </p:outputLabel>
+                            
+                            <p:outputLabel value="Test Result" >
+                            </p:outputLabel>
+                            <h:outputLabel value="#{reportController.investigationResult}">
                             </h:outputLabel>
+                                        
+                            <p:outputLabel value="Gender" >
+                            </p:outputLabel>
+                            <p:outputLabel 
+                                value="#{reportController.sex}">
+                                
+                            </p:outputLabel>
+                            
                         </h:panelGrid>
 
 
                         <p:dataTable value="null" var="c">
-                            <p:column headerText="Date" >
+                            <p:column headerText="MRN" >
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="0:00" >
+                            <p:column headerText="Visit Type" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="4:00" >
+                            <p:column headerText="Lab Department" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="5:00" >
+                            <p:column headerText="Gender" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="6:00" >
+                            <p:column headerText="Name" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Diagnosis" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="0:00" >
+                            <p:column headerText="Age" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="4:00" >
+                            <p:column headerText="Investigation" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="5:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="6:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="7:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="8:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="9:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="10:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="11:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="12:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="13:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="14:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="15:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="16:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="17:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            
 
+                            <p:column headerText="Result" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Remarks" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>
