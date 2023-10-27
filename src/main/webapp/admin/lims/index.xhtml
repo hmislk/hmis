@@ -215,15 +215,12 @@
 
                             </p:tab>
                             <p:tab title="SMS Messaging">
-                                <p:panelGrid columns="2" styleClass="alignTop" rendered="#{webUserController.hasPrivilege('LabSetUp')}">
-                                    <p:outputLabel value="Number" ></p:outputLabel>
-                                    <p:inputText value="#{patientReportController.smsNumber}" ></p:inputText>
-
-                                    <p:outputLabel value="Message" ></p:outputLabel>
-                                    <p:inputText value="#{patientReportController.smsMessage}" ></p:inputText>
-
-                                    <p:commandButton class="w-100 m-2 p-2" ajax="false" value="Send Message" action="#{patientReportController.sendSms()}" />
-                                </p:panelGrid>
+                                <div class="d-grid gap-2">
+                                    <p:commandButton class="w-100 m-2 p-2" 
+                                                     ajax="false" 
+                                                     value="Check SMS" 
+                                                     action="/admin/lims/check_sms" />
+                                </div>
                             </p:tab>
                             <p:tab title="Lab Setup">
 
