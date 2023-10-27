@@ -160,7 +160,7 @@
                             </h:panelGroup>
                             
 
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq true}">
+                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="b">
                                     <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  
