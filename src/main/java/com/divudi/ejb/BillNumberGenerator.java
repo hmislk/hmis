@@ -460,10 +460,11 @@ public class BillNumberGenerator {
         Long b = billNumber.getLastBillNumber();
         //System.err.println("fff " + b);
 
-        result.append(institution.getCode());
+        result.append(institution.getInstitutionCode());
 //        System.err.println("R1 " + result);
         if (toDepartment != null) {
-            result.append(toDepartment.getCode());
+            result.append("/");
+            result.append(toDepartment.getId());
 //            System.err.println("R1 " + result);
         }
 
