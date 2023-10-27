@@ -152,6 +152,13 @@
                                     <bill:inwardBillPrintRuhunu bill="#{bill}" dup="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false and sessionController.currentPreference.applicationInstitution ne 'Arogya'}}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="b">
+                                    <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
+                                </ui:repeat>  
+                            </h:panelGroup>
+                            
 
                             <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq true}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="b">
