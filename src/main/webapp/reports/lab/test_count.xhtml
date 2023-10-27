@@ -85,17 +85,27 @@
                         </h:panelGrid>
 
 
-                        <p:dataTable value="#{reportController.reportLabTestCounts}" var="c">
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.category}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.testName}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.testCount}" ></h:outputText>
-                            </p:column>
+                        <!-- Newly created by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI. -->
 
+                        <p:dataTable value="#{reportController.reportList}" var="catReport">
+                            <p:subTable var="item" value="#{catReport.items}">
+                                <f:facet name="header">
+                                    <h:outputText value="#{catReport.category}" />
+                                </f:facet>
+
+                                <p:column headerText="Test Name">
+                                    <h:outputText value="#{item.testName}" />
+                                </p:column>
+
+                                <p:column headerText="Test Count">
+                                    <h:outputText value="#{item.testCount}" />
+                                </p:column>
+
+                                <f:facet name="footer">
+                                    <!-- Here you will add the total for the category -->
+                                    <h:outputText value="Total for #{catReport.category}: #{catReport.total}" />
+                                </f:facet>
+                            </p:subTable>
                         </p:dataTable>
 
                     </p:panel>

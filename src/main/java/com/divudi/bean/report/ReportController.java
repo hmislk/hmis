@@ -1,7 +1,8 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
-import com.divudi.data.ReportLabTestCount;
+import com.divudi.data.CategoryCount;
+import com.divudi.data.ItemCount;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.Category;
@@ -14,6 +15,7 @@ import com.divudi.java.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -49,34 +51,38 @@ public class ReportController implements Serializable {
     private Machine machine;
 
     private List<Bill> bills;
-    private List<ReportLabTestCount> reportLabTestCounts;
+    private List<ItemCount> reportLabTestCounts;
+    private List<CategoryCount> reportList;
 
     public ReportController() {
     }
 
+    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
     public void processLabTestCount() {
-        String jpql = "select new com.divudi.data.ReportLabTestCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td ";
-
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
-
-        jpql += " group by bi.item ";
+        jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
 
-        //String category, String testName, Long testCount
-//        BillItem bi = new BillItem();
-//        bi.getItem().getCategory().getName();
-//        bi.getBill().getBillDate();
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+        // Unchecked cast here
+        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
 
-        reportLabTestCounts = billItemFacade.findLightsByJpql(jpql, m);
-        System.out.println("reportLabTestCounts = " + reportLabTestCounts.size());
+        Map<String, CategoryCount> categoryReports = new HashMap<>();
+
+        for (ItemCount count : reportLabTestCounts) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
+                    .getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        }
+
+        // Convert the map values to a list to be used in the JSF page
+        reportList = new ArrayList<>(categoryReports.values());
     }
 
     public String navigateToAssetRegister() {
@@ -137,6 +143,8 @@ public class ReportController implements Serializable {
         return "/reports/assest_transfer_report";
 
     }
+    
+    
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -256,12 +264,20 @@ public class ReportController implements Serializable {
         this.bills = bills;
     }
 
-    public List<ReportLabTestCount> getReportLabTestCounts() {
+    public List<ItemCount> getReportLabTestCounts() {
         return reportLabTestCounts;
     }
 
-    public void setReportLabTestCounts(List<ReportLabTestCount> reportLabTestCounts) {
+    public void setReportLabTestCounts(List<ItemCount> reportLabTestCounts) {
         this.reportLabTestCounts = reportLabTestCounts;
+    }
+
+    public List<CategoryCount> getReportList() {
+        return reportList;
+    }
+
+    public void setReportList(List<CategoryCount> reportList) {
+        this.reportList = reportList;
     }
 
 }
