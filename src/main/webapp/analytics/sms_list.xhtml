@@ -54,6 +54,11 @@
                             <p:column headerText="SMS Type" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.smsType}"/>
                             </p:column>
+                            <p:column filterBy="#{sms.bill.patient.person.name}" 
+                                      filterMatchMode="contains"
+                                      headerText="Patient" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.bill.patient.person.name}"/>
+                            </p:column>
                             <p:column headerText="Message" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.sendingMessage}"/>
                             </p:column>
