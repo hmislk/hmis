@@ -12,6 +12,8 @@ import com.divudi.entity.Item;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -22,6 +24,14 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -62,11 +72,33 @@ public class ReportController implements Serializable {
         String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
-                + " and bi.bill.billDate between :fd and :td ";
+                + " and bi.bill.billDate between :fd and :td "
+                + " and TYPE(bi.item) = Investigation ";
         Map<String, Object> m = new HashMap<>();
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        
+        if(fromInstitution!=null){
+            jpql += " and bi.bill.fromInstitution=:fi ";
+            m.put("fi", fromInstitution);
+        }
+        
+        if(toInstitution!=null){
+            jpql += " and bi.bill.toInstitution=:ti ";
+            m.put("ti", toInstitution);
+        }
+        
+        if(fromDepartment!=null){
+            jpql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+        
+        if(machine!=null){
+            jpql += " and bi.item.machine=:machine ";
+            m.put("machine", machine);
+        }
+
         jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
 
@@ -83,6 +115,68 @@ public class ReportController implements Serializable {
 
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
+    }
+
+    public void downloadLabTestCount() {
+        Workbook workbook = exportToExcel(reportList, "Test Count");
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
+
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Workbook exportToExcel(List<CategoryCount> reportList, String reportName) {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet(reportName);
+        int rowCount = 0;
+        int cateColNo = 0;
+        int itemColNo = 1;
+        int catCountColNo = 2;
+        int itemCountColNo = 3;
+        Long grandTotal = 0l;
+
+        Row reportHeaderRow = sheet.createRow(rowCount++);
+        Cell headerRowCatCell = reportHeaderRow.createCell(cateColNo);
+        headerRowCatCell.setCellValue("Category");
+        Cell headerRowItemCell = reportHeaderRow.createCell(itemColNo);
+        headerRowItemCell.setCellValue("Item");
+        Cell headerRowCatCountCell = reportHeaderRow.createCell(catCountColNo);
+        headerRowCatCountCell.setCellValue("Category Count");
+        Cell headerRowItemCountCell = reportHeaderRow.createCell(itemCountColNo);
+        headerRowItemCountCell.setCellValue("Item Count");
+
+        for (CategoryCount catCount : reportList) {
+            Row headerRow = sheet.createRow(rowCount++);
+            Cell headerCell1 = headerRow.createCell(cateColNo);
+            headerCell1.setCellValue(catCount.getCategory());
+            Cell headerCell2 = headerRow.createCell(catCountColNo);
+            headerCell2.setCellValue(catCount.getTotal());
+            grandTotal += catCount.getTotal();
+
+            for (ItemCount itemCount : catCount.getItems()) {
+                Row itemRow = sheet.createRow(rowCount++);
+                Cell cell1 = itemRow.createCell(itemColNo);
+                cell1.setCellValue(itemCount.getTestName());
+                Cell cell2 = itemRow.createCell(itemCountColNo);
+                cell2.setCellValue(itemCount.getTestCount());
+            }
+        }
+
+        Row reportFooterRow = sheet.createRow(rowCount++);
+        Cell reportFooterCellTotal = reportFooterRow.createCell(cateColNo);
+        reportFooterCellTotal.setCellValue("Grand Total");
+        Cell reportFooterRowItemCell = reportFooterRow.createCell(itemCountColNo);
+        reportFooterRowItemCell.setCellValue(grandTotal);
+
+        return workbook;
     }
 
     public String navigateToAssetRegister() {
@@ -143,8 +237,6 @@ public class ReportController implements Serializable {
         return "/reports/assest_transfer_report";
 
     }
-    
-    
 
     public Department getFromDepartment() {
         return fromDepartment;

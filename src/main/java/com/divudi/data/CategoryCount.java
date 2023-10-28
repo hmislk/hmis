@@ -11,7 +11,8 @@ public class CategoryCount {
     private String category;
     private List<ItemCount> items;
     private Long total;
-    
+    private Integer serialNo;
+
     // Constructor matching the provided arguments
     public CategoryCount(String category, List<ItemCount> items, Long total) {
         this.category = category;
@@ -21,7 +22,7 @@ public class CategoryCount {
 
     public CategoryCount() {
     }
-    
+
     
 
     public String getCategory() {
@@ -46,6 +47,14 @@ public class CategoryCount {
 
     public void setTotal(Long total) {
         this.total = total;
+    }
+
+    public Integer getSerialNo() {
+        return serialNo;
+    }
+
+    public void setSerialNo(Integer serialNo) {
+        this.serialNo = serialNo;
     }
 
 }
