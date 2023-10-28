@@ -12,6 +12,8 @@ import com.divudi.entity.Item;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -22,6 +24,14 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -85,6 +95,45 @@ public class ReportController implements Serializable {
         reportList = new ArrayList<>(categoryReports.values());
     }
 
+    public void downloadLabTestCount() {
+        Workbook workbook = exportToExcel(reportList);
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
+
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Workbook exportToExcel(List<CategoryCount> reportList) {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Test Counts");
+        int rowCount = 0;
+
+        for (CategoryCount catCount : reportList) {
+            Row headerRow = sheet.createRow(rowCount++);
+            Cell headerCell1 = headerRow.createCell(0);
+            headerCell1.setCellValue("Total for " + catCount.getCategory());
+            Cell headerCell2 = headerRow.createCell(1);
+            headerCell2.setCellValue(catCount.getTotal());
+
+            for (ItemCount itemCount : catCount.getItems()) {
+                Row itemRow = sheet.createRow(rowCount++);
+                Cell cell1 = itemRow.createCell(0);
+                cell1.setCellValue(itemCount.getTestName());
+                Cell cell2 = itemRow.createCell(1);
+                cell2.setCellValue(itemCount.getTestCount());
+            }
+        }
+        return workbook;
+    }
+
     public String navigateToAssetRegister() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -143,8 +192,6 @@ public class ReportController implements Serializable {
         return "/reports/assest_transfer_report";
 
     }
-    
-    
 
     public Department getFromDepartment() {
         return fromDepartment;

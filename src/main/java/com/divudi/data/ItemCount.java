@@ -1,7 +1,5 @@
 package com.divudi.data;
 
-import java.util.List;
-
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
