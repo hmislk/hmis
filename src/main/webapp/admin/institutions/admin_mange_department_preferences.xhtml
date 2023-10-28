@@ -168,7 +168,23 @@
                             </p:tab>
                             <p:tab title="In-ward" >
                                 <p:panel header="Inward" >
+                                    <h:panelGrid columns="2" >
+                                        <h:outputLabel 
+                                            value="Inward Service Bill Paper" 
+                                            class="form-label"></h:outputLabel>
+                                        <p:selectOneMenu
+                                            class="form-control"
+                                            value="#{sessionController.currentPreference.inwardServiceBillPaperType}" >
+                                            <f:selectItem itemLabel="Please Select Paper Type" />
+                                            <f:selectItems var="peper" itemLabel="#{paper.label}" itemValue="#{paper}" value="#{enumController.paperTypes}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                    </h:panelGrid>
+
                                     <div class="row">
+
+
+
+
                                         <div class="col-md-6">
                                             <p:inputTextarea value="#{sessionController.currentPreference.inwardDepositBillTemplate}" class="w-100" rows="20"/>
                                         </div>
