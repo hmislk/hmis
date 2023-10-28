@@ -581,18 +581,24 @@ public class PatientReportController implements Serializable {
         }
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
+            
             if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
+                    System.out.println("varchar");
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
                     priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
+                    System.out.println("double");
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
+                    System.out.println("numberWithLargeNumberOfDecimals = " + numberWithLargeNumberOfDecimals);
                     Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
+                    System.out.println("numberWithFormatter = " + numberWithFormatter);
                     priv.setDoubleValue(numberWithFormatter);
                     priv.setStrValue(numberWithFormatter + "");
                 }
             }
+            
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
                 String sql = "select i "
                         + " from IxCal i "

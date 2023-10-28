@@ -137,23 +137,12 @@
                         </div>
 
                         <p:panel id="gpBillPreview" >
-
-
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false and sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}">
+                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="bill">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
                             </h:panelGroup>
-
-                            
-
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false and sessionController.currentPreference.applicationInstitution ne 'Ruhuna'}">
-                                <ui:repeat value="#{inwardSearch.bill}" var="bill">
-                                    <bill:inwardBillPrintRuhunu bill="#{bill}" dup="false"/>
-                                </ui:repeat>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq true}">
+                              <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="b">
                                     <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  
