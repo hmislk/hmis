@@ -56,6 +56,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 /**
  * REST Web Service
@@ -114,7 +116,7 @@ public class ApiMembership {
     @GET
     @Path("/banks")
     @Produces("application/json")
-    public String getBanks() {
+    public Response getBanks() {
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -139,9 +141,15 @@ public class ApiMembership {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
-        String json = jSONObjectOut.toString();
-        return json;
 
+        String json = jSONObjectOut.toString();
+
+        ResponseBuilder response = Response.ok(json);
+        response.header("Access-Control-Allow-Origin", "*");
+        response.header("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
+        response.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+        return response.build();
     }
 
 //      {
@@ -162,7 +170,7 @@ public class ApiMembership {
             @PathParam("nic") String nic) {
         JSONObject jSONObjectOut = new JSONObject();
         String json;
-       
+
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
 //        //// // System.out.println("s = " + s);
 
