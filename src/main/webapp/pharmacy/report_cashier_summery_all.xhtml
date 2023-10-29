@@ -25,14 +25,14 @@
                             </div>
                             <div class="col-md-4">
                                 <h:outputLabel value="From Date" />&nbsp;&nbsp;
-                                <p:calendar id="frmDate" value="#{cashierReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  >
+                                <p:calendar id="frmDate" value="#{cashierReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                                 </p:calendar>
                             </div>
                         </div>
                         <div class="row p-1">
                             <div class="col-md-4">
                                 <h:outputLabel value="To Date"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                <p:calendar id="toDate" value="#{cashierReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss">
+                                <p:calendar id="toDate" value="#{cashierReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                 </p:calendar>
                             </div>
 

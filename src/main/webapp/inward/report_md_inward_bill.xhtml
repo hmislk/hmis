@@ -12,11 +12,11 @@
             <p:panel>
                 <h:panelGrid columns="6" class="w-100 my-2">                    
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker mx-2" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="dateTimePicker mx-2" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar styleClass="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                     </p:calendar>
 

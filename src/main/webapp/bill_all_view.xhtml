@@ -68,10 +68,10 @@
                                         <p:inputText value="#{billSearch.billSearch.paidBill.deptId}" rendered="#{billSearch.billSearch.paidBill ne null}" />
 
                                         <h:outputLabel value="Billed bill Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
-                                        <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
+                                        <p:calendar value="#{billSearch.billSearch.billedBill.createdAt}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
                                         <h:outputLabel value="Invoice Date :" rendered="#{billSearch.billSearch.billedBill ne null}"></h:outputLabel>
-                                        <p:calendar value="#{billSearch.billSearch.billedBill.invoiceDate}" pattern="dd MMMM yyyy hh:mm:ss a" rendered="#{billSearch.billSearch.billedBill ne null}"/>
+                                        <p:calendar value="#{billSearch.billSearch.billedBill.invoiceDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  rendered="#{billSearch.billSearch.billedBill ne null}"/>
 
                                         <h:outputLabel value="Canceled :" ></h:outputLabel>
                                         <p:selectBooleanCheckbox value="#{billSearch.billSearch.cancelled}" ></p:selectBooleanCheckbox>
@@ -120,7 +120,7 @@
 
                                         <h:outputLabel value="Bill Date :" ></h:outputLabel>
                                         <h:outputLabel value="#{billSearch.billSearch.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
 
                                         <h:outputLabel value="Bill Id :" ></h:outputLabel>

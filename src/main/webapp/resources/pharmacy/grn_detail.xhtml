@@ -78,13 +78,13 @@
                 <h:outputLabel value="Invoice Date "/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.invoiceDate}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel>
                 <h:outputLabel/>                
                 <h:outputLabel value="GRN Date  "/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel >
 
             </h:panelGrid>
@@ -105,7 +105,7 @@
                             <h:outputLabel value="Ex." style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 

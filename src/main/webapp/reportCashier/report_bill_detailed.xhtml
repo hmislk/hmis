@@ -57,12 +57,12 @@
                             <p:spacer width="20" height="0"/>
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <p:spacer width="10" height="0"/>
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGrid>
                     </f:facet>
@@ -70,11 +70,11 @@
 
                     <h:panelGrid columns="8" styleClass="noPrintButton" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MM yy HH:mm:ss a" >
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MM yy HH:mm:ss a" >
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>

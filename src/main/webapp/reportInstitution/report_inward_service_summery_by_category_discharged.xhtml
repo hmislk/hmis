@@ -62,11 +62,11 @@
                     <h:outputLabel value="#{serviceSummery.category.name}" style="white-space: pre-line"/>
                     <h:outputLabel value=" &emsp;&emsp;From : "/>
                     <h:outputLabel value="#{serviceSummery.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </h:outputLabel>
                     <h:outputLabel value="&emsp;&emsp;To"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </h:outputLabel>
                 </f:facet>
 
@@ -103,7 +103,7 @@
                         <h:outputLabel value="Discharged Date" />
                     </f:facet>
                     <h:outputLabel value="#{d.billItem.bill.patientEncounter.dateOfDischarge}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </p:column>
 
@@ -112,14 +112,14 @@
                         <h:outputLabel value="Date" />
                     </f:facet>
                     <h:outputLabel value="#{d.billItem.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <br/>
                     <h:panelGroup rendered="#{d.billItem.bill.cancelled}" >
                         <h:outputLabel style="color: red;" value="Cancelled at " >
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{d.billItem.bill.cancelled}" value="#{d.billItem.bill.cancelledBill.createdAt}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel style="color: red;" rendered="#{d.billItem.bill.cancelled}" value="&nbsp;&nbsp;&nbsp;#{d.billItem.bill.cancelledBill.insId}"/>
                     </h:panelGroup>

@@ -65,12 +65,12 @@
                             <p:outputLabel value="Bill Date From" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             <p:spacer></p:spacer>
                             <p:outputLabel value="Bill Date To" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
                             <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >

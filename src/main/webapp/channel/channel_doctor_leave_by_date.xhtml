@@ -66,7 +66,7 @@
                         <tr>
                             <td>
                                 <p:calendar id="date" mode="inline" value="#{bookingController.sessionStartingDate}" navigator="true"
-                                            styleClass="dateTimePicker" pattern="yyyy MMMM dd" >
+                                            styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
 
                                     <p:ajax event="dateSelect" 
                                             process="@this date" 
@@ -94,7 +94,7 @@
                             <th>
                                 <p:outputLabel value="Session Date - " ></p:outputLabel>
                                 <p:outputLabel id="a" value="#{bookingController.sessionStartingDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                             </th>
                         </tr>
@@ -112,11 +112,11 @@
                                         </h:outputText>
                                         <h:outputText value=" &nbsp;&nbsp;" />
                                         <h:outputText value="#{ses.sessionDate}" >
-                                            <f:convertDateTime pattern="MMM/dd/yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                         <h:outputText value=" &nbsp;&nbsp;" />
                                         <h:outputText value="#{ses.startingTime}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                         </h:outputText>
                                         <h:outputText value=" &nbsp;&nbsp;" />
                                         <h:outputText value="#{ses.totalFee}" >
@@ -159,12 +159,12 @@
                                     </p:column>
                                     <p:column headerText="Date" style="width: 50px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.sessionDate}">
-                                            <f:convertDateTime pattern="dd MMM"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Time" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                         <h:outputText value="#{ses.startingTime}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Fee" style="width: 40px!important; text-align: center;" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
@@ -184,7 +184,7 @@
                             <td>
                                 <p:outputLabel value="Session Date - " ></p:outputLabel>
                                 <p:outputLabel id="aa" value="#{bookingController.sessionStartingDate}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                                 <p:outputLabel value=" - Remove Leave" ></p:outputLabel>
                                 <p:selectBooleanCheckbox value="#{serviceSessionLeaveController.removeLeave}" >
@@ -221,7 +221,7 @@
                         <p:outputLabel value="#{serviceSessionLeaveController.currentStaff.person}" />
                         <p:outputLabel value=" - Leve From - " />
                         <p:outputLabel value="#{bookingController.sessionStartingDate}" >
-                            <f:convertDateTime pattern="yyyy MMMM dd" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </p:outputLabel>
                     </f:facet>
                     <p:column>
@@ -237,7 +237,7 @@
                             <p:outputLabel value="Leave Session" />
                         </f:facet>
                         <h:outputLabel value="#{d.originatingSession.sessionTime}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                         </h:outputLabel>
                     </p:column>
                     <p:column>

@@ -25,10 +25,10 @@
                                 </p:autoComplete>
 
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.fromDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar value="#{reportsStock.fromDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                                 <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.toDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar value="#{reportsStock.toDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                                 <h:outputLabel value="Category" ></h:outputLabel>
                                 <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 

@@ -29,7 +29,7 @@
                         <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="DOB"  />
 
                         <h:outputLabel rendered="#{patientHistoryController.searchedPatient!=null}" value="#{patientHistoryController.searchedPatient.person.dob}">
-                            <f:convertDateTime pattern="dd/MM/yy" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
 
                         <h:outputLabel  rendered="#{patientHistoryController.searchedPatient!=null}" value="Adress" />
@@ -45,13 +45,13 @@
 
                         <p:column headerText="Admitted At" >
                             <p:outputLabel value="#{pe.dateOfAdmission}">
-                                <f:convertDateTime pattern="dd/MM/yy" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                             </p:outputLabel>
                         </p:column>
 
                         <p:column headerText="Discharge At" >
                             <p:outputLabel value="#{pe.dateOfDischarge}">
-                                <f:convertDateTime pattern="dd/MM/yy" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                             </p:outputLabel>
                         </p:column>
 

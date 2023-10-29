@@ -19,13 +19,13 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Discharge From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Discharge To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Paid From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDatePaid}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDatePaid}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Paid To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDatePaid}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDatePaid}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>

@@ -152,16 +152,16 @@
                                                 <div  class="billdate">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.billDate}"
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}"  >
-                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.billDate}"
                                                                    rendered="#{billSearch.bill.refundedBill.insId ne null}">
-                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.billDate}"
                                                                    rendered="#{billSearch.bill.refundedBill.insId eq null and 
                                                                                billSearch.bill.cancelledBill.insId eq null }">
-                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputLabel>
                                                 </div>
 
@@ -178,16 +178,16 @@
                                                 <div class="billtime">
                                                     <h:outputLabel value="#{billSearch.bill.cancelledBill.billTime}"  
                                                                    rendered="#{billSearch.bill.cancelledBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}"  
                                                                    rendered="#{billSearch.bill.refundedBill.insId ne null}">
-                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                     </h:outputLabel>
                                                     <h:outputLabel value="#{billSearch.bill.billTime}" 
                                                                    rendered="#{billSearch.bill.refundedBill.insId eq null and 
                                                                                billSearch.bill.cancelledBill.insId eq null }">
-                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                     </h:outputLabel>
                                                 </div>
 

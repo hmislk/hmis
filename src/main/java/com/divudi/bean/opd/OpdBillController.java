@@ -225,6 +225,7 @@ public class OpdBillController implements Serializable {
     private BillLight billLight;
 
     private Long billId;
+    private int opdSummaryIndex;
 
     /**
      *
@@ -2812,6 +2813,14 @@ public class OpdBillController implements Serializable {
 
     public void setSmsFacade(SmsFacade SmsFacade) {
         this.SmsFacade = SmsFacade;
+    }
+    
+    public int getOpdSummaryIndex() {
+        return opdSummaryIndex;
+    }
+
+    public void setOpdSummaryIndex(int opdSummaryIndex) {
+        this.opdSummaryIndex = opdSummaryIndex;
     }
 
 }

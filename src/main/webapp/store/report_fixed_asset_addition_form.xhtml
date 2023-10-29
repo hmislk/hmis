@@ -225,7 +225,7 @@
                                 <p:spacer width="10" ></p:spacer>
                                 <!--<p:outputLabel value="...../...../.........." ></p:outputLabel>-->
                                 <p:outputLabel value="#{storeReportsStock.selectedInventoryStock.itemBatch.lastPurchaseBillItem.bill.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Date of Acquisition" ></p:outputLabel>

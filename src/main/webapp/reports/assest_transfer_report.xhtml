@@ -15,11 +15,11 @@
                         <h:panelGrid columns="5" class="w-100">
 
                             <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{reportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />                                      
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
 
                             <p:spacer/>
                             <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{reportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />       
+                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{reportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />       
 
                             <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">

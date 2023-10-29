@@ -29,7 +29,7 @@
                 </p:panel>
 
                 <p:panel header="Session">  
-                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                    <p:calendar id="date" value="#{bookingPastController.date}" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>
                     </p:calendar>
                     <h:panelGrid columns="1">
@@ -261,7 +261,7 @@
 
 
                         <p:tab title="Search">
-                            <p:calendar id="cal"  value="#{channelsearch.date}" pattern="dd MMMM yyyy" >   
+                            <p:calendar id="cal"  value="#{channelsearch.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" >   
                                 <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                             </p:calendar>
                             <p:dataTable id="bSessionSearch" value="#{channelsearch.billSessions}" var='bs'

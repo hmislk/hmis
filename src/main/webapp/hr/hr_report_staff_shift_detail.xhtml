@@ -22,9 +22,9 @@
                         <h:panelGrid columns="2" >
                             <h:panelGrid columns="2" >
                                 <h:outputLabel value="From : " />
-                                <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 <h:outputLabel value="To : " />
-                                <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 <h:outputLabel value="Institution : "/>
                                 <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                                 <h:outputLabel value="Department : "/>
@@ -153,7 +153,7 @@
                                         <h:outputLabel value="Shift Date"/>
                                     </f:facet>
                                     <h:outputLabel value="#{ss.shiftDate}">                                        
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Worked Time">

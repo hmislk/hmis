@@ -88,7 +88,7 @@
                                             <h:outputLabel value="Bill Date"/>
                                         </f:facet>    
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 

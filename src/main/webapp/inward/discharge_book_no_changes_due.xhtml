@@ -19,9 +19,9 @@
                         <h:panelGrid columns="2" >
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
@@ -76,11 +76,11 @@
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{inwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{inwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -94,7 +94,7 @@
                                         <h:outputLabel value="Discharge Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfDischarge}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="BHT No">
@@ -139,7 +139,7 @@
                                         <h:outputLabel value="Admited Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.dateOfAdmission}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
