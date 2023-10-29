@@ -195,6 +195,13 @@ public class OpdBillController implements Serializable {
     private Institution institution;
     private Category category;
     private SearchKeyword searchKeyword;
+    
+    
+    private Institution fromInstitution;
+    private Institution toInstitution;
+    private Department fromDepartment;
+    private Department toDepartment;
+    
 
     //Print Last Bill
     private Bill bill;
@@ -2821,6 +2828,38 @@ public class OpdBillController implements Serializable {
 
     public void setOpdSummaryIndex(int opdSummaryIndex) {
         this.opdSummaryIndex = opdSummaryIndex;
+    }
+
+    public Institution getFromInstitution() {
+        return fromInstitution;
+    }
+
+    public void setFromInstitution(Institution fromInstitution) {
+        this.fromInstitution = fromInstitution;
+    }
+
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
+    }
+
+    public Department getFromDepartment() {
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    public Department getToDepartment() {
+        return toDepartment;
+    }
+
+    public void setToDepartment(Department toDepartment) {
+        this.toDepartment = toDepartment;
     }
 
 }

@@ -149,7 +149,16 @@
                             </h:panelGroup>
                         </p:panel>
                         <p:panel id="gpBillPreview2">
-                            <h:panelGroup rendered="#{sessionController.currentPreference.printLabelForOPdBill eq false and sessionController.currentPreference.applicationInstitution eq 'Ruhuna'}">
+                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{sessionController.currentPreference.inwardServiceBillPaperType eq 'FiveFivePaper'}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
                                 </ui:repeat>
