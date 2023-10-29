@@ -192,6 +192,7 @@ public class ReportController implements Serializable {
             m.put("tdept", toDepartment);
         }
 
+
         jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
 
