@@ -19,7 +19,7 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
@@ -44,7 +44,7 @@
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
@@ -65,12 +65,12 @@
                             <p:outputLabel value="Bill Date From" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             <p:spacer></p:spacer>
                             <p:outputLabel value="Bill Date To" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
                             <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >

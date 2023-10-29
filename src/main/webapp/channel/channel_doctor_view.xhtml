@@ -26,7 +26,7 @@
                         <p:outputLabel value="#{channelReportController.serviceSession.staff.person.nameWithTitle}"/><br></br>
                         <p:outputLabel value="Date : "/>
                         <h:outputLabel value="#{channelReportController.serviceSession.sessionDate}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel><br></br>
                         <p:outputLabel value="Session Name : "/>
                         <h:outputLabel value="#{channelReportController.serviceSession.name}" />

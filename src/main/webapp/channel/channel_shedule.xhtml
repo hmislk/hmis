@@ -154,13 +154,13 @@
                                                     </p:selectOneMenu>
                                                     <p:outputLabel value="Start Time"/>                        
                                                     <p:calendar  value="#{sheduleController.current.startingTime}" 
-                                                                 navigator="true" pattern="HH:mm" timeOnly="true"
+                                                                 navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true"
                                                                  timeZone="Asia/Colombo">                            
                                                     </p:calendar>
 
                                                     <p:outputLabel value="End Time"/>                        
                                                     <p:calendar  value="#{sheduleController.current.endingTime}"
-                                                                 navigator="true" pattern="HH:mm" 
+                                                                 navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" 
                                                                  timeOnly="true"
                                                                  timeZone="Asia/Colombo">                            
                                                     </p:calendar>
@@ -220,7 +220,7 @@
                                                             </p:selectOneMenu>
                                                         </p:tab>
                                                         <p:tab title="Other Day" >
-                                                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="dd MMMM yyyy" disabled="#{sheduleController.current.id ne null}">                              
+                                                            <p:calendar id="odate" value="#{sheduleController.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" disabled="#{sheduleController.current.id ne null}">                              
                                                             </p:calendar>
                                                         </p:tab>
                                                     </p:tabView>

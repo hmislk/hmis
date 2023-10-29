@@ -50,11 +50,11 @@
                         <au:department value="#{investigationMonthSummeryOwnControllerSession.department}" />
 
                         <h:outputLabel value="From"/>
-                        <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value=""/>

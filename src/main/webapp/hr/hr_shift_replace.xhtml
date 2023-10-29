@@ -11,9 +11,9 @@
         <h:form id="form">  
             <h:panelGrid columns="2">
                 <h:outputLabel value="From Date"/>
-                <p:calendar id="frmDate" value="#{staffShiftController.fromDate}" pattern="dd MMMM yyyy" />
+                <p:calendar id="frmDate" value="#{staffShiftController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 <h:outputLabel value="To Date"/>
-                <p:calendar id="toDate" value="#{staffShiftController.toDate}" pattern="dd MMMM yyyy" />
+                <p:calendar id="toDate" value="#{staffShiftController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 <h:outputLabel value="Roster"/>
                 <p:selectOneMenu id="roster" value="#{staffShiftController.reportKeyWord.roster}">
                     <f:selectItem itemLabel="Select Roster"/>

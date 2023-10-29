@@ -34,7 +34,7 @@
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 </p:selectOneMenu>
-                <p:calendar id="chequeDate"  value="#{cc.attrs.bill.chequeDate}" pattern="dd MMMM yyyy" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Cheque')}">                            
+                <p:calendar id="chequeDate"  value="#{cc.attrs.bill.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Cheque')}">                            
                 </p:calendar>
 
                 <h:outputLabel id="lblSlipRef" value="Slip Memo" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}" />
@@ -43,7 +43,7 @@
                     <f:selectItem itemLabel="Select Bank"/>
                     <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 </p:selectOneMenu>
-                <p:calendar id="slipDate"  value="#{cc.attrs.bill.chequeDate}" pattern="dd MMMM yyyy" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}">                            
+                <p:calendar id="slipDate"  value="#{cc.attrs.bill.chequeDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" rendered="#{enumController.checkPaymentMethod(cc.attrs.bill.paymentMethod,'Slip')}">                            
                 </p:calendar>
 
             </h:panelGrid>

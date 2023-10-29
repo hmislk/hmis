@@ -21,14 +21,14 @@
                         id="fromDate" 
                         value="#{inwardReportController.fromDate}" 
                         navigator="false" 
-                        pattern="dd MMMM yyyy hh mm ss a" />
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                     <h:outputLabel value="To"/>
                     <p:calendar 
                         styleClass="dateTimePicker mx-2" 
                         id="toDate" 
                         value="#{inwardReportController.toDate}"   
-                        navigator="false" pattern="dd MMMM yyyy hh mm ss a" />
+                        navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
 
                     <h:outputLabel value="Institution"/>
                     <p:autoComplete id="ins" value="#{inwardReportController.institution}"

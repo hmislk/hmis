@@ -31,10 +31,10 @@
                                 </p:autoComplete>
 
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                                 <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsTransfer.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                                 <h:outputLabel value="" ></h:outputLabel>
 

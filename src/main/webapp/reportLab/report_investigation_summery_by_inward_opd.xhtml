@@ -66,11 +66,11 @@
 
                     <f:facet name="header">
                         <h:outputLabel value="#{bookKeepingSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="--"/>
                         <h:outputLabel value="#{bookKeepingSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </f:facet>
 

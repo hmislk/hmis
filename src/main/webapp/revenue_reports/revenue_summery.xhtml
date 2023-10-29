@@ -17,10 +17,10 @@
                     <p:panel header="Revenue Summery" >
                         <p:panelGrid columns="2" >
                             <p:outputLabel value="From" ></p:outputLabel>
-                            <p:calendar value="#{revenueController.fromDate}" pattern="dd MMM yyyy" >
+                            <p:calendar value="#{revenueController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                             </p:calendar>
                             <p:outputLabel value="To" ></p:outputLabel>
-                            <p:calendar value="#{revenueController.toDate}" pattern="dd MMM yyyy" >
+                            <p:calendar value="#{revenueController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                             </p:calendar>
                         </p:panelGrid>
                         <p:panelGrid columns="3" >

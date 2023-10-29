@@ -92,7 +92,7 @@
                                                     <p:column headerText="Expiry">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
                                                                        style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
-                                                            <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}"  ></p:ajax>
@@ -175,7 +175,7 @@
                                                 </p:column>
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                     </h:outputLabel>
 
 
@@ -255,12 +255,12 @@
                                                 <p:column headerText="Expiry">
                                                     <h:panelGroup rendered="#{commonController.currentDateTime > ri.itemBatch.dateOfExpire}" >
                                                         <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
-                                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </p:outputLabel>
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonController.currentDateTime}" >
                                                         <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" >
-                                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                         </p:outputLabel>
                                                     </h:panelGroup>
                                                 </p:column>

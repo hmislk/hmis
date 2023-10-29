@@ -19,11 +19,11 @@
                
                 <h:panelGrid columns="2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="Service Name"/>
@@ -78,11 +78,11 @@
                     <h:outputLabel value="#{serviceSummery.service.name}"/>
                     <h:outputLabel value=" : "/>
                     <h:outputLabel value="#{serviceSummery.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="--"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <p:outputLabel value="Bills" style="float: left"></p:outputLabel>
                 </f:facet>
@@ -115,7 +115,7 @@
 
                 <p:column headerText="Date">
                     <h:outputLabel value="#{d.billItem.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </p:column>
 
@@ -187,11 +187,11 @@
                         <h:outputLabel value="#{serviceSummery.service.name}"/>
                         <h:outputLabel value=" : "/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="--"/>
                         <h:outputLabel value="#{serviceSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <p:outputLabel value="Canceled Bills" style="float: left"></p:outputLabel>
                     </f:facet>
@@ -224,7 +224,7 @@
 
                     <p:column headerText="Date">
                         <h:outputLabel value="#{d.billItem.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -296,11 +296,11 @@
                         <h:outputLabel value="#{serviceSummery.service.name}"/>
                         <h:outputLabel value=" : "/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="--"/>
                         <h:outputLabel value="#{serviceSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <p:outputLabel value="Refund Bills" style="float: left"></p:outputLabel>
                     </f:facet>
@@ -333,7 +333,7 @@
 
                     <p:column headerText="Date">
                         <h:outputLabel value="#{d.billItem.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 

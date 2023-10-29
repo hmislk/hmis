@@ -29,9 +29,9 @@
                                             value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                             </h:panelGrid>
                             
                             <h:panelGrid columns="4">
@@ -69,7 +69,7 @@
                                 </p:column>
                                 <p:column headerText="Date">
                                     <h:outputLabel value="#{i.bill.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item Descreption">

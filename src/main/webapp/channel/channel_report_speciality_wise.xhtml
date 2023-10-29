@@ -17,11 +17,11 @@
                 <p:panel header="Channel Report Of Consultants with Speciality wise">
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
 
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
 
                         </p:calendar>
                     </h:panelGrid>

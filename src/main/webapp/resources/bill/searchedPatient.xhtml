@@ -30,7 +30,7 @@
                 <h:outputLabel  rendered="#{cc.attrs.controller.searchedPatient!=null}" value="DOB"  />
 
                 <h:outputLabel rendered="#{cc.attrs.controller.searchedPatient!=null}" value="#{cc.attrs.controller.searchedPatient.person.dob}">
-                    <f:convertDateTime pattern="dd/MM/yy" />
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel>
 
                 <h:outputLabel  rendered="#{cc.attrs.controller.searchedPatient!=null}" value="Adress" />

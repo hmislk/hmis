@@ -13,11 +13,11 @@
 
                 <p:panel header="Item Report">                    
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{pharmacySaleReport.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{pharmacySaleReport.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>
 
                     <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{pharmacySaleReport.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar id="toDate" value="#{pharmacySaleReport.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>
                     <p:panelGrid columns="3">
                         <p:commandButton ajax="false" value="Process by Bill Created Date" 

@@ -18,12 +18,12 @@
                                     id="fromDate" 
                                     value="#{searchController.fromDate}" 
                                     showTime="true"
-                                    pattern="dd MMMM yyyy hh:mm" >      
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                         </p:datePicker>
                         <h:outputLabel value="To Date"/>
                         <p:datePicker id="toDate" value="#{searchController.toDate}" 
                                       showTime="true"
-                                     pattern="dd MMMM yyyy hh:mm" >                                                                              
+                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                         </p:datePicker>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" 
                                          action="#{searchController.fillAllBills}"/>
@@ -59,7 +59,7 @@
                         </p:column>
                         <p:column headerText="Date/Time">
                             <p:outputLabel value="#{bill.billDate}" >
-                                <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Institution" >                                

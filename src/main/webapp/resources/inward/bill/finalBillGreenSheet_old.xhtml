@@ -29,7 +29,7 @@
 
                     <div  class="billdatePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                            <f:convertDateTime pattern="dd/MM/yyyy" /></h:outputLabel>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" /></h:outputLabel>
 
                     </div>
 

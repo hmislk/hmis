@@ -59,7 +59,7 @@
                 <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge" ></p:outputLabel>
             </h:panelGroup>
             <!--<p:outputLabel value="Date of Birth"/>-->
-            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+            <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                 <f:ajax event="dateSelect" execute="calNewPtDob" render="lblAge" />
             </p:calendar>
 

@@ -17,10 +17,10 @@
                     <p:panel header="Reprint" styleClass="alignTop" >
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar  id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar  id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar  id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputText value="Inward Charge Category" ></h:outputText>
                             <p:selectOneMenu id="cmbInward" value="#{bhtSummeryFinalizedController.inwardChargeType}" >
@@ -68,7 +68,7 @@
                                     <h:outputLabel value="Discharge Date"/> 
                                 </f:facet>
                                 <h:outputLabel   value="#{bip.bill.patientEncounter.dateOfDischarge}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
 

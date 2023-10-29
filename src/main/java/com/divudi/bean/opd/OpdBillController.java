@@ -7,7 +7,6 @@ import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.data.BillClassType;
 import com.divudi.data.BillNumberSuffix;
 import com.divudi.data.BillType;
-import com.divudi.data.CategoryCount;
 import com.divudi.data.DepartmentType;
 import com.divudi.data.FeeType;
 import com.divudi.data.MessageType;
@@ -226,8 +225,7 @@ public class OpdBillController implements Serializable {
     private BillLight billLight;
 
     private Long billId;
-    
-    private List<CategoryOpd> categoryOpdList;
+    private int opdSummaryIndex;
 
     /**
      *
@@ -2815,6 +2813,14 @@ public class OpdBillController implements Serializable {
 
     public void setSmsFacade(SmsFacade SmsFacade) {
         this.SmsFacade = SmsFacade;
+    }
+    
+    public int getOpdSummaryIndex() {
+        return opdSummaryIndex;
+    }
+
+    public void setOpdSummaryIndex(int opdSummaryIndex) {
+        this.opdSummaryIndex = opdSummaryIndex;
     }
 
 }

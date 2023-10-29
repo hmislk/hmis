@@ -122,7 +122,7 @@
                                                     <p:inputTextarea  value="#{staffController.current.person.address}"  styleClass="longText"  />
 
                                                     <p:outputLabel value="Birthday "/>
-                                                    <p:calendar value="#{staffController.current.person.dob}" pattern="dd MM yyyy" navigator="true" >
+                                                    <p:calendar value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true" >
                                                     </p:calendar>
 
                                                     <p:outputLabel  value="Gender" ></p:outputLabel>
@@ -149,15 +149,15 @@
                                                     <p:separator/>
 
                                                     <p:outputLabel value="Date Joined "/>
-                                                    <p:calendar value="#{staffController.current.dateJoined}" pattern="dd MM yyyy" >
+                                                    <p:calendar value="#{staffController.current.dateJoined}" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                                     </p:calendar>
 
                                                     <p:outputLabel value="Date Resigned "/>
                                                     <h:panelGroup >
-                                                        <p:calendar value="#{staffController.tempRetireDate}" pattern="dd MM yyyy" >
+                                                        <p:calendar value="#{staffController.tempRetireDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                                         </p:calendar>
                                                         <p:outputLabel value="#{staffController.current.dateLeft}" >
-                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                                         </p:outputLabel>
                                                     </h:panelGroup>
                                                     <p:outputLabel value="Remove Resign " style="color: red"/>
@@ -170,11 +170,11 @@
                                                     </p:selectBooleanCheckbox>
 
                                                     <p:outputLabel value="Resigned With Notice Date"/>
-                                                    <p:calendar id="cal" value="#{staffController.current.dateWithOutNotice}" pattern="dd MM yyyy" disabled="#{staffController.current.withOutNotice}" />
+                                                    <p:calendar id="cal" value="#{staffController.current.dateWithOutNotice}" pattern="#{sessionController.applicationPreference.shortDateFormat}" disabled="#{staffController.current.withOutNotice}" />
                                                     <p:separator/>
                                                     <p:separator/>
                                                     <p:outputLabel value="Date Retired "/>
-                                                    <p:calendar value="#{staffController.current.dateRetired}" pattern="dd MM yyyy" disabled="#{!webUserController.hasPrivilege('HrEditRetiedDate')}" >
+                                                    <p:calendar value="#{staffController.current.dateRetired}" pattern="#{sessionController.applicationPreference.shortDateFormat}" disabled="#{!webUserController.hasPrivilege('HrEditRetiedDate')}" >
                                                     </p:calendar>
 
                                                     <p:outputLabel value="Speciality" />
@@ -341,7 +341,7 @@
                                                     <p:outputLabel value="#{staffController.current.creater.webUserPerson.name}"  />
                                                     <p:outputLabel  value="Created At" ></p:outputLabel>
                                                     <p:outputLabel value="#{staffController.current.createdAt}" >
-                                                        <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                                     </p:outputLabel>
                                                     <p:separator/>
                                                     <p:separator/>
@@ -397,7 +397,7 @@
 
                                 <p:outputLabel value="Birthday "/>
                                 <p:outputLabel value="#{staffController.current.person.dob}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel  value="Gender" ></p:outputLabel>
@@ -421,17 +421,17 @@
 
                                 <p:outputLabel value="Date Joined "/>
                                 <p:outputLabel value="#{staffController.current.dateJoined}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Date Resigned "/>
                                 <p:outputLabel value="#{staffController.current.dateLeft}"  >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Date Retired "/>
                                 <p:outputLabel value="#{staffController.current.dateRetired}"  >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
                                 </p:outputLabel>
 
                                 <p:outputLabel value="Speciality" />

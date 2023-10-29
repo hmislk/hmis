@@ -18,12 +18,12 @@
                     <div class="row">
                         <div class="col-md-4">
                             <h:outputLabel value="From Date"/>&nbsp;&nbsp;
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2">
                             </p:calendar>
                         </div>
                         <div class="col-md-4">
                             <h:outputLabel value="To Date"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2">
                             </p:calendar>
                         </div>
                     </div>
@@ -78,11 +78,11 @@
                                             <h:outputLabel value="#{commonReport.department.name}"/>
                                             <h:outputLabel value="From" />
                                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>                          
                                             <h:outputLabel value="To"/>
                                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGrid>
 
@@ -93,11 +93,11 @@
                         <f:facet name="header">  
                             <h:outputLabel value="From :" />&nbsp;&nbsp;
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>                          
                             &nbsp;&nbsp;<h:outputLabel value="To :"/>&nbsp;&nbsp;
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel><br/>
                             <h:outputLabel value="GRN"/>
                         </f:facet>
@@ -121,7 +121,7 @@
                                 <h:outputLabel value="Created At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -275,7 +275,7 @@
                                 <h:outputLabel value="Cancelled At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -426,7 +426,7 @@
                                 <h:outputLabel value="Created At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 
@@ -559,7 +559,7 @@
                                 <h:outputLabel value="Cancelled At"/>
                             </f:facet> 
                             <h:outputLabel value="#{b1.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
 

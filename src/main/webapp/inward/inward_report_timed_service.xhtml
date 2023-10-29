@@ -19,9 +19,9 @@
                         <p:panel>
                             <h:panelGrid columns="7" class="w-100">
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar class="mx-2" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar class="mx-2" id="fd" value="#{inwardTimedItemController.frmDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar class="mx-2" id="td" value="#{inwardTimedItemController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar class="mx-2" id="td" value="#{inwardTimedItemController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                                 <p:autoComplete class="mx-2" id="it" forceSelection="false" 
                                                 value="#{inwardTimedItemController.current.item}"
                                                 completeMethod="#{timedItemController.completeInvest}" var="ix" 
@@ -56,11 +56,11 @@
                                 <h:outputLabel value="#{inwardTimedItemController.current.item.name}"/>
                                 <h:outputLabel value=" : "/>
                                 <h:outputLabel value="#{inwardTimedItemController.frmDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                                 <h:outputLabel value="--"/>
                                 <h:outputLabel value="#{inwardTimedItemController.toDate}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
 

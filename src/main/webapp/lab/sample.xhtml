@@ -94,7 +94,7 @@
                                             <f:ajax render="calSampledDate institution" event="change" execute="chkSampledOutside"/>
                                         </p:selectBooleanCheckbox>
 
-                                        <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="dd/MMM/yyyy - hh:mm:ss a" 
+                                        <p:calendar rendered="#{!smpIx.collected}" disabled="#{!smpIx.sampleOutside}"  id="calSampledDate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  
                                                     value="#{patientInvestigationController.sampledOutsideDate}" ></p:calendar>
                                         <h:outputLabel rendered="#{smpIx.collected}"  id="lblSampledDate" value="#{smpIx.sampledAt}" >
                                             <f:convertDateTime pattern="dd/MMM/yyyy - hh:mm a"  />

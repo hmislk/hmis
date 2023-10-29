@@ -24,9 +24,9 @@
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar  id="frmDate"  value="#{reportsTransfer.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar  id="frmDate"  value="#{reportsTransfer.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar id="toDate" value="#{reportsTransfer.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar id="toDate" value="#{reportsTransfer.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
 
@@ -47,11 +47,11 @@
                                 <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/>&#13;&nbsp;
                                 <h:outputLabel value="From" />
                                 <h:outputLabel  value="#{reportsTransfer.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="To"/>
                                 <h:outputLabel  value="#{reportsTransfer.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>&#13;&nbsp;
 
                             </f:facet>

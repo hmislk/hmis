@@ -89,7 +89,7 @@
                                         inputStyleClass="w-100"
                                         class="w-100"
                                         value="#{appointmentController.currentAppointment.appointmentDate}" 
-                                        pattern="dd MMMM yyyy"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
                                         >                            
                                     </p:calendar>
                                     <h:outputLabel value="Amount" ></h:outputLabel>
