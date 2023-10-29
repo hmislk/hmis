@@ -1,6 +1,7 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
+import com.divudi.data.BillType;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.ItemCount;
 import com.divudi.entity.Bill;
@@ -116,6 +117,47 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
+    
+        public void processPharmacySaleItemCount() {
+        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+                + " from BillItem bi "
+                + " where bi.bill.cancelled=:can "
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType=:bitype ";
+        Map<String, Object> m = new HashMap<>();
+        
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype",BillType.PharmacySale);
+                
+        if(fromInstitution!=null){
+            jpql += " and bi.bill.fromInstitution=:fi ";
+            m.put("fi", fromInstitution);
+        }
+        
+        if(fromDepartment!=null){
+            jpql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+        
+        jpql += " group by bi.item.category.name, bi.item.name ";
+        jpql += " order by bi.item.category.name, bi.item.name";
+
+        // Unchecked cast here
+        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
+
+        Map<String, CategoryCount> categoryReports = new HashMap<>();
+
+        for (ItemCount count : reportLabTestCounts) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
+                    .getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        }
+
+        // Convert the map values to a list to be used in the JSF page
+        reportList = new ArrayList<>(categoryReports.values());
+    }
 
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
@@ -124,6 +166,22 @@ public class ReportController implements Serializable {
         response.reset();
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
+
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void downloadPharmacySaleItemCount() {
+        Workbook workbook = exportToExcel(reportList, "Sale Item Count");
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
 
         try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
