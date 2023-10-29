@@ -43,12 +43,13 @@
                             
                             <p:outputLabel value="Peformed Institution" >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" >
+                            <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" id="cmdToInstitution" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
                             </p:selectOneMenu>
                             
                             <p:spacer></p:spacer>
@@ -57,10 +58,10 @@
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdToDepartment"
-                                value="#{reportController.fromDepartment}" 
+                                value="#{reportController.toDepartment}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.toInstitution)}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
@@ -78,16 +79,16 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
-                            <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton ajax="false" value="Process" action="#{reportController.processOpdServiceCount()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
+                                             action="#{reportController.downloadOpdServiceCount()}">
                             </p:commandButton>
 
                         </h:panelGrid>
 
 
-                        <p:dataTable id="tbl" value="#{opdBillController.category}" var="catReport"
+                        <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
                                      paginator="true"
                                      rows="10"
                                      
