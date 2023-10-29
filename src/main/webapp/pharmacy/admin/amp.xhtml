@@ -125,7 +125,7 @@
 
                                                 <h:outputText  value="Created at" class="w-100"></h:outputText>
                                                 <h:outputText  value="#{ampController.current.createdAt}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                                 </h:outputText>
                                                 
 
@@ -137,7 +137,7 @@
 
                                                 <h:outputText  value="Last Edited at" class="w-100"></h:outputText>
                                                 <h:outputText  value="#{ampController.current.editedAt}" class="w-100">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                                 </h:outputText>
                                                 
 

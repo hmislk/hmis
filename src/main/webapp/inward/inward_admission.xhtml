@@ -102,7 +102,7 @@
                                             <p:outputLabel value="Admitted Time"/>
                                             <p:calendar value="#{admissionController.current.dateOfAdmission}" 
                                                         id="admissionTimeStamp"
-                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" class="mx-2 w-100">
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="mx-2 w-100">
                                             </p:calendar>
 
                                             <p:watermark class="mx-2" value="Referring Doctor Speciality" for="acRefDocSpe" ></p:watermark>
@@ -224,7 +224,7 @@
                                                 <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="DOB"  />
 
                                                 <h:outputLabel rendered="#{admissionController.appointmentBill!=null}" value="#{admissionController.appointmentBill.patient.person.dob}">
-                                                    <f:convertDateTime pattern="dd/MM/yy" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
 
                                                 <h:outputLabel  rendered="#{admissionController.appointmentBill!=null}" value="Adress" />

@@ -24,9 +24,9 @@
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
@@ -52,11 +52,11 @@
                                     <!--<h:panelGrid columns="4">-->
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     <!--</h:panelGrid>-->
                                 </f:facet>

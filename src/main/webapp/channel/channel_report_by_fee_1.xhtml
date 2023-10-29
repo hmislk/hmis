@@ -16,11 +16,11 @@
                 <p:panel id="billFeeReport"  header="Channel Total By Fee Type">
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date" class="mx-1"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date" class="mx-1"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                     </p:panelGrid> 
                     <h:panelGrid columns="3" styleClass="noPrintButton" class="mt-2 mb-2">
@@ -40,11 +40,11 @@
                                 <p:outputLabel value="Income By Fee type By Session Date " />
                                 <h:outputLabel class="ml-3" value=" From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel class="ml-2"  value="#{channelReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel class="ml-2"  value="#{channelReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>

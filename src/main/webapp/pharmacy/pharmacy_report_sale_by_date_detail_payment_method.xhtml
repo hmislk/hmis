@@ -13,12 +13,12 @@
                 <div class="row">
                     <div class="col-md-4">
                         <h:outputLabel value="From Date"/>&nbsp;&nbsp;
-                        <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" class="w-100 p-2" >
+                        <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2" >
                         </p:calendar>
                     </div>
                     <div class="col-md-4">
                         <h:outputLabel value="To Date"/>&nbsp;&nbsp;
-                        <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" class="w-100 p-2">
+                        <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2">
                         </p:calendar>
                     </div>
                     
@@ -53,11 +53,11 @@
                             <h:outputLabel value="Pharmacy Sale Billed"/>
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{pharmacySaleReport.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value="To Date"/>
                             <h:outputLabel value="#{pharmacySaleReport.toDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>   &#13;&nbsp;
                             <h:outputLabel value="#{pharmacySaleReport.department.name}"/>
                         </f:facet>
@@ -105,7 +105,7 @@
                         <p:subTable value="#{i.bills}" var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="#{i.date}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
@@ -114,7 +114,7 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="hh mm ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>                       
                             <p:column>
@@ -268,7 +268,7 @@
                         <p:subTable value="#{i.bills}" var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="#{i.date}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
@@ -277,7 +277,7 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="hh mm ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>                       
                             <p:column>
@@ -427,7 +427,7 @@
                         <p:subTable value="#{i.bills}" var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="#{i.date}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
@@ -436,7 +436,7 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="hh mm ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>                       
                             <p:column>
@@ -595,7 +595,7 @@
                         <p:subTable value="#{i.bills}" var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="#{i.date}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
@@ -604,7 +604,7 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="hh mm ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>                       
                             <p:column>
@@ -754,7 +754,7 @@
                         <p:subTable value="#{i.bills}" var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="#{i.date}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
@@ -763,7 +763,7 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="hh mm ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>                       
                             <p:column>
@@ -914,7 +914,7 @@
                         <p:subTable value="#{i.bills}" var="b" >
                             <f:facet name="header">
                                 <h:outputLabel value="#{i.date}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>
@@ -923,7 +923,7 @@
                             </p:column>
                             <p:column>
                                 <h:outputLabel value="#{b.createdAt}">
-                                    <f:convertDateTime pattern="hh mm ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>                       
                             <p:column>

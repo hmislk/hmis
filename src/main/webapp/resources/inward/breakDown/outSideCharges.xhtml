@@ -28,7 +28,7 @@
             </p:column>
             <p:column headerText="Added Time" style="text-align: center;">
                 <h:outputLabel value="#{bil.createdAt}">
-                    <f:convertDateTime pattern="hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                 </h:outputLabel>
             </p:column>
             <p:column style="text-align: right;"  headerText="Total">

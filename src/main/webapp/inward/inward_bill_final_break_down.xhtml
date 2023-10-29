@@ -234,14 +234,14 @@
                                 </p:column>     
                                 <p:column headerText="Created At" exportable="false">
                                     <h:outputLabel value="#{p.createdAt}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                                   
                                     <br/>
                                     <h:panelGroup rendered="#{p.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled at " />
                                         <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                        value="#{p.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -267,7 +267,7 @@
                                         <h:outputLabel style="color: #008000;" value="Edited at " />
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.editedAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
@@ -282,7 +282,7 @@
 
                                         <h:outputLabel style="color: #008000;" 
                                                        value="#{p.checkeAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>                        
                                 </p:column>

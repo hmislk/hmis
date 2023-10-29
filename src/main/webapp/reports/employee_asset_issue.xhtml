@@ -30,10 +30,10 @@
 
 
                             <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />                                      
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
                             <p:spacer/>
                             <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" />       
+                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />       
 
                         </h:panelGrid>
                     <br />

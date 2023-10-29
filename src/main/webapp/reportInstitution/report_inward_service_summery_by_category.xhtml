@@ -67,7 +67,7 @@
                         <h:outputLabel value="Date" />
                     </f:facet>
                     <h:outputLabel value="#{d.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </p:column>
 

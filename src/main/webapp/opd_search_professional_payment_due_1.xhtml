@@ -16,10 +16,10 @@
                         
                             <h:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
                                 <h:outputLabel value="Speciality"/> 
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{searchController.speciality}" id="acSpeciality"
@@ -130,7 +130,7 @@
                                             <h:outputLabel value="BilledAt"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
 
@@ -220,7 +220,7 @@
                                             <h:outputLabel value="BilledAt"/>
                                         </f:facet>
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </p:column>
                                     

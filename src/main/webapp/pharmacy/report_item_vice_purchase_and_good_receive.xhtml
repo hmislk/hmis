@@ -30,11 +30,11 @@
 
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{pharmacyPurchaseController.fromDate}" 
-                                        pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{pharmacyPurchaseController.toDate}" 
-                                        pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
 
                         </h:panelGrid>

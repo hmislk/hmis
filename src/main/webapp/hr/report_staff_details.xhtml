@@ -124,7 +124,7 @@
                                 </td>
                                 <td>
                                     <h:outputLabel value="#{staff.dateJoined}" >
-                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </td>
                                 <td>

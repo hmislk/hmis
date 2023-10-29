@@ -19,8 +19,8 @@
                                         forceSelection="true" value="#{channelStaffPaymentBillController.institution}"
                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" class="ml-2"/>
 
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" class="mx-2 ml-2" navigator="false" pattern="dd MMMM yyyy" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" class="mx-2" navigator="false" pattern="dd MMMM yyyy" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" class="mx-2 ml-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" class="mx-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         <p:watermark value="Agent" for="ins"/>
 
                                         <p:commandButton ajax="false" value="Process" class="mx-2" action="#{channelStaffPaymentBillController.calculateDueFeesAgency()}"/>
@@ -57,7 +57,7 @@
 
                                     <p:column headerText="Booked on">
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 

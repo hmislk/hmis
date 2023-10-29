@@ -19,11 +19,11 @@
                     </f:facet>
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{investigationMonthSummeryOwnControllerSession.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="Collecting Center"/>
                         <p:autoComplete forceSelection="true" value="#{investigationMonthSummeryOwnControllerSession.creditCompany}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">

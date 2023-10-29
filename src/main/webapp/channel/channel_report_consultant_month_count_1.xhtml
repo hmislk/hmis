@@ -22,10 +22,10 @@
                 <p:panel id="pan1">
                     <p:panelGrid columns="2" id="pg1">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" styleClass="dateTimePicker"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  styleClass="dateTimePicker"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" styleClass="dateTimePicker" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  styleClass="dateTimePicker" >
                         </p:calendar>
                         <h:outputLabel value="Staff" rendered="#{!channelReportTempController.paid}"/>
                         <p:autoComplete minQueryLength="2"  

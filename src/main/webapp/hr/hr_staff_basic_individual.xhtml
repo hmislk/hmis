@@ -37,10 +37,10 @@
                             <p:outputLabel value="EPF Code"></p:outputLabel>
                             <p:outputLabel id="stfCode2" value="#{staffBasicController.current.staff.epfNo}"></p:outputLabel>
                             <h:outputLabel value="From"/>
-                            <p:calendar id="frm" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="dd MM yyyy" >                                
+                            <p:calendar id="frm" navigator="true" value="#{staffBasicController.current.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" >                                
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="dd MM yyyy">                                      
+                            <p:calendar id="to" navigator="true"  value="#{staffBasicController.current.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">                                      
                             </p:calendar>                    
                             <h:outputLabel value="Salary"/>
                             <p:inputText autocomplete="off"  value="#{staffBasicController.current.staffPaySheetComponentValue}"/>
@@ -69,7 +69,7 @@
                         <h:outputLabel value="From : " />
                         <p:calendar value="#{staffBasicController.fromDate}"
                                     navigator="true"
-                                    pattern="dd MMMM yyyy hh:mm:ss a" />                                          
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                                          
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffBasicController.reportKeyWord.staff}"/>
                         <h:outputLabel value="Department : "/>
@@ -142,7 +142,7 @@
                                     <h:outputLabel value="DOJ"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.dateJoined}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="From"  >
@@ -150,7 +150,7 @@
                                     <h:outputLabel value="From"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="To" >
@@ -160,11 +160,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar  navigator="true" value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                        <p:calendar  navigator="true" value="#{i.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </f:facet>
                                 </p:cellEditor>
 
@@ -195,7 +195,7 @@
                                     <h:outputLabel value="Resign Date"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.dateLeft}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Staff" >

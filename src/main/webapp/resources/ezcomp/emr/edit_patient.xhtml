@@ -76,7 +76,7 @@
                             <div class="col-md-6">
                                 <p:outputLabel value="Date of Birth:"  class="form-label" />
                                 <p:datePicker value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"
-                                              pattern="dd MMMM yyyy" style="border: none; padding: 0px;" yearNavigator="true"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" yearNavigator="true"
                                               maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
                                     <p:ajax event="dateSelect" process="calNewPtDob" update="year month day"
                                             listener="#{patientController.calculateAgeComponantsFromDob(cc.attrs.patient)}" />

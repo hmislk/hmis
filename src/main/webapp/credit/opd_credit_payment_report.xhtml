@@ -21,9 +21,9 @@
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>                            
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>                            
                             <h:outputLabel value="Credit Company : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstCc"   value="#{inwardReportController1.institution}" >
                                 <f:selectItem itemLabel="All Credit Companies"/>

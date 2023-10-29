@@ -21,11 +21,11 @@
                             <h:outputLabel value="Component"/>
                             <h:outputLabel value="#{staffPaySheetComponentAllPerformancePercentageController.paysheetComponent.name}"/>                            
                             <h:outputLabel value="From"/>                            
-                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}" pattern="dd MM yyyy">
+                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
                                 <f:ajax execute="@this" render="#{p:resolveFirstComponentWithId('frm',view).clientId}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="dd MM yyyy"/>
+                            <p:calendar navigator="true" value="#{staffPaySheetComponentAllPerformancePercentageController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
 
                             <p:commandButton  value="Save" action="#{staffPaySheetComponentAllPerformancePercentageController.save}" >
 
@@ -106,7 +106,7 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         <p:calendar navigator="true" id="frm" value="#{staffPaySheetComponentAllPerformancePercentageController.fromDate}"
-                                    pattern="dd MM yyyy" />                                              
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" />                                              
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{staffPaySheetComponentAllPerformancePercentageController.reportKeyWord.staff}"/>
                         <h:outputLabel value="Department : "/>
@@ -197,11 +197,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.fromDate}" pattern="dd MM yyyy" navigator="true"/>
+                                        <p:calendar value="#{i.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true"/>
                                     </f:facet>
                                 </p:cellEditor>
                             </p:column>
@@ -212,11 +212,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.toDate}" pattern="dd MM yyyy" navigator="true"/>
+                                        <p:calendar value="#{i.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true"/>
                                     </f:facet>
                                 </p:cellEditor>
 
@@ -247,7 +247,7 @@
                                     <h:outputLabel value="Resign Date"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.staff.dateLeft}">
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Staff" >

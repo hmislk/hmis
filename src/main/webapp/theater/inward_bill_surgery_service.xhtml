@@ -275,20 +275,20 @@
 
                                             <div class="billdate" >
                                                 <h:outputLabel value="#{bill.billDate}">
-                                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                 </h:outputLabel>
                                             </div>
 
                                             <div class="payment" >
                                                 <h:outputLabel value="#{bill.paymentMethod}">
-                                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                 </h:outputLabel>
                                             </div>
 
                                             <div class="billtime" >
                                                 <h:outputLabel value="#{bill.billTime}"
                                                                >
-                                                    <f:convertDateTime pattern="hh mm ss a"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                 </h:outputLabel>
                                             </div>
 

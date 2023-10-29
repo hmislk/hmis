@@ -27,11 +27,11 @@
                                         render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From"/>                            
-                            <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">
+                            <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
                                 <f:ajax execute="@this" render="#{p:resolveFirstComponentWithId('frm',view).clientId}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy"/>
+                            <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
 
                             <h:outputLabel value="Value"/>
                             <p:inputText id="val" autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
@@ -98,7 +98,7 @@
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         <p:calendar id="frm" value="#{staffPaySheetComponentAllController.fromDate}"
-                                    pattern="dd MM yyyy hh:mm:ss a" />                       
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>
@@ -153,7 +153,7 @@
                                     <h:outputLabel value="From"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="To" >
@@ -163,11 +163,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                        <p:calendar value="#{i.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </f:facet>
                                 </p:cellEditor>
 

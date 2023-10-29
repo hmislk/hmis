@@ -108,7 +108,7 @@
                                                                     <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{collectingCentreBillController.dateChangeListen()}" />
                                                                 </p:inputText>
                                                                 <p:calendar  value="#{collectingCentreBillController.newPatient.person.dob}" 
-                                                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                             id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" 
                                                                              style="width: 100px!important;"
                                                                              styleClass="shortinput">
                                                                     <f:ajax event="dateSelect" />
@@ -184,7 +184,7 @@
                                                         </p:column>
                                                         <p:column headerText="Date of Birth">
                                                             <h:outputText value="#{apt.person.dob}" >
-                                                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                             </h:outputText>
                                                         </p:column>
                                                         <f:ajax event="itemSelect" execute="@this" 
@@ -245,7 +245,7 @@
                                             <p:panel header="Appointments"  >
 
                                                 <p:panelGrid columns="2" >
-                                                    <p:calendar id="calS" mode="inline" value="#{collectingCentreBillController.sessionDate}" pattern="dd MMMM yyyy" >
+                                                    <p:calendar id="calS" mode="inline" value="#{collectingCentreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                         <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" />
                                                     </p:calendar>
 
@@ -254,7 +254,7 @@
                                                             <h:outputLabel value="#{collectingCentreBillController.lastBillItem.item.name}" />
 
                                                             <h:outputLabel id="lblTemS" value="#{collectingCentreBillController.sessionDate}" >
-                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                             </h:outputLabel>
 
 

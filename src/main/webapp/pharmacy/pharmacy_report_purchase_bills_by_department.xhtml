@@ -18,12 +18,12 @@
                     <div class="row">
                         <div class="col-md-5">
                             <h:outputLabel value="From"/><p:spacer width="50"/>
-                            <p:calendar id="frmDate" value="#{pharmacyPurchaseController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
+                            <p:calendar id="frmDate" value="#{pharmacyPurchaseController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2">
                         </p:calendar>
                         </div>
                         <div class="col-md-5">
                             <h:outputLabel value="To"/>&nbsp;&nbsp;
-                        <p:calendar id="toDate" value="#{pharmacyPurchaseController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" class="w-100 p-2">
+                        <p:calendar id="toDate" value="#{pharmacyPurchaseController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  class="w-100 p-2">
                         </p:calendar>
                         </div>
                     </div>
@@ -80,11 +80,11 @@
                         <h:outputLabel value="#{pharmacyPurchaseController.department.name}"/>
                         <h:outputLabel value="From" />
                         <h:outputLabel  value="#{pharmacyPurchaseController.fromDate}" >
-                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>                          
                         <h:outputLabel value="To"/>
                         <h:outputLabel  value="#{pharmacyPurchaseController.toDate}" style="float: right" >
-                            <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
                     </h:panelGrid>-->
 
@@ -119,7 +119,7 @@
                                 <h:outputLabel value="System Date"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.createdAt}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column  >
@@ -127,7 +127,7 @@
                                 <h:outputLabel value="Bill Type"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.billType.label}" >
-                                <f:convertDateTime pattern="dd MM yy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
 
                         </p:column>

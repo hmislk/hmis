@@ -23,9 +23,9 @@
                                                 value="#{mdInwardReportController.dept}"  >
                                 </p:autoComplete>
                                 <p:outputLabel value="From" ></p:outputLabel>
-                                <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd MM yyyy" ></p:calendar>
+                                <p:calendar value="#{mdInwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                                 <p:outputLabel value="To" ></p:outputLabel>
-                                <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd MM yyyy" ></p:calendar>
+                                <p:calendar value="#{mdInwardReportController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                             </h:panelGrid>
 
                             <p:panelGrid columns="1">
@@ -59,11 +59,11 @@
 
                                     <p:outputLabel value="From  "/>
                                     <p:outputLabel value="#{mdInwardReportController.fromDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </p:outputLabel>
                                     <p:outputLabel value="-- To --"/>
                                     <p:outputLabel value="#{mdInwardReportController.toDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                     </p:outputLabel>
 
                                 </f:facet>
@@ -87,7 +87,7 @@
                                         <p:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <p:outputLabel value="#{i.bill.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
 

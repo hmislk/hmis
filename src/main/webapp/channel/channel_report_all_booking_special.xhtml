@@ -17,10 +17,10 @@
                 <p:panel  header="Channel Bill List">
                     <p:panelGrid columns="4" class="w-100" > 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel value="Specility"/>
                         <au:completeSpeciality value="#{channelReportController.reportKeyWord.speciality}" />
                         <h:outputLabel value="Doctor"/>
@@ -55,11 +55,11 @@
                                 <p:outputLabel value="Bill Summary" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <p:outputLabel value="#{channelReportController.reportKeyWord.staff.person.name}" style=" white-space:pre-line;"/>
                             </f:facet>
@@ -68,7 +68,7 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" >
@@ -166,11 +166,11 @@
                                 <p:outputLabel value="Bill Summary(Cancel)" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column style="text-align: left;" rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -178,7 +178,7 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" >
@@ -273,7 +273,7 @@
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column style="text-align: left;" rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -281,7 +281,7 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" >

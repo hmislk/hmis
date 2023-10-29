@@ -16,7 +16,7 @@
 
                     <h:outputLabel value="From Date"/>
                     <p:spacer width="10" height="1" ></p:spacer>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
@@ -80,7 +80,7 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </f:facet>
 
@@ -91,7 +91,7 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="To :"/>
                                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </f:facet>
 

@@ -42,12 +42,12 @@
                     </div>
                     <div style="position: absolute!important; font-size: 15px!important; left: 30%!important; top: 42%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}" style="font-size: 14px!important;">
-                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                         </h:outputLabel>
                     </div>
                     <div style="position: absolute!important; font-size: 15px!important; left: 70%!important; top: 42%!important;">
                         <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" style="font-size: 14px!important;">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                         </h:outputLabel>
                     </div>
                     <div style="position: absolute!important; font-size: 15px!important; left: 22%!important; top: 53%!important;">

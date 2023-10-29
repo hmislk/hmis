@@ -12,7 +12,7 @@
             <f:facet name="header">
                 <h:panelGrid columns="2">                    
                     <p:outputLabel value="Date"/>
-                    <p:clock pattern="dd MMMM yyyy" mode="server"  />           
+                    <p:clock pattern="#{sessionController.applicationPreference.longDateFormat}" mode="server"  />           
                 </h:panelGrid>
             </f:facet>
 

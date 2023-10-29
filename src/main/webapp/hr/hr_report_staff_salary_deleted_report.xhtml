@@ -107,7 +107,7 @@
                                     </p:column>
                                     <p:column>
                                         <p:outputLabel value="#{ss.createdAt}" >
-                                            <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </p:outputLabel>
                                     </p:column>
                                     <p:column>
@@ -115,7 +115,7 @@
                                     </p:column>
                                     <p:column>
                                         <p:outputLabel value="#{ss.retiredAt}" >
-                                            <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </p:outputLabel>
                                     </p:column>
                                 </p:subTable>

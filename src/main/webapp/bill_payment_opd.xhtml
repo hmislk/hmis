@@ -180,7 +180,7 @@
                                                     <div  class="billdate">
                                                         <h:outputLabel value="#{billController.opdBill.billDate}"
                                                                        >
-                                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                         </h:outputLabel>
                                                     </div>
 
@@ -190,7 +190,7 @@
 
                                                     <div class="billtime">
                                                         <h:outputLabel value="#{billController.opdBill.billTime}" >
-                                                            <f:convertDateTime pattern="hh mm a"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                                                         </h:outputLabel>
 
                                                     </div>

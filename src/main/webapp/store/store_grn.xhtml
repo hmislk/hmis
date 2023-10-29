@@ -149,7 +149,7 @@
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
                             <f:facet name="input">
@@ -192,7 +192,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{storeGrnController.grnBill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{storeGrnController.grnBill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{storeGrnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>   
 
 

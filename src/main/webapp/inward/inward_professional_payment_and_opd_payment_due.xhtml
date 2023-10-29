@@ -18,7 +18,7 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="To Date"/>
                             <p:calendar styleClass="dateTimePicker" id="toDate" 
-                                        value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <h:outputLabel value="Due Type"/>
                             <p:selectOneRadio value="#{searchController.reportKeyWord.string}" >
