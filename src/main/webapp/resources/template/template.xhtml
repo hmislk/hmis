@@ -31,11 +31,23 @@
 
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/theme.css"/>
         <h:outputStylesheet library="css" name="/#{sessionController.primeTheme}/styles.min.css"></h:outputStylesheet>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous"></link>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"/>
         <h:outputScript library="js" name="jsfcrud.js"/>
 
     </h:head>
-    <h:body style="height: 90vh;" class="">
+    <h:body >
+        <style >
+            .no-padding-margin-border .ui-panel-content,
+            .no-padding-margin-border .ui-panel-titlebar,
+            .no-padding-margin-border {
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+            }
+        </style>
+
+
+
 
         <div class="row" >
             <div class="col-12" >
@@ -54,9 +66,11 @@
                         <h:panelGroup rendered="#{sessionController.department ne null}" >
                             <ez:menu/>
                             <ez:user_icon_bar/>
-
-                            <ui:insert name="content">
-                            </ui:insert>
+                            <p:panel styleClass="no-padding-margin-border" 
+                                     style="height: 100vh; padding: 0px ;margin: 0px; border: none;" class="w-100"  >
+                                <ui:insert name="content">
+                                </ui:insert>
+                            </p:panel>
                         </h:panelGroup>
                         <h:panelGroup rendered="#{sessionController.department eq null}" >
                             <ez:select_department/>
@@ -74,8 +88,6 @@
                 <p:messages id="publicGrowl" showDetail="true" ></p:messages>
             </div>
         </div>
-
-
 
 
     </h:body>
