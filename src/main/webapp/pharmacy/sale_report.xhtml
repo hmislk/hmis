@@ -23,7 +23,8 @@
                                                id="cmdFromDepartment"
                                                var="i"
                                                itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
+                                               itemValue="#{i}"
+                                               class="w-100"></f:selectItems>
                                 <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
                             </p:selectOneMenu>
                             
@@ -43,10 +44,10 @@
                                           pattern="dd MMMM yyyy"></p:datePicker>
 
 
-                            <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton ajax="false" value="Process" action="#{reportController.processPharmacySaleItemCount()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Download"
-                                             action="#{reportController.downloadLabTestCount}">
+                                             action="#{reportController.downloadPharmacySaleItemCount()}">
                             </p:commandButton>
 
                         </h:panelGrid>
