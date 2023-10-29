@@ -173,7 +173,7 @@
 
                                                     <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
                                                                 id="billedTimeStamp"
-                                                                pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
+                                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
                                                     </p:calendar>
                                                     <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" />
                                                 </p:panelGrid>

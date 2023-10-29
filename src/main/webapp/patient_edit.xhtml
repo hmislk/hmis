@@ -58,7 +58,7 @@
 
                                 <h:outputLabel value="Phone"/>
                                 <p:calendar  value="#{patientController.current.person.dob}" 
-                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                             id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" 
                                              style="width: 100px!important;"
                                              styleClass="shortinput">
                                     <f:ajax event="dateSelect" />

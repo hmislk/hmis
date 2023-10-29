@@ -68,7 +68,7 @@
                                         <h:outputText class="ml-2 w-100"  value="#{procedureController.current.creater.staff.person.name}" ></h:outputText>
                                         <h:outputText value="Created At" ></h:outputText>
                                         <h:outputText class="ml-2 w-100"  value="#{procedureController.current.createdAt}" >
-                                            <f:convertDateTime pattern="YYYY MM dd hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </h:outputText>
                                     </h:panelGrid>
                                     <h:panelGrid id="gpDetailButtons" columns="2">

@@ -91,13 +91,13 @@
                                                                                     <h:outputLabel value="#{inwardSearch.bill.cancelledBill.insId} **Cancelled"  style="position:absolute;left:4.5cm; top:1.5cm;" /> 
                                     
                                                                                     <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billDate}"  style="position: absolute; left: 10.5cm; top:1.5cm;" >
-                                                                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                                                     </h:outputLabel>
                                     
                                                                                     <h:outputLabel value="#{inwardSearch.bill.cancelledBill.paymentMethod} / #{inwardSearch.bill.insId}" style="position:absolute;left:4.5cm; top:2.0cm;"  />
                                     
                                                                                     <h:outputLabel value="#{inwardSearch.bill.cancelledBill.billTime}"  style="position: absolute; left: 10.5cm; top:2.0cm;" >
-                                                                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                                                     </h:outputLabel>
                                     
                                                                                     <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" style="position:absolute;left:4.5cm; top:2.5cm; text-transform: uppercase; "  />

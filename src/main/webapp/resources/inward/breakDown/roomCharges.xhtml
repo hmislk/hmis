@@ -23,12 +23,12 @@
             </p:column>                                                                          
             <p:column headerText="In At" style="text-align: center;">
                 <h:outputLabel value="#{rm.admittedAt}">
-                    <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                 </h:outputLabel>
             </p:column>
             <p:column headerText="Out At" style="text-align: center;">
                 <h:outputLabel value="#{rm.dischargedAt}">
-                    <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                 </h:outputLabel>
             </p:column>
 

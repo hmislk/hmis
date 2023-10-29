@@ -29,9 +29,9 @@
                                             value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="dd MM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{storeReportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="40">
@@ -94,7 +94,7 @@
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

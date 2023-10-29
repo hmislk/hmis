@@ -26,7 +26,7 @@
                         <p:outputLabel value="Full Paid Cancel Patient List"/><br></br>
                         <p:outputLabel value="Date: "/>
                         <p:outputLabel value="#{channelReportController.date}" >
-                            <f:convertDateTime pattern="yyyy MMMM dd" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </p:outputLabel>     
                     </f:facet>
                     <p:column headerText="No" style="width: 10px!important;">

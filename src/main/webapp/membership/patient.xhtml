@@ -78,7 +78,7 @@
                                                 </p:selectOneMenu>
 
                                                 <h:outputLabel value="Date of Birth"/>
-                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob" styleClass="dateTimePicker"  navigator="true" pattern="dd/MM/yyyy" >
+                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob" styleClass="dateTimePicker"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                                     <f:ajax event="dateSelect" execute="calNewPtDob" render="year month day" listener="#{patientController.dobChangeListen()}"/>
                                                 </p:calendar>
 

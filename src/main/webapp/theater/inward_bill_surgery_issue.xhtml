@@ -75,12 +75,12 @@
                                             </p:column>
                                             <p:column headerText="From Time" >
                                                 <h:outputLabel value="#{apt2.procedure.fromTime}">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="To Time" >
                                                 <h:outputLabel value="#{apt2.procedure.toTime}">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </p:column>
                                         </p:autoComplete>  
@@ -122,7 +122,7 @@
                                                     </p:column>
                                                     <p:column headerText="Expiry">
                                                         <h:outputLabel value="#{i.itemBatch.dateOfExpire}" >
-                                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock" ></p:ajax>
@@ -201,7 +201,7 @@
 
                                                             <p:column headerText="Expiry">
                                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                                 </h:outputLabel>
 
                                                             </p:column>

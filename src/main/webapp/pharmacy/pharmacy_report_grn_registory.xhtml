@@ -21,12 +21,12 @@
                             <div class="col-md-4">
                                 <h:outputLabel value="From Date"/>&nbsp;&nbsp;
                             <p:calendar styleClass="dateTimePicker" id="fromDate" 
-                                        value="#{searchController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" class="w-100 p-2"/>
+                                        value="#{searchController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 p-2"/>
                             </div>
                             <div class="col-md-4">
                                 <h:outputLabel value="To Date"/>&nbsp;&nbsp;
                             <p:calendar styleClass="dateTimePicker" id="toDate" 
-                                        value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" class="w-100 p-2"/>
+                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100 p-2"/>
                             </div>
                         </div>
                         <p:spacer height="3"/>

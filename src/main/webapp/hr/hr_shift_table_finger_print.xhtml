@@ -22,11 +22,11 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" 
                                     value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" 
                                     value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="Roster"/>
                         <p:selectOneMenu id="roster" value="#{shiftFingerPrintAnalysisController.roster}">
                             <f:selectItem itemLabel="Select Roster"/>
@@ -85,7 +85,7 @@
                                               or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
                     <f:facet name="header">
                         <h:outputLabel value="#{data.date}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
                     </f:facet>
                     <p:column headerText="No" styleClass="singleLine">
@@ -174,7 +174,7 @@
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
                                 <p:calendar                                   
                                     value="#{sts.startRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh mm ss a"  >                           
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >                           
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                 </p:calendar>
@@ -194,7 +194,7 @@
                             <h:panelGroup rendered="#{sts.endRecord ne null}">
                                 <p:calendar                                    
                                     value="#{sts.endRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh mm ss a" >          
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >          
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                                 </p:calendar>                             

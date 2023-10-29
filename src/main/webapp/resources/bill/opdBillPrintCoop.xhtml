@@ -78,16 +78,16 @@
                     <div  class="billdatePrinting">
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                        rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.refundedBill.billDate}"
                                        rendered="#{cc.attrs.bill.refundedBill.deptId ne null}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                        rendered="#{cc.attrs.bill.refundedBill.indeptIdsId eq null and 
                                                    cc.attrs.bill.cancelledBill.deptId eq null }">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 

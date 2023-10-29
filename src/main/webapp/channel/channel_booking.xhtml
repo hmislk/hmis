@@ -110,12 +110,12 @@
                         </p:column>
                         <p:column headerText="Date" style="width: 50px!important; text-align: center;" >
                             <h:outputText value="#{ses.sessionDate}">
-                                <f:convertDateTime pattern="dd MMM"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Time" style="width: 40px!important; text-align: center;" >
                             <h:outputText value="#{ses.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </h:outputText>
                         </p:column>
                         <p:column headerText="Fee" style="width: 40px!important; text-align: center;" >
@@ -263,7 +263,7 @@
                             <!--            <p:inputText autocomplete="off"   value="#{channelBookingController.paymentMethodData.creditCard.comment}"  id="memo"/>-->
 
                                         <h:outputLabel id="lblChequeDate" value="Cheque Date" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; "/>
-                                        <p:calendar   value="#{channelBookingController.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" id="ChequeDate" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >                            
+                                        <p:calendar   value="#{channelBookingController.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate" style="display: #{channelBookingController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >                            
                                         </p:calendar>
 
 
@@ -275,7 +275,7 @@
                                             <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                                         </p:selectOneMenu>
                                         <h:outputLabel value="Slip Date" id="slipLblDate" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;"/>
-                                        <p:calendar  value="#{channelBookingController.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" id="date" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">                            
+                                        <p:calendar  value="#{channelBookingController.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date" style="display: #{channelBookingController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">                            
                                         </p:calendar>
 
 
@@ -404,7 +404,7 @@
                                         </p:column>
                                         <p:column headerText="Date of Birth">
                                             <h:outputLabel value="#{apt.person.dob}" >
-                                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                             </h:outputLabel>
                                         </p:column>
                                         <p:ajax event="itemSelect" process="@this" update="panSearch"/>
@@ -537,13 +537,13 @@
                                             <p:outputLabel value="Appointment Date">
                                             </p:outputLabel>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                 </f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="Appointment Time">
                                             </p:outputLabel>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="Tel "/>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}"/>
@@ -606,13 +606,13 @@
                                             <p:outputLabel value="Appointment Date">
                                             </p:outputLabel>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                 </f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="Appointment Time">
                                             </p:outputLabel>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="Tel "/>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}"/>
@@ -680,13 +680,13 @@
                                             <p:outputLabel value="Appointment Date">
                                             </p:outputLabel>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.sessionDate}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" >
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                 </f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="Appointment Time">
                                             </p:outputLabel>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.serviceSession.startingTime}"> 
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                                             </p:outputLabel>
                                             <p:outputLabel value="Tel "/>
                                             <p:outputLabel value="#{channelBookingController.selectedBillSession.bill.patient.person.phone}"/>
@@ -1021,10 +1021,10 @@
                             </p:tab>
                             <p:tab title="Search" class="w-100" rendered="#{webUserController.hasPrivilege('ChannelBookingSearch') || sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                 <h:panelGrid columns="2">
-                                    <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" placeholder="From Date" pattern="dd MMMM yyyy hh:mm:ss a" >   
+                                    <p:calendar id="calFrom"  value="#{channelSearchController.fromDate}" placeholder="From Date" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >   
                                         <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                                     </p:calendar>
-                                    <p:calendar id="calTo"  value="#{channelSearchController.toDate}" placeholder="To Date" pattern="dd MMMM yyyy hh:mm:ss a" >   
+                                    <p:calendar id="calTo"  value="#{channelSearchController.toDate}" placeholder="To Date" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >   
                                         <f:ajax event="dateSelect" execute="@this" render="bSessionSearch"/>
                                     </p:calendar>
 

@@ -24,11 +24,11 @@
                                         <h:panelGrid columns="1" class="w-100">
                                             <h:outputLabel value="From" ></h:outputLabel>
                                             <p:calendar value="#{reorderController.fromDate}"
-                                                        pattern="dd MMM yyyy" ></p:calendar>
+                                                        pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                             <h:outputLabel value="To" ></h:outputLabel>
                                             <p:calendar value="#{reorderController.toDate}"
-                                                        pattern="dd MMM yyyy" ></p:calendar>
+                                                        pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                                             <h:outputLabel value="Bill types" ></h:outputLabel>
                                             <p:selectManyMenu
                                                 value="#{reorderController.billTypes}" >

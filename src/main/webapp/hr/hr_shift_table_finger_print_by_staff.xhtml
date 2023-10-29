@@ -26,11 +26,11 @@
                         <h:outputLabel value="From"/>
                         <p:calendar id="frmDate" 
                                     value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To"/>
                         <p:calendar id="toDate" 
                                     value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
 
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>

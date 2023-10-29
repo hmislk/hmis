@@ -13,9 +13,9 @@
 
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                        <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To Date"/>
-                        <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                        <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="Roster"/>
                         <p:selectOneMenu id="roster" value="#{shiftTableController.roster}">
                             <f:selectItem itemLabel="Select Roster"/>
@@ -94,11 +94,11 @@
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="   To  "/>
                     <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </f:facet>
                 <table  style="width: 98%;font-family: serif; font-size: 12px;" border="0" class="printOnly">
@@ -182,11 +182,11 @@
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="   To  "/>
                     <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </f:facet>
 
@@ -270,11 +270,11 @@
                 <f:facet name="header">
                     <h:outputLabel value="Roster Of #{shiftTableController.roster.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="   To  "/>
                     <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </f:facet>
                 <p:dataGrid columns="#{shiftTableController.dateRange}"

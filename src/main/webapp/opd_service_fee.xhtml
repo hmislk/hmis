@@ -77,7 +77,7 @@
                                         <p:column headerText="Comments">
                                             <h:outputLabel  rendered="#{bi.editer ne null}"  value="Last edit at "/>
                                             <h:outputLabel value="#{bi.editedAt}"  rendered="#{bi.editer ne null}"  >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMMM yyyy hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                             <h:outputLabel rendered="#{bi.editer ne null}"  value=" by "/>
                                             <h:outputLabel rendered="#{bi.editer ne null}"  value="#{bi.editer.webUserPerson.nameWithTitle}"/>

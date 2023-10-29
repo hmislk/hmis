@@ -59,7 +59,7 @@
                                 <f:convertDateTime pattern="dd/MM/yy " ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                         <td style="width: 50px;"></td>

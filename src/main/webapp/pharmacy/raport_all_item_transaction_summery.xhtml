@@ -27,7 +27,7 @@
 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{pharmacyController.fromDate}"  styleClass="mediuminput"
-                                    navigator="true"  pattern="dd MMMM yyyy hh:mm" >
+                                    navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <p:commandButton ajax="false"
                                          action="#{pharmacyController.createAllItemTransactionSummery()}" value="Process"/>
@@ -35,7 +35,7 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{pharmacyController.toDate}"  styleClass="mediuminput"
-                                    navigator="true" pattern="dd MMMM yyyy hh:mm" >
+                                    navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <p:commandButton value="Excel" ajax="false">

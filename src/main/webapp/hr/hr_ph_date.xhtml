@@ -42,7 +42,7 @@
                                     <f:selectItems var="dayTypes" itemLabel="#{dayTypes.label}" itemValue="#{dayTypes.value}" value="#{enumController.dayTypesForPh}"/>
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Holiday"/>
-                                <p:calendar id="calS" mode="inline" value="#{phDateController.current.phDate}" pattern="dd MMMM yyyy" >                                   
+                                <p:calendar id="calS" mode="inline" value="#{phDateController.current.phDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >                                   
                                 </p:calendar>
                             </h:panelGrid>
                         </p:panel>

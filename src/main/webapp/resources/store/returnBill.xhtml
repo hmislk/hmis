@@ -52,7 +52,7 @@
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                                <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                         <td style="width: 10%" >
@@ -65,7 +65,7 @@
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm"  ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
 

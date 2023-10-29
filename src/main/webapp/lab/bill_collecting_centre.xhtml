@@ -66,7 +66,7 @@
                                                     <h:outputLabel  rendered="#{labBillCollectingController.searchedPatient!=null}" value="DOB"  />
 
                                                     <h:outputLabel rendered="#{labBillCollectingController.searchedPatient!=null}" value="#{labBillCollectingController.searchedPatient.person.dob}">
-                                                        <f:convertDateTime pattern="dd/MM/yy" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                     </h:outputLabel>
 
                                                     <h:outputLabel  rendered="#{labBillCollectingController.searchedPatient!=null}" value="Adress" />
@@ -317,7 +317,7 @@
 
                                 <div class="billdatePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.billDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </div>
 
@@ -330,7 +330,7 @@
                                 <div class="billtimePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.billTime}"
                                                    >
-                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                     </h:outputLabel>
                                 </div>
 

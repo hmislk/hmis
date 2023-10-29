@@ -69,7 +69,7 @@
                                     <h:outputText value="#{paymentSchemeController.current.creater.webUserPerson.name}"  />
                                     <h:outputText value="Created At" ></h:outputText>
                                     <p:outputLabel value="#{paymentSchemeController.current.createdAt}" >
-                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </p:outputLabel>
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2">

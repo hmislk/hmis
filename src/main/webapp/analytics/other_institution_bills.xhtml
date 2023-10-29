@@ -18,12 +18,12 @@
                                       id="fromDate" 
                                       value="#{searchController.fromDate}" 
                                       showTime="true"
-                                      pattern="dd MMMM yyyy hh:mm" >      
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                         </p:datePicker>
                         <h:outputLabel value="To Date"/>
                         <p:datePicker id="toDate" value="#{searchController.toDate}" 
                                       showTime="true"
-                                      pattern="dd MMMM yyyy hh:mm" >                                                                              
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                         </p:datePicker>
                         <h:outputLabel value="Institution"/>
                         <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
@@ -64,12 +64,12 @@
                         <p:column headerText="Date/Time">
                             <h:outputLabel value="Invoice Date " rendered="#{bill.invoiceDate != null}"/>
                             <h:outputLabel value="#{bill.invoiceDate}" rendered="#{bill.invoiceDate != null}">
-                                <f:convertDateTime pattern="dd MMMM yyyy"></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
                             </h:outputLabel>
 
                             <h:outputLabel value="Created At " rendered="#{bill.createdAt != null}"/>
                             <p:outputLabel value="#{bill.createdAt}" rendered="#{bill.createdAt != null}">
-                                <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                             </p:outputLabel>
 
                             <h:outputLabel value="Bill Date " rendered="#{bill.billDate != null}"/>
@@ -79,7 +79,7 @@
 
                             <h:outputLabel value="Bill Time " rendered="#{bill.billTime != null}"/>
                             <p:outputLabel value="#{bill.billTime}" rendered="#{bill.billTime != null}">
-                                <f:convertDateTime pattern="hh:mm a"></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"></f:convertDateTime>
                             </p:outputLabel>
                         </p:column>
 

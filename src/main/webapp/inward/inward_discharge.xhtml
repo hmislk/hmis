@@ -16,13 +16,13 @@
                     <h:outputLabel value="#{bhtSummeryController.patientEncounter.patient.age}" ></h:outputLabel>
                     <h:outputLabel  value="DOB"  />
                     <h:outputLabel value="#{bhtSummeryController.patientEncounter.patient.person.dob}">
-                        <f:convertDateTime pattern="dd/MM/yy" />
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
                     <h:outputLabel   value="Adress" />
                     <h:outputLabel  value="#{bhtSummeryController.patientEncounter.patient.person.address}" ></h:outputLabel>
                     <h:outputLabel  value="Date of Admission"  />
                     <h:outputLabel  value="#{bhtSummeryController.patientEncounter.dateOfAdmission}">
-                        <f:convertDateTime pattern="dd/MM/yy" />
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>
                     
                 </h:panelGrid>
