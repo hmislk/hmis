@@ -22,9 +22,9 @@
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
                                 </p:autoComplete>
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.fromDate}" pattern="dd MMM yyyy" ></p:calendar>
+                                <p:calendar value="#{reportsStock.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                                 <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.toDate}" pattern="dd MMM yyyy" ></p:calendar>
+                                <p:calendar value="#{reportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                             </h:panelGrid>
                             <p:spacer width="20" height="1" ></p:spacer>
                             <h:panelGrid columns="1" >
@@ -93,7 +93,7 @@
                                         <h:outputLabel value="Expiry"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

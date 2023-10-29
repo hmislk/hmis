@@ -120,7 +120,7 @@
                                         </h:outputLabel>
 
                                         <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputLabel>
                                     </div>
 
@@ -129,7 +129,7 @@
                                         </h:outputLabel>
 
                                         <h:outputLabel value="#{cc.attrs.admission.dateOfAdmission}" >
-                                            <f:convertDateTime pattern="hh mm a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                                         </h:outputLabel>
                                     </div>
                                 </div>
@@ -230,7 +230,7 @@
                                         </h:outputLabel>
 
                                         <h:outputLabel value="#{cc.attrs.admission.guardian.name}" >
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputLabel>
                                     </div>
                                     <div >
@@ -238,7 +238,7 @@
                                         </h:outputLabel>
 
                                         <h:outputLabel value="#{cc.attrs.admission.guardian.address}" >
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputLabel>
                                     </div>
                                     <div >
@@ -246,7 +246,7 @@
                                         </h:outputLabel>
 
                                         <h:outputLabel value="#{cc.attrs.admission.guardian.mobile}" >
-                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputLabel>
                                     </div>
                                 </div>

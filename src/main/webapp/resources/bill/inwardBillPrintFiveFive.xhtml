@@ -77,7 +77,7 @@
                 <h:outputLabel value="Bill Date" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value=":" />
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
-                    <f:convertDateTime pattern="dd/MMM/yyyy" />
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 </h:outputLabel>
 
                 <!-- Age -->
@@ -92,7 +92,7 @@
                 <h:outputLabel value="Bill Time" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value=":" />
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
-                    <f:convertDateTime timeZone="Asia/Colombo" pattern="hh:mm a" />
+                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                 </h:outputLabel>
 
                 <!-- Gender -->
@@ -253,18 +253,18 @@
                                             <h:outputLabel value="#{cc.attrs.bill.cancelledBill.createdAt} "
                                                            rendered="#{cc.attrs.bill.cancelledBill.insId ne null}" 
                                                            style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
-                                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="#{cc.attrs.bill.refundedBill.createdAt}"
                                                            rendered="#{cc.attrs.bill.refundedBill.insId ne null}"
                                                            style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
-                                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputLabel>
                                             <h:outputLabel value="#{cc.attrs.bill.createdAt}"
                                                            rendered="#{cc.attrs.bill.refundedBill.insId eq null and 
                                                                        cc.attrs.bill.cancelledBill.insId eq null }"
                                                            style="font-weight: bold; font-size: var(--header-font-size); font-family: var(--font-family)">
-                                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                             </h:outputLabel>
                                         </div>
                                     </div>

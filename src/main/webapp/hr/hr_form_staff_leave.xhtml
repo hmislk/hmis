@@ -64,7 +64,7 @@
                                                itemValue="#{itm}" />
                                 <p:column  headerText="Shift Date">
                                     <h:outputLabel value="#{t.shiftDate}">
-                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Shift Name">

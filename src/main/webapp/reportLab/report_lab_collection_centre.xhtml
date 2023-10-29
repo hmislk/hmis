@@ -20,11 +20,11 @@
                 </f:facet>
                 <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From"/>
-                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" styleClass="dateTimePicker" navigator="true"  pattern="dd MMMM yyyy hh:mm:ss a" >
+                    <p:calendar id="frmDate" value="#{commonReport.fromDate}" styleClass="dateTimePicker" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="To"/>
-                    <p:calendar id="toDate" value="#{commonReport.toDate}" styleClass="dateTimePicker" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                    <p:calendar id="toDate" value="#{commonReport.toDate}" styleClass="dateTimePicker" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Collecting Center"/>
                     <p:autoComplete forceSelection="true" 

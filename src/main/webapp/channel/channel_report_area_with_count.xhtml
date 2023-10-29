@@ -16,10 +16,10 @@
                 <p:panel  header="Channel Bill List">
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar  id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar  id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="Created Date"/>
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
@@ -53,11 +53,11 @@
                                 <p:outputLabel value="Area Wise Count Summary" />
                                 <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column >

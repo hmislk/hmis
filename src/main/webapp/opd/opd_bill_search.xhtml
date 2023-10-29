@@ -10,24 +10,29 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-
-
-
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputLabel value="OPD BILL SEARCH "/>                          
                         </f:facet>
 
+                        #{opdBillController}
+                        
                         <div class="row">
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" styleClass="dateTimePicker" class="w-100" inputStyleClass="form-control">      
+                                    <p:calendar id="fromDate" 
+                                                value="#{opdBillController.fromDate}" 
+                                                navigator="false" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                styleClass="dateTimePicker" 
+                                                class="w-100" 
+                                                inputStyleClass="form-control">      
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" styleClass="dateTimePicker" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">                                                                              
+                                    <p:calendar id="toDate" value="#{opdBillController.toDate}" navigator="false" styleClass="dateTimePicker" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">                                                                              
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
@@ -58,6 +63,9 @@
                                     <p:spacer height="10" width="5" ></p:spacer>
 
 
+
+
+
                                     <div class="d-grid gap-2">
                                         <p:commandButton 
                                             id="btnSearch" 
@@ -68,6 +76,62 @@
                                             <p:dataExporter fileName="OPD Bills" type="xls" target="tblBillsExport" ></p:dataExporter>
                                         </p:commandButton>
                                     </div>
+
+
+                                    <p:selectOneMenu 
+                                        id="cmdFromInstitution"
+                                        value="#{reportController.fromInstitution}"
+                                        filter="true"
+                                        placeholder="Ordering Institution"
+                                        >
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" ></f:selectItems>
+                                        <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                                    </p:selectOneMenu>
+
+                                    <p:selectOneMenu 
+                                        id="cmdFromDepartment"
+                                        placeholder="Ordering Department"
+                                        value="#{reportController.fromDepartment}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    
+                                    <p:selectOneMenu 
+                                        id="cmdToInstitution"
+                                        value="#{reportController.fromInstitution}"
+                                        filter="true"
+                                        placeholder="Peforming Institution"
+                                        >
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                                       var="i"
+                                                       itemLabel="#{i.name}"
+                                                       itemValue="#{i}" ></f:selectItems>
+                                        <p:ajax process="cmdToInstitution" update="cmdToDepartment" ></p:ajax>
+                                    </p:selectOneMenu>
+
+                                    <p:selectOneMenu 
+                                        id="cmdToDepartment"
+                                        placeholder="Peforming Department"
+                                        value="#{reportController.fromDepartment}" 
+                                        filter="true">
+                                        <f:selectItem itemLabel="All" ></f:selectItem>
+                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                                       var="d"
+                                                       itemLabel="#{d.name}"
+                                                       itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+
+
                                 </div>
                             </div>
 
@@ -102,7 +166,7 @@
                                     </p:column>
                                     <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
                                     <p:column headerText="Billed For" sortBy="#{bill.toDepartment.name}" 
@@ -126,9 +190,9 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                     <p:column headerText="Remarks"   >                              
-                                         <h:outputLabel value="#{bill.cancelled?'Cancelled':''}" class="#{bill.cancelled?'text-danger':''}" />
-                                         <h:outputLabel value="#{bill.refunded ?'Refunded':''}" />
+                                    <p:column headerText="Remarks"   >                              
+                                        <h:outputLabel value="#{bill.cancelled?'Cancelled':''}" class="#{bill.cancelled?'text-danger':''}" />
+                                        <h:outputLabel value="#{bill.refunded ?'Refunded':''}" />
                                     </p:column>
 
 

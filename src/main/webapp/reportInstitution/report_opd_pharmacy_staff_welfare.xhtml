@@ -106,7 +106,7 @@
                             <p:outputLabel value="Date"/>
                         </f:facet>
                         <h:outputLabel value="#{b.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column headerText="Total Amount" style="text-align: right">

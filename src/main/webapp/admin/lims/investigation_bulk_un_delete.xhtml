@@ -51,7 +51,7 @@
                         </p:column>
                         <p:column headerText="Deleted At"  sortBy="#{item.retiredAt}"  >
                             <p:outputLabel value="#{item.retiredAt}">
-                                <f:convertDateTime pattern="dd MMM yy hh:mm" ></f:convertDateTime>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                             </p:outputLabel>
                         </p:column>
 

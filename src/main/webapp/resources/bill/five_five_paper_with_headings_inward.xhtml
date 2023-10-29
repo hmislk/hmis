@@ -76,7 +76,7 @@
                 <h:outputLabel value="Bill Date" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value=":" />
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
-                    <f:convertDateTime pattern="dd/MMM/yyyy" />
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                 </h:outputLabel>
 
                 <!-- Age -->
@@ -91,7 +91,7 @@
                 <h:outputLabel value="Bill Time" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)"/>
                 <h:outputLabel value=":" />
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}" style="font-weight: bold; font-size: var(--base-font-size); font-family: var(--font-family)">
-                    <f:convertDateTime timeZone="Asia/Colombo" pattern="hh:mm a" />
+                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                 </h:outputLabel>
 
                 <!-- Gender -->

@@ -40,10 +40,10 @@
                                         </p:selectBooleanCheckbox>
                                         <p:outputLabel value="From Date" />
                                         <p:calendar value="#{channelStaffPaymentBillController.fromDate}" id="fDate" styleClass="dateTimePicker"
-                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         <p:outputLabel value="To Date" />
                                         <p:calendar value="#{channelStaffPaymentBillController.toDate}" id="tDate" styleClass="dateTimePicker"
-                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="dd MMMM yyyy HH:mm:ss" />
+                                                    disabled="#{!channelStaffPaymentBillController.considerDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         <p:outputLabel value="Session" />
                                         <p:selectOneMenu  id="lstSelect" converter="sscon"  
                                                           value="#{channelStaffPaymentBillController.selectedServiceSession}" style="min-width: 100%;" >
@@ -101,13 +101,13 @@
 
                                     <p:column headerText="Booked on" rendered="false">
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Channel on" rendered="false">
                                         <h:outputLabel value="#{bf.bill.singleBillSession.sessionDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -135,7 +135,7 @@
 
                                     <p:column headerText="Appoinment Date">
                                         <h:outputLabel value="#{bf.bill.appointmentAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 

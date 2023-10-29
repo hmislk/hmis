@@ -81,7 +81,7 @@
                         <p:subTable value="#{ahwd.ahs}" var="a" >
                             <f:facet name="header">
                                 <p:outputLabel value="#{ahwd.date}" >
-                                    <f:convertDateTime pattern="yyyy MMMM dd" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                             </f:facet>
                             <p:column>

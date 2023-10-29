@@ -17,10 +17,10 @@
                 <h:panelGrid columns="2">                    
 
                     <h:outputLabel value="From"/>
-                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{billPackageMedicalController.frmDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>
                     <h:outputLabel value="To"/>
-                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{billPackageMedicalController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >
+                    <p:calendar styleClass="dateTimePicker" id="toDate" value="#{billPackageMedicalController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                     </p:calendar>       
                     <h:outputLabel value="Package"/>
                     <p:autoComplete value="#{billPackageMedicalController.serviceItem}"

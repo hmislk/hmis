@@ -14,12 +14,12 @@
                 <p:panel header="Item Report">                    
                     <h:panelGrid columns="4" class="m-2">
                         <h:outputLabel value="From"/>
-                        <p:calendar class="mx-2" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <p:calendar class="mx-2" id="fromDate" value="#{mdInwardReportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             <f:ajax event="dateSelect"   render="tbl" execute="@this toDate" listener="#{mdInwardReportController.makeBillNull}"/>
                         </p:calendar>
 
                         <h:outputLabel value="To"/>
-                        <p:calendar class="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                        <p:calendar class="mx-2" id="toDate" value="#{mdInwardReportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                         </p:calendar>
                     </h:panelGrid>
@@ -153,11 +153,11 @@
                             <h:outputLabel value="Inward Service Details - " />
                             <h:outputLabel value="From Date - " />
                             <h:outputLabel value="#{mdInwardReportController.fromDate}">
-                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value="  To Date - " />
                             <h:outputLabel value="#{mdInwardReportController.toDate}">
-                                <f:convertDateTime pattern="yyyy/MM/dd hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value=" - Institution - #{mdInwardReportController.institution.name}" rendered="#{mdInwardReportController.institution ne null}"/>
                         </f:facet>
@@ -196,7 +196,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <h:outputLabel value="#{i.bill.createdAt}">
-                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                         </p:column>   
                         <p:column headerText="Service Date" sortBy="#{i.billItem.billTime}" rendered="#{mdInwardReportController.showServiceDate eq true}">
@@ -204,7 +204,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <h:outputLabel value="#{i.billItem.billTime}">
-                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Discharge Date" sortBy="#{i.bill.patientEncounter.dateOfDischarge}" rendered="#{mdInwardReportController.showDischargeDate eq true}">
@@ -212,7 +212,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <h:outputLabel value="#{i.bill.patientEncounter.dateOfDischarge}">
-                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Categoy" sortBy="#{i.billItem.item.category.name}" rendered="#{mdInwardReportController.showCategory eq true}">

@@ -53,7 +53,7 @@
                                     <p:outputLabel value="Session Name"/>
                                     <p:inputText autocomplete="off" value="#{channelSessionWizard.current.name}"/>
                                     <p:outputLabel value="Start Time"/>                        
-                                    <p:calendar  value="#{channelSessionWizard.current.startingTime}" navigator="true" pattern="HH:mm" timeOnly="true">                            
+                                    <p:calendar  value="#{channelSessionWizard.current.startingTime}" navigator="true" pattern="#{sessionController.applicationPreference.shortTimeFormat}" timeOnly="true">                            
                                     </p:calendar>
                                     <p:outputLabel value="Max Number"/>
                                     <p:inputText autocomplete="off" value="#{channelSessionWizard.current.maxNo}"/>
@@ -76,10 +76,10 @@
                                     <p:outputLabel value="Displaying Percent"/>
                                     <p:inputText autocomplete="off" value="#{channelSessionWizard.current.displayPercent}"/>
                                     <p:outputLabel value="Effective From"/>
-                                    <p:calendar id="efdate" value="#{channelSessionWizard.current.effectiveFrom}" pattern="dd MMMM yyyy" >                              
+                                    <p:calendar id="efdate" value="#{channelSessionWizard.current.effectiveFrom}" pattern="#{sessionController.applicationPreference.longDateFormat}" >                              
                                     </p:calendar>
                                     <p:outputLabel value="Effective To"/>
-                                    <p:calendar id="etdate" value="#{channelSessionWizard.current.effectiveTo}" pattern="dd MMMM yyyy" >                              
+                                    <p:calendar id="etdate" value="#{channelSessionWizard.current.effectiveTo}" pattern="#{sessionController.applicationPreference.longDateFormat}" >                              
                                     </p:calendar>
                                     <p:outputLabel value="Week Day" rendered="#{channelSessionWizard.createNewSession eq false}"/>
                                     <p:selectOneMenu id="wdate" value="#{channelSessionWizard.current.sessionWeekday}" disabled="true" rendered="#{channelSessionWizard.createNewSession eq false}">
@@ -94,7 +94,7 @@
                                     </p:selectOneMenu>
                                     <p:outputLabel value="Other Day" rendered="#{channelSessionWizard.createNewSession eq false}"/>
                                     <p:outputLabel value="#{channelSessionWizard.current.sessionDate}" rendered="#{channelSessionWizard.createNewSession eq false}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </p:outputLabel>
                                     <p:outputLabel value="Session Number"></p:outputLabel>
                                     <p:autoComplete 
@@ -135,7 +135,7 @@
                                         </p:selectOneMenu>
                                     </p:tab>
                                     <p:tab title="Other Day" >
-                                        <p:calendar id="odate" value="#{channelSessionWizard.current.sessionDate}" pattern="dd MMMM yyyy" >                              
+                                        <p:calendar id="odate" value="#{channelSessionWizard.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >                              
                                         </p:calendar>
                                     </p:tab>
                                 </p:tabView>                    

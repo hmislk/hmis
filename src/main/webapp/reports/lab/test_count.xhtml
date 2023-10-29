@@ -19,7 +19,7 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
@@ -40,11 +40,11 @@
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Peformed Department / Lab" >
+                            <p:outputLabel value="Peformed Institution" >
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
@@ -65,12 +65,12 @@
                             <p:outputLabel value="Bill Date From" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             <p:spacer></p:spacer>
                             <p:outputLabel value="Bill Date To" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
                             <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
@@ -82,27 +82,15 @@
                         </h:panelGrid>
 
 
-
-                        <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
-                        <p:dataTable 
-                            id="tbl"
-                            value="#{reportController.reportList}" 
-                            var="catReport"
-                            paginator="true"
-                            rows="10"
-                            rowKey="#{catReport.category}"
-                            >
+                        <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
+                                     paginator="true"
+                                     rows="10"
+                                     
+                                     >
                             <p:subTable var="item" value="#{catReport.items}">
-                                <p:columnGroup type="header">
-                                    <p:row>
-                                        <p:column style="font-weight: bold; background-color: #f1f1f1;" headerText="Total for #{catReport.category}" />
-                                        <p:column style="font-weight: bold; background-color: #f1f1f1;">
-                                            <f:facet name="header">
-                                                <h:outputText value="#{catReport.total}" />
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
+                                <f:facet name="header">
+                                     <h:outputText value="Total for #{catReport.category} : #{catReport.total}" />
+                                </f:facet>
 
                                 <p:column headerText="Test Name">
                                     <h:outputText value="#{item.testName}" />
@@ -111,10 +99,10 @@
                                 <p:column headerText="Test Count">
                                     <h:outputText value="#{item.testCount}" />
                                 </p:column>
+
+                               
                             </p:subTable>
                         </p:dataTable>
-
-
 
 
                     </p:panel>

@@ -87,11 +87,11 @@
                         <h:outputLabel value="#{serviceSummery.service.name}"/>
                         <h:outputLabel value=" : "/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="--"/>
                         <h:outputLabel value="#{serviceSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </f:facet>
 
@@ -144,7 +144,7 @@
                             <p:outputLabel value="Date"/>
                         </f:facet>
                         <h:outputLabel value="#{d.billItem.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -156,7 +156,7 @@
                             <p:outputLabel value="Actual Date"/>
                         </f:facet>
                         <h:outputLabel value="#{d.billItem.billTime}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 

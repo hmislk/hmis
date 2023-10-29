@@ -143,7 +143,7 @@
                                         <td>
                                             <b>
                                                 <h:outputLabel value="#{cc.attrs.bill.singleBillSession.sessionDate}" style="font-size: 15px!important">
-                                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </b>
                                         </td>
@@ -162,7 +162,7 @@
                                         </td>
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.singleBillSession.serviceSession.startingTime}" style="font-size: 15px!important">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </td>
                                         <td>

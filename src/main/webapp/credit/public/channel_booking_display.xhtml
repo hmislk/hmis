@@ -56,12 +56,12 @@
                         </p:column>
                         <p:column headerText="Date">
                             <p:outputLabel value="#{ses.sessionAt}">
-                                <f:convertDateTime pattern="dd/MM/yy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Time">
                             <p:outputLabel value="#{ses.startingTime}">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Fee">

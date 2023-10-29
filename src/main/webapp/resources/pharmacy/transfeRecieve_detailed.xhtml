@@ -73,7 +73,7 @@
                 <h:outputLabel value="Bill Date"/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel>
                 
                 <h:outputLabel/>
@@ -83,7 +83,7 @@
                 <h:outputLabel value="Bill Time"/>
                 <h:outputLabel/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                 </h:outputLabel>
                 
             </h:panelGrid>
@@ -118,7 +118,7 @@
                             <h:outputLabel value="DOE"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
                     
