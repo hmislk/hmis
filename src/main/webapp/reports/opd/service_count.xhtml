@@ -6,7 +6,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
     <h:body>
-        <ui:composition template="/reports/index.xhtml">
+        
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Test Counts" >
@@ -19,12 +20,13 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                                 <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
                             </p:selectOneMenu>
+                            
                             <p:spacer width="40" height="1"></p:spacer>
                             <p:outputLabel value="Billing Department" >
                             </p:outputLabel>
@@ -38,29 +40,32 @@
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-
-
+                            
                             <p:outputLabel value="Peformed Institution" >
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
+                            
                             <p:spacer></p:spacer>
-                            <p:outputLabel value="Analyzer" >
+                            
+                            <p:outputLabel value="Performed Department" >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.machine}" filter="true" >
+                            <p:selectOneMenu 
+                                id="cmdToDepartment"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{machineController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
-
-
+                            
 
                             <p:outputLabel value="Bill Date From" >
                             </p:outputLabel>
@@ -82,7 +87,7 @@
                         </h:panelGrid>
 
 
-                        <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
+                        <p:dataTable id="tbl" value="#{opdBillController.category}" var="catReport"
                                      paginator="true"
                                      rows="10"
                                      
