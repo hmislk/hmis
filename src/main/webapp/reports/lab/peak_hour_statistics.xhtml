@@ -78,9 +78,16 @@
                             
                             <p:spacer></p:spacer>
                             
-                            <p:outputLabel value="CC Route"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccRoute}">
-                                <f:selectItem itemLabel="CC Route"/>
+                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccRoute}"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                              />
                             </p:selectOneMenu>
 
                             <p:commandButton ajax="false" value="Process" action="null" >
