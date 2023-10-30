@@ -15,10 +15,10 @@
                     <p:panel id="pan1" >
                         <p:panelGrid columns="4" class="w-100">
                             <h:outputLabel   value="From Date" />
-                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel   value="To Date" />
-                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                            <p:calendar styleClass="noPrintButton" value="#{channelReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>  
 
                             <p:outputLabel value="Bank Vise"/>

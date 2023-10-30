@@ -64,7 +64,7 @@
                          left: 25%;
                          top: 30%;" >                       
                         <h:outputLabel value="#{cc.attrs.bill.billDate}" style="font-size: 16px;">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 

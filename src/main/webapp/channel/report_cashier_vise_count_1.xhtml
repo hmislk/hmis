@@ -54,10 +54,10 @@
                     <p:panelGrid columns="2"  styleClass="noPrintButton">
 
                         <h:outputLabel value="From Date" />
-                        <p:calendar id="frmDate" value="#{channelReportTempController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss"  >
+                        <p:calendar id="frmDate" value="#{channelReportTempController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss">
+                        <p:calendar id="toDate" value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                         </p:calendar>
                         <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
                         <p:selectOneMenu id="cmbChanType" value="#{channelReportTempController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >

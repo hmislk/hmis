@@ -73,11 +73,11 @@
                                 <td>                                    
                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                    rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>                      
                                     <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                                    rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
 
                                 </td>
@@ -270,11 +270,11 @@
                                 <td>                                    
                                     <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                    rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>                      
                                     <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                                    rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
 
                                 </td>

@@ -36,11 +36,11 @@
 
                         <h:panelGrid columns="6" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                             <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
@@ -54,20 +54,20 @@
 
                             <h:outputLabel value="From Date " />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                             <h:outputLabel value="To Date" />
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
 
                             <h:outputLabel value="From Time " />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value="To Time " />
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGrid>
 
@@ -533,20 +533,20 @@
                         <h:panelGrid columns="4" styleClass="printBlock"  style="min-width: 100%!important;">
                             <h:outputLabel value="From Date " />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                             <h:outputLabel value="To Date" />
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
 
                             <h:outputLabel value="From Time " />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value="To Time " />
                             <h:outputLabel  value="#{commonReport.toDate}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGrid>
 

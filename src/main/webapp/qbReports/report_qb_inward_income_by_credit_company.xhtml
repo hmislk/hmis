@@ -19,10 +19,10 @@
                     <h:outputLabel value="Book Keeping Summary Without Pro (DAY)"  styleClass="noPrintButton" />
                     <h:panelGrid columns="2"  styleClass="noPrintButton">
                         <h:outputLabel value="from Date"/>
-                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy hh:mm:ss a"  >
+                        <p:calendar id="frmDate" value="#{quickBookReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="to Date"/>
-                        <p:calendar id="tdate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar id="tdate" value="#{quickBookReportController.toDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
 

@@ -75,20 +75,20 @@
                                     <br/>
                                     <p:outputLabel value="Salary Date - From : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryFromDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                     <p:outputLabel value="To : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryToDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                     <br/>
                                     <p:outputLabel value="OT Date - From : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.dayOffPhFromDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <p:outputLabel value="To : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.dayOffPhToDate}">
-                                        <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.roster ne null}">
                                         <br />

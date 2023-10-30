@@ -18,16 +18,17 @@ import javax.ejb.EJB;
  *
  * @author Senula Nanayakkara
  */
-@Named(value = "auditEventApplicationController")
+@Named
 @ApplicationScoped
 public class AuditEventApplicationController {
 
     @EJB
     AuditEventFacade auditEventFacade;
     ArrayList<AuditEvent> auditEvents = new ArrayList<>();
+
     public AuditEventApplicationController() {
     }
-    
+
     private final BlockingQueue<AuditEvent> eventQueue = new ArrayBlockingQueue<>(100);
     private ExecutorService executorService;
 
@@ -50,28 +51,37 @@ public class AuditEventApplicationController {
         }
     }
 
+    public void saveAutitEvent(AuditEvent auditEvent) {
+        if (auditEvent == null) {
+            return;
+        }
+        if (auditEvent.getId() == null) {
+            auditEventFacade.create(auditEvent);
+        }else{
+            auditEventFacade.edit(auditEvent);
+        }
+    }
+
     private void processEventQueue() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 AuditEvent event = eventQueue.take();
                 saveOrUpdateEvent(event);
-               
+
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
-    
-    private void saveOrUpdateEvent(AuditEvent auditEvent){
-        if (auditEvent == null){
-            return ;
+
+    private void saveOrUpdateEvent(AuditEvent auditEvent) {
+        if (auditEvent == null) {
+            return;
         }
-        
-        if(auditEvent.getId() == null){
+
+        if (auditEvent.getId() == null) {
             auditEventFacade.create(auditEvent);
-        }
-        
-        else{
+        } else {
             auditEventFacade.edit(auditEvent);
         }
     }

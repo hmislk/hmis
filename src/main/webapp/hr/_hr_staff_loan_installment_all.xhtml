@@ -24,12 +24,12 @@
                         <h:outputLabel value="From"/>
                         <p:calendar  value="#{staffLoanController.current.fromDate}" 
                                      navigator="true"
-                                     pattern="dd MM yyyy">                            
+                                     pattern="#{sessionController.applicationPreference.shortDateFormat}">                            
                         </p:calendar>
                         <h:outputLabel value="To"/>
                         <p:calendar   value="#{staffLoanController.current.toDate}"
                                       navigator="true"
-                                      pattern="dd MM yyyy">                            
+                                      pattern="#{sessionController.applicationPreference.shortDateFormat}">                            
                         </p:calendar>
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff value="#{staffLoanController.current.staff}"/>
@@ -98,7 +98,7 @@
                         <h:outputLabel value="From : " />
                         <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" 
                                     navigator="true"
-                                    pattern="dd MMMM yyyy hh:mm:ss a" />                       
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>
@@ -133,20 +133,20 @@
 
                         <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" >
                             <h:outputLabel value="#{i.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
                             <p:cellEditor>  
                                 <f:facet name="output">
                                     <h:outputLabel value="#{i.toDate}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
                                     <p:calendar value="#{i.toDate}"  
                                                 navigator="true"
-                                                pattern="dd MMMM yyyy" />
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </f:facet>
                             </p:cellEditor>
 

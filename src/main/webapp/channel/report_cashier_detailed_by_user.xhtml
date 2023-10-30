@@ -20,11 +20,11 @@
 
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel styleClass="noPrintButton" value="User Name"/>
                         <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
@@ -54,11 +54,11 @@
                                     <h:outputLabel value="Channel Bills &emsp; #{channelReportController.webUser.webUserPerson.name}"/>
                                     <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                     <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                          
                                     <h:outputLabel value="&emsp;&emsp;To :"/>
                                     <h:outputLabel  value="#{channelReportController.toDate}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </f:facet>     
 
@@ -74,7 +74,7 @@
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 
                                     <h:outputLabel value="#{b.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -202,7 +202,7 @@
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 
                                     <h:outputLabel value="#{b.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -330,7 +330,7 @@
                                         <h:outputLabel value="Time"/>
                                     </f:facet> 
                                     <h:outputLabel value="#{b.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 

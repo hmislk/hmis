@@ -79,10 +79,10 @@
                                     <br/>
                                     <h:outputLabel value="SC Cycle : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedFromDate}" >
-                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedToDate}"  >
-                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >

@@ -71,7 +71,7 @@
                     <p:panel>
                         <h:panelGrid columns="3">
                             <h:outputLabel value="Active From"/>
-                            <p:calendar pattern="dd MMMM yyyy"
+                            <p:calendar pattern="#{sessionController.applicationPreference.longDateFormat}"
                                         navigator="true"
                                         value="#{staffChangeController.fromDate}"/>
                             <p:commandButton ajax="false" value="Change" action="#{staffChangeController.update}"  />

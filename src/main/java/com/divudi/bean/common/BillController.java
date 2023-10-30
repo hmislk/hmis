@@ -1032,7 +1032,7 @@ public class BillController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("getPharmacyWholeBills()");
         auditEventApplicationController.logAuditEvent(auditEvent);
         BillType[] billTypes = {BillType.PharmacySale};
         BillListWithTotals r = billEjb.findBillsAndTotals(fromDate, toDate, billTypes, null, department, institution, null);

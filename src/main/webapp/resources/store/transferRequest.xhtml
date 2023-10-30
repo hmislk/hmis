@@ -53,12 +53,12 @@
                 <br></br>
                 <h:outputLabel value="Req Date : "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                 </h:outputLabel>
                 <br></br>
                 <h:outputLabel value="Req Time : "/>
                 <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                    <f:convertDateTime pattern="hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                 </h:outputLabel>
 
                 <!--</h:panelGrid>-->

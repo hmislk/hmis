@@ -101,7 +101,7 @@
                                         <p:outputLabel value="Discharge Time"/>
                                         <p:calendar value="#{bhtSummeryController.date}"
                                                     id="dischargeTimeStamp"
-                                                    pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
                                             <f:ajax execute="@this" render="sum tvPt tot" event="dateSelect" listener="#{bhtSummeryController.checkDate}" />
                                         </p:calendar> 
                                         <p:commandButton ajax="false" style="float: right;" value="Disharge" action="#{bhtSummeryController.discharge}"  />
@@ -143,13 +143,13 @@
                                             <p:calendar navigator="true"  
                                                         id="roomAdmittedTimeStamp"
                                                         value="#{rm.admittedAt}" 
-                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" />     
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />     
                                         </p:column>
                                         <p:column headerText="Discharged At">                                      
                                             <p:calendar navigator="true"  
                                                         id="roomDischargeTimeStamp"
                                                         value="#{rm.dischargedAt}" 
-                                                        pattern="dd/MMM/yyyy - hh:mm:ss a" /> 
+                                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  /> 
                                         </p:column>
                                         <p:column headerText="Room Charge" style="text-align: right;">
                                             <h:outputLabel value="#{rm.calculatedRoomCharge}" >
@@ -332,27 +332,27 @@
                                         </p:column>
                                         <p:column headerText="Billed Date">
                                             <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{iss.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
                                                                value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="dd MMM yyyy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Billed Time" >
                                             <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime pattern="hh mm ss a"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{iss.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
                                                                value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="hh mm ss a"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -371,7 +371,7 @@
                                         </p:column>  
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{iss.checkeAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>      
                                         </p:column>  
                                         <p:column>
@@ -406,27 +406,27 @@
                                         </p:column>
                                         <p:column headerText="Billed Date">
                                             <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{iss.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
                                                                value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="dd MMM yyyy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Billed Time" >
                                             <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime pattern="hh mm ss a"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{iss.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{iss.cancelled}" 
                                                                value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="hh mm ss a"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -445,7 +445,7 @@
                                         </p:column>  
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{iss.checkeAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>      
                                         </p:column>  
                                         <p:column>
@@ -480,27 +480,27 @@
 
                                         <p:column headerText="Added Date">
                                             <h:outputLabel value="#{bil.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                             </h:outputLabel>                                                  
                                             <br/>
                                             <h:panelGroup rendered="#{bil.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{bil.cancelled}" 
                                                                value="#{bil.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Added Time">
                                             <h:outputLabel value="#{bil.createdAt}">
-                                                <f:convertDateTime pattern="hh mm ss a"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{bil.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{bil.cancelled}" 
                                                                value="#{bil.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="hh mm ss a"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -558,14 +558,14 @@
                                         </p:column>
                                         <p:column headerText="Added Time">                                      
                                             <h:outputLabel value="#{pf.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                                value="#{pf.bill.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -584,7 +584,7 @@
                                         </p:column>
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{pf.bill.checkeAt}">                                         
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
@@ -614,14 +614,14 @@
                                         </p:column>
                                         <p:column headerText="Added Time">                                      
                                             <h:outputLabel value="#{pf.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{pf.bill.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{pf.bill.cancelled}" 
                                                                value="#{pf.bill.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -640,7 +640,7 @@
                                         </p:column>
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{pf.bill.checkeAt}">                                         
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>
@@ -664,14 +664,14 @@
 
                                         <p:column headerText="Paid At">  
                                             <h:outputLabel value="#{p.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>                                                   
                                             <br/>
                                             <h:panelGroup rendered="#{p.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                                value="#{p.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                         </p:column>
@@ -695,7 +695,7 @@
                                         </p:column>
                                         <p:column headerText="Checked At">
                                             <h:outputLabel value="#{p.checkeAt}">                                         
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
                                         <p:column>

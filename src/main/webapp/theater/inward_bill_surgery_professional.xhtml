@@ -117,13 +117,13 @@
                                     </p:column>
                                     <p:column >
                                         <h:outputLabel value="#{c.billFee.createdAt}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>                                                   
                                         <br/>
                                         <h:panelGroup rendered="#{c.billFee.retired}" >
                                             <h:outputLabel style="color: red;" value="Deleted at " />
                                             <h:outputLabel style="color: red;"  value="#{c.billFee.retiredAt}" >
-                                                <f:convertDateTime pattern="dd MMM yyyy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>

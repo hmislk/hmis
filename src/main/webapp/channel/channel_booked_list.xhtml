@@ -27,7 +27,7 @@
                     </h:panelGrid>
                 </p:panel>
                 <p:panel>
-                    <p:calendar id="date"  value="#{bookingPastController.date}" navigator="false" pattern="dd MMMM yyyy" >
+                    <p:calendar id="date"  value="#{bookingPastController.date}" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="scStaff"  render="tbl bSession"/>
                     </p:calendar>
                 </p:panel>

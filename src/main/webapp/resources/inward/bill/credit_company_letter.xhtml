@@ -123,7 +123,7 @@
                         <h:outputLabel value="Date" style="font-size: 13px;"/>
                         <h:outputLabel  value=":"/>
                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime}" style="font-size: 13px;" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  /></h:outputLabel>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  /></h:outputLabel>
                     </div>
                     <p:spacer height="20px"></p:spacer>
                     <div>

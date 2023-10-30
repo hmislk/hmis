@@ -38,7 +38,7 @@
                                         </p:column>
                                         <p:column headerText="Creater" >
                                             <p:outputLabel value="#{i.createdAt}">
-                                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                             </p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Retire" >
@@ -46,7 +46,7 @@
                                         </p:column>
                                         <p:column headerText="Retired At" >
                                             <p:outputLabel value="#{i.retiredAt}">
-                                                <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                             </p:outputLabel>
                                         </p:column>
                                     </p:dataTable>

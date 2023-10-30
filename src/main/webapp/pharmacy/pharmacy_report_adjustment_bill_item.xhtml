@@ -23,9 +23,9 @@
                                             value="#{pharmacyAdjustmentController.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="dd MM yyyy HH:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{pharmacyAdjustmentController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="dd MM yyyy HH:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{pharmacyAdjustmentController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
@@ -62,11 +62,11 @@
                                         
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{pharmacyAdjustmentController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{pharmacyAdjustmentController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>

@@ -22,7 +22,7 @@
             </p:selectOneMenu>
 <!--            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.comment}"  id="memo"/>-->
             
-            <p:calendar   value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="dd MMMM yyyy" id="ChequeDate">                            
+            <p:calendar   value="#{cc.attrs.paymentMethodData.cheque.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="ChequeDate">                            
             </p:calendar>
             <p:watermark value="Cheque No" for="chequNo"/>
             <p:watermark value="Cheque Date" for="ChequeDate"/>

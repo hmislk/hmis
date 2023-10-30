@@ -19,9 +19,9 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController1.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
@@ -84,11 +84,11 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="From - "/>
                                     <p:outputLabel value="#{inwardReportController1.fromDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </p:outputLabel>
                                     <h:outputLabel value=" - To - "/>
                                     <h:outputLabel value="#{inwardReportController1.toDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
 
                                     <h:outputLabel value=" - #{inwardReportController1.admissionType.name} Discount Report."/>

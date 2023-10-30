@@ -64,11 +64,11 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar value="#{staffLeaveFromLateAndEarlyController.fromDate}"
-                                            pattern="dd MMMM yyyy">     
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}">     
                                 </p:calendar>   
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar value="#{staffLeaveFromLateAndEarlyController.toDate}"
-                                            pattern="dd MMMM yyyy">
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}">
                                 </p:calendar> 
                                 <h:outputLabel value="Staff : "/>
                                 <au:completeStaff value="#{staffLeaveFromLateAndEarlyController.staff}"/>                               

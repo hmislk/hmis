@@ -150,15 +150,15 @@
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}"  />
                                         <h:outputLabel value="Dob" />
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.dob}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>                                    
                                         <h:outputLabel value="Date Of Admission"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Date Of Discharge"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value="BHT Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
@@ -513,7 +513,7 @@
                                         <h:outputLabel value="Bill Date"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{pay.createdAt}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Amount">
@@ -549,7 +549,7 @@
                                         <h:outputLabel value="Bill Date"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{cre.createdAt}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Amount">

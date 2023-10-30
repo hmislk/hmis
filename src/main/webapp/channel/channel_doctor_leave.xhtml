@@ -49,7 +49,7 @@
                 </p:dataTable>
 
 
-                <p:calendar id="calS" mode="inline" value="#{serviceSessionLeaveController.current.sessionDate}" pattern="dd MMMM yyyy" >
+                <p:calendar id="calS" mode="inline" value="#{serviceSessionLeaveController.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                     <f:ajax event="dateSelect" execute="@this"  />
                 </p:calendar>
                 <p:outputLabel/>
