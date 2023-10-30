@@ -13,39 +13,41 @@
             <h:form id="form1">
                 <p:panel header="Get Cancelled Or Refund Bill Report">
 
-                    <h:panelGrid columns="2">
+                    <p:panelGrid columns="2">
 
                         <h:outputLabel   value="From Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
 
                         <h:outputLabel   value="To Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar styleClass="noPrintButton" value="#{channelReportTempController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>  
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pan1">
+                    
                         <p:outputLabel value="Select the Department:" />
                         <h:selectOneRadio value="#{channelReportTempController.dept}" >
-                            <f:selectItem itemLabel="Channel" itemValue="1" />
-                            <f:selectItem itemLabel="OPDs" itemValue="2" />
+                            <f:selectItem itemLabel="Channel " itemValue="1" />
+                            <f:selectItem itemLabel="OPDs " itemValue="2" />
                             <f:selectItem itemLabel="Pharamacy" itemValue="3" />
                         </h:selectOneRadio>
-                    </h:panelGrid>
-                    <h:panelGrid columns="2" id="pan2">
+                    
                         <p:outputLabel value="Get total:" />
                         <h:selectOneRadio value="#{channelReportTempController.billtype}" >
-                            <f:selectItem itemLabel="Cancelled Bill" itemValue="1" />
+                            <f:selectItem itemLabel="Cancelled Bill " itemValue="1" />
                             <f:selectItem itemLabel="Refund Bill" itemValue="2" />
                         </h:selectOneRadio>
-                    </h:panelGrid>
-                    <p:commandButton value="Process" ajax="false" action="#{channelReportTempController.createCanceledAndRefund()}"/>
-                    <p:commandButton id="print" value="Print">
+                    </p:panelGrid>
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton value="Process" ajax="false" action="#{channelReportTempController.createCanceledAndRefund()}"/>
+                    <p:commandButton id="print" value="Print" style="margin-right: 10px; margin-left: 10px">
                         <p:printer target="panelPrint" />
                     </p:commandButton>
                     <p:commandButton value="Excel" ajax="false" styleClass="noPrintButton" >
                         <p:dataExporter type="xlsx" target="tbl" fileName="refundOrCancelledBill_summery" />
                     </p:commandButton>
-                    <p:panel id="panelPrint" styleClass="noBorder summeryBorder">
+                    </h:panelGrid>
+                    
+                    <p:panel id="panelPrint" >
                         <p:dataTable id="tbl" value="#{channelReportTempController.bills}" var="b" rowIndexVar="i">
                             <p:column >
                                 <f:facet name="header">
