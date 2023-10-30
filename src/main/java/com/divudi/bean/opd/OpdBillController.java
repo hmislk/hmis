@@ -1235,7 +1235,7 @@ public class OpdBillController implements Serializable {
     }
 
     public String settleOpdBill() {
-        UUID eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
+        String eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
 
         if (!executeSettleBillActions()) {
             auditEventController.updateAuditEvent(eventUuid);
