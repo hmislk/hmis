@@ -230,7 +230,7 @@ public class CashierReportController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("navigateToCashierReport()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         Date endTime = new Date();
