@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -155,6 +156,8 @@ public class OpdBillController implements Serializable {
     private BillBeanController billBean;
     @Inject
     private SearchController searchController;
+    @Inject
+    private AuditEventController auditEventController;
     /**
      * Class Variables
      */
@@ -1232,32 +1235,10 @@ public class OpdBillController implements Serializable {
     }
 
     public String settleOpdBill() {
-        //FOr Auditing
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
-        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
-        String url = request.getRequestURL().toString();
-        String ipAddress = request.getRemoteAddr();
-        AuditEvent auditEvent = new AuditEvent();
-        auditEvent.setEventStatus("Started");
-        long duration;
-        Date startTime = new Date();
-        auditEvent.setEventDataTime(startTime);
-        if (sessionController != null && sessionController.getDepartment() != null) {
-            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
-        }
-        if (sessionController != null && sessionController.getInstitution() != null) {
-            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
-        }
-        if (sessionController != null && sessionController.getLoggedUser() != null) {
-            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
-        }
-        auditEvent.setUrl(url);
-        auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+        UUID eventUuid = auditEventController.createAuditEvent("OPD Bill Controller - Settle OPD Bill");
 
         if (!executeSettleBillActions()) {
+            auditEventController.updateAuditEvent(eventUuid);
             return "";
         }
 
@@ -1266,12 +1247,7 @@ public class OpdBillController implements Serializable {
             sendSmsOnOpdBillSettling(ap, ap.getSmsTemplateForOpdBillSetting());
         }
 
-        Date endTime = new Date();
-        duration = endTime.getTime() - startTime.getTime();
-        auditEvent.setEventDuration(duration);
-        auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
-
+        auditEventController.updateAuditEvent(eventUuid);
         return "/opd/opd_bill_print?faces-redirect=true";
     }
 

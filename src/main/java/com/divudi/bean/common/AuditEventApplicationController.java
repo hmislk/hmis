@@ -18,7 +18,7 @@ import javax.ejb.EJB;
  *
  * @author Senula Nanayakkara
  */
-@Named(value = "auditEventApplicationController")
+@Named
 @ApplicationScoped
 public class AuditEventApplicationController {
 

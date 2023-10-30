@@ -7,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import java.util.UUID;
+import javax.persistence.Column;
 
 /**
  *
@@ -20,7 +22,11 @@ public class AuditEvent implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Date eventDataTime;
+    private Date eventEndTime;
     private Long webUserId;
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID uuid; // Added this line
+    
     
     @Lob
     private String url;
@@ -157,5 +163,23 @@ public class AuditEvent implements Serializable {
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
     }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public Date getEventEndTime() {
+        return eventEndTime;
+    }
+
+    public void setEventEndTime(Date eventEndTime) {
+        this.eventEndTime = eventEndTime;
+    }
+    
+    
     
 }
