@@ -13,7 +13,7 @@
 
             <h:panelGrid columns="1">
                 <p:panel header="Session Detail Report" >
-                    <h:panelGrid columns="2">
+                    <p:panelGrid columns="2">
                         <h:outputLabel  value="Speciality" ></h:outputLabel>
                         <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
                                          completeMethod="#{doctorSpecialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
@@ -28,16 +28,19 @@
                                           completeMethod="#{sheduleController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
                                           >   
                         </p:autoComplete>  
-                        <p:commandButton value="Fill Shedules" action="#{channelReportTempController.createStaffShedulesSpecial}" ajax="false" />
-                        <h:panelGroup >
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton"  >
+                    </p:panelGrid>
+                    
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton value="Fill Shedules" action="#{channelReportTempController.createStaffShedulesSpecial}" ajax="false" />
+                            <p:commandButton style="margin-right: 10px; margin-left: 10px" ajax="false" value="Print" styleClass="noPrintButton"  >
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Session_Detail_Report"  />
                             </p:commandButton>
-                        </h:panelGroup>
-                    </h:panelGrid>
+                        </h:panelGrid>
+                    
                     <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
                         <p:dataTable value="#{channelReportTempController.channelSheduleSummeryRows}" var="r" id="tbl">
 
@@ -70,12 +73,20 @@
                                 </p:column>
                                 <p:column>
                                     <p:outputLabel value="#{i.startingTime}" >
+
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm a"  />
+
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
+ 
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column>
                                     <p:outputLabel value="#{i.endingTime}" >
+ 
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="HH:mm a"  />
+
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
+ 
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column>
@@ -87,7 +98,7 @@
                                     <p:outputLabel value="Friday" rendered="#{i.sessionWeekday eq 6}"/>
                                     <p:outputLabel value="Sutarday" rendered="#{i.sessionWeekday eq 7}"/>
                                     <p:outputLabel value="#{i.sessionDate}" >
-                                        <f:convertDateTime pattern="yyyy MMM dd" />
+                                        <f:convertDateTime pattern="dd MMM yyyy" />
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column>

@@ -17,7 +17,7 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="All My Booking Details List">
-                    <h:panelGrid columns="2" styleClass="noPrintButton" id="pg1"> 
+                    <p:panelGrid columns="6" styleClass="noPrintButton" id="pg1"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
@@ -48,14 +48,14 @@
                             <f:selectItem itemLabel="Please Select a Type"/>
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>
-                    </h:panelGrid>
+                    </p:panelGrid>
 
-                    <h:panelGrid columns="4">
-                        <p:spacer width="70" height="1"/>
+                    <h:panelGrid columns="3" class="my-2">
+                        
                         <p:commandButton ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.channelBillClassList()}">
 
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px; margin-left: 10px" >
                             <p:printer target="billFeeReport"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{channelReportController.channelBillClassList()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -63,7 +63,7 @@
                         </p:commandButton>
                     </h:panelGrid>
                 </p:panel>
-                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" >
+                <p:panel id="billFeeReport"  >
                     <p:panel id="reportPrint">
                         <p:dataTable value="#{channelReportController.billedBills}" var="b" id="tbl1" >
                             <f:facet name="header" >
@@ -76,6 +76,15 @@
                                     <p:outputLabel value="All Agents" rendered="#{channelReportController.agncyOnCall and channelReportController.institution eq null}"/>
                                     <p:outputLabel value="Agent : #{channelReportController.institution.name}" rendered="#{channelReportController.agncyOnCall and channelReportController.institution ne null}"/>
                                 </h:panelGroup>
+
+                                <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
+                                <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                </h:outputLabel>                          
+                                <h:outputLabel class="ml-5" value="&emsp;&emsp;To :"/>
+                                <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel  value="#{channelReportController.fromDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -83,6 +92,7 @@
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel  value="#{channelReportController.toDate}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+
                                 </h:outputLabel>
                             </f:facet>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}" >
@@ -90,7 +100,11 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}">
@@ -98,7 +112,11 @@
                                     <p:outputLabel value="Crteated Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.createdAt}" >
+
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"></f:convertDateTime>
+
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+
                                 </p:outputLabel>
                             </p:column>
                             <p:column>
@@ -234,7 +252,11 @@
                                     <p:outputLabel value="Appoinment Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+
                                 </p:outputLabel>
                             </p:column>
                             <p:column style="text-align: left;" rendered="#{channelReportController.withDates}">
@@ -242,7 +264,11 @@
                                     <p:outputLabel value="Crteated Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.createdAt}" >
+
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"></f:convertDateTime>
+
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+ 
                                 </p:outputLabel>
                             </p:column>
                             <p:column>
@@ -387,7 +413,10 @@
                                     <p:outputLabel value="Crteated Date" />
                                 </f:facet>
                                 <p:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+ 
+                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss"></f:convertDateTime>
+
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime> master
                                 </p:outputLabel>
                             </p:column>
                             <p:column>
@@ -512,19 +541,18 @@
 
                         </p:dataTable>
                         <f:facet name="footer" >
-                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
-                            <h:outputLabel value="Channel Hos. Total : &nbsp;" style="float: left"/>
-                            <h:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}" style="float: left">
+                            <h:outputLabel value="Channel Hos. Total : &nbsp;" />
+                            <h:outputLabel value="#{channelReportController.netTotal-channelReportController.netTotalDoc}">
                                 <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
                             <br></br>
-                            <h:outputLabel value="Channel Doc. Total : &nbsp;" style="float: left"/>
-                            <h:outputLabel value="#{channelReportController.netTotalDoc}" style="float: left">
+                            <h:outputLabel value="Channel Doc. Total : &nbsp;" />
+                            <h:outputLabel value="#{channelReportController.netTotalDoc}" >
                                 <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
                             <br></br>
-                            <h:outputLabel value="Channel Net Total : &nbsp;" style="float: left"/>
-                            <h:outputLabel value="#{channelReportController.netTotal}" style="float: left">
+                            <h:outputLabel value="Channel Net Total : &nbsp;" />
+                            <h:outputLabel value="#{channelReportController.netTotal}" >
                                 <f:convertNumber pattern="#,###,##0.00" />
                             </h:outputLabel>
                             

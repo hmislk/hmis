@@ -18,7 +18,7 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="Channel Bill List">
-                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
@@ -27,11 +27,11 @@
 
                         <h:outputLabel value="Consultant"/>
                         <au:completeConsultant value="#{channelReportController.staff}"/>
-                    </h:panelGrid>
-                    <h:panelGrid columns="4"> 
+                    </p:panelGrid>
+                    <h:panelGrid columns="4" class="my-2"> 
                         <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createUnpaidDoctorVoucher}">
                         </p:commandButton>                        
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-left: 10px; margin-right: 10px" >
                             <p:printer target="tbl"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -40,13 +40,13 @@
                     </h:panelGrid>
 
                 </p:panel>
-                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel UnPid-Bill List">
+                <p:panel id="billFeeReport" header="Channel UnPid-Bill List">
 
                     <p:dataGrid value="#{channelReportController.doctorPaymentSummeryRows}" var="row" id="tbl" columns="1">                        
                         <p:dataTable value="#{row.doctorPaymentSummeryRowSubs}" var="da">
                             <f:facet name="header">
                                 <p:outputLabel value="#{row.date}" style="text-align: left;">
-                                    <f:convertDateTime pattern="dd-MM-YYYY"/>
+                                    <f:convertDateTime pattern="dd MMM YYYY"/>
                                 </p:outputLabel>
                             </f:facet>                            
                             <p:columnGroup  type="header">
