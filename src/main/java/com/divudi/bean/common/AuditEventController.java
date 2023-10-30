@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.entity.AuditEvent;
 import com.divudi.facade.AuditEventFacade;
+import com.divudi.java.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,7 +48,10 @@ public class AuditEventController implements Serializable {
     @Inject
     AuditEventApplicationController auditEventApplicationController;
 
-    public void updateAuditEvent(UUID buddhika) {
+    private Date fromDate;
+    private Date toDate;
+
+    public void updateAuditEvent(String buddhika) {
         String jpql = " select a "
                 + " from AuditEvent a "
                 + " where a.uuid=:niluka ";
@@ -56,19 +60,23 @@ public class AuditEventController implements Serializable {
         AuditEvent auditEvent = getFacade().findFirstByJpql(jpql, m);
         if (auditEvent == null) {
             System.err.println("Audit Event NOT found " + buddhika);
-            return ;
+            return;
         }
         Long duration;
         Date endTime = new Date();
         duration = endTime.getTime() - auditEvent.getEventDataTime().getTime();
-        
+
         auditEvent.setEventEndTime(endTime);
         auditEvent.setEventDuration(duration);
         auditEvent.setEventStatus("Completed");
-        auditEventApplicationController.logAuditEvent(auditEvent);
+        auditEventApplicationController.saveAutitEvent(auditEvent);
     }
 
-    public UUID createAuditEvent(String eventName) {
+    public String navigateToAuditEventList() {
+        return "/analytics/audit_event_list";
+    }
+
+    public String createAuditEvent(String eventName) {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
         ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
@@ -91,9 +99,9 @@ public class AuditEventController implements Serializable {
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
         auditEvent.setEventTrigger(eventName);
-        UUID uuid = UUID.randomUUID();
+        String uuid = UUID.randomUUID().toString();
         auditEvent.setUuid(uuid);
-        auditEventApplicationController.logAuditEvent(auditEvent);
+        auditEventApplicationController.saveAutitEvent(auditEvent);
         return auditEvent.getUuid();
     }
 
@@ -112,6 +120,17 @@ public class AuditEventController implements Serializable {
             list = new ArrayList<>();
         }
         return list;
+    }
+
+    public void fillAllAuditEvents() {
+        List<AuditEvent> list;
+        String jpql;
+        HashMap hm = new HashMap();
+        jpql = "select c from AuditEvent c "
+                + " where c.eventDataTime between :fd and :td ";
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        items = getFacade().findByJpql(jpql, hm);
     }
 
     public void prepareAdd() {
@@ -154,6 +173,28 @@ public class AuditEventController implements Serializable {
 
     public List<AuditEvent> getItems() {
         return items;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
     }
 
     /**
