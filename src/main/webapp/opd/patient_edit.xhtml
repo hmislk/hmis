@@ -35,6 +35,7 @@
                                                 <f:selectItem itemLabel="Select Title"  />
                                                 <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
                                                                itemValue="#{i}" />
+                                                <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
                                             </p:selectOneMenu>
                                         </div>
                                         <div class="col-md-10">
