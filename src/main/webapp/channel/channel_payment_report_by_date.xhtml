@@ -15,7 +15,7 @@
             <h:form>
                 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                 <p:panel  header="Channel Bill List">
-                    <h:panelGrid columns="2" styleClass="noPrintButton"> 
+                    <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
 
@@ -42,11 +42,11 @@
                                             itemValue="#{ses}" 
                                             itemLabel="#{ses.name}" ></f:selectItems>
                         </p:selectOneMenu>-->
-                    </h:panelGrid>
-                    <h:panelGrid columns="4"> 
+                    </p:panelGrid>
+                    <h:panelGrid columns="4" class="my-2"> 
                         <p:commandButton ajax="false" id="btnRefresh" value="Process Created Date" action="#{channelReportController.createDoctorPaymentBySession}">
                         </p:commandButton>                        
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-left: 10px; margin-right: 10px" >
                             <p:printer target="tbl"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -55,7 +55,7 @@
                     </h:panelGrid>
 
                 </p:panel>
-                <p:panel id="billFeeReport" styleClass="noBorder summeryBorder" header="Channel Bill List">
+                <p:panel id="billFeeReport" header="Channel Bill List">
 
                     <p:dataTable id="tbl" value="#{channelReportController.doctorPaymentSummeryRows}" var="da">
                             <f:facet name="header">
@@ -73,7 +73,7 @@
                                 
                                 <p:column>
                                     <p:outputLabel value="#{sub.serviceSession.sessionDate}">
-                                        <f:convertDateTime pattern="dd-MMMM-yyyy"/>
+                                        <f:convertDateTime pattern="dd MMM yyyy"/>
                                     </p:outputLabel>
                                 </p:column>
 
