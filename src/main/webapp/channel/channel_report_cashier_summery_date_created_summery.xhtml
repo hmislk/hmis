@@ -25,7 +25,7 @@
                 <p:panel>
                     <h:panelGrid columns="2" id="pan1" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
                         <p:selectOneMenu id="cmbChanType" value="#{channelReportTempController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
@@ -33,9 +33,9 @@
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>
                     </h:panelGrid> 
-                    <h:panelGrid columns="3">
+                    <h:panelGrid columns="3" class="my-2">
                         <p:commandButton action="#{channelReportTempController.createUsercollectionByDateCreatedSummery()}" value="Process" ajax="false" />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-right: 10px; margin-left: 10px">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{channelReportTempController.createUsercollectionByDateCreatedSummery()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -49,9 +49,9 @@
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
                             <p:outputLabel value="All Cashier Summery  - " />
-                            <p:outputLabel value="Date : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd" />
+                            <p:outputLabel  class="ml-1" value="Date : " />
+                            <p:outputLabel  class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
 
