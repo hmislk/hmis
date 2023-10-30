@@ -24,24 +24,20 @@ public class AuditEvent implements Serializable {
     private Date eventDataTime;
     private Date eventEndTime;
     private Long webUserId;
-    @Column(columnDefinition = "BINARY(16)")
-    private UUID uuid; // Added this line
-    
-    
+    @Column(columnDefinition = "CHAR(36)")
+    private String uuid; // Changed from UUID to String
+
     @Lob
     private String url;
     private String eventTrigger;
     private Long institutionId;
     private Long departmentId;
-    
+
     private String beforeEdit;
     private String afterEdit;
     private Long eventDuration;
     private String eventStatus;
     private String ipAddress;
-    
-    
-    
 
     public Long getId() {
         return id;
@@ -164,13 +160,7 @@ public class AuditEvent implements Serializable {
         this.ipAddress = ipAddress;
     }
 
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
+  
 
     public Date getEventEndTime() {
         return eventEndTime;
@@ -179,7 +169,13 @@ public class AuditEvent implements Serializable {
     public void setEventEndTime(Date eventEndTime) {
         this.eventEndTime = eventEndTime;
     }
-    
-    
-    
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
 }
