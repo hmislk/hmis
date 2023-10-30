@@ -153,7 +153,7 @@
                                                                                                     <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{opdPreBillController.dateChangeListen()}" />
                                                                                                 </p:inputText>
                                                                                                 <p:calendar  value="#{opdPreBillController.newPatient.person.dob}" 
-                                                                                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                                                             id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" 
                                                                                                              style="width: 100px!important;"
                                                                                                              styleClass="shortinput">
                                                                                                     <f:ajax event="dateSelect" />
@@ -224,7 +224,7 @@
                                                                                         </p:column>
                                                                                         <p:column headerText="Date of Birth">
                                                                                             <h:outputLabel value="#{apt.person.dob}" >
-                                                                                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                                                             </h:outputLabel>
                                                                                         </p:column>
                                                                                         <f:ajax event="itemSelect" execute=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} @this" 
@@ -306,7 +306,7 @@
                                                             <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{opdPreBillController.searchedPatient.person.ageDaysComponent}" />
                                                         </p:inputText>
                                                         <p:calendar  value="#{opdPreBillController.searchedPatient.person.dob}" 
-                                                                     id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                                                     id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" 
 
                                                                      styleClass="shortinput">
                                                             <f:ajax event="dateSelect" />
@@ -371,7 +371,7 @@
                                             </p:commandButton>
                                             <p:defaultCommand target="btnAddIx" />
                                             <p:panel header="Session"  >
-                                                <p:calendar id="calS" mode="inline" value="#{opdPreBillController.sessionDate}" pattern="dd MMMM yyyy" >
+                                                <p:calendar id="calS" mode="inline" value="#{opdPreBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                     <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" />
                                                 </p:calendar>
 
@@ -380,7 +380,7 @@
                                                         <h:outputLabel value="#{opdPreBillController.lastBillItem.item.name}" />
 
                                                         <h:outputLabel id="lblTemS" value="#{opdPreBillController.sessionDate}" >
-                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                         </h:outputLabel>
 
 

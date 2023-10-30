@@ -19,7 +19,7 @@
                 <f:selectItem itemLabel="Select Bank"/>
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
             </p:selectOneMenu>
-            <p:calendar  value="#{cc.attrs.paymentMethodData.slip.date}" pattern="dd MMMM yyyy" id="date">                            
+            <p:calendar  value="#{cc.attrs.paymentMethodData.slip.date}" pattern="#{sessionController.applicationPreference.longDateFormat}" id="date">                            
             </p:calendar>
             <p:watermark value="Date" for="date"/>
         </h:panelGrid>

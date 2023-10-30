@@ -81,7 +81,7 @@
                                         <h:outputLabel value="Date of Birth:"  class="form-label" />
                                         <p:datePicker value="#{patientController.current.person.dob}" 
                                                       id="calNewPtDob"
-                                                      pattern="dd MMMM yyyy" 
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}" 
                                                       yearNavigator="true"
                                                       maxdate="#{sessionController.currentDate}" 
                                                       inputStyleClass="form-control"

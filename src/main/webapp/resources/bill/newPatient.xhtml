@@ -48,7 +48,7 @@
             <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{cc.attrs.controller.newPatient.person.phone}">
             </p:inputText>
             <h:outputLabel value="Date of Birth"/>
-            <p:calendar  value="#{cc.attrs.controller.newPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+            <p:calendar  value="#{cc.attrs.controller.newPatient.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                 <f:ajax event="dateSelect" />
             </p:calendar>
 

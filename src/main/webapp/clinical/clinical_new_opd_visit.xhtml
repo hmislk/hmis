@@ -15,7 +15,7 @@
                                 <h:outputLabel value="Visit of #{patientEncounterController.current.patient.person.nameWithTitle} on " >
                                 </h:outputLabel>
                                 <h:outputLabel value="#{patientEncounterController.current.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
                                 <h:outputLabel value= " by #{patientEncounterController.current.opdDoctor.person.nameWithTitle}" >
                                 </h:outputLabel>
@@ -125,7 +125,7 @@
                                             <h:outputLabel value="Name" ></h:outputLabel>
                                             <p:inputText autocomplete="off" id="txtPersonName" value="#{patientEncounterController.current.patient.person.name}" ></p:inputText>
                                             <h:outputLabel value="Date of Birth" ></h:outputLabel>
-                                            <p:calendar id="calPersonDob" value="#{patientEncounterController.current.patient.person.dob}" pattern="dd MMMM yyyy" navigator="true" ></p:calendar>
+                                            <p:calendar id="calPersonDob" value="#{patientEncounterController.current.patient.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" navigator="true" ></p:calendar>
                                             <h:outputLabel value="Address" ></h:outputLabel>
                                             <h:inputTextarea id="txtPatientAddress"  value="#{patientEncounterController.current.patient.person.address}" ></h:inputTextarea>
 
@@ -332,7 +332,7 @@
                                                     <f:convertDateTime pattern="yyyy MM dd" ></f:convertDateTime>
                                                 </h:outputLabel>
                                                 <h:outputLabel value="#{bill.singleBillSession.serviceSession.startingTime}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column  headerText="Bill Type">
@@ -381,7 +381,7 @@
 
                                             <p:column headerText="Visit Date" >
                                                 <h:outputLabel value="#{pe.createdAt}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Dx" >

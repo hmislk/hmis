@@ -173,7 +173,7 @@
 
                                                     <p:calendar value="#{billBhtController.currentBillItem.billTime}" 
                                                                 id="billedTimeStamp"
-                                                                pattern="dd/MMM/yyyy - hh:mm:ss a" >                               
+                                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
                                                     </p:calendar>
                                                     <p:commandButton id="btnAddIx" ajax="false" value="Add" action="#{billBhtController.addToBill()}" />
                                                 </p:panelGrid>
@@ -312,7 +312,7 @@
                         <h:panelGroup rendered="#{billBhtController.printPreview}" >
                             <h:panelGroup >
                                 <div class="nonPrintBlock">
-                                    <p:commandButton value="Print" ajax="false" action="#"  >
+                                    <p:commandButton value="Print" ajax="false" action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
                                     <p:commandButton value="New Bill" ajax="false" action="#{billBhtController.makeNull()}" >

@@ -56,7 +56,7 @@
                     <div class="billdatePrintingRuhunu" >                       
 
                         <h:outputLabel value="#{cc.attrs.bill.billDate}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
 
                     </div>
@@ -77,7 +77,7 @@
                     <div class="billtimePrintingRuhunu" >      
 
                         <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                         </h:outputLabel>
 
                     </div>

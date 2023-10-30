@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="content">
+        <div class="p-1 w-100" >  
+            <div class="row" >
+                <div class="col-md-3" >
+                    <h:form class="w-100">
+
+                        Category > OPD Services
+                        
+                        Button - OPD Service Counts
+                        
+                        Category
+                        Service
+                        
+                        Counts
+                        
+                        #{opdBillController}
+                       
+                        
+                        //To Do - Pasindu
+                        
+                        reports / opd / index
+                        reports / opd / service_count
+                        
+                        Navigation Method to Menu
+                        
+                        Navigation Method to srvice-count page
+                        
+                        
+                        
+                    </h:form>
+                </div>
+                <div class="col-md-9" >
+                    <ui:insert name="subcontent" class="w-100">
+
+                    </ui:insert>
+                </div>
+
+            </div>
+        </div>
+
+    </ui:define>
+
+</ui:composition>

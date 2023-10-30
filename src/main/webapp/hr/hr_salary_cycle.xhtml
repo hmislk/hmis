@@ -51,25 +51,25 @@
                             <h:panelGrid id="gpDetail" columns="1">
                                 <h:panelGrid id="gpDetailText" columns="2">
                                     <h:outputText  value="Salary From Date " ></h:outputText>
-                                    <p:calendar value="#{salaryCycleController.current.salaryFromDate}" pattern="dd MMMM yyyy"  />
+                                    <p:calendar value="#{salaryCycleController.current.salaryFromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  />
                                     <h:outputText  value="Salary To Date " ></h:outputText>
-                                    <p:calendar value="#{salaryCycleController.current.salaryToDate}" pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{salaryCycleController.current.salaryToDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     <h:outputText  value="Salary Advance From Date " ></h:outputText>
-                                    <p:calendar value="#{salaryCycleController.current.salaryAdvanceFromDate}" pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{salaryCycleController.current.salaryAdvanceFromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     <h:outputText  value="Salary Advance To Date " ></h:outputText>
-                                    <p:calendar value="#{salaryCycleController.current.salaryAdvanceToDate}" pattern="dd MMMM yyyy" />
+                                    <p:calendar value="#{salaryCycleController.current.salaryAdvanceToDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     <h:outputText  value="OT From Date " ></h:outputText>
                                     <p:calendar styleClass="dateTimePicker" value="#{salaryCycleController.current.workedFromDate}" 
-                                                pattern="dd MMMM yyyy hh:mm:ss a" />
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     <h:outputText  value="OT To Date " ></h:outputText>
                                     <p:calendar styleClass="dateTimePicker" value="#{salaryCycleController.current.workedToDate}"
-                                                pattern="dd MMMM yyyy hh:mm:ss a" />
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     <h:outputText  value="Day off / PH  From Date " ></h:outputText>
                                     <p:calendar styleClass="dateTimePicker" value="#{salaryCycleController.current.dayOffPhFromDate}" 
-                                                pattern="dd MMMM yyyy hh:mm:ss a" />
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     <h:outputText  value="Day off / PH  To Date " ></h:outputText>
                                     <p:calendar styleClass="dateTimePicker" value="#{salaryCycleController.current.dayOffPhToDate}"
-                                                pattern="dd MMMM yyyy hh:mm:ss a" />
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:panelGrid>
                                 <h:panelGrid id="gpDetailButtons" columns="2" styleClass="noPrintButton" >
                                     <p:commandButton ajax="false" id="btnSave" value="Save" action="#{salaryCycleController.saveSelected()}" styleClass="buttons">

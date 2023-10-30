@@ -53,7 +53,7 @@
                         <f:selectItem itemLabel="Other" itemValue="Other"/>
                     </p:selectOneMenu>
                     <h:outputLabel value="Date of Birth"/>
-                    <p:calendar value="#{patientController.current.person.dob}" yearRange="c-100:c+1" navigator="true" pattern="dd/MM/yy" ></p:calendar>
+                    <p:calendar value="#{patientController.current.person.dob}" yearRange="c-100:c+1" navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                     <h:outputLabel  value="Adress" />
                     <h:inputText autocomplete="off" value="#{patientController.current.person.address}" ></h:inputText>
                     <h:outputLabel value="Phone"/>

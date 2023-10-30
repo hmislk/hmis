@@ -9,35 +9,38 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <div class="row d-flex justify-content-center align-items-center" style="height: 60vh;">
-                    <div class="col-md-8 col-lg-4 col-sm-10">
+                <div class="row d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <div class="col-2"></div>
+                    <div class="col-8">
                         <h:form>
-                            <div class="card">
-                                <div class="card-header">
+                            <p:panel header="User Preferances" class="w-75" >
+                                <f:facet name="header" >
                                     <h:outputText value="User Preferences"></h:outputText>
-                                </div>
-                                <div class="card-body">
-                                    <h:panelGrid columns="3" class="w-100">
-                                        <h:outputText value="Theme"></h:outputText>
-                                        <p:spacer height="1" width="30"></p:spacer>
-                                        <p:selectOneMenu 
-                                            class="w-75"
-                                            id="themeSelectMenu" 
-                                                         value="#{themeController.theme}">
-                                            <f:selectItems value="#{themeController.themes}"/>
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
-                                </div>
-                                <div class="card-footer">
+                                </f:facet>
+                                
+                                <p:panelGrid columns="3" class="w-100">
+                                    <h:outputText value="Theme"></h:outputText>
+                                    <p:spacer height="1" width="30"></p:spacer>
+                                    <p:selectOneMenu 
+                                        class="w-75"
+                                        id="themeSelectMenu" 
+                                        value="#{themeController.theme}">
+                                        <f:selectItems value="#{themeController.themes}" />
+                                    </p:selectOneMenu>
+
+                                </p:panelGrid>
+                                <f:facet name="footer" >
                                     <p:commandButton 
                                         ajax="false" 
                                         value="Save" 
                                         action="#{themeController.saveTheme}"
                                         onclick="PrimeFaces.changeTheme($('#{themeController.theme}'));"></p:commandButton>
-                                </div>
-                            </div>
+                                </f:facet>
+                            </p:panel>
+                           
                         </h:form>
                     </div>
+                    <div class="col-2"></div>
                 </div>
 
 

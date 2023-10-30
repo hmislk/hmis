@@ -22,10 +22,10 @@
 
                         <h:panelGrid columns="2" styleClass="noPrintButton">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar styleClass="dateTimePicker" id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel  value="Institution"  ></h:outputLabel>
                             <p:autoComplete  value="#{investigationMonthSummeryOwnController.institution}" 
@@ -58,11 +58,11 @@
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.institution.name}" style="white-space: pre-line"/>
                             <h:outputLabel value="From : " style="white-space: pre-line"/>
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                             <h:outputLabel value="&emsp;&emsp;To : "/>
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                         </f:facet>
 

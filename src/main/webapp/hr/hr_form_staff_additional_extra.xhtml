@@ -83,7 +83,7 @@
                             <!--                            <h:outputLabel value="Approved Date"/>
                                                         <p:calendar id="approvedDate" 
                                                                     value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
-                                                                    pattern="dd MMMM yyyy" >
+                                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                         </p:calendar>-->
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />

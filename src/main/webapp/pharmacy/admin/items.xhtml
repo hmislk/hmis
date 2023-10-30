@@ -61,7 +61,7 @@
                                     <p:outputLabel value="Retired At" />
                                 </f:facet>
                                 <p:outputLabel value="#{c.retiredAt}" >
-                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </p:outputLabel>
                             </p:column>
                             <p:column>

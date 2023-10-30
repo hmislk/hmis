@@ -21,10 +21,10 @@
                 <p:panel>
                     <p:panelGrid columns="2" id="pg1">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="Institution"/>
                         <p:autoComplete value="#{channelReportTempController.institution}" completeMethod="#{institutionController.completeCompany}"
@@ -63,11 +63,11 @@
                             <br></br>
                             <p:outputLabel  value="From : " />
                             <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                             <p:outputLabel class="ml-5" value="  To : " />
                             <p:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </f:facet>
                         <p:columnGroup type="header" >

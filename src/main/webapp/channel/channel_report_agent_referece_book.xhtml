@@ -21,10 +21,10 @@
                 <p:panel>
                     <h:panelGrid columns="6">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
                         <p:autoComplete converter="deal" value="#{channelReportTempController.searchKeyword.ins}" 
@@ -116,7 +116,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{a.createdAt}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </p:column>
                         <p:column>
@@ -130,7 +130,7 @@
                                 <p:outputLabel value="Edited Date" />
                             </f:facet>
                             <p:outputLabel value="#{a.editedAt}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </p:column>
                         <p:column exportable="false">

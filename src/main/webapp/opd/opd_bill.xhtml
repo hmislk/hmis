@@ -81,7 +81,7 @@
                                                                   id="calDob" 
                                                                   class="w-100"
                                                                   inputStyleClass="form-control"
-                                                                  pattern="dd/MM/yyyy"
+                                                                  pattern="#{sessionController.applicationPreference.shortDateFormat}"
                                                                   placeholder="Data of Birth (dd/MM/yyyy)"
                                                                   >
                                                         <f:ajax event="dateSelect" execute="@this" render="year month day" />
@@ -195,7 +195,7 @@
                                             <div class="col-md-5" >
                                                 <p:outputLabel value="Schedule" class="form-label" ></p:outputLabel>
                                                 <p:calendar value="#{opdBillController.currentBillItem.item}" 
-                                                            pattern="dd MMMM yyyy hh:mm a" 
+                                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                                             inputStyleClass="form-control"
                                                             class="w-100"></p:calendar>
                                             </div>
@@ -209,7 +209,7 @@
                                                 <p:dialog id="dlgSessions" widgetVar="dlgSessions" modal="true" header="Session" closeOnEscape="true">
 
                                                     <p:panel id="sessions" header="Session"  >
-                                                        <p:calendar id="calS" mode="inline" value="#{opdBillController.sessionDate}" pattern="dd MMMM yyyy"  >
+                                                        <p:calendar id="calS" mode="inline" value="#{opdBillController.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
                                                             <f:ajax event="dateSelect" execute="calS" render="tblSs :#{p:resolveFirstComponentWithId('lblTemS',view).clientId}" listener="#{opdBillController.fillBillSessionsLstner}" />
                                                         </p:calendar>
                                                         <p:selectOneMenu value="#{itemController.reportKeyWord.department}">     
@@ -223,7 +223,7 @@
                                                                 <h:outputText value="#{opdBillController.lastBillItem.item.name}" />
 
                                                                 <h:outputText id="lblTemS" value="#{opdBillController.sessionDate}" >
-                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                                 </h:outputText>
 
 

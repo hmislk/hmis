@@ -201,7 +201,7 @@
                     </p:column>  
 
                     <p:column headerText="DoE" style="width:100px;">                    
-                        <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 90px;"  navigator="true" pattern="dd/MM/yy" >
+                        <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 90px;"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                             <f:ajax event="dateSelect" execute="@this" render="txtBatch" listener="#{pharmacyPurchaseController.setBatch(ph)}"
                                     />
                         </p:calendar>
@@ -226,7 +226,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{pharmacyPurchaseController.bill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>
                         <p:panelGrid columns="2" id="tot" style="min-width: 100%">
                             <p:outputLabel value="Gross Total"/>

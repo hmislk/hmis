@@ -24,9 +24,9 @@
 
 
 
-            <p:tabView orientation="left" >
-                <p:tab title="Frontend" >
-                    <p:panel header="Website" >
+            <p:tabView orientation="left" class="w-100" >
+                <p:tab title="Frontend" class="w-100" >
+                    <p:panel header="Website" class="w-100" >
                         <h:panelGrid columns="2" styleClass="alignTop" class="w-100" >
                             <h:outputLabel value="Website Has a Frontend" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.hasAwebsiteAsFrontEnd}" />
@@ -34,27 +34,21 @@
                             <h:outputLabel value="Template Name" ></h:outputLabel>
                             <h:inputText
                                 value="#{sessionController.currentPreference.themeName}" />
-                            
-                           
+
+
                             <h:outputLabel value="Logo URL" ></h:outputLabel>
                             <h:inputText
                                 value="#{sessionController.currentPreference.logoUrl}" />
                             <h:outputLabel value="Logging Header" ></h:outputLabel>
                             <h:inputText
                                 value="#{sessionController.currentPreference.loggingHeader}" />
-                            
-                            
+
+
                             <h:outputLabel value="Logging Text" ></h:outputLabel>
                             <p:textEditor 
                                 secure="false" 
                                 class="w-100" 
                                 value="#{sessionController.currentPreference.loggingText}" />
-
-
-                            <p:commandButton id="btnWeb" 
-                                             ajax="false" 
-                                             value="Save" 
-                                             action="#{applicationController.setHasAwebsiteAsFrontEnd(null)}" ></p:commandButton>
 
 
                         </h:panelGrid>
@@ -66,7 +60,7 @@
                         <h:outputLabel value="SMS URL" ></h:outputLabel>
                         <h:inputText class="w-100"
                                      value="#{sessionController.currentPreference.smsUrl}" />
-                        
+
                         <h:outputLabel value="Authentication" ></h:outputLabel>
                         <h:selectOneMenu class="w-100"
                                          value="#{sessionController.currentPreference.smsAuthenticationType}" >
@@ -87,28 +81,28 @@
                         <h:outputLabel value="SMS Password" ></h:outputLabel>
                         <h:inputText
                             value="#{sessionController.currentPreference.smsPassword}" />
-                        
+
                         <h:outputLabel value="SMS User Alias Parameter Name" ></h:outputLabel>
                         <h:inputText
                             value="#{sessionController.currentPreference.smsUserAliasParameterName}" />
                         <h:outputLabel value="SMS User Alias" ></h:outputLabel>
                         <h:inputText
                             value="#{sessionController.currentPreference.smsUserAlias}" />
-                        
-                        
+
+
                         <h:outputLabel value="Phone Number Parameter Name" ></h:outputLabel>
                         <h:inputText
                             value="#{sessionController.currentPreference.smsPhoneNumberParameterName}" />
-                        
+
                         <h:outputLabel value="Message Parameter Name" ></h:outputLabel>
                         <h:inputText
                             value="#{sessionController.currentPreference.smsMessageParameterName}" />
-                        
+
 
                     </h:panelGrid>
                 </p:tab>
                 <p:tab title="Patient Registration" >
-                    <p:panel header="Patient Registration" >
+                    <p:panel header="Patient Registration" class="w-100" >
                         <h:panelGrid columns="2" styleClass="alignTop" >
 
                             <h:outputLabel value="Need Phone number for patient registration"></h:outputLabel>
@@ -126,9 +120,9 @@
                         </h:panelGrid>
                     </p:panel>
                 </p:tab>
-                
-                  <p:tab title="OPD" >
-                    <p:panel header="OPD" >
+
+                <p:tab title="OPD" >
+                    <p:panel header="OPD" class="w-100" >
                         <h:panelGrid columns="2" styleClass="alignTop" >
                             <h:outputLabel value="Template for SMS on OPD Bill Settling"></h:outputLabel>
                             <h:inputTextarea value="#{sessionController.currentPreference.smsTemplateForOpdBillSetting}" ></h:inputTextarea>
@@ -137,8 +131,40 @@
                 </p:tab>
 
                 <p:tab title="Miscellaneous" >
-                    <p:panel header="Miscellaneous" >
-                        <h:panelGrid columns="2" styleClass="alignTop" >
+                    <p:panel header="Miscellaneous" class="w-100" >
+                        <h:panelGrid columns="2" class="w-100" >
+                            <h:outputLabel 
+                                value="Long Date Format"></h:outputLabel>
+                            <p:inputText class="form-control"
+                                value="#{sessionController.currentPreference.longDateFormat}" >
+                            </p:inputText>
+                            <h:outputLabel 
+                                value="Short Date Format"></h:outputLabel>
+                            <p:inputText  class="form-control"
+                                value="#{sessionController.currentPreference.shortDateFormat}" >
+                            </p:inputText>
+                            <h:outputLabel 
+                                value="Long Date and Time Format"></h:outputLabel>
+                            <p:inputText  class="form-control"
+                                value="#{sessionController.currentPreference.longDateTimeFormat}" >
+                            </p:inputText>
+                            <h:outputLabel 
+                                value="Short Date and Time Format"></h:outputLabel>
+                            <p:inputText  class="form-control"
+                                value="#{sessionController.currentPreference.shortDateTimeFormat}" >
+                            </p:inputText>
+                            <h:outputLabel 
+                                value="Long Time Format"></h:outputLabel>
+                            <p:inputText  class="form-control"
+                                value="#{sessionController.currentPreference.longTimeFormat}" >
+                            </p:inputText>
+                            <h:outputLabel 
+                                value="Short Time Format"></h:outputLabel>
+                            <p:inputText  class="form-control"
+                                value="#{sessionController.currentPreference.shortTimeFormat}" >
+                            </p:inputText>
+
+                     
 
                             <h:outputLabel value="Family Membership"></h:outputLabel>
                             <p:selectBooleanButton value="#{sessionController.currentPreference.familyMembership}" offLabel="No" onLabel="Yes" ></p:selectBooleanButton>
@@ -148,15 +174,12 @@
 
 
                             <h:outputLabel value="Institution" ></h:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.currentPreference.applicationInstitution}" >
+                            <p:selectOneMenu  class="form-control" value="#{sessionController.currentPreference.applicationInstitution}" >
                                 <f:selectItem itemLabel="Select Institution" />
                                 <f:selectItems value="#{enumController.applicationInstitutions}" ></f:selectItems>
                             </p:selectOneMenu>
                             <h:outputLabel value="Logo Name"></h:outputLabel>
-                            <h:inputText id="imgName" value="#{sessionController.currentPreference.logoName}"/>
-                            <p:watermark for="imgName" value="Eg- /abc.jpg" />
-                            <h:outputLabel value="Bill Proboda" ></h:outputLabel>
-                            <h:selectBooleanCheckbox value="#{sessionController.currentPreference.pharmacyBillPrabodha}" />
+                            <h:inputText  class="form-control" id="imgName" value="#{sessionController.currentPreference.logoName}"/>
                             <h:outputLabel value="Discount Scheme Validation" ></h:outputLabel>
                             <h:selectBooleanCheckbox value="#{sessionController.currentPreference.checkPaymentSchemeValidation}" />
                         </h:panelGrid>

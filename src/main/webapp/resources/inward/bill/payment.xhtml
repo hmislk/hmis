@@ -78,7 +78,7 @@
                                     </td>
                                     <td>
                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.dateOfAdmission}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </td>
                                 </tr>
@@ -92,7 +92,7 @@
                                         </td>
                                         <td>
                                             <h:outputLabel value="#{cc.attrs.bill.patientEncounter.dateOfDischarge}" >
-                                                <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </td>
                                     </tr>
@@ -198,7 +198,7 @@
                                     </td>
                                     <td>
                                         <h:outputLabel value="#{cc.attrs.bill.billDate}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </td>
                                 </tr>
@@ -211,7 +211,7 @@
                                     </td>
                                     <td>
                                         <h:outputLabel value="#{cc.attrs.bill.billTime}" >
-                                            <f:convertDateTime pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </td>
                                 </tr>

@@ -153,8 +153,44 @@ public class WebUser implements Serializable {
     }
 
     public String getPrimeTheme() {
-        List<String> validThemes = Arrays.asList("cerulean", "darkly", "litera", "simplex", "solar",
-                "minty");
+        List<String> validThemes = Arrays.asList(
+                "cerulean",
+                "darkly",
+                "litera",
+                "simplex",
+                "solar",
+                "minty",
+                "primefaces-arya-blue",
+                "primefaces-bootstrap4-blue-dark",
+                "primefaces-bootstrap4-blue-light",
+                "primefaces-bootstrap4-dark-common",
+                "primefaces-bootstrap4-light-common",
+                "primefaces-bootstrap4-purple-dark",
+                "primefaces-bootstrap4-purple-light",
+                "primefaces-luna-amber",
+                "primefaces-luna-blue",
+                "primefaces-luna-common",
+                "primefaces-luna-green",
+                "primefaces-luna-pink",
+                "primefaces-material-compact-deeppurple-dark",
+                "primefaces-material-compact-deeppurple-light",
+                "primefaces-material-compact-indigo-dark",
+                "primefaces-material-compact-indigo-light",
+                "primefaces-material-dark-common",
+                "primefaces-material-deeppurple-dark",
+                "primefaces-material-deeppurple-light",
+                "primefaces-material-indigo-dark",
+                "primefaces-material-indigo-light",
+                "primefaces-material-light-common",
+                "primefaces-mytheme",
+                "primefaces-nova-colored",
+                "primefaces-nova-common",
+                "primefaces-nova-dark",
+                "primefaces-nova-light",
+                "primefaces-saga-blue",
+                "primefaces-vela-blue"
+        );
+
         if (validThemes.contains(primeTheme)) {
             return primeTheme;
         } else {

@@ -217,14 +217,31 @@ public class SmsManagerEjb {
         if (null == pf.getSmsAuthenticationType()) {
             System.out.println("This authentication is NOT supported to send SMS yet.");
             return false;
-        }else switch (pf.getSmsAuthenticationType()) {
-            case NONE:
-                return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
-            case OAUTH2:
-                return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
-            default:
-                System.out.println("This authentication is NOT supported to send SMS yet.");
-                return false;
+        } else {
+            switch (pf.getSmsAuthenticationType()) {
+                case NONE:
+                    return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
+                case OAUTH2:
+                    return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
+                default:
+                    System.out.println("This authentication is NOT supported to send SMS yet.");
+                    return false;
+            }
+        }
+    }
+
+    public String sendSmsByApplicationPreferenceReturnString(String number, String message, UserPreference pf) {
+        if (null == pf.getSmsAuthenticationType()) {
+            return "This authentication is NOT supported to send SMS yet.";
+        } else {
+            switch (pf.getSmsAuthenticationType()) {
+                case NONE:
+                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
+                case OAUTH2:
+                    return sendSmsByApplicationPreferenceNoAuthenticationReturnString(number, message, pf);
+                default:
+                    return "This authentication is NOT supported to send SMS yet.";
+            }
         }
     }
 
@@ -291,6 +308,23 @@ public class SmsManagerEjb {
         }
 
     }
+
+    public String sendSmsByApplicationPreferenceNoAuthenticationReturnString(String number, String message, UserPreference pf) {
+        Map<String, String> m = new HashMap();
+        m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
+        m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
+        if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
+            m.put(pf.getSmsUserAliasParameterName(), pf.getSmsUserAlias());
+        }
+        m.put(pf.getSmsPhoneNumberParameterName(), number);
+        m.put(pf.getSmsMessageParameterName(), message);
+
+        String res = executePost(pf.getSmsUrl(), m);
+        System.out.println(res);
+        return res;
+    }
+
+   
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
