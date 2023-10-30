@@ -26,6 +26,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -130,7 +131,7 @@ public class AuditEventController implements Serializable {
                 + " where c.eventDataTime between :fd and :td ";
         hm.put("fd", fromDate);
         hm.put("td", toDate);
-        items = getFacade().findByJpql(jpql, hm);
+        items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
     }
 
     public void prepareAdd() {
