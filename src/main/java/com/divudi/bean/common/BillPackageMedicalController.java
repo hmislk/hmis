@@ -785,7 +785,7 @@ public class BillPackageMedicalController implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("createOtherPackageBills()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         
