@@ -485,26 +485,26 @@ public class Person implements Serializable {
 
     public void setTitle(Title title) {
         this.title = title;
-        if (this.sex == null) {
-            switch (this.title) {
-                case Dr:
-                case Master:
-                case Mr:
-                case Prof:
-                    this.sex = Sex.Male;
-                    break;
-                case DrMiss:
-                case DrMrs:
-                case DrMs:
-                case Miss:
-                case Mrs:
-                case Ms:
-                case ProfMrs:
-                    this.sex = Sex.Female;
-                    break;
-                default:
-            }
+
+        switch (this.title) {
+            case Dr:
+            case Master:
+            case Mr:
+            case Prof:
+                this.sex = Sex.Male;
+                break;
+            case DrMiss:
+            case DrMrs:
+            case DrMs:
+            case Miss:
+            case Mrs:
+            case Ms:
+            case ProfMrs:
+                this.sex = Sex.Female;
+                break;
+            default:
         }
+
     }
 
     public Date getDob() {
