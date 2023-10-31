@@ -431,6 +431,15 @@ public class ReportController implements Serializable {
         return "/reports/assest_transfer_report";
 
     }
+    
+        
+     public String navigateToTurnAroundTimeHourly(){
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/turn_around_time_hourly";
+      
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
