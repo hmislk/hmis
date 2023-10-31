@@ -239,7 +239,8 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
-
+    
+ 
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -362,6 +363,13 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/investigation_wise_report";
     }
+    
+    public String navigateToExternalLaborataryWorkloadReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/external_laboratary_workload";
+    }
     public String navigateToLabOrganismAntibioticSensitivityReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -441,6 +449,14 @@ public class ReportController implements Serializable {
         return "/reports/lab/turn_around_time_hourly";
       
     }
+     
+     public String navigateToCollectionCenterStatement(){
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/collection_center_statement";
+      
+    } 
 
     public Department getFromDepartment() {
         return fromDepartment;
