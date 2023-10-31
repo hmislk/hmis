@@ -53,7 +53,6 @@
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">
                     <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" rowIndexVar="i" rowStyleClass="#{b.billClassType eq 'CancelledBill' or b.billClassType eq 'RefundBill' ? 'crossLine':''}">
                         <f:facet name="header">
-
                             <p:outputLabel value="From" />
                             <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
@@ -61,15 +60,6 @@
                             <p:outputLabel class="ml-5" value="To" />
                             <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
-
-                            <p:outputLabel value="From - " />
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            </p:outputLabel>
-                            <p:outputLabel value=" - To - " />
-                            <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-
                             </p:outputLabel><br></br>
                             <p:outputLabel value=" All Agents " rendered="#{channelReportController.institution eq null}"/>
                             <p:outputLabel value=" Channel Agent - " rendered="#{channelReportController.institution ne null}"/>
@@ -129,11 +119,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{b.createdAt}" >
-
                                 <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
-
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-
                             </p:outputLabel>
                         </p:column>
                         <p:column styleClass="noPrintButton" >
@@ -141,11 +127,7 @@
                                 <p:outputLabel value="Appo. Date" />
                             </f:facet>
                             <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
-
                                 <f:convertDateTime pattern="dd MMM yyyy" />
-
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-
                             </p:outputLabel>
                         </p:column>
                         <p:column style="width: 5px!important;text-align: right;">

@@ -11,59 +11,79 @@
             <ui:define name="subcontent">
 
                 <h:form >
-
-
-
-                    <p:panel header="Test Counts" >
+                    <p:panel header="Annual Test Statistics" >
                         <h:panelGrid columns="5" >
-                            <p:outputLabel value="Institution/Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdFromInstitution"
-                                value="#{reportController.fromInstitution}"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
-                                <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
+                            <p:outputLabel value="Financial Year"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.financialYear}">
+                                <f:selectItem itemLabel="Financial Year"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
 
-                            <p:outputLabel value="Department" >
+                            <p:outputLabel value="Branch" >
                             </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdFromDepartment"
-                                value="#{reportController.fromDepartment}" 
-                                filter="true">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
+                            <p:selectOneMenu value="#{reportController.institution}">
+                                <f:selectItem itemLabel="Branch"/>
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Financial Year" class="my-2"></p:outputLabel>
-                            <p:outputLabel value="Branch"></p:outputLabel>
-                            <p:commandButton ajax="false" value="Process" action="null" class="my-2"></p:commandButton>
 
                         </h:panelGrid>
 
+                        
+                        <p:outputLabel value="Financial Year : " class="my-2"></p:outputLabel>
+                        <br></br>
+                        <p:outputLabel value="Branch : "></p:outputLabel>
+                        <br></br>
+                        <p:commandButton ajax="false" value="Process" action="null" class="my-2"></p:commandButton>
 
                         <p:dataTable value="#{reportController.reportLabTestCounts}" var="c">
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.category}" ></h:outputText>
+                            <p:column headerText="Description" style="width:100px" >
+                                <h:outputText value="" ></h:outputText>
+                                <f:facet name="footer" >
+                                    <p:outputLabel value="Total" />
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.testName}" ></h:outputText>
+                            <p:column headerText="20-Apr" >
+                                <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.testCount}" ></h:outputText>
+                            <p:column headerText="20-May" >
+                                <h:outputText value="" ></h:outputText>
                             </p:column>
+                            <p:column headerText="20-Jun" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-MJul" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Aug" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Sep" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Oct" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Nov" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Dec" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Jan" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Feb" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="20-Mar" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="YTD" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            
 
+                            
                         </p:dataTable>
 
                     </p:panel>
