@@ -10,13 +10,14 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Test Counts" >
-                        <h:panelGrid columns="5" >
+                        <h:panelGrid columns="2" >
                             <p:outputLabel value="Billing Institution/Branch" >
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromInstitution"
                                 value="#{reportController.fromInstitution}"
                                 filter="true"
+                                class="w-100"
                                 >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
@@ -25,13 +26,16 @@
                                                itemValue="#{i}" ></f:selectItems>
                                 <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
                             </p:selectOneMenu>
-                            <p:spacer width="40" height="1"></p:spacer>
+                            
+                           
+                            
                             <p:outputLabel value="Billing Department" >
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromDepartment"
                                 value="#{reportController.fromDepartment}" 
-                                filter="true">
+                                filter="true"
+                                 class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
                                                var="d"
@@ -42,31 +46,60 @@
 
                             <p:outputLabel value="Peformed Institution" >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" >
+                            <p:selectOneMenu value="#{reportController.toInstitution}" filter="true"  class="w-100" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
-                            <p:spacer></p:spacer>
-                            <p:outputLabel value="Analyzer" >
+                            
+                            
+                            <p:outputLabel value="Collection center " >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.machine}" filter="true" >
+                            <p:selectOneMenu value="#{reportController.ccName}" filter="true"  class="w-100" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{machineController.items}"
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Collection center Route " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccRoute}" filter="true"  class="w-100" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Investigation " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.investigation}" filter="true"  class="w-100" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{investigationController.investigationItems}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Reffering Doctor " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.referingDoctor}" filter="true"  class="w-100" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{doctorController.items}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
 
 
-
                             <p:outputLabel value="Bill Date From" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            <p:spacer></p:spacer>
                             <p:outputLabel value="Bill Date To" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
