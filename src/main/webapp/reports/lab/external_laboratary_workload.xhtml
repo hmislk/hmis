@@ -11,10 +11,7 @@
             <ui:define name="subcontent">
 
                 <h:form >
-
-
-
-                    <p:panel header="Investigation Wise Report" >
+                    <p:panel header="External Laboratary Workload Report" >
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="From (Billed) Date" >
                             </p:outputLabel>
@@ -64,16 +61,12 @@
                                 <f:selectItem itemLabel="All visits"/>
                             </p:selectOneMenu>
 
-                            <p:spacer></p:spacer>
                             
-                            <p:outputLabel value="Process By"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.processBy}">
-                                <f:selectItem itemLabel="Invoice Time"/>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="CC Name"></p:outputLabel>
+                           
+                            <p:outputLabel value="Collection Center Name"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccName}">
                                 <f:selectItem itemLabel="CC name"/>
+                                <f:selectItems var="r" itemLabel="#{r.name}" value="#{routeController.items}" itemValue="#{r}"/>
                             </p:selectOneMenu>
                             
                             <p:spacer></p:spacer>
