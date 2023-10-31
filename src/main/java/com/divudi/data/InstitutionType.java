@@ -21,6 +21,7 @@ public enum InstitutionType {
     Manufacturer,
     Company,
     branch;
+   
 
     public String getLabel() {
         switch (this) {

@@ -361,6 +361,13 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/investigation_wise_report";
     }
+    
+    public String navigateToExternalLaborataryWorkloadReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/external_laboratary_workload";
+    }
     public String navigateToLabOrganismAntibioticSensitivityReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
