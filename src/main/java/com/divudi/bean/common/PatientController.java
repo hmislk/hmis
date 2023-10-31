@@ -1274,6 +1274,10 @@ public class PatientController implements Serializable {
         saveSelected(current);
         return "/opd/patient";
     }
+    
+     public String NotSaveAndNavigateToOpdPatientProfile() {
+        return "/opd/patient";
+    }
 
     public void saveSelected(Patient p) {
         if (p == null) {
