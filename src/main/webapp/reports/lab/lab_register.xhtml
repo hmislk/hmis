@@ -61,16 +61,26 @@
 
                             
                             
-                            <p:outputLabel value="CC Name"></p:outputLabel>
+                            <p:outputLabel value="Colllection Center Name"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItem itemLabel="CC name"/>
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
                             
                             <p:spacer></p:spacer>
                             
-                            <p:outputLabel value="CC Route"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccRoute}">
-                                <f:selectItem itemLabel="CC Route"/>
+                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccRoute}"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                              />
                             </p:selectOneMenu>
                             
                             <p:outputLabel value="Pateint MRN" >

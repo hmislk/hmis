@@ -483,16 +483,17 @@ public class PatientController implements Serializable {
         appointmentController.getCurrentBill().setPatient(getCurrent());
         return "/inward/inward_appointment";
     }
-    
+
     public String navigateToBillingForCashierFromPatientProfile() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-          opdPreBillController.prepareNewBill();
-          opdPreBillController.setSearchedPatient(getCurrent());
+        opdPreBillController.prepareNewBill();
+        opdPreBillController.setSearchedPatient(getCurrent());
         return "/opd_pre_bill";
     }
+
     public String navigateToOpdPatientEdit() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -1274,8 +1275,8 @@ public class PatientController implements Serializable {
         saveSelected(current);
         return "/opd/patient";
     }
-    
-     public String NotSaveAndNavigateToOpdPatientProfile() {
+
+    public String NotSaveAndNavigateToOpdPatientProfile() {
         return "/opd/patient";
     }
 
@@ -1527,6 +1528,11 @@ public class PatientController implements Serializable {
         String sql;
         sql = "select p from Patient p where p.retired = false order by p.person.name";
         items = getFacade().findByJpql(sql);
+    }
+
+    public List<Patient> fillAllPatientstoList() {
+        fillAllPatients();
+        return items;
     }
 
     public List<Patient> getItemsByDob() {
