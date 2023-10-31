@@ -81,6 +81,16 @@
                                     <p:outputLabel value="#{patientController.current.person.bloodGroup.name}" rendered="#{not empty patientController.current.person.bloodGroup.name}" />
 
 
+                                    <p:outputLabel value="Has an Account:"  />
+                                    <p:outputLabel value="#{patientController.current.hasAnAccount?'Has an account':'No Account'}" />
+
+
+                                    <p:outputLabel value="Account Balance:" rendered="#{patientController.current.hasAnAccount}" />
+                                    <p:outputLabel value="#{patientController.current.runningBalance}" rendered="#{patientController.current.hasAnAccount}" />
+
+                                    <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
+                                    <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
+
 
                                 </p:panelGrid>
                             </div>
