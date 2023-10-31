@@ -25,7 +25,7 @@
 
                         <p:panel id="gpBillPreview">
                             <p:panelGrid columns="3" style="width: 100%;">
-                                <p:dataTable id="tbl" value="#{doctorController.doctors}" var="dc" rowIndexVar="i">
+                                <p:dataTable id="tbl" value="#{doctorController.items}" var="dc" rowIndexVar="i">
                                     <p:column headerText="No" styleClass="alignTop">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
