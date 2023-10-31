@@ -15,28 +15,25 @@
             <p:panel>
                 <f:facet name="header">
                     <p:outputLabel value="Staff Bokking Summery Report" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+                    
                 </f:facet>
 
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="yyyy MMMM dd HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="yyyy MMMM dd HH:mm:ss" >
                         </p:calendar>
                         <h:outputLabel value="Paid Only"/> 
                         <p:selectBooleanCheckbox value="#{channelReportController.paid}" />
                         <h:outputLabel value="By Created Date"/> 
                         <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
-                    </h:panelGrid>
-                    <h:panelGrid columns="3" >
+                    </p:panelGrid>
+                    <h:panelGrid columns="3" class="my-2">
                         <p:commandButton action="#{channelReportController.createStaffBookingSummeryTable}" value="Process" ajax="false" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px; margin-left: 10px" >
                             <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_staff_booking_summery"  />
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
@@ -49,15 +46,15 @@
                         <f:facet name="header">
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
-                            <p:outputLabel value="Staff Bokking Summery Report" />
+                            <p:outputLabel value="Staff Booking Summery Report" />
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
-                            <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            <p:outputLabel class="ml-5" value="  To : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
 
