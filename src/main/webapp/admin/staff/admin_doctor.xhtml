@@ -54,6 +54,12 @@
                             <p:panel>
                                 <div class="row w-100">
                                     <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                        <h:outputText  value="Title" />
+                                        <p:selectOneMenu value="#{doctorController.current.person.title}">
+                                            <f:selectItem itemLabel="Please select a title"/>
+                                            <f:selectItems value="#{doctorController.title}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />
+                                        </p:selectOneMenu>
+                                        
                                         <h:outputText  value="Name" />
                                         <p:inputText autocomplete="off" value="#{doctorController.current.person.name}" class="w-100" />
                                         <h:outputText  value="Phone" />

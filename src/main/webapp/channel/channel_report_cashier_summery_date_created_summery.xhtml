@@ -22,11 +22,7 @@
                 <p:panel>
                     <h:panelGrid columns="2" id="pan1" >
                         <h:outputLabel value="From Date"/>
- 
                         <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
-
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateFormat}"  >
- 
                         </p:calendar>
                         <p:outputLabel value="Channel Type" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" />
                         <p:selectOneMenu id="cmbChanType" value="#{channelReportTempController.reportKeyWord.billType}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
@@ -50,15 +46,9 @@
                             <p:outputLabel value="#{sessionController.loggedUser.institution.name}" />
                             <br></br>
                             <p:outputLabel value="All Cashier Summery  - " />
- 
                             <p:outputLabel  class="ml-1" value="Date : " />
                             <p:outputLabel  class="ml-2" value="#{channelReportTempController.fromDate}" >
                                 <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
-
-                            <p:outputLabel value="Date : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
- 
                             </p:outputLabel>
                         </f:facet>
 

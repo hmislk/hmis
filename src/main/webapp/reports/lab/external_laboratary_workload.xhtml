@@ -61,7 +61,7 @@
                                 <f:selectItem itemLabel="All visits"/>
                             </p:selectOneMenu>
 
-                            
+                            <p:spacer></p:spacer>
                            
                             <p:outputLabel value="Collection Center Name"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccName}">
@@ -69,11 +69,33 @@
                                 <f:selectItems var="r" itemLabel="#{r.name}" value="#{routeController.items}" itemValue="#{r}"/>
                             </p:selectOneMenu>
                             
-                            <p:spacer></p:spacer>
+                            
                             
                             <p:outputLabel value="CC Route"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccRoute}">
                                 <f:selectItem itemLabel="CC Route"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer></p:spacer>
+                            
+                             <p:outputLabel value="Patient MRN" >
+                            </p:outputLabel>
+                            <p:inputText value="#{reportController.patient.phn}"></p:inputText>
+                            
+                            <p:outputLabel value="Investigation" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.investigation}">
+                                <f:selectItem itemLabel="Select Investigation"/>
+                                <f:selectItems value="#{investigationController.investigationItems}" itemLabel="#{i.sname}" var="i" itemValue="#{i}"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer></p:spacer>
+                            
+                            <p:outputLabel value="Referring doctor Name" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.referingDoctor}">
+                                <f:selectItem itemLabel="Select Doctor"/>
+                                <f:selectItems value="#{doctorController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
                             </p:selectOneMenu>
 
                             <p:commandButton ajax="false" value="Process" action="null" >
@@ -81,87 +103,83 @@
 
                         </h:panelGrid>
                         
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{reportController.fromDate}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                            
-                            <h:outputLabel value="To Date :  "/>
-                            <h:outputLabel value="#{reportController.toDate}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                            
-                            <h:outputLabel value="Institution/Branch :  "/>
-                            <h:outputLabel value="#{reportController.institution}"  >
-                                        
-                            </h:outputLabel>
-                        </h:panelGrid>
-
+                        
+                        <p:spacer height="5"></p:spacer>
 
                         <p:dataTable value="null" var="c">
-                            <p:column headerText="Date" >
+                            <p:column headerText="Sample ID" >
                                 <h:outputText value="" ></h:outputText>
                             </p:column>
-                            <p:column headerText="0:00" >
+                            <p:column headerText="Invoice Number" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="4:00" >
+                            <p:column headerText="MRN" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="5:00" >
+                            <p:column headerText="Name" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="6:00" >
+                            <p:column headerText="Age" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="0:00" >
+                            <p:column headerText="Gender" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="4:00" >
+                            <p:column headerText="Investigation" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="5:00" >
+                            <p:column headerText="Lab Department" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="6:00" >
+                            <p:column headerText="CC" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="7:00" >
+                            <p:column headerText="CC ROute" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="8:00" >
+                            <p:column headerText="Invoice Date" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="9:00" >
+                            <p:column headerText="Invoice by" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="10:00" >
+                            <p:column headerText="Recieve Date" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="11:00" >
+                            <p:column headerText="Recieve By" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="12:00" >
+                            <p:column headerText="Remarks" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="13:00" >
+                            <p:column headerText="Patient Source" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="14:00" >
+                            <p:column headerText="Patient Type" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="15:00" >
+                            <p:column headerText="Consulting Doctor" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="16:00" >
+                            <p:column headerText="Value" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            <p:column headerText="17:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            
+                           
 
+                        </p:dataTable>
+                        
+                        <p:spacer height="5"></p:spacer>
+                        
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="SL No" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Test Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total Test Done" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
                         </p:dataTable>
 
                     </p:panel>

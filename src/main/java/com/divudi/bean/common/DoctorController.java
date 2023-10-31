@@ -7,6 +7,7 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
@@ -202,6 +203,10 @@ public class DoctorController implements Serializable {
     private void recreateModel() {
         items = null;
     }
+    public Title[] getTitle() {
+        return Title.values();
+    }
+    
 
     public void saveSelected() {
         if (current == null) {

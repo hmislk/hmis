@@ -40,7 +40,7 @@
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}"></f:selectItems>
-                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                              
                             </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
@@ -53,7 +53,7 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                <f:selectItems value="#{departmentController.departmentList}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}"></f:selectItems>
@@ -89,6 +89,7 @@
                                                itemValue="#{r}"
                                               />
                             </p:selectOneMenu>
+                            
 
                             <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>

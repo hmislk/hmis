@@ -67,6 +67,7 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
+    private Date financialYear;
 
    private double investigationResult;
     
@@ -388,6 +389,13 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/turn_around_time_details";
     }
+    public String navigateToAnnualTestStatistics() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/annual_test_statistics";
+    }
+    
 
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
@@ -697,6 +705,22 @@ public class ReportController implements Serializable {
 
     public void setVisit(String visit) {
         this.visit = visit;
+    }
+
+    public String getRefDocName() {
+        return refDocName;
+    }
+
+    public void setRefDocName(String refDocName) {
+        this.refDocName = refDocName;
+    }
+
+    public Date getFinancialYear() {
+        return financialYear;
+    }
+
+    public void setFinancialYear(Date financialYear) {
+        this.financialYear = financialYear;
     }
 
     
