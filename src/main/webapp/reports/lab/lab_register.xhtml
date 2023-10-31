@@ -92,7 +92,7 @@
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.referingDoctor}">
                                 <f:selectItem itemLabel="Select referring doctor"/>
-                                <f:selectItems value="#{doctorController.doctors}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
+                                <f:selectItems value="#{doctorController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
                             </p:selectOneMenu>
                             
                             <p:spacer></p:spacer>
