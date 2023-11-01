@@ -27,7 +27,9 @@
 
                                     <div class="mb-3">
                                         <h:outputLabel value="Name" class="form-label" />
-                                        <p:inputText class="form-control" value="#{patientController.searchName}" />
+                                        <p:inputText class="form-control" value="#{patientController.searchName}">
+                                            <p:ajax event="keydown" onstart="if (event.keyCode != 13) { return false; }" listener="#{patientController.searchPatientForOpd()}" update="@form" />
+                                        </p:inputText>
                                     </div>
 
                                     <div class="mb-3">
