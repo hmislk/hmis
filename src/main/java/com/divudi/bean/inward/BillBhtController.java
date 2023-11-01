@@ -132,6 +132,7 @@ public class BillBhtController implements Serializable {
     private List<Bill> bills;
     private Doctor referredBy;
     Date date;
+    
 
     public InwardBeanController getInwardBean() {
         return inwardBean;
