@@ -224,7 +224,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -277,7 +277,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try ( ServletOutputStream outputStream = response.getOutputStream()) {
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -1277,7 +1277,13 @@ public class PatientController implements Serializable {
     }
 
     public String NotSaveAndNavigateToOpdPatientProfile() {
+        if ("".equals(current.getPerson().getName())) {
+            JsfUtil.addErrorMessage("Nothing selected");
+
+            return "/opd/patient_search";
+        }
         return "/opd/patient";
+
     }
 
     public void saveSelected(Patient p) {
