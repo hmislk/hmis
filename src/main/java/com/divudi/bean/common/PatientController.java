@@ -1277,6 +1277,10 @@ public class PatientController implements Serializable {
     }
 
     public String NotSaveAndNavigateToOpdPatientProfile() {
+        if (current!=null){
+            current = null;
+            return "/opd/patient";        
+        }
         return "/opd/patient";
     }
 
