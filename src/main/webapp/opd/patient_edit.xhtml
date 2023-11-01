@@ -27,30 +27,26 @@
                                     <p:commandButton value="Save" action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
                                                      ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
                                     
-                                    <p:commandButton value="Patient Profile" disabled="#{patientController.current eq null}" action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
-                                    
-                                    <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}"
-                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" immediate="true" />
-
+                                    <p:commandButton value="back" action="#{patientController.NotSaveAndNavigateToOpdPatientProfile()}"
+                                                      ajax="false" icon="pi pi-arrow-left" iconPos="right" class="mx-2" />
                                 </f:facet>
                                 <div class="container-fluid">
                                     <div class="row form-group">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Title:"  class="form-label" />
-                                            <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Pleace Select a title">
+                                            <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control">
                                                 <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
                                                                itemValue="#{i}" />
                                                 <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
                                                 <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
                                             </p:selectOneMenu>
-
-
+                                            
+                                           
                                         </div>
                                         <div class="col-md-10">
                                             <p:outputLabel value="Name:" for="txtName" class="form-label" />
-                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" required="true" requiredMessage="Pleace Enter a name" />
+                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" />
                                         </div>
                                     </div>
                                     <div class="row form-group">
