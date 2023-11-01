@@ -13,6 +13,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
@@ -77,7 +78,7 @@ public class ReportController implements Serializable {
     private Doctor referingDoctor;
     
      private Investigation investigation;
-    
+    private Speciality currentSpeciality;
     
    
 
@@ -457,6 +458,11 @@ public class ReportController implements Serializable {
         return "/reports/lab/collection_center_statement";
       
     } 
+     
+     public String navigateToManagementAdmissionCountReport() {
+        
+        return "/reports/managementReports/admission_count(consultant_wise)";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -721,6 +727,14 @@ public class ReportController implements Serializable {
 
     public void setFinancialYear(Date financialYear) {
         this.financialYear = financialYear;
+    }
+
+    public Speciality getCurrentSpeciality() {
+        return currentSpeciality;
+    }
+
+    public void setCurrentSpeciality(Speciality currentSpeciality) {
+        this.currentSpeciality = currentSpeciality;
     }
 
     
