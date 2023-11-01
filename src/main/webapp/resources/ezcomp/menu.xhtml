@@ -269,7 +269,7 @@
                                          value="Search Inward Bills" 
                                          rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}" ></p:menuitem>                                        
                         </p:submenu>
-                   
+
                         <p:menuitem  ajax="false"  action="/inward/investigation_search_for_reporting_bht" value="Investigation Trace"></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_reports" value="Inward Reports" rendered="#{webUserController.hasPrivilege('InwardReport')}" ></p:menuitem>
                         <p:menuitem  ajax="false"  action="/inward/inward_administration" value="Inward Administration" rendered="#{webUserController.hasPrivilege('InwardAdministration')}" ></p:menuitem>
@@ -719,7 +719,8 @@
 
                         <p:submenu label="Recieve"  rendered="#{webUserController.hasPrivilege('Payment')}">  
                             <p:submenu label="Inward Deposit">
-                                <p:menuitem  ajax="false"  action="/inward/inward_bill_payment" value="Payment" actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>
+                                <p:menuitem  ajax="false"  action="/inward/inward_bill_payment" value="Payment" 
+                                             actionListener="#{inwardPaymentController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>
                                 <p:menuitem  ajax="false"  action="/inward/inward_search_payment" value="Payment Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" ></p:menuitem>                                                                                
                                 <p:menuitem  ajax="false"  action="/inward/inward_bill_refund" value="Refund" actionListener="#{inwardRefundController.makeNull}" rendered="#{webUserController.hasPrivilege('InwardBilling')}" ></p:menuitem>                                         
                                 <p:menuitem  ajax="false"  action="/inward/inward_search_refund" value="Refund Search" actionListener="#{searchController.makeListNull}"  rendered="#{webUserController.hasPrivilege('InwardBillSearch')}" ></p:menuitem>                                                                                                                            
@@ -768,6 +769,10 @@
                                 <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill" value="Collecting Centre Payment" actionListener="#{agentPaymentRecieveBillController.prepareNewBill()}" ></p:menuitem>
                                 <p:menuitem  ajax="false"  action="/lab/collecting_centre_bill_search_own"
                                              actionListener="#{searchController.makeListNull}"  value="Collecting Centre Bill Search"  ></p:menuitem>
+                            </p:submenu>
+
+                            <p:submenu label="Patient Deposit"  rendered="#{webUserController.hasPrivilege('Payment')}">
+                                
                             </p:submenu>
 
                         </p:submenu>

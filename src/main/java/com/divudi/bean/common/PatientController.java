@@ -10,18 +10,25 @@ import java.io.IOException;
 import com.divudi.bean.clinical.PatientEncounterController;
 import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.bean.web.CaptureComponentController;
+import com.divudi.data.BillClassType;
+import com.divudi.data.BillNumberSuffix;
+import com.divudi.data.BillType;
+import com.divudi.data.HistoryType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.data.Title;
+import com.divudi.data.dataStructure.PaymentMethodData;
 import com.divudi.data.dataStructure.YearMonthDay;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.entity.Bill;
+import com.divudi.entity.BillItem;
 import com.divudi.entity.Family;
 import com.divudi.entity.FamilyMember;
 import com.divudi.entity.Institution;
@@ -33,6 +40,7 @@ import com.divudi.entity.WebUser;
 import com.divudi.entity.lab.PatientSample;
 import com.divudi.entity.membership.MembershipScheme;
 import com.divudi.facade.BillFacade;
+import com.divudi.facade.BillItemFacade;
 import com.divudi.facade.FamilyFacade;
 import com.divudi.facade.FamilyMemberFacade;
 import com.divudi.facade.PatientFacade;
@@ -101,6 +109,8 @@ public class PatientController implements Serializable {
     @EJB
     BillFacade billFacade;
     @EJB
+    BillItemFacade billItemFacade;
+    @EJB
     private WebUserFacade webUserFacade;
     /**
      *
@@ -134,6 +144,10 @@ public class PatientController implements Serializable {
     AdmissionController admissionController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    private PaymentSchemeController paymentSchemeController;
+    @Inject
+    BillBeanController billBeanController;
     /**
      *
      * Class Variables
@@ -183,6 +197,13 @@ public class PatientController implements Serializable {
     private Integer ageMonthComponant;
     private Integer ageDateComponant;
 
+    Bill bill;
+    private BillItem billItem;
+    private List<BillItem> billItems;
+    private PaymentMethodData paymentMethodData;
+
+    boolean printPreview = false;
+
     public void downloadAllPatients() {
         List<Patient> downloadingPatients;
         String j = "select p "
@@ -224,7 +245,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=Patients.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -277,7 +298,7 @@ public class PatientController implements Serializable {
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Content-Disposition", "attachment; filename=PatientPhoneNumbers.xlsx");
 
-        try (ServletOutputStream outputStream = response.getOutputStream()) {
+        try ( ServletOutputStream outputStream = response.getOutputStream()) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -494,6 +515,17 @@ public class PatientController implements Serializable {
         return "/opd_pre_bill";
     }
 
+    public String navigateToReceiveDepositsFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        paymentMethodData = new PaymentMethodData();
+        bill = new Bill();
+        billItem = new BillItem();
+        return "/payments/patient/receive";
+    }
+
     public String navigateToOpdPatientEdit() {
         if (current == null) {
             JsfUtil.addErrorMessage("No patient selected");
@@ -529,6 +561,98 @@ public class PatientController implements Serializable {
             return "";
         }
         return "/opd/opd_bill";
+    }
+
+    public void settlePatientDepositReceive() {
+        Date startTime = new Date();
+        Date fromDate = null;
+        Date toDate = null;
+        settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDepositReturn,  BillNumberSuffix.PD);
+    }
+
+    private boolean errorCheck() {
+        if (paymentSchemeController.errorCheckPaymentMethod(getBill().getPaymentMethod(), paymentMethodData)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void settleBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix) {
+        if (getBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        if (paymentSchemeController.errorCheckPaymentMethod(getBill().getPaymentMethod(), paymentMethodData)) {
+            JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
+            return;
+        }
+        
+
+        saveBill(billType, billNumberSuffix);
+        billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
+        addToBill();
+        saveBillItem();
+        billFacade.edit(getBill());
+        //TODO: Add Patient Balance History
+        if (getCurrent().getRunningBalance() == null) {
+            getCurrent().setRunningBalance(getBill().getNetTotal());
+        } else {
+            getCurrent().setRunningBalance(getCurrent().getRunningBalance() + getBill().getNetTotal());
+        }
+
+        UtilityController.addSuccessMessage("Bill Saved");
+        printPreview = true;
+
+    }
+
+    public void addToBill() {
+        getBillItem().setNetValue(getBill().getNetTotal());
+        getBillItem().setGrossValue(getBill().getNetTotal());
+        getBillItem().setBillSession(null);
+        getBillItem().setDiscount(0.0);
+        getBillItem().setItem(null);
+        getBillItem().setQty(1.0);
+        getBillItem().setRate(getBill().getNetTotal());
+        getBillItems().add(getBillItem());
+        billItem = null;
+    }
+
+    private void saveBillItem() {
+        for (BillItem tmp : getBillItems()) {
+            tmp.setCreatedAt(new Date());
+            tmp.setCreater(getSessionController().getLoggedUser());
+            tmp.setBill(getBill());
+            tmp.setNetValue(tmp.getNetValue());
+            billItemFacade.create(tmp);
+        }
+    }
+
+    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix) {
+        getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
+        getBill().setBillType(billType);
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(sessionController.getLoggedUser());
+        getBill().setBillDate(new Date());
+        getBill().setBillTime(new Date());
+
+        getBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
+        getBill().setInstitution(getSessionController().getLoggedUser().getInstitution());
+
+        getBill().setCreatedAt(new Date());
+        getBill().setCreater(getSessionController().getLoggedUser());
+
+        getBill().setGrantTotal(getBill().getNetTotal());
+        getBill().setTotal(getBill().getNetTotal());
+        getBill().setDiscount(0.0);
+        getBill().setDiscountPercent(0);
+
+        if (getBill().getId() == null) {
+            billFacade.create(getBill());
+        } else {
+            billFacade.edit(getBill());
+        }
     }
 
     public String toChannelling() {
@@ -2027,6 +2151,38 @@ public class PatientController implements Serializable {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    public Bill getBill() {
+        return bill;
+    }
+
+    public void setBill(Bill bill) {
+        this.bill = bill;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public BillItem getBillItem() {
+        return billItem;
+    }
+
+    public void setBillItem(BillItem billItem) {
+        this.billItem = billItem;
+    }
+
+    public List<BillItem> getBillItems() {
+        return billItems;
+    }
+
+    public void setBillItems(List<BillItem> billItems) {
+        this.billItems = billItems;
     }
 
     /**
