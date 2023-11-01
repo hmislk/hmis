@@ -13,6 +13,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
@@ -67,27 +68,25 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
+    private Date financialYear;
 
-   private double investigationResult;
-    
+    private double investigationResult;
+
     private String visitType;
     private Patient patient;
     private String diagnosis;
     private Doctor referingDoctor;
-    
-     private Investigation investigation;
-    
-    
-   
+
+    private Investigation investigation;
+    private Speciality currentSpeciality;
 
     private String priorityType;
     private String patientMrn;
-  
+
     private String status;
     private String refDocName;
     private String totalAverage;
     private String visit;
-
 
     private List<Bill> bills;
     private List<ItemCount> reportLabTestCounts;
@@ -209,8 +208,8 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.fromDepartment=:fdept ";
             m.put("fdept", fromDepartment);
         }
-        
-         if (toInstitution != null) {
+
+        if (toInstitution != null) {
             jpql += " and bi.bill.toInstitution=:ti ";
             m.put("ti", toInstitution);
         }
@@ -219,7 +218,6 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-
 
         jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
@@ -270,7 +268,7 @@ public class ReportController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void downloadOpdServiceCount() {
         Workbook workbook = exportToExcel(reportList, "Opd Service Count");
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -347,6 +345,7 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/test_count";
     }
+
     public String navigateToLabPeakHourStatistics() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -354,31 +353,46 @@ public class ReportController implements Serializable {
         return "/reports/lab/peak_hour_statistics";
     }
 
-
     public String navigateToLabInvetigationWiseReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/investigation_wise_report";
     }
+
+    public String navigateToExternalLaborataryWorkloadReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/external_laboratary_workload";
+    }
+
     public String navigateToLabOrganismAntibioticSensitivityReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/organism_antibiotic_sensitivity";
     }
-    
+
     public String navigateToLabRegisterReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/lab_register";
     }
+
     public String navigateToTurnAroundTimeDetails() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/turn_around_time_details";
+    }
+
+    public String navigateToAnnualTestStatistics() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/annual_test_statistics";
     }
 
     public String navigateToPoStatusReport() {
@@ -423,6 +437,37 @@ public class ReportController implements Serializable {
         }
         return "/reports/assest_transfer_report";
 
+    }
+
+    public String navigateToTurnAroundTimeHourly() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/turn_around_time_hourly";
+
+    }
+
+    public String navigateToCollectionCenterStatement() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/collection_center_statement";
+
+    }
+
+    public String navigateToManagementAdmissionCountReport() {
+
+        return "/reports/managementReports/admission_count(consultant_wise)";
+    }
+
+    public String navigateToSurgeryWiseCount() {
+
+        return "/reports/managementReports/surgery_wise_count";
+    }
+    
+    public String navigateToSurgeryCountDoctorWise() {
+
+        return "/reports/managementReports/surgery_count_doctor_wise";
     }
 
     public Department getFromDepartment() {
@@ -594,6 +639,7 @@ public class ReportController implements Serializable {
     public String getVisitType() {
         return visitType;
     }
+
     public Sex[] getSex() {
         return Sex.values();
     }
@@ -674,5 +720,28 @@ public class ReportController implements Serializable {
         this.visit = visit;
     }
 
-    
+    public String getRefDocName() {
+        return refDocName;
+    }
+
+    public void setRefDocName(String refDocName) {
+        this.refDocName = refDocName;
+    }
+
+    public Date getFinancialYear() {
+        return financialYear;
+    }
+
+    public void setFinancialYear(Date financialYear) {
+        this.financialYear = financialYear;
+    }
+
+    public Speciality getCurrentSpeciality() {
+        return currentSpeciality;
+    }
+
+    public void setCurrentSpeciality(Speciality currentSpeciality) {
+        this.currentSpeciality = currentSpeciality;
+    }
+
 }
