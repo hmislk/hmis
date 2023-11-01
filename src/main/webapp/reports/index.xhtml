@@ -270,8 +270,8 @@
                                         <p:commandButton   class="w-100"  ajax="false" value="6. Pharmacy Department Wise Sale Report" />
                                         <p:commandButton   class="w-100"  ajax="false" value="7. Referring Doctor Wise Revenue" />
                                         <p:commandButton   class="w-100"  ajax="false" value="8. OT Room Wise Sergery Count" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="9. Surgery Count(Surgery Wise)" />
-                                        <p:commandButton   class="w-100"  ajax="false" value="10. Surgery Count(Doctor Wise)" />
+                                        <p:commandButton   class="w-100"  ajax="false" value="9. Surgery Count(Surgery Wise)" action="#{reportController.navigateToSurgeryWiseCount()}"/>
+                                        <p:commandButton   class="w-100"  ajax="false" value="10. Surgery Count(Doctor Wise)" action="#{reportController.navigateToSurgeryCountDoctorWise()}" />
                                         <p:commandButton   class="w-100"  ajax="false" value="11. Surgery Count(Type)" />
                                         <p:commandButton   class="w-100"  ajax="false" value="12. Admission Count(Consultant Wise)" action="#{reportController.navigateToManagementAdmissionCountReport()}"/>
                                         <p:commandButton   class="w-100"  ajax="false" value="13. Admission Count(Payment Type Wise)" />
