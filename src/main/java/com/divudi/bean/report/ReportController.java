@@ -464,6 +464,11 @@ public class ReportController implements Serializable {
 
         return "/reports/managementReports/surgery_wise_count";
     }
+    
+    public String navigateToSurgeryCountDoctorWise() {
+
+        return "/reports/managementReports/surgery_count_doctor_wise";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
