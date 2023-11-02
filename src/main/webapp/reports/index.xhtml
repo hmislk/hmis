@@ -117,9 +117,9 @@
                                     <p:accordionPanel>
                                         <p:tab title="Administration">
                                             <div class="d-grid gap-2">
-                                                <p:commandButton   class="w-100"  ajax="false" value="1. Department Report" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="2. Employee Detail" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="3. Employee To Retired Details" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="1. Department Report" action="#{reportController.navigateToDepartmentReports()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="2. Employee Detail" action="#{reportController.navigateToEmployeeDetails()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="3. Employee To Retired Details" action="#{reportController.navigateToEmployeeToRetired()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="4. Employee End of Probation" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="5. Staff Detail" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="6. Holiday Report" />
