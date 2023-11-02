@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Asset AMC Report" class="w-100 p-1">
+                    <p:panel header="Work Order Report" class="w-100 p-1">
                         <h:panelGrid columns="5" class="w-100">
 
                             <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
@@ -53,26 +53,15 @@
                             
                             <p:spacer/>
 
-                            <p:outputLabel value="Warrenty Start Date" ></p:outputLabel>
-                                <p:calendar styleClass="dateTimePicker"  value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
-                        
-
-                      
-                            <p:outputLabel value="Warrenty End Date" for=""></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker"  value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
-
-
-                            <p:spacer/>
+                            <p:outputLabel value="Asset" for=""></p:outputLabel>
+                            <p:selectOneMenu  id="asset" required="true" >
+                                <f:selectItem itemLabel="Select Vendor"/>
+                            </p:selectOneMenu>
                             
-                            <p:outputLabel value="AMC Start Date" ></p:outputLabel>
-                                <p:calendar styleClass="dateTimePicker"  value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
-                        
-
-                     
-                            
-                            <p:outputLabel value="AMC End Date" for=""></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker"  value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
-
+                            <p:outputLabel value="Reported By" for=""></p:outputLabel>
+                            <p:selectOneMenu  id="reportedBy" required="true" >
+                                <f:selectItem itemLabel="Select Vendor"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid><br/>
 
@@ -85,12 +74,12 @@
                                      rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
 
                             <f:facet name="header" >
-                                <p:outputLabel value="Asset Transfer Report" />                                
+                                <p:outputLabel value="Work Order Report" />                                
                             </f:facet>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Sub CAtegory" >
+                                    <p:outputLabel value="Incident Report No" >
                                     </p:outputLabel>
                                 </f:facet>
 
@@ -98,7 +87,35 @@
                             </p:column>
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Fixed Asset" >
+                                    <p:outputLabel value="Date Reported" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Date Resolved" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="User Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset Sub Category" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Asset" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -107,47 +124,32 @@
                                 <f:facet name="header" >
                                     <p:outputLabel value="Asset Location" >
                                     </p:outputLabel>
-                                </f:facet> 
+                                </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Vendor Name" >
+                                    <p:outputLabel value="Vendor" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Warrenty Start DAte" >
+                                    <p:outputLabel value="Spare Part USed" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-
+                            
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Warrenty End Date" >
+                                    <p:outputLabel value="Down time details" >
                                     </p:outputLabel>
                                 </f:facet>
-                            </p:column>
-
+                            </p:column><!-- comment -->
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="AMC Start Date" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="AMC End Date" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Amount" >
+                                    <p:outputLabel value="TAT" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
