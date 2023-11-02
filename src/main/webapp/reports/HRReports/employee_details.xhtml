@@ -10,14 +10,13 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Employee Details Report" >
-                        <p:panelGrid columns="4" class="w-100">
+                        <h:panelGrid columns="4" class="w-100">
 
                             <p:outputLabel value="Institution" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu
                                 value="#{reportController.fromInstitution}" 
-                                filter="true"
-                                class="w-100 ">
+                                filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="d"
@@ -87,7 +86,7 @@
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
                             
-                        </p:panelGrid>
+                        </h:panelGrid>
                         
                         <div class="d-flex align-items-center my-2">
                             <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
