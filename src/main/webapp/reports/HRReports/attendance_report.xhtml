@@ -10,16 +10,92 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Attendance Report" >
-                        <h:panelGrid columns="2">
 
-                            <p:outputLabel value="Time Range" class="mx-2" >
+                        <h:panelGrid columns="5">
+                            <p:outputLabel value="From Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:spacer width="40px"></p:spacer>
+
+                            <p:outputLabel value="To Date" class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value=""
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu
+                                value="#{reportController.fromInstitution}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="40px"></p:spacer>
+                            
+                            <p:outputLabel value="Department" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu
+                                value="#{reportController.fromDepartment}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Employee" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="40px"></p:spacer>
+
+                            <p:outputLabel value="Staff Category" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu>
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff Designation" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer width="40px"></p:spacer>
+
+                            <p:outputLabel value="Staff Roster" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Employee Status" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu>
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="40px"></p:spacer>
+                            <p:spacer width="40px"></p:spacer>
+
                         </h:panelGrid>
-                        
+
                         <div class="d-flex align-items-center my-2">
                             <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
                             </p:commandButton>
@@ -31,50 +107,53 @@
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
                                      rows="10">
-                            
-                            <p:column headerText="Code No">
+
+                            <p:column headerText="No">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="EPF Code">
+                            <p:column headerText="EMP No">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Name">
+                            <p:column headerText="EMP Name">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Designation">
+                            <p:column headerText="Department Name ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Roster">
+                            <p:column headerText="Staff Roster ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Employee Status">
+                            <p:column headerText="Staff Shift">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Address">
+                            <p:column headerText="Leave ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Sex">
+                            <p:column headerText="Created Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="NIC No">
+                            <p:column headerText="Shift Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="DOB">
+                            <p:column headerText="In Checked ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="DOJ ">
+                            <p:column headerText="Out Checked  ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="DO Retired ">
+                            <p:column headerText="Worked Time Within Shift Varified">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="DO Resign ">
+                            <p:column headerText="Worked Time Outside Shift Varified(IN)  ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Department ">
+                            <p:column headerText="Worked Time Outside Shift Varified(Out) ">
                                 <h:outputText value="" />
                             </p:column>
-                            
+                            <p:column headerText="Worked Time Varified  ">
+                                <h:outputText value="" />
+                            </p:column>
+
                         </p:dataTable>
                     </p:panel>
 
