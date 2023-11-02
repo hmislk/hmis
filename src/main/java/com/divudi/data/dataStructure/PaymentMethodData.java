@@ -14,6 +14,7 @@ public class PaymentMethodData {
     private ComponentDetail creditCard=new ComponentDetail();
     private ComponentDetail cheque=new ComponentDetail();
     private ComponentDetail slip=new ComponentDetail();
+    private ComponentDetail ewallet=new ComponentDetail();
     
     
     
@@ -42,5 +43,15 @@ public class PaymentMethodData {
         this.slip = slip;
     }
 
+    public ComponentDetail getEwallet() {
+        return ewallet;
+    }
+
+    public void setEwallet(ComponentDetail ewallet) {
+        this.ewallet = ewallet;
+    }
+
+    
+    
     
 }

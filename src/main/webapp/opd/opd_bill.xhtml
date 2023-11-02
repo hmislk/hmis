@@ -363,7 +363,7 @@
                                                 <p:selectOneMenu   id="pay" value="#{opdBillController.paymentMethod}">     
                                                     <f:selectItems value="#{enumController.paymentMethods}"  />
                                                     <p:ajax process="@this cmbPs" 
-                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem creditCard cheque slip"
+                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  tblBillItem creditCard eWallet cheque slip"
                                                             event="change"
                                                             listener="#{opdBillController.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -373,7 +373,7 @@
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForOPD}" 
                                                                    var="paysch" itemLabel="#{paysch.name}" itemValue="#{paysch}"  />
                                                     <p:ajax process="@this pay" 
-                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem creditCard cheque slip" 
+                                                            update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('creditCompany',view).clientId} :#{p:resolveFirstComponentWithId('creditStaff',view).clientId}  tblBillItem creditCard eWallet cheque slip" 
                                                             event="change" 
                                                             listener="#{opdBillController.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -394,6 +394,9 @@
 
                                                 <h:panelGroup id="creditCard" style="display: #{opdBillController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
                                                     <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup id="eWallet" style="display: #{opdBillController.paymentMethod ne 'ewallet' ? 'none' : 'block'} ; ">
+                                                    <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup id="cheque" style="display: #{opdBillController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
                                                     <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
