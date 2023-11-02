@@ -11,7 +11,7 @@
                 <h:form >
                     <p:panel header="Finger Print Record By Verified" >
 
-                        <h:panelGrid columns="5">
+                        <h:panelGrid columns="5" class="w-100">
                             <p:outputLabel value="From Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value="" 
@@ -67,6 +67,8 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            
 
                             <p:outputLabel value="Staff Designation" class="mx-2" >
                             </p:outputLabel>
@@ -76,7 +78,7 @@
                             </p:selectOneMenu>
                             
                             <p:spacer width="40px"></p:spacer>
-
+                            
                             <p:outputLabel value="Staff Roster" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu>
@@ -84,15 +86,7 @@
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
-                            <p:outputLabel value="Employee Status" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu>
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
 
-                            <p:spacer width="40px"></p:spacer>
-                            <p:spacer width="40px"></p:spacer>
 
                         </h:panelGrid>
 
@@ -117,40 +111,25 @@
                             <p:column headerText="EMP Name">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Department Name ">
+                            <p:column headerText="Time Type">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Staff Roster ">
+                            <p:column headerText="Verified Date">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Staff Shift">
+                            <p:column headerText="Verified Time">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Leave ">
+                            <p:column headerText="Comments">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Created Date ">
+                            <p:column headerText="Logged Date">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift Date ">
+                            <p:column headerText="Logged Time">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="In Checked ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Out Checked  ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Worked Time Within Shift Varified">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Worked Time Outside Shift Varified(IN)  ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Worked Time Outside Shift Varified(Out) ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Worked Time Varified  ">
+                            <p:column headerText="Creater">
                                 <h:outputText value="" />
                             </p:column>
 
