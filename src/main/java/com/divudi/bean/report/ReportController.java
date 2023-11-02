@@ -560,6 +560,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/verified_report";
     }
+    
+    public String navigateToHeadCountReport() {
+
+        return "/reports/HRReports/head_count";
+    }
 
 
     public Department getFromDepartment() {
