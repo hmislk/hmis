@@ -560,7 +560,21 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/verified_report";
     }
+    
+    public String navigateToFingerPrintRecordByLogged() {
 
+        return "/reports/HRReports/fingerprint_record_by_logged";
+    }
+    
+    public String navigateToFingerPrintRecordByVerified() {
+
+        return "/reports/HRReports/fingerprint_record_by_verified";
+    }
+    
+    public String navigateToFingerPrintRecordNoShiftSettled() {
+
+        return "/reports/HRReports/fingerprint_record_no_shift_settled";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;

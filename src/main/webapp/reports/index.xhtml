@@ -144,9 +144,9 @@
                                     <p:accordionPanel>
                                         <p:tab title="Finger print Reports">
                                             <div class="d-grid gap-2">
-                                                <p:commandButton   class="w-100"  ajax="false" value="1. Fingerprint Record by Logged" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="2. Fingerprint Record by Verified" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="3. Fingerprint Record by No Shift Settled" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="1. Fingerprint Record by Logged" action="#{reportController.navigateToFingerPrintRecordByLogged()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="2. Fingerprint Record by Verified" action="#{reportController.navigateToFingerPrintRecordByVerified()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="3. Fingerprint Record by No Shift Settled" action="#{reportController.navigateToFingerPrintRecordNoShiftSettled()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="4. Fingerprint Approve" />
                                             </div>
 
