@@ -64,33 +64,31 @@
 
                             <p:outputLabel value="Pateint MRN" >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.patient.phn}">
-                                <f:selectItem itemLabel="Select PHN"/>
-                            </p:selectOneMenu>
 
-                           
-
+                            <h:panelGroup>
+                                <p:inputText autocomplete="off" id="txtMrn" value="#{reportController.patient.phn}" class="form-control" />
+                            </h:panelGroup>
                             <p:outputLabel value="Investigation" >
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.investigation}">
                                 <f:selectItem itemLabel="Select Investigation"/>
                                 <f:selectItems value="#{investigationController.investigationItems}" itemLabel="#{i.sname}" var="i" itemValue="#{i}"/>
                             </p:selectOneMenu>
-                            
-                             <p:spacer></p:spacer>
-                            <p:outputLabel value="Referring Doctor NAme" >
+
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Referring Doctor Name" >
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.referingDoctor}">
                                 <f:selectItem itemLabel="Select referring doctor"/>
-                                <f:selectItems value="#{doctorController.doctors}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
+                                <f:selectItems value="#{doctorController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
                             </p:selectOneMenu>
 
                             <p:outputLabel value="Visiting Type"></p:outputLabel>
                             <p:selectOneMenu value="">
                                 <f:selectItem itemLabel="All visits"/>
                             </p:selectOneMenu>
-                            
-                             <p:spacer></p:spacer>
+
+                            <p:spacer></p:spacer>
                             <p:outputLabel value="Organism" >
                             </p:outputLabel>
                             <p:selectOneMenu 
@@ -98,10 +96,11 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="Select Organism"></f:selectItem>
+                                <f:selectItems value="#{investigationController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
 
                             </p:selectOneMenu>
 
-                         
+
 
                             <p:outputLabel value="Antibiotics">
                             </p:outputLabel>
@@ -109,11 +108,11 @@
                                 value="" 
                                 filter="true"
                                 >
-                                <f:selectItem itemLabel="Select Antibiotic"></f:selectItem>
+                                <f:selectItems  value="#{antibioticController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
 
                             </p:selectOneMenu>
-                             
-                              <p:spacer></p:spacer>
+
+                            <p:spacer></p:spacer>
 
                             <p:outputLabel value="Sensitivity">
                             </p:outputLabel>
@@ -121,11 +120,11 @@
                                 value="" 
                                 filter="true"
                                 >
-                                <f:selectItem itemLabel="Select Sensitivity"></f:selectItem>
+                                <f:selectItems  value="" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
 
                             </p:selectOneMenu>
 
-                             
+
 
                             <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>
@@ -203,7 +202,7 @@
                             <p:column headerText="Antibiotic" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Sensitivity" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>

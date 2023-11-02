@@ -25,6 +25,12 @@ public enum HistoryType {
     ChannelCreditNoteCancel,
     ChannelDebitNote,
     ChannelDebitNoteCancel,
+    
+    PatientDeposit,
+    PatientDepositCancel,
+    PatientDepositReturn,
+    PatientDepositUtilization,
+    
     AgentBalanceUpdateBill,
     CollectingCentreBalanceUpdateBill,
     CollectingCentreDeposit,

@@ -75,6 +75,11 @@ public enum BillNumberSuffix {
     AGNCNCAN,//Credit Note Cancel
     AGNDN,//Debit Note 
     AGNDNCAN,//Debit Note Cancel
+    //Agent
+    PD,//Patient Deposit 
+    PDC,//Patient Deposit Cancel
+    PDR,//Patient Deposit Return
+    PDU,//Patient Deposit Utilization
     //Collecting Centre
     CCPAY,//Payment 
     CCCAN,//Payment Cancel

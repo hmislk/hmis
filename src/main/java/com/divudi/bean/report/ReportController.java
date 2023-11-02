@@ -13,6 +13,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
@@ -67,31 +68,35 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
+    private Date financialYear;
 
-   private double investigationResult;
-    
+    private double investigationResult;
+
     private String visitType;
     private Patient patient;
     private String diagnosis;
     private Doctor referingDoctor;
-    
-     private Investigation investigation;
-    
-    
-   
+
+    private Investigation investigation;
+    private Speciality currentSpeciality;
 
     private String priorityType;
     private String patientMrn;
-  
+
     private String status;
     private String refDocName;
     private String totalAverage;
     private String visit;
 
-
     private List<Bill> bills;
     private List<ItemCount> reportLabTestCounts;
     private List<CategoryCount> reportList;
+    
+    private Date warrentyStartDate;
+    private Date warrentyEndDate;
+    
+    private Date amcStartDate;
+    private Date amcEndDate;
 
     public ReportController() {
     }
@@ -209,8 +214,8 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.fromDepartment=:fdept ";
             m.put("fdept", fromDepartment);
         }
-        
-         if (toInstitution != null) {
+
+        if (toInstitution != null) {
             jpql += " and bi.bill.toInstitution=:ti ";
             m.put("ti", toInstitution);
         }
@@ -219,7 +224,6 @@ public class ReportController implements Serializable {
             jpql += " and bi.bill.toDepartment=:tdept ";
             m.put("tdept", toDepartment);
         }
-
 
         jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
@@ -238,8 +242,7 @@ public class ReportController implements Serializable {
         // Convert the map values to a list to be used in the JSF page
         reportList = new ArrayList<>(categoryReports.values());
     }
-    
- 
+
     public void downloadLabTestCount() {
         Workbook workbook = exportToExcel(reportList, "Test Count");
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -271,7 +274,7 @@ public class ReportController implements Serializable {
             e.printStackTrace();
         }
     }
-    
+
     public void downloadOpdServiceCount() {
         Workbook workbook = exportToExcel(reportList, "Opd Service Count");
         FacesContext fc = FacesContext.getCurrentInstance();
@@ -339,7 +342,7 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
 
-        return "/reports/asset_register";
+        return "/reports/assets/asset_register";
     }
 
     public String navigateToLabReportsTestCount() {
@@ -348,6 +351,7 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/test_count";
     }
+
     public String navigateToLabPeakHourStatistics() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -355,26 +359,34 @@ public class ReportController implements Serializable {
         return "/reports/lab/peak_hour_statistics";
     }
 
-
     public String navigateToLabInvetigationWiseReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/investigation_wise_report";
     }
+
+    public String navigateToExternalLaborataryWorkloadReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/external_laboratary_workload";
+    }
+
     public String navigateToLabOrganismAntibioticSensitivityReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/organism_antibiotic_sensitivity";
     }
-    
+
     public String navigateToLabRegisterReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/lab_register";
     }
+
     public String navigateToTurnAroundTimeDetails() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -382,66 +394,191 @@ public class ReportController implements Serializable {
         return "/reports/lab/turn_around_time_details";
     }
 
+    public String navigateToAnnualTestStatistics() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/annual_test_statistics";
+    }
+
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
 
-        return "/reports/po_status_report";
+        return "/reports/assets/po_status_report";
     }
 
     public String navigateToEmployeeAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/employee_asset_issue";
+        return "/reports/assets/employee_asset_issue";
     }
 
     public String navigateToFixedAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/fixed_asset_issue";
+        return "/reports/assets/fixed_asset_issue";
     }
 
     public String navigateToAssetWarentyExpireReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/asset_warranty_expire_report";
+        return "/reports/assets/asset_warranty_expire_report";
     }
 
     public String navigateToAssetGrnReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/asset_grn_report";
+        return "/reports/assets/asset_grn_report";
     }
 
     public String navigateToAssetTransferReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assest_transfer_report";
+        return "/reports/assets/assest_transfer_report";
 
     }
     
-        
-     public String navigateToTurnAroundTimeHourly(){
+    public String navigateToAssetAmcExpiryReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assets/assest_amc_expiry_report";
+
+    }
+
+    public String navigateToAssetAmcReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assets/amc_report";
+
+    }
+    public String navigateToTurnAroundTimeHourly() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/turn_around_time_hourly";
-      
+
     }
-     
-     public String navigateToCollectionCenterStatement(){
+
+    public String navigateToCollectionCenterStatement() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/collection_center_statement";
-      
+
+    }
+
+    public String navigateToManagementAdmissionCountReport() {
+
+        return "/reports/managementReports/admission_count(consultant_wise)";
+    }
+
+    public String navigateToSurgeryWiseCount() {
+
+        return "/reports/managementReports/surgery_wise_count";
+    }
+    
+    public String navigateToSurgeryCountDoctorWise() {
+
+        return "/reports/managementReports/surgery_count_doctor_wise";
+    }
+    
+    public String navigateToLeaveReport() {
+
+        return "/reports/HRReports/leave_report";
+    }
+    
+    public String navigateToLeaveReportSummery() {
+
+        return "/reports/HRReports/leave_report_summery";
+    }
+    
+     public String navigateToLateLeaveDetails() {
+
+        return "/reports/HRReports/late_leave_details";
+    }
+     
+      public String navigateToLeaveSummeryReport() {
+
+        return "/reports/HRReports/leave_summery_report";
+    }
+
+    public String navigateToDepartmentReports() {
+
+        return "/reports/HRReports/department_report";
     } 
+    
+    public String navigateToEmployeeDetails() {
+
+        return "/reports/HRReports/employee_details";
+    }
+    
+    public String navigateToEmployeeToRetired() {
+
+        return "/reports/HRReports/employee_to_retired";
+    }
+    
+    public String navigateToStaffShiftReport() {
+
+        return "/reports/HRReports/staff_shift_report";
+    }
+    
+    public String navigateToRosterTimeAndVerifyTime() {
+
+        return "/reports/HRReports/rosterTabel_verify_time";
+    }
+    
+    public String navigateToEmployeeEndofProbation() {
+
+        return "/reports/HRReports/employee_end_of_probation";
+    }
+    
+    public String navigateToAttendanceReport() {
+
+        return "/reports/HRReports/attendance_report";
+    }
+    
+    public String navigateToLateInAndEarlyOut() {
+
+        return "/reports/HRReports/late_in_and_early_out";
+    }
+    
+    public String navigateToStaffShiftDetailsByStaff() {
+
+        return "/reports/HRReports/staff_shift_details_by_staff";
+    }
+    
+    public String navigateToVerifiedReport() {
+
+        return "/reports/HRReports/verified_report";
+    }
+    
+    public String navigateToHeadCountReport() {
+
+        return "/reports/HRReports/head_count";
+    }
+    public String navigateToFingerPrintRecordByLogged() {
+
+        return "/reports/HRReports/fingerprint_record_by_logged";
+    }
+    
+    public String navigateToFingerPrintRecordByVerified() {
+
+        return "/reports/HRReports/fingerprint_record_by_verified";
+    }
+    
+    public String navigateToFingerPrintRecordNoShiftSettled() {
+
+        return "/reports/HRReports/fingerprint_record_no_shift_settled";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
@@ -525,6 +662,8 @@ public class ReportController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
+    
+    
 
     public Date getToDate() {
         if (toDate == null) {
@@ -612,6 +751,7 @@ public class ReportController implements Serializable {
     public String getVisitType() {
         return visitType;
     }
+
     public Sex[] getSex() {
         return Sex.values();
     }
@@ -692,5 +832,74 @@ public class ReportController implements Serializable {
         this.visit = visit;
     }
 
-    
+    public String getRefDocName() {
+        return refDocName;
+    }
+
+    public void setRefDocName(String refDocName) {
+        this.refDocName = refDocName;
+    }
+
+    public Date getFinancialYear() {
+        return financialYear;
+    }
+
+    public void setFinancialYear(Date financialYear) {
+        this.financialYear = financialYear;
+    }
+
+    public Speciality getCurrentSpeciality() {
+        return currentSpeciality;
+    }
+
+    public void setCurrentSpeciality(Speciality currentSpeciality) {
+        this.currentSpeciality = currentSpeciality;
+    }
+
+    public Date getWarrentyStartDate() {
+        if (warrentyStartDate == null) {
+            warrentyStartDate = CommonFunctions.getEndOfDay();
+        }
+        return warrentyStartDate;
+    }
+
+    public void setWarrentyStartDate(Date warrentyStartDate) {
+        this.warrentyStartDate = warrentyStartDate;
+    }
+
+    public Date getWarrentyEndDate() {
+        if (warrentyEndDate == null) {
+            warrentyEndDate = CommonFunctions.getEndOfMonth(toDate);
+        }
+      
+        return warrentyEndDate;
+    }
+
+    public void setWarrentyEndDate(Date warrentyEndDate) {
+        this.warrentyEndDate = warrentyEndDate;
+    }
+
+    public Date getAmcStartDate() {
+        if (amcStartDate == null) {
+            amcStartDate = CommonFunctions.getEndOfDay();
+        }
+        return amcStartDate;
+    }
+
+    public void setAmcStartDate(Date amcStartDate) {
+        this.amcStartDate = amcStartDate;
+    }
+
+    public Date getAmcEndDate() {
+        if (amcEndDate == null) {
+            amcEndDate = CommonFunctions.getEndOfMonth(toDate);
+        }
+      
+        return amcEndDate;
+    }
+
+    public void setAmcEndDate(Date amcEndDate) {
+        this.amcEndDate = amcEndDate;
+    }
+
 }

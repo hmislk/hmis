@@ -19,29 +19,42 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
-
                             <p:panel class="m-2 p-2">
                                 <f:facet name="header">
                                     <p:outputLabel value="Edit Patient Demographic Details" />
                                     <p:spacer width="10" />
                                     <p:commandButton value="Save" action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
                                                      ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
+                                    
+                                    <p:commandButton value="Patient Profile" disabled="#{patientController.current eq null}" action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
+                                    
+                                    <p:commandButton value="Patient Lookup" action="#{opdBillController.navigateToSearchPatients()}"
+                                                     ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" immediate="true" />
+
                                 </f:facet>
                                 <div class="container-fluid">
                                     <div class="row form-group">
                                         <div class="col-md-2">
                                             <p:outputLabel value="Title:"  class="form-label" />
-                                            <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control">
-                                                <f:selectItem itemLabel="Select Title"  />
+                                            <p:selectOneMenu id="cmbTitle" value="#{patientController.current.person.title}" class="form-control" required="true" requiredMessage="Pleace Select a title">
+                                                <f:selectItem itemLabel="Select Title" />
                                                 <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
                                                                itemValue="#{i}" />
                                                 <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
                                                 <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
                                             </p:selectOneMenu>
+                                            <p:outputLabel value="Sex:"  class="form-label" />
+                                            <p:selectOneMenu id="txtNewSex2" value="#{patientController.current.person.title}" class="form-control" >
+                                                <f:selectItem itemLabel="Select Gender" />
+                                                <f:selectItems value="#{billController.title}" />
+                                            </p:selectOneMenu>
+
+
                                         </div>
                                         <div class="col-md-10">
                                             <p:outputLabel value="Name:" for="txtName" class="form-label" />
-                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" />
+                                            <p:inputText id="txtName" value="#{patientController.current.person.name}" class="w-100 form-control" required="true" requiredMessage="Pleace Enter a name" />
                                         </div>
                                     </div>
                                     <div class="row form-group">

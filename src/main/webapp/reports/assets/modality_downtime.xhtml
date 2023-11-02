@@ -6,32 +6,65 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body class="w-100 border">
+    <h:body>
 
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:composition template="/reports/index.xhtml" class="w-100">
             <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="Asset Register" class="w-100">
-                        <h:panelGrid columns="5" class="w-100 ">
+                <h:form>
+                    <p:panel header="Modality Downtime Report" class="w-100 p-1">
+                        <h:panelGrid columns="5" class="w-100">
+
+                            <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{reportController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
+
+                            <p:spacer/>
+                            <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
+                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{reportController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />       
+
                             <p:outputLabel value="Institution/Branch" for="institutionMenu"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                 
                             </p:selectOneMenu>
+                            <p:spacer/><p:spacer/><p:spacer/>
+                            
+                      
+
+                            <p:outputLabel value="Assrt Sub Category"></p:outputLabel>
+                            <p:selectOneMenu  id="assetSubCategory" required="true" >
+                                <f:selectItem itemLabel="Select Sub Category"/>
+                            </p:selectOneMenu>
+
                             <p:spacer/>
                             
-                            
-                            
-                           <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
-                            
-                            <p:outputLabel value="To Date" for="toDate"></p:outputLabel>
-                            <p:calendar styleClass="dateTimePicker" id="toDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />       
 
-                          
-                        </h:panelGrid><br />
-                        
+                            <p:outputLabel value="Store" ></p:outputLabel>
+                            <p:selectOneMenu  id="store" required="true" >
+                                <f:selectItem itemLabel="Select Store"/>
+                            </p:selectOneMenu>
+
+                            
+                            
+                            <p:outputLabel value="Vendor" for=""></p:outputLabel>
+                            <p:selectOneMenu  id="recievingStoreFromMenu" required="true" >
+                                <f:selectItem itemLabel="Select Vendor"/>
+                            </p:selectOneMenu>
+                            
+                            <p:spacer/>
+
+                            <p:outputLabel value="Asset" for=""></p:outputLabel>
+                            <p:selectOneMenu  id="asset" required="true" >
+                                <f:selectItem itemLabel="Select Asset"/>
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Asset Location" for=""></p:outputLabel>
+                            <p:selectOneMenu  id="assetLocation" required="true" >
+                                <f:selectItem itemLabel="Select Asset Location"/>
+                            </p:selectOneMenu>
+
+                        </h:panelGrid><br/>
+
                         <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
                                      rowKey="#{b}" 
                                      rows="#{searchController.rows}"
@@ -41,72 +74,52 @@
                                      rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
 
                             <f:facet name="header" >
-                                <p:outputLabel value="Asset Warenty expire Reports" />                                
+                                <p:outputLabel value="Modality Downtime Report" />                                
                             </f:facet>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Asset Sub Category" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Asset Serial No" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Location of Asset" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Gross Asset Value" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:spacer/>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="PO No" >
+                                    <p:outputLabel value="Sub Category" >
                                     </p:outputLabel>
                                 </f:facet>
+
+
                             </p:column>
-                            
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="PO Date" >
+                                    <p:outputLabel value="Fixed Asset" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Supplier" >
+                                    <p:outputLabel value="Location" >
                                     </p:outputLabel>
-                                </f:facet>
+                                </f:facet> 
                             </p:column>
-                            
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Warrenty start Date" >
+                                    <p:outputLabel value="Vendor" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
-                             <p:column style="text-align: left;" >
+
+                            <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Warrenty expire Date" >
+                                    <p:outputLabel value="Total Down Time" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Uptime Percentage" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+  
                         </p:dataTable>
 
                     </p:panel>

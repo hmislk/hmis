@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Surgery wise count" >
+                        <h:panelGrid columns="5" >
+                            
+                            <p:outputLabel value="Surgery Name" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromSurgery"
+                                value=""
+                                filter="true"
+                                >
+                                <f:selectItems value="#{procedureController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
+                                <p:ajax process="cmdFromSurgery" update="cmdFromSurgery" ></p:ajax>
+                            </p:selectOneMenu>
+                            <p:spacer width="40" height="1"></p:spacer>
+                            
+                            
+                            <p:outputLabel value="Surgery Category" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdSurgeryCategory"
+                                value="" 
+                                filter="true">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{procedureController.items}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Date From" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Date To" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+
+                            <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Download"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
+                                     paginator="true"
+                                     rows="10"
+                                     
+                                     >
+                            <p:subTable var="item" value="#{catReport.items}">
+                                <f:facet name="header">
+                                     <h:outputText value="Total for #{catReport.category} : #{catReport.total}" />
+                                </f:facet>
+
+                                <p:column headerText="Test Name">
+                                    <h:outputText value="#{item.testName}" />
+                                </p:column>
+
+                                <p:column headerText="Test Count">
+                                    <h:outputText value="#{item.testCount}" />
+                                </p:column>
+
+                               
+                            </p:subTable>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

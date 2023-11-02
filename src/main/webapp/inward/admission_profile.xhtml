@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://java.sun.com/jsf/composite/inward"
+                xmlns:bi="http://java.sun.com/jsf/composite/bill">
+
+    <ui:define name="content">
+        <h:form id="form">
+
+            <div class="row" >
+                <div class="col-5" >
+                    <p:panel header="Patient Details" style="height: 20vh;" >
+                        
+                    </p:panel>
+                    <!-- Patient Details Section -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa fa-user"></i> Patient Details
+                        </div>
+                        <div class="card-body">
+                            <!-- Insert patient details here, e.g. #{admissionController.current.patient} -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-5" >
+                    <!-- Admission & Discharge Details Section -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa fa-bed"></i> Admission &amp; Discharge Details
+                        </div>
+                        <div class="card-body">
+                            <!-- Insert Admission & Discharge details here, e.g. #{admissionController.current} -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2" >
+                    <!-- Action Buttons Section -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <i class="fa fa-tasks"></i> Actions
+                        </div>
+                        <div class="card-body">
+                            <p:commandButton 
+                                value="Edit Admission" 
+                                action="#{admissionController.navigateToEditAdmission}" icon="fa fa-edit"/>
+                            <p:commandButton rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" value="Interim Bill" icon="fa fa-file"/>
+                            <p:commandButton value="Estimated Bill" icon="fa fa-calculator"/>
+                            <p:commandButton rendered="#{admissionController.current.discharged}" value="Final Bill" icon="fa fa-file"/>
+                            <p:commandButton value="Add Services" icon="fa fa-plus"/>
+                            <p:commandButton value="Add Medicines" icon="fa fa-plus"/>
+                            <p:commandButton value="Add Items" icon="fa fa-plus"/>
+                            <p:commandButton value="Add Timed Services" icon="fa fa-plus"/>
+                            <p:commandButton value="Add Professional Charges" icon="fa fa-plus"/>
+                            <p:commandButton value="Add Estimated Professional Charges" icon="fa fa-plus"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+

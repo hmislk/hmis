@@ -14,7 +14,7 @@
 
 
 
-                    <p:panel header="Investigation Wise Report" >
+                    <p:panel header="Peak Hour Statistic Report" >
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="From (Billed) Date" >
                             </p:outputLabel>
@@ -53,7 +53,7 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                <f:selectItems value="#{departmentController.listAllDepatrments()}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}"></f:selectItems>
@@ -71,9 +71,12 @@
                                 <f:selectItem itemLabel="Invoice Time"/>
                             </p:selectOneMenu>
                             
-                            <p:outputLabel value="CC Name"></p:outputLabel>
+                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItem itemLabel="CC name"/>
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
                             
                             <p:spacer></p:spacer>
@@ -89,6 +92,7 @@
                                                itemValue="#{r}"
                                               />
                             </p:selectOneMenu>
+                            
 
                             <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>

@@ -1,0 +1,211 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form >
+                    <p:panel header="Leave Summery Report" >
+                        <p:panelGrid columns="4" class="w-100 my-2 " >
+                            <p:outputLabel value=" Date From" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=" w-100" ></p:datePicker>
+                            <p:outputLabel value=" Date To" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                          class=""></p:datePicker>
+
+                            <p:outputLabel value="Institution" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
+                                value="#{reportController.fromInstitution}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromDepartment"
+                                value="#{reportController.fromDepartment}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff Roster " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+                        </p:panelGrid>
+
+                        <p:panelGrid columns="10">
+                            <p:outputLabel value="All">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox />
+
+
+                            <p:outputLabel value="Leave Payment">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox  />
+
+                            <p:outputLabel value="Annual Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox />
+
+
+                            <p:outputLabel value="Casual Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox  />
+
+                            <p:outputLabel value="No pay Opnly">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox />
+
+                            <p:outputLabel value="Duty Leave Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox  />
+
+                            <p:outputLabel value="Medical Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox />
+
+                            <p:outputLabel value="Maternity 1 Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox  />
+
+                            <p:outputLabel value="Maternity 2 Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox  />
+
+                            <p:outputLabel value="Lieu Leave Only">
+                            </p:outputLabel>
+                            <p:selectBooleanCheckbox  />
+                        </p:panelGrid>
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="m-2" ajax="false" value="Process" >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Excel"
+                                             >
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Print"
+                                             >
+                            </p:commandButton>
+                        </div>
+
+
+                        <p:dataTable id="tbl" value="" 
+                                     paginator="true"
+                                     rows="10">
+
+                            <p:column headerText="No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Staff No">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText=" Name">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Branch">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Department ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Roster">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Annual E">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Annual U">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Annual B">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Casual E">
+                                <h:outputText value="" />
+                            </p:column>
+
+                            <p:column headerText="Casual U">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Casual B">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Nopay E">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Nopay U">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Nopay B">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Duty Leave E">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Duty Leave U">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Duty Leave B">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Medical E">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Medical B">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Maternity 1 E">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
