@@ -525,6 +525,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/employee_to_retired";
     }
+    
+    public String navigateToStaffShiftReport() {
+
+        return "/reports/HRReports/staff_shift_report";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
