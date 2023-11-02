@@ -9,8 +9,8 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Leave Report" >
-                        <p:panelGrid columns="4" class="w-100" >
+                    <p:panel header="Leave Report Summery" >
+                        <p:panelGrid columns="4" class="w-100 my-2 " >
                             <p:outputLabel value=" Date From" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
@@ -22,10 +22,24 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=""></p:datePicker>
 
-                            <p:outputLabel value="Department" >
+                            <p:outputLabel value="Institution" >
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromDepartment"
+                                value="#{reportController.fromInstitution}" 
+                                filter="true"
+                                class="w-100 ">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdFromInstitution"
                                 value="#{reportController.fromDepartment}" 
                                 filter="true"
                                 class="w-100 ">
@@ -70,10 +84,32 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
+
+                            <p:outputLabel value="Staff Roster " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Select Day Type " >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
                         </p:panelGrid>
-                        
+
                         <div class="d-flex align-items-center">
-                             <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
                             </p:commandButton>
                             <p:commandButton class="m-2" ajax="false" value="Download"
                                              action="#{reportController.downloadLabTestCount}">
@@ -84,9 +120,7 @@
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
                                      rows="10">
-                            <p:column headerText="Form No">
-                                <h:outputText value="" />
-                            </p:column>
+
                             <p:column headerText="Emp No">
                                 <h:outputText value="" />
                             </p:column>
@@ -108,27 +142,11 @@
                             <p:column headerText="leave type">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift Type">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Created Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Leave Date">
-                                <h:outputText value="" />
-                            </p:column>
+
                             <p:column headerText="Leave Qty">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Comments">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Created by">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Nopay For without Attendance">
-                                <h:outputText value="" />
-                            </p:column>
+
 
 
                         </p:dataTable>
