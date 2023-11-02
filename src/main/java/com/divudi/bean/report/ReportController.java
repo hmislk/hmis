@@ -336,7 +336,7 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
 
-        return "/reports/asset_register";
+        return "/reports/assets/asset_register";
     }
 
     public String navigateToLabReportsTestCount() {
@@ -400,42 +400,50 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
 
-        return "/reports/po_status_report";
+        return "/reports/assets/po_status_report";
     }
 
     public String navigateToEmployeeAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/employee_asset_issue";
+        return "/reports/assets/employee_asset_issue";
     }
 
     public String navigateToFixedAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/fixed_asset_issue";
+        return "/reports/assets/fixed_asset_issue";
     }
 
     public String navigateToAssetWarentyExpireReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/asset_warranty_expire_report";
+        return "/reports/assets/asset_warranty_expire_report";
     }
 
     public String navigateToAssetGrnReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/asset_grn_report";
+        return "/reports/assets/asset_grn_report";
     }
 
     public String navigateToAssetTransferReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assest_transfer_report";
+        return "/reports/assets/assest_transfer_report";
+
+    }
+    
+    public String navigateToAssetAmcExpiryReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assets/assest_amc_expiry_report";
 
     }
 

@@ -17,14 +17,14 @@
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                                          
+
                             <p:spacer width="20"></p:spacer>
-                            
+
                             <p:outputLabel value="To Date" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            
+
                             <p:outputLabel value="Institution/Branch" >
                             </p:outputLabel>
                             <p:selectOneMenu 
@@ -55,22 +55,28 @@
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}"></f:selectItems>
                             </p:selectOneMenu>
-                            
-                             <p:outputLabel value="Ward"/>
+
+                            <p:outputLabel value="Ward"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
                                 <f:selectItem itemLabel="Select Ward"/>
                                 <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                             </p:selectOneMenu>
-                             
-                              <p:outputLabel value="Type"/>
+
+                            <p:spacer width="20"></p:spacer><!-- comment -->
+
+                            <p:outputLabel value="Type"/>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}">
                                 <f:selectItem itemLabel="Select Type"/>
                             </p:selectOneMenu>
 
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+
                         </h:panelGrid>
 
-                        
+
 
 
                         <p:dataTable value="null" var="c">
@@ -104,25 +110,52 @@
                             <p:column headerText="DAMA" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Deaths" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
 
                             <p:column headerText="Others" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Total Percent" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Bed Occupancy Rate" >
                                 <h:outputText value="null" ></h:outputText>
                             </p:column>
-                            
+
                         </p:dataTable>
+
+                        <p:dataTable>
+                            <p:column headerText="Id" >
+                                <h:outputText value="B" />
+                            </p:column>
+                            <p:column headerText="Year">
+                                <h:outputText value="D" />
+                            </p:column>
+                            <p:column headerText="Brand">
+                                <h:outputText value="T" />
+                            </p:column>
+                            <p:column headerText="Color" >
+                                <h:outputText value="F" />
+                            </p:column>
+                            <p:summaryRow>
+                                <p:column colspan="3" style="text-align:right">
+                                    <h:outputText value="Total:" />
+                                </p:column>
+                                <p:column colspan="3" style="text-align:right">
+                                    <h:outputText value="Total:" />
+                                </p:column><!-- comment -->
+                                <p:column colspan="3" style="text-align:right">
+                                    <h:outputText value="Total:" />
+                                </p:column>
+                            </p:summaryRow>
+                        </p:dataTable>
+
 
                     </p:panel>
 
