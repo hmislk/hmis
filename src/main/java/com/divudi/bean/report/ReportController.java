@@ -530,6 +530,12 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/staff_shift_report";
     }
+    
+    public String navigateToRosterTimeAndVerifyTime() {
+
+        return "/reports/HRReports/rosterTabel_verify_time";
+    }
+
 
     public Department getFromDepartment() {
         return fromDepartment;
