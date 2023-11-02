@@ -18,6 +18,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -341,6 +342,9 @@ public class Bill implements Serializable {
     @Transient
     private String billTemplate;
 
+    @Transient
+    private String ageAtBilledDate;
+
     private void generateBillPrintFromBillTemplate() {
         billPrint = "";
         if (billTemplate == null) {
@@ -472,12 +476,12 @@ public class Bill implements Serializable {
             billPrint = billPrint.replaceAll("\\{institution\\_address\\}", safeReplace(this.getInstitution().getAddress()));
             billPrint = billPrint.replaceAll("\\{institution\\_phone\\}", safeReplace(this.getInstitution().getPhone()));
             billPrint = billPrint.replaceAll("\\{institution\\_email\\}", safeReplace(this.getInstitution().getEmail()));
-            billPrint = billPrint.replaceAll("\\{institution\\_website\\}",safeReplace( this.getInstitution().getWeb()));
+            billPrint = billPrint.replaceAll("\\{institution\\_website\\}", safeReplace(this.getInstitution().getWeb()));
         }
 
         if (this.getDepartment() != null) {
             billPrint = billPrint.replaceAll("\\{department\\_name\\}", safeReplace(this.getDepartment().getName()));
-            billPrint = billPrint.replaceAll("\\{department\\_address\\}",safeReplace( this.getDepartment().getAddress()));
+            billPrint = billPrint.replaceAll("\\{department\\_address\\}", safeReplace(this.getDepartment().getAddress()));
             billPrint = billPrint.replaceAll("\\{department\\_phone\\}", safeReplace(this.getDepartment().getTelephone1()));
             billPrint = billPrint.replaceAll("\\{department\\_email\\}", safeReplace(this.getDepartment().getEmail()));
         }
@@ -515,7 +519,7 @@ public class Bill implements Serializable {
         }
 
         if (this.getCreater() != null) {
-            billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_username\\}",safeReplace( this.getCreater().getName()));
+            billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_username\\}", safeReplace(this.getCreater().getName()));
 
             if (this.getCreater().getWebUserPerson() != null) {
                 billPrint = billPrint.replaceAll("\\{bill\\_raised\\_user\\_name\\}", safeReplace(this.getCreater().getWebUserPerson().getName()));
@@ -2081,6 +2085,47 @@ public class Bill implements Serializable {
 
     public void setBillTemplate(String billTemplate) {
         this.billTemplate = billTemplate;
+    }
+
+    public String getAgeAtBilledDate() {
+        if (patient == null || patient.getPerson() == null) {
+            ageAtBilledDate = "";
+            return ageAtBilledDate;
+        }
+
+        Date ptDob = patient.getPerson().getDob();
+        if (this.billDate == null) {
+            billDate = new Date();
+        }
+
+        Calendar calDob = Calendar.getInstance();
+        calDob.setTime(ptDob);
+        Calendar calBill = Calendar.getInstance();
+        calBill.setTime(billDate);
+
+        int yearDiff = calBill.get(Calendar.YEAR) - calDob.get(Calendar.YEAR);
+        int monthDiff = calBill.get(Calendar.MONTH) - calDob.get(Calendar.MONTH);
+        int dayDiff = calBill.get(Calendar.DAY_OF_MONTH) - calDob.get(Calendar.DAY_OF_MONTH);
+
+        if (dayDiff < 0) {
+            monthDiff--;
+            dayDiff += calBill.getActualMaximum(Calendar.DAY_OF_MONTH);
+        }
+
+        if (monthDiff < 0) {
+            yearDiff--;
+            monthDiff += 12;
+        }
+
+        if (yearDiff > 5) {
+            ageAtBilledDate = yearDiff + " years";
+        } else if (yearDiff >= 1) {
+            ageAtBilledDate = yearDiff + " years and " + monthDiff + " months";
+        } else {
+            ageAtBilledDate = monthDiff * 30 + dayDiff + " days";
+        }
+
+        return ageAtBilledDate;
     }
 
 }

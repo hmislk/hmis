@@ -202,7 +202,7 @@ public class PatientController implements Serializable {
     private List<BillItem> billItems;
     private PaymentMethodData paymentMethodData;
 
-    boolean printPreview = false;
+    private boolean printPreview = false;
 
     public void downloadAllPatients() {
         List<Patient> downloadingPatients;
@@ -523,6 +523,7 @@ public class PatientController implements Serializable {
         paymentMethodData = new PaymentMethodData();
         bill = new Bill();
         billItem = new BillItem();
+        billItems = new ArrayList<>();
         return "/payments/patient/receive";
     }
 
@@ -562,12 +563,18 @@ public class PatientController implements Serializable {
         }
         return "/opd/opd_bill";
     }
+    
+    public String navigateToSearchPatients() {
+        setSearchedPatients(null);
+        return "/opd/patient_search";
+    }
 
     public void settlePatientDepositReceive() {
         Date startTime = new Date();
         Date fromDate = null;
         Date toDate = null;
-        settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDepositReturn,  BillNumberSuffix.PD);
+        settleBill(BillType.PatientPaymentReceiveBill, HistoryType.PatientDeposit, BillNumberSuffix.PD, current);
+        printPreview = true;
     }
 
     private boolean errorCheck() {
@@ -577,7 +584,7 @@ public class PatientController implements Serializable {
         return false;
     }
 
-    public void settleBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix) {
+    public void settleBill(BillType billType, HistoryType historyType, BillNumberSuffix billNumberSuffix, Patient patient) {
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a Payment Method");
             return;
@@ -586,18 +593,17 @@ public class PatientController implements Serializable {
             JsfUtil.addErrorMessage("Please enter all relavent Payment Method Details");
             return;
         }
-        
 
-        saveBill(billType, billNumberSuffix);
+        saveBill(billType, billNumberSuffix, patient);
         billBeanController.setPaymentMethodData(getBill(), getBill().getPaymentMethod(), getPaymentMethodData());
         addToBill();
         saveBillItem();
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
-        if (getCurrent().getRunningBalance() == null) {
-            getCurrent().setRunningBalance(getBill().getNetTotal());
+        if (patient.getRunningBalance() == null) {
+            patient.setRunningBalance(getBill().getNetTotal());
         } else {
-            getCurrent().setRunningBalance(getCurrent().getRunningBalance() + getBill().getNetTotal());
+            patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
         }
 
         UtilityController.addSuccessMessage("Bill Saved");
@@ -614,7 +620,6 @@ public class PatientController implements Serializable {
         getBillItem().setQty(1.0);
         getBillItem().setRate(getBill().getNetTotal());
         getBillItems().add(getBillItem());
-        billItem = null;
     }
 
     private void saveBillItem() {
@@ -627,10 +632,12 @@ public class PatientController implements Serializable {
         }
     }
 
-    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix) {
+    private void saveBill(BillType billType, BillNumberSuffix billNumberSuffix, Patient patient) {
         getBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setDeptId(getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(), billType, BillClassType.BilledBill, billNumberSuffix));
         getBill().setBillType(billType);
+        
+        getBill().setPatient(patient);
 
         getBill().setCreatedAt(new Date());
         getBill().setCreater(sessionController.getLoggedUser());
@@ -2178,11 +2185,22 @@ public class PatientController implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
+        if (billItems == null) {
+            billItems = new ArrayList<>();
+        }
         return billItems;
     }
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public boolean isPrintPreview() {
+        return printPreview;
+    }
+
+    public void setPrintPreview(boolean printPreview) {
+        this.printPreview = printPreview;
     }
 
     /**
