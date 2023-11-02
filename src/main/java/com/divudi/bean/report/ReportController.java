@@ -91,6 +91,12 @@ public class ReportController implements Serializable {
     private List<Bill> bills;
     private List<ItemCount> reportLabTestCounts;
     private List<CategoryCount> reportList;
+    
+    private Date warrentyStartDate;
+    private Date warrentyEndDate;
+    
+    private Date amcStartDate;
+    private Date amcEndDate;
 
     public ReportController() {
     }
@@ -447,6 +453,13 @@ public class ReportController implements Serializable {
 
     }
 
+    public String navigateToAssetAmcReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assets/amc_report";
+
+    }
     public String navigateToTurnAroundTimeHourly() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -560,6 +573,8 @@ public class ReportController implements Serializable {
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
+    
+    
 
     public Date getToDate() {
         if (toDate == null) {
@@ -750,6 +765,52 @@ public class ReportController implements Serializable {
 
     public void setCurrentSpeciality(Speciality currentSpeciality) {
         this.currentSpeciality = currentSpeciality;
+    }
+
+    public Date getWarrentyStartDate() {
+        if (warrentyStartDate == null) {
+            warrentyStartDate = CommonFunctions.getEndOfDay();
+        }
+        return warrentyStartDate;
+    }
+
+    public void setWarrentyStartDate(Date warrentyStartDate) {
+        this.warrentyStartDate = warrentyStartDate;
+    }
+
+    public Date getWarrentyEndDate() {
+        if (warrentyEndDate == null) {
+            warrentyEndDate = CommonFunctions.getEndOfMonth(toDate);
+        }
+      
+        return warrentyEndDate;
+    }
+
+    public void setWarrentyEndDate(Date warrentyEndDate) {
+        this.warrentyEndDate = warrentyEndDate;
+    }
+
+    public Date getAmcStartDate() {
+        if (amcStartDate == null) {
+            amcStartDate = CommonFunctions.getEndOfDay();
+        }
+        return amcStartDate;
+    }
+
+    public void setAmcStartDate(Date amcStartDate) {
+        this.amcStartDate = amcStartDate;
+    }
+
+    public Date getAmcEndDate() {
+        if (amcEndDate == null) {
+            amcEndDate = CommonFunctions.getEndOfMonth(toDate);
+        }
+      
+        return amcEndDate;
+    }
+
+    public void setAmcEndDate(Date amcEndDate) {
+        this.amcEndDate = amcEndDate;
     }
 
 }
