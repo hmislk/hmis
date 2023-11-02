@@ -176,14 +176,15 @@
             <h:outputStylesheet library="css" name="/printing/fivefiveprinting.css" ></h:outputStylesheet>
 
 
+            <h:form >
+                <p:commandButton value="Print Bill" icon="pi pi-print" ajax="false">
+                    <p:printer target="billPanel"></p:printer>
+                </p:commandButton>
+                <p:commandButton ajax="false" icon="" value="Patient Lookup"
+                                 action="#{patientController.navigateToSearchPatients}"></p:commandButton>
+            </h:form>
 
 
-            <p:commandButton value="Print Bill" icon="pi pi-print" ajax="false">
-                <p:printer target="billPanel"></p:printer>
-            </p:commandButton>
-
-            <p:commandButton ajax="false" icon="" value="Patient Lookup"
-                             action="#{patientController.navigateToSearchPatients}"></p:commandButton>
 
 
             <h:panelGroup id="billPanel" class="bill" layout="block">

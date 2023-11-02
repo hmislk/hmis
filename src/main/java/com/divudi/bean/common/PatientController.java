@@ -524,6 +524,7 @@ public class PatientController implements Serializable {
         bill = new Bill();
         billItem = new BillItem();
         billItems = new ArrayList<>();
+        printPreview = false;
         return "/payments/patient/receive";
     }
 
@@ -600,11 +601,15 @@ public class PatientController implements Serializable {
         saveBillItem();
         billFacade.edit(getBill());
         //TODO: Add Patient Balance History
+        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
         if (patient.getRunningBalance() == null) {
+            System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
             patient.setRunningBalance(getBill().getNetTotal());
         } else {
+            System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
             patient.setRunningBalance(patient.getRunningBalance() + getBill().getNetTotal());
         }
+        getFacade().edit(patient);
 
         UtilityController.addSuccessMessage("Bill Saved");
         printPreview = true;
