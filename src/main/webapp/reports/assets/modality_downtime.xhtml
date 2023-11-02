@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Pretentive Maintainance Report" class="w-100 p-1">
+                    <p:panel header="Modality Downtime Report" class="w-100 p-1">
                         <h:panelGrid columns="5" class="w-100">
 
                             <p:outputLabel value="From Date" for="fromDate"></p:outputLabel>
@@ -55,7 +55,7 @@
 
                             <p:outputLabel value="Asset" for=""></p:outputLabel>
                             <p:selectOneMenu  id="asset" required="true" >
-                                <f:selectItem itemLabel="Select Vendor"/>
+                                <f:selectItem itemLabel="Select Asset"/>
                             </p:selectOneMenu>
                             
                             <p:outputLabel value="Asset Location" for=""></p:outputLabel>
@@ -74,12 +74,12 @@
                                      rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
 
                             <f:facet name="header" >
-                                <p:outputLabel value="Pretentive Maintainance Report" />                                
+                                <p:outputLabel value="Modality Downtime Report" />                                
                             </f:facet>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Asset Sub Category" >
+                                    <p:outputLabel value="Sub Category" >
                                     </p:outputLabel>
                                 </f:facet>
 
@@ -87,14 +87,14 @@
                             </p:column>
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Asset" >
+                                    <p:outputLabel value="Fixed Asset" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Asset Location" >
+                                    <p:outputLabel value="Location" >
                                     </p:outputLabel>
                                 </f:facet> 
                             </p:column>
@@ -108,35 +108,18 @@
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Last Scheduled Date" >
+                                    <p:outputLabel value="Total Down Time" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Maintatinance Complete Date" >
+                                    <p:outputLabel value="Uptime Percentage" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Next Schedule Date" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Report Remarks" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                           
-
-                            
+  
                         </p:dataTable>
 
                     </p:panel>
