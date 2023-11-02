@@ -500,6 +500,12 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/leave_report_summery";
     }
+    
+     public String navigateToLateLeaveDetails() {
+
+        return "/reports/HRReports/late_leave_details";
+    }
+
 
     public Department getFromDepartment() {
         return fromDepartment;
