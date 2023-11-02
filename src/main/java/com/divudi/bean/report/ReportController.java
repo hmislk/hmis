@@ -561,6 +561,10 @@ public class ReportController implements Serializable {
         return "/reports/HRReports/verified_report";
     }
     
+    public String navigateToHeadCountReport() {
+
+        return "/reports/HRReports/head_count";
+    }
     public String navigateToFingerPrintRecordByLogged() {
 
         return "/reports/HRReports/fingerprint_record_by_logged";
