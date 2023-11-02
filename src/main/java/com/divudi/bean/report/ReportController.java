@@ -505,6 +505,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/late_leave_details";
     }
+     
+      public String navigateToLeaveSummeryReport() {
+
+        return "/reports/HRReports/leave_summery_report";
+    }
 
     public String navigateToDepartmentReports() {
 
