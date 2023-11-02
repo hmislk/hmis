@@ -120,7 +120,7 @@
                                                 <p:commandButton   class="w-100"  ajax="false" value="1. Department Report" action="#{reportController.navigateToDepartmentReports()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="2. Employee Detail" action="#{reportController.navigateToEmployeeDetails()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="3. Employee To Retired Details" action="#{reportController.navigateToEmployeeToRetired()}" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="4. Employee End of Probation" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="4. Employee End of Probation" action="#{reportController.navigateToEmployeeEndofProbation()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="5. Staff Detail" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="6. Holiday Report" />
 
@@ -132,10 +132,10 @@
                                         <p:tab title="Attendance">
                                             <div class="d-grid gap-2">
 
-                                                <p:commandButton   class="w-100"  ajax="false" value="1. Attandance Report" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="2. Late In and Early Out" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="3. Staff Shift Detail By Report" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="4. Verified Report" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="1. Attandance Report" action="#{reportController.navigateToAttendanceReport()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="2. Late In and Early Out" action="#{reportController.navigateToLateInAndEarlyOut()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="3. Staff Shift Detail By Report" action="#{reportController.navigateToStaffShiftDetailsByStaff()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="4. Verified Report" action="#{reportController.navigateToVerifiedReport()}" />
 
                                             </div>
                                         </p:tab>

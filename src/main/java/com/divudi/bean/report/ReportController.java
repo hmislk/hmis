@@ -535,6 +535,31 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/rosterTabel_verify_time";
     }
+    
+    public String navigateToEmployeeEndofProbation() {
+
+        return "/reports/HRReports/employee_end_of_probation";
+    }
+    
+    public String navigateToAttendanceReport() {
+
+        return "/reports/HRReports/attendance_report";
+    }
+    
+    public String navigateToLateInAndEarlyOut() {
+
+        return "/reports/HRReports/late_in_and_early_out";
+    }
+    
+    public String navigateToStaffShiftDetailsByStaff() {
+
+        return "/reports/HRReports/staff_shift_details_by_staff";
+    }
+    
+    public String navigateToVerifiedReport() {
+
+        return "/reports/HRReports/verified_report";
+    }
 
 
     public Department getFromDepartment() {
