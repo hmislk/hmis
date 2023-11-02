@@ -198,13 +198,11 @@ public class OpdBillController implements Serializable {
     private Institution institution;
     private Category category;
     private SearchKeyword searchKeyword;
-    
-    
+
     private Institution fromInstitution;
     private Institution toInstitution;
     private Department fromDepartment;
     private Department toDepartment;
-    
 
     //Print Last Bill
     private Bill bill;
@@ -1292,6 +1290,15 @@ public class OpdBillController implements Serializable {
 
             createPaymentsForBills(b, getLstBillEntries());
 
+            if (paymentMethod == PaymentMethod.PatientDeposit) {
+                if (getPatient().getRunningBalance() != null) {
+                    getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
+                } else {
+                    getPatient().setRunningBalance(0.0 - netTotal);
+                }
+                getPatientFacade().edit(getPatient());
+            }
+
             getBillFacade().edit(b);
             getBills().add(b);
 
@@ -1618,6 +1625,27 @@ public class OpdBillController implements Serializable {
 
         if (getPaymentSchemeController().errorCheckPaymentMethod(paymentMethod, getPaymentMethodData())) {
             return true;
+        }
+
+        if (paymentMethod == PaymentMethod.PatientDeposit) {
+            if (!getPatient().getHasAnAccount()) {
+                JsfUtil.addErrorMessage("Patient has not account. Can't proceed with Patient Deposits");
+                return true;
+            }
+            double creditLimitAbsolute = Math.abs(getPatient().getCreditLimit());
+            double runningBalance;
+            if (getPatient().getRunningBalance() != null) {
+                runningBalance = getPatient().getRunningBalance();
+            } else {
+                runningBalance = 0.0;
+            }
+            double availableForPurchase = runningBalance + creditLimitAbsolute;
+
+            if (netTotal > availableForPurchase) {
+                JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                return true;
+            }
+
         }
 
         if (paymentMethod != null && paymentMethod == PaymentMethod.Credit) {
@@ -2797,7 +2825,7 @@ public class OpdBillController implements Serializable {
     public void setSmsFacade(SmsFacade SmsFacade) {
         this.SmsFacade = SmsFacade;
     }
-    
+
     public int getOpdSummaryIndex() {
         return opdSummaryIndex;
     }
