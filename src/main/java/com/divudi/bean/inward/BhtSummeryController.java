@@ -691,8 +691,6 @@ public class BhtSummeryController implements Serializable {
         for (BillItem bf : listBillItems) {
             double value = bf.getGrossValue() + bf.getMarginValue();
             double dis = (value * discountPercent) / 100;
-            System.err.println("//////////////////");
-            System.err.println("1 Fee Gross Value " + bf.getGrossValue());
             disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -733,8 +731,6 @@ public class BhtSummeryController implements Serializable {
         for (BillItem bf : listBillItems) {
             double value = bf.getGrossValue() + bf.getMarginValue();
             double dis = (value * pm.getDiscountPercent()) / 100;
-            System.err.println("//////////////////");
-            System.err.println("Bill No" + bf.getBill().getDeptId());
 //            disTot += dis;
             bf.setDiscount(dis);
             bf.setNetValue(value - dis);
@@ -1211,13 +1207,6 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
-        //For update Printing room
-        setCurrent(getBillFacade().findByField("id", getCurrent().getId().toString(), false));
-
-        ////System.out.println("1." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getName());
-        ////System.out.println("2." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getRoom().getName());
-        ////System.out.println("3." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getName());
-        ////System.out.println("4." + getCurrent().getPatientEncounter().getCurrentPatientRoom().getPrintRoomFacilityCharge().getRoom().getName());
         UtilityController.addSuccessMessage("Bill Saved");
 
         printPreview = true;
@@ -1276,7 +1265,7 @@ public class BhtSummeryController implements Serializable {
         String j = "select i from Item i where i.inwardChargeType=:ict and i.retired=false order by i.id desc";
         Map m = new HashMap();
         m.put("ict", InwardChargeType.VAT);
-        Item i = getItemFacade().findFirstBySQL(j, m);
+        Item i = getItemFacade().findFirstByJpql(j, m);
         
         
         if(i==null){
@@ -1401,7 +1390,7 @@ public class BhtSummeryController implements Serializable {
             getIntrimPrintController().getCurrentBill().getBillItems().add(billItem);
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Intrim Bill/Inprint(/faces/inward/inward_bill_intrim.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Interim Bill/Inprint(/faces/inward/inward_bill_intrim.xhtml)");
 
         return "inward_bill_intrim_print";
     }
@@ -1501,7 +1490,7 @@ public class BhtSummeryController implements Serializable {
         createPatientRooms();
         updateTotal();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Intrim Bill/Tosettle(/faces/inward/inward_bill_intrim.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "(Billing/Interim Bill/Tosettle(/faces/inward/inward_bill_intrim.xhtml)");
 
         return "inward_bill_final";
 
@@ -1656,7 +1645,7 @@ public class BhtSummeryController implements Serializable {
             date = null;
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Intrim Bill(/faces/inward/inward_bill_intrim.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Billing/Interim Bill(/faces/inward/inward_bill_intrim.xhtml)");
     }
 
     public void createTablesWithEstimatedProfessionalFees() {
@@ -1765,6 +1754,12 @@ public class BhtSummeryController implements Serializable {
     public void clear() {
         patientEncounter = null;
         makeNull();
+    }
+    
+    public String navigateToIntrimBill() {
+        patientEncounter = null;
+        makeNull();
+        return "/inward/inward_bill_intrim";
     }
     
     public String toIntrimBillclear() {

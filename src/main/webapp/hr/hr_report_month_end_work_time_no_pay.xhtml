@@ -21,9 +21,9 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="Institution : "/>
                             <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
@@ -39,7 +39,7 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportNoPay()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_no_pay"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

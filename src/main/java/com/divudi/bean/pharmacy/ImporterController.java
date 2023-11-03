@@ -127,7 +127,7 @@ public class ImporterController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Importer order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

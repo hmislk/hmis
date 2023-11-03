@@ -8,49 +8,61 @@
 
     <ui:define name="content">
 
-        <h:form>
-            <p:panel header="Cannel Management" >
+        <div class="row">
+            <div class="col-3">
+                <h:form>
+                    <p:panel header="Channel Management" rendered="true" >
+                        <p:accordionPanel activeIndex="#{investigationCategoryController.manageItemIndex}">
+                            <p:ajax process="@this" ></p:ajax>
+                            <p:tab title="Agency">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton value="Agencies" action="/channel/institutions" ajax="false" class=" w-100"  ></p:commandButton>
+                                    <p:commandButton value="Agenciey Credit Limit Update" action="/channel/institutions_udate_credit_limit" ajax="false" class="w-100" ></p:commandButton>
+                                    <p:commandButton value="Agenciey Credit Limit Update(Bulk)" action="/channel/channel_agent_credit_bulk_update" ajax="false" class=" w-100" ></p:commandButton>
+                                    <p:commandButton value="Add Channel Book to Agency" ajax="false" action="/channel/channel_agent_referece_book" class=" w-100" />
+                                </div>
+                            </p:tab>
 
-                <p:panelGrid columns="3" >
+                            <p:tab title="Staff">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton value="Manage Specialities" ajax="false"
+                                                     action="/channel/maintanance/doctorSpeciality/List" class="w-100" ></p:commandButton> 
+                                    <p:commandButton value="Manage Consultants" ajax="false"
+                                                     action="#{navigationController.navigateToAdminDoctorConsultant()}" class="w-100" ></p:commandButton>
+                                </div>
+                            </p:tab>                      
 
-                    <p:panel header="Agency" >
-                        <p:panelGrid columns="1" >
-                            <p:commandButton value="Agencies" action="/channel/institutions" ajax="false" ></p:commandButton>
-                            <p:commandButton value="Agenciey Credit Limit Update" action="/channel/institutions_udate_credit_limit" ajax="false" ></p:commandButton>
-                            <p:commandButton value="Agenciey Credit Limit Update(Bulk)" action="/channel/channel_agent_credit_bulk_update" ajax="false" ></p:commandButton>
-                            <p:commandButton value="Add Channel Book to Agency" ajax="false" action="/channel/channel_agent_referece_book" />
-                        </p:panelGrid>
-                    </p:panel>
+                            <p:tab title="Channeling">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton value="Editing Appoinment Count" action="/channel/channel_booking_editing_appoinment_count" ajax="false" class="w-100" ></p:commandButton>
+                                </div>
+                            </p:tab>
 
-                    <p:panel header="Staff" >
-                        <p:panelGrid columns="1" >
-                            <p:commandButton value="Manage Specialities" ajax="false"
-                                             action="/channel/maintanance/doctorSpeciality/List" ></p:commandButton>
-                            <p:commandButton value="Manage Consultants" ajax="false"
-                                             action="/admin_doctor_consultant" ></p:commandButton>
-                        </p:panelGrid>
-                    </p:panel>
-                    
-                    <p:panel header="Channelling" >
-                        <p:panelGrid columns="1" >
-                            <p:commandButton value="Editing Appoinment Count" action="/channel/channel_booking_editing_appoinment_count" ajax="false" ></p:commandButton>
-                        </p:panelGrid>
-                    </p:panel>
-                    
-                    <p:panel header="Consultants" >
-                        <p:panelGrid columns="1" >
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Add Channelling Consultants to Institutions" action="/channel/person_institution"/>
-                        </p:panelGrid>
-                    </p:panel>
-                    <p:panel header="Shedule" >
-                        <p:panelGrid columns="1" >
-                            <p:commandButton  styleClass="linkButton" ajax="false" value="Channel Fee Update" action="/channel/channel_fee_change" actionListener="#{sheduleController.prepareAddFeeChange}" />
-                        </p:panelGrid>
-                    </p:panel>
-                </p:panelGrid>
-            </p:panel>
 
-        </h:form>
+                            <p:tab title="Consultants">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton  ajax="false" value="Add Channelling Consultants to Institutions" class="w-100" action="#{navigationController.navigateToPersonInstitution()}"/>
+                                </div>
+                            </p:tab>
+
+                            <p:tab title="Schedule">
+                                <div class="d-grid gap-2">
+                                    <p:commandButton class="w-100" ajax="false" value="Channel Fee Update" action="/channel/channel_fee_change" actionListener="#{sheduleController.prepareAddFeeChange}" />
+                                </div>
+                            </p:tab>
+                        </p:accordionPanel>
+
+                    </p:panel>
+                </h:form>
+            </div>
+
+            <div class="col-9">
+                <ui:insert name="subcontent">
+
+                </ui:insert>
+            </div>
+        </div>
+
     </ui:define>
 
 

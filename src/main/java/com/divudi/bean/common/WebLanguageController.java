@@ -39,9 +39,13 @@ public class WebLanguageController implements Serializable {
     @EJB
     private WebLanguageFacade ejbFacade;
     private WebLanguage selected;
+    private WebLanguage displayLanguage;
     private List<WebLanguage> items = null;
     String page;
 
+    
+    
+    
     public String toHome() {
         page = "/index";
         return page;
@@ -112,7 +116,7 @@ public class WebLanguageController implements Serializable {
                 + " order by c.id desc";
         hm.put("q", word);
         hm.put("ret", false);
-        list = getFacade().findFirstBySQL(sql, hm);
+        list = getFacade().findFirstByJpql(sql, hm);
         return list;
     }
 
@@ -125,7 +129,7 @@ public class WebLanguageController implements Serializable {
                 + " and c.name like :q "
                 + " order by c.name";
         hm.put("q", "%" + qry.toUpperCase() + "%");
-        list = getFacade().findBySQL(sql, hm);
+        list = getFacade().findByJpql(sql, hm);
 
         if (list == null) {
             list = new ArrayList<>();
@@ -246,13 +250,15 @@ public class WebLanguageController implements Serializable {
 
     }
 
+    
+    
     public void listItems() {
         String j;
         j = "select a "
                 + " from WebLanguage a "
                 + " where a.retired=false "
                 + " order by a.orderNo";
-        items = getFacade().findBySQL(j);
+        items = getFacade().findByJpql(j);
     }
 
     public List<WebLanguage> getItems() {
@@ -305,43 +311,5 @@ public class WebLanguageController implements Serializable {
         }
     }
 
-    @FacesConverter("webLanguageCon")
-    public static class WebLanguageControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            WebLanguageController controller = (WebLanguageController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "webLanguageController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof WebLanguage) {
-                WebLanguage o = (WebLanguage) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + WebLanguageController.class.getName());
-            }
-        }
-    }
+    
 }

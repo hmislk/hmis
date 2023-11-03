@@ -46,8 +46,7 @@ public class MachineController implements Serializable {
 
     public List<Machine> getItems() {
         if (items == null) {
-            //TODO
-            items = getEjbFacade().findAll();
+            items = fillMachines();
         }
         return items;
     }
@@ -115,6 +114,10 @@ public class MachineController implements Serializable {
         return current;
     }
 
+    public Machine getAnyMachine() {
+        return getItems().get(0);
+    }
+
     public void setCurrent(Machine current) {
         this.current = current;
     }
@@ -128,9 +131,20 @@ public class MachineController implements Serializable {
             String j = "select m from Machine m where m.institution=:ins order by m.name";
             Map m = new HashMap();
             m.put("ins", institution);
-            institutionMachines = getEjbFacade().findBySQL(j, m);
+            institutionMachines = getEjbFacade().findByJpql(j, m);
         }
         return institutionMachines;
+    }
+
+    public List<Machine> fillMachines() {
+        String j = "select m "
+                + " from Machine m "
+                + " where m.retired=:ret "
+                + " order by m.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        return getEjbFacade().findByJpql(j, m);
+
     }
 
     public void setInstitutionMachines(List<Machine> institutionMachines) {

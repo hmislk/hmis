@@ -1,0 +1,150 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      >
+    <h:body>
+        <ui:composition template="/reportInstitution/report_list.xhtml">
+            <ui:define name="report">
+                <h:form>
+                    <p:growl></p:growl>
+                    <p:messages ></p:messages>
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
+                    <p:panel header="Bill Type Summery *" >
+                        <p:panelGrid columns="1" styleClass="alignTop" >
+                            <p:panel header="Fillters" >
+                                <p:panelGrid columns="2" >
+                                    <h:outputLabel value="From"/>
+                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
+                                    </p:calendar>
+                                    <h:outputLabel value="To"/>                                
+                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
+                                        <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
+                                    </p:calendar>
+                                    <h:outputLabel value="Institution"/>                                
+                                    <p:selectOneMenu value="#{billSearch.institution}" >
+                                        <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                        <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="Department"/>                                
+                                    <p:selectOneMenu value="#{billSearch.department}" >
+                                        <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                        <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="Type"/>                                
+                                    <p:selectOneMenu value="#{billSearch.billType}" >
+                                        <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.billTypes}" ></f:selectItems>
+                                    </p:selectOneMenu>
+                                    <h:outputLabel value="Billed/Cancelled/Refunded"/>                                
+                                    <p:selectOneMenu value="#{billSearch.billClassType}" >
+                                        <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                        <f:selectItems value="#{enumController.billClassTypes}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
+                                    <h:outputLabel value="User"/>
+                                    <p:autoComplete id="cmbUser"  placeholder="All Users"
+                                                    forceSelection="true" inputStyle="width:190px;"
+                                                    completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                                    var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                                    value="#{billSearch.user}" >
+                                    </p:autoComplete>
+                                </p:panelGrid>
+                                <p:panelGrid columns="3" >
+
+                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillTransactionTypeSummery}" styleClass="noPrintButton">
+                                    </p:commandButton>
+
+
+                                    <p:commandButton  value="Clear" ajax="false" action="#{billSearch.clearSearchFIelds()}" styleClass="noPrintButton">
+                                    </p:commandButton>
+
+                                    <p:commandButton  value="Export as Excel" ajax="false" styleClass="noPrintButton" >
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Data"
+                                                       
+                                                            
+                                                       />
+                                    </p:commandButton>
+
+
+                                </p:panelGrid>
+
+
+                            </p:panel>
+
+                            <p:panel header="Data" >
+                                <p:dataTable id="tblBills" value="#{billSearch.billSummeries}" var="bs" rowKey="#{bs.key}" rowIndexVar="n" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill Summeries"/>
+                                    </f:facet>
+
+                                    <p:column headerText="Payment Method" style="text-align: left;" 
+                                              filterBy="#{bs.paymentMethod}" filterMatchMode="contains"
+                                              sortBy="#{bs.paymentMethod}">
+                                        <p:outputLabel value="#{bs.paymentMethod}" ></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Bill Type" 
+                                              filterBy="#{bs.billType}" filterMatchMode="contains"
+                                              sortBy="#{bs.billType}">
+                                        <p:outputLabel value="#{bs.billType}" ></p:outputLabel>
+                                    </p:column>
+
+
+                                    <p:column headerText="Billed or Cancelled/Refund" 
+                                              filterBy="#{bs.billClassType}" filterMatchMode="contains"
+                                              sortBy="#{bs.billClassType}">
+                                        <p:outputLabel value="#{bs.billClassType}" ></p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Count" sortBy="#{bs.count}" style="text-align: right; padding-right: 20px;">
+                                        <h:commandLink value="#{bs.count}" action="#{billSearch.listBillsFromBillTransactionTypeSummery()}">
+                                            <f:setPropertyActionListener value="#{bs}" target="#{billSearch.billSummery}" ></f:setPropertyActionListener>
+                                        </h:commandLink>
+                                    </p:column>
+                                   
+
+                                    <p:column headerText="Total" sortBy="#{bs.total}" style="text-align: right; padding-right: 20px;">
+                                        <p:outputLabel value="#{bs.total}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Discount" sortBy="#{bs.discount}" style="text-align: right; padding-right: 20px;">
+                                        <p:outputLabel value="#{bs.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="Net Total" sortBy="#{bs.netTotal}"  style="text-align: right; padding-right: 20px;">
+                                        <p:outputLabel value="#{bs.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+
+                                    <p:column headerText="VAT" sortBy="#{bs.tax}"  style="text-align: right; padding-right: 20px;">
+                                        <p:outputLabel value="#{bs.tax}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>
+                                    </p:column>
+
+
+
+                                </p:dataTable>
+                            </p:panel>
+
+                        </p:panelGrid>
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

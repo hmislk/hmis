@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:p="http://primefaces.org/ui"                
                 xmlns:phi="http://java.sun.com/jsf/composite/pharmacy/credit"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
 
@@ -15,7 +15,7 @@
                 <f:facet name="header" >
                     <h:outputLabel value="Paymetnt For Pharmacy Bill" ></h:outputLabel>
                     <hr></hr>
-                    <p:commandButton value="Back To Search" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}" onclick="onSubmitButton();" >
+                    <p:commandButton value="Back To Search" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}"  >
                     </p:commandButton>
                 </f:facet>
 
@@ -102,10 +102,10 @@
 
 
             <h:panelGroup  rendered="#{billController.printPreview}">
-                <p:commandButton value="Print" ajax="false" action="#" onclick="onSubmitButton();" >
+                <p:commandButton value="Print" ajax="false" action="#"  >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
-                <p:commandButton value="New Bill" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}" onclick="onSubmitButton();" >
+                <p:commandButton value="New Bill" ajax="false" action="/credit/pharmacy_search_bill_to_pay" actionListener="#{billController.clearPharmacy()}"  >
                 </p:commandButton>
 
                 <h:panelGroup   id="gpBillPreview" > 

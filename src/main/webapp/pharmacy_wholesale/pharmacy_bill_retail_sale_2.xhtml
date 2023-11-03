@@ -38,8 +38,10 @@
                                 <p:outputLabel value="#{pharmacyWholeSaleController2.errorMessage}" ></p:outputLabel>
                             </h:panelGroup>
                         </h:panelGroup>
-                        <h:panelGrid id="sale" columns="2" class="alignTop" >
-                            <p:panel >
+                        
+                             <div class="row">
+                            <div class="col-md-7">
+                                <p:panel >
                                 <f:facet name="header" >
                                     <h:outputLabel value="Pharmacy Wholesale Bill" />
                                 </f:facet>
@@ -54,8 +56,7 @@
 
 
                                             <p:autoComplete accesskey="i"    id="acStock" 
-                                                            value="#{pharmacyWholeSaleController2.stock}" 
-                                                            converter="stockCon" 
+                                                            value="#{pharmacyWholeSaleController2.stock}"
                                                             completeMethod="#{pharmacyWholeSaleController2.completeAvailableStocksFromNameOrGeneric}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
@@ -85,7 +86,7 @@
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  
                                                                    style="width: 100px!important;#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}">
-                                                        <f:convertDateTime pattern="dd/MM/yyyy" ></f:convertDateTime>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPs2',view).clientId}"  ></p:ajax>
@@ -168,7 +169,7 @@
                                             </p:column>
                                             <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
 
 
@@ -248,12 +249,12 @@
                                             <p:column headerText="Expiry">
                                                 <h:panelGroup rendered="#{commonController.currentDateTime > ri.itemBatch.dateOfExpire}" >
                                                     <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
-                                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </p:outputLabel>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonController.currentDateTime}" >
                                                     <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" >
-                                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                     </p:outputLabel>
                                                 </h:panelGroup>
                                             </p:column>
@@ -281,11 +282,10 @@
                                 </p:panel> 
 
                             </p:panel>
-
-
-
-
-                            <p:panel>
+                            </div>
+                            
+                            <div class="col-md-5">
+                                <p:panel>
 
 
                                 <f:facet name="header" >
@@ -332,7 +332,7 @@
                                         </h:panelGroup>
 
                                         <p:commandButton ajax="false" accesskey="s" value="Settle" 
-                                                         onclick="onSubmitButton();"
+                                                         
                                                         action="#{pharmacyWholeSaleController2.settleBillWithPay}" >
                                             <f:facet name="title" >
                                                 <h:outputLabel value="S" style="text-decoration: underline;" ></h:outputLabel>
@@ -341,7 +341,7 @@
                                         </p:commandButton>
                                         <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                                        ajax="false" action="pharmacy_bill_retail_sale"
-                                                         onclick="onSubmitButton();"
+                                                         
                                                         actionListener="#{pharmacyWholeSaleController2.resetAll()}"  ></p:commandButton>
 
 
@@ -441,7 +441,6 @@
                                                                  completeMethod="#{institutionController.completeCreditCompany}" 
                                                                  var="myi" itemLabel="#{myi.name}" 
                                                                  itemValue="#{myi}"
-                                                                 converter="institutionConverter" 
                                                                  disabled="#{pharmacyWholeSaleController2.paymentMethod ne 'Credit' }">
 
                                                     <p:ajax process="scCreditCompany" update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}" 
@@ -459,7 +458,7 @@
                                                                  var="mys" 
                                                                  itemLabel="#{mys.person.nameWithTitle}" 
                                                                  itemValue="#{mys}"
-                                                                 converter="stfcon" 
+                                                                  
                                                                  disabled="#{pharmacyWholeSaleController2.paymentMethod ne 'Credit' }">
                                                     <p:column headerText="Name" >
                                                         <h:outputLabel value="#{mys.person.nameWithTitle}" ></h:outputLabel>
@@ -494,8 +493,16 @@
 
 
                             </p:panel>
+                            </div>
+                        </div>
+                            
 
-                        </h:panelGrid>
+
+
+
+                            
+
+                       
                     </p:panel>
 
 
@@ -519,7 +526,7 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                            ajax="false" action="pharmacy_bill_retail_sale" 
-                                             onclick="onSubmitButton();"
+                                             
                                             actionListener="#{pharmacyWholeSaleController2.resetAll()}" ></p:commandButton>
                             <p:commandButton disabled="true" value="Sale 1" action="pharmacy_bill_retail_sale" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyWholeSaleController2.pharmacyWholeSale()}" />
                         </div>

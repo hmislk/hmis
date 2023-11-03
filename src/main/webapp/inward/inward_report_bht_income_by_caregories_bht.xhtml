@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -20,7 +20,7 @@
 
 
                         <h:panelGrid columns="2" >
-                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{inwardReportControllerBht.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientFinaled}" 
                                             var="myItem" itemValue="#{myItem}" 
@@ -49,12 +49,12 @@
 
 
                         <p:panelGrid columns="3" >
-                            <p:commandButton ajax="false" value="Process" action="#{inwardReportControllerBht.process()}" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process" action="#{inwardReportControllerBht.process()}"   ></p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3,tb4,tb5,tbl2,tbl3" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton>  
 
@@ -150,15 +150,15 @@
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}"  />
                                         <h:outputLabel value="Dob" />
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.dob}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputLabel>                                    
                                         <h:outputLabel value="Date Of Admission"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value="Date Of Discharge"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value="BHT Type"/>
                                         <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.paymentMethod}"/>
@@ -513,7 +513,7 @@
                                         <h:outputLabel value="Bill Date"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{pay.createdAt}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Amount">
@@ -549,7 +549,7 @@
                                         <h:outputLabel value="Bill Date"/> 
                                     </f:facet>
                                     <h:outputLabel value="#{cre.createdAt}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>                                
                                 </p:column>
                                 <p:column style="text-align: right;" headerText="Amount">

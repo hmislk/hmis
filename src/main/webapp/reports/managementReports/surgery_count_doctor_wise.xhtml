@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Surgery Count (Doctor Wise)" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                                          
+                            <p:spacer width="40" height="1"></p:spacer>
+                            
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            
+                            <p:outputLabel value="Doctor Speciality" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.currentSpeciality}">
+                                <f:selectItem itemLabel="Select Speciality"/>
+                                <f:selectItems value="#{specialityController.items}" itemLabel="#{s.name}" var="s" itemValue="#{s}"/>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" class="my-2">
+                            </p:commandButton>
+
+                        </h:panelGrid>
+
+                        
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="Performed Doctor Name" style="width: 100px" >
+                                <h:outputText value="" ></h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="Total"></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Doctor Speciality" style="width: 100px" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Jan" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Feb" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Mar" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Apr" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="May" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Jun" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Jul" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Aug" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Sep" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Oct" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Nov" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Dec" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

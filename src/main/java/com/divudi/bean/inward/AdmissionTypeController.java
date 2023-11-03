@@ -44,7 +44,7 @@ public class AdmissionTypeController implements Serializable {
     String selectText = "";
 
     public List<AdmissionType> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from AdmissionType c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from AdmissionType c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -141,7 +141,7 @@ public class AdmissionTypeController implements Serializable {
                     + " from AdmissionType t "
                     + " where t.retired=false "
                     + " order by t.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

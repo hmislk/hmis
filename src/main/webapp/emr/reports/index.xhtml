@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <div class="container-fluid" >
+                    <div class="card" >
+                        <div class="card-header" >
+                            <h2>Reports</h2>
+                        </div>
+                        <div class="card-body" >
+                            <div class="row" >
+                                <div class="col-md-3" >
+                                    <h:form >
+                                        <p:accordionPanel widgetVar="basic"  
+                                                          activeIndex="#{emrController.activeIndexOfReports}" 
+                                                          >
+                                            <p:tab title="Clinical">
+                                                <div class="d-grid gap-2">
+                                                </div>
+                                            </p:tab>
+                                            <p:tab title="Clinical Data">
+                                                <div class="d-grid gap-2">
+                                                    <h:commandButton value="List Visits"  styleClass="btn btn-primary mb-2"
+                                                                     action="#{patientEncounterController.navigateToListInstitutionEncounters()}"  >
+                                                    </h:commandButton>
+                                                    <h:commandButton  value="Daily Visits"  styleClass="btn btn-primary mb-2"
+                                                                      action="#{patientEncounterController.listAllEncounters()}" >
+                                                    </h:commandButton><!-- comment -->
+                                                </div>
+                                            </p:tab>
+                                            <p:tab title="Clinical Metadata">
+                                                <div class="d-grid gap-2">
+                                                    <h:commandButton value="Diagnosis" action="#{diagnosisController.navigateToListDiagnoses()}" styleClass="btn btn-primary mb-2" />
+                                                </div>
+                                            </p:tab>
+                                            <p:tab title="Pharmaceutical Metadata">
+                                                <div class="d-grid gap-2">
+                                                    <h:commandButton value="Generic Names (VTMs)" action="#{vtmController.navigateToListAllVtms()}" styleClass="btn btn-primary mb-2" />
+                                                    <h:commandButton value="Trade Names (ATMs)" action="#{atmController.navigateToListAllAtms()}" styleClass="btn btn-primary mb-2" />
+                                                    <h:commandButton value="Product Names (VMPs)" action="#{vmpController.navigateToListAllVmps()}" styleClass="btn btn-primary mb-2" />
+                                                    <h:commandButton value="Items (AMPs)" action="#{ampController.navigateToListAllAmps()}" styleClass="btn btn-primary mb-2" />
+                                                </div>
+                                            </p:tab>
+                                        </p:accordionPanel>
+                                    </h:form>
+                                </div>
+                                <div class="col-md-9" >
+                                    <ui:insert name="subcontent" >
+
+                                    </ui:insert>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

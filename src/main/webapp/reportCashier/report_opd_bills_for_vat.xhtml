@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportCashier/report_cashier.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -11,7 +11,7 @@
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup rendered="true" >
             <h:form>
@@ -19,10 +19,10 @@
                 <p:panel  header="OPD Bill List With VAT 15%">
                     <h:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         <h:outputLabel value="Institution"/>
                         <p:autoComplete completeMethod="#{institutionController.completeCompany}"  
                                         forceSelection="true"
@@ -49,11 +49,11 @@
                             <p:outputLabel value="OPD Bills With VAT 15%" />
                             <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                             <h:outputLabel  value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>                          
                             <h:outputLabel value="&emsp;&emsp;To :"/>
                             <h:outputLabel  value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </f:facet>
 

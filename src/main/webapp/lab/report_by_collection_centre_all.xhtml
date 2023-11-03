@@ -15,7 +15,7 @@
             <p:panel id="panelPrint" header="Collecting Centre Sale Report">
                 <f:facet name="header" >
                     <p:outputLabel value="Collecting Centre Sale Report"/>
-                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  />
+                    <p:commandButton value="Refresh" ajax="false"  styleClass="noPrintButton" style="float: right;"   />
 
                     <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" style="float: right;"  >
                         <p:printer target="panelPrint" />
@@ -25,7 +25,7 @@
                       ajax="false" 
                         value="Excel"  
                         styleClass="noPrintButton" 
-                        style="float: right;" onclick="onSubmitButton();"  >
+                        style="float: right;"   >
                         <p:dataExporter 
                             type="xlsx" 
                             target="tbl" 
@@ -34,11 +34,11 @@
 
                     <p:panelGrid columns="5" style="min-width: 100%;">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <p:autoComplete forceSelection="true" value="#{commonReport.collectingIns}" completeMethod="#{collectingCentreController.completeCollecting}" var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">

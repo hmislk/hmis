@@ -63,11 +63,11 @@
 
 
                                     <p:ajax event="rowSelectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"      />  
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
                                     <p:ajax event="rowUnselectCheckbox" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"      />  
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
                                     <p:ajax event="toggleSelect" listener="#{billSearch.calculateRefundTotal()}" 
-                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"      />  
+                                            update=":#{p:resolveFirstComponentWithId('txtTotal',view).clientId}" process="colSelect dtF"  />  
 
                                     <p:column id="colSelect"   selectionMode="multiple"    >
                                     </p:column>
@@ -120,7 +120,7 @@
                                                     <div  class="billdatePrinting">
 
                                                         <h:outputLabel value="#{billSearch.bill.refundedBill.billDate}">
-                                                            <f:convertDateTime pattern="dd/MM/yy"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                         </h:outputLabel>
 
                                                     </div>
@@ -132,7 +132,7 @@
 
                                                     <div class="billtimePrinting">                                                      
                                                         <h:outputLabel value="#{billSearch.bill.refundedBill.billTime}" >
-                                                            <f:convertDateTime pattern="hh mm ss a"/>
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                                         </h:outputLabel>
 
                                                     </div>

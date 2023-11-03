@@ -52,7 +52,7 @@
                             </f:facet>
                             <h:panelGrid columns="2">                                
                                 <p:commandButton ajax="false" value="Cal Cash Value" 
-                                                action="#{cashOutController.calTotal()}" onclick="onSubmitButton();"/>
+                                                action="#{cashOutController.calTotal()}" />
                                 <p:inputText autocomplete="off" id="netTotal" value="#{cashOutController.bill.cashTransaction.cashValue}" >
                                     <f:convertNumber pattern="#000.00"/>
                                 </p:inputText>
@@ -77,7 +77,7 @@
                             </f:facet>
                             <h:panelGrid columns="2">      
                                 <h:outputLabel value="To Cashier"/>
-                                <p:autoComplete converter="webUs" 
+                                <p:autoComplete  
                                                 completeMethod="#{webUserController.completeUser}" 
                                                 forceSelection="true"
                                                 var="w" 
@@ -142,14 +142,14 @@
 
 
                         <p:panel>
-                            <p:commandButton ajax="false" value="Settle" action="#{cashOutController.settle()}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Clear" action="#{cashOutController.makeNull()}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Settle" action="#{cashOutController.settle()}" />
+                            <p:commandButton ajax="false" value="Clear" action="#{cashOutController.makeNull()}" />
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
 
                 <p:panel rendered="#{cashOutController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" actionListener="#{cashOutController.makeNull()}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="New Bill" actionListener="#{cashOutController.makeNull()}" />
 
                     <bi:cashOut  bill="#{cashOutController.bill}"/>
                 </p:panel>

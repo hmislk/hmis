@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_summery_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Unit Issue By Item"> 
                         <h:panelGrid columns="4" >
@@ -19,20 +19,20 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Item Category"/>
                             <p:autoComplete  value="#{reportsTransfer.category}" 
                                              forceSelection="true"
@@ -43,7 +43,7 @@
 
                         <p:commandButton ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCountsWithOutMarginPharmacy()}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tbl" fileName="unit_report_by_item"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -63,11 +63,11 @@
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/>&#13;&nbsp;
                                     <h:outputLabel value="From  "/>
                                     <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                     <h:outputLabel value="To  "/>
                                     <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column headerText="Item">

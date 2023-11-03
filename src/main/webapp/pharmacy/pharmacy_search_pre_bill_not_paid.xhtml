@@ -24,7 +24,7 @@
 
                         </f:facet>
 
-                        <p:dataTable id="tblBills" value="#{searchController.bills}"                                 
+                        <p:dataTable id="tblBills" value="#{searchController.bills}"                             
                                      var="bill" rowKey="#{bill.id}"
                                      selection="#{searchController.selectedBills}"
                                      paginator="true"
@@ -43,13 +43,13 @@
                             </p:column>
                             <p:column headerText="Date" >                              
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>                                   
                             </p:column>
                             <p:column headerText="Time" >
 
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
 
                             </p:column>                           

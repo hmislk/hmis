@@ -19,13 +19,13 @@
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter" >
+                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{storeReportsStock.department}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsStock.fromDateE}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeReportsStock.fromDateE}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
 
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{storeReportsStock.toDateE}" pattern="dd MM yyyy" ></p:calendar>
+                            <p:calendar value="#{storeReportsStock.toDateE}" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="4" >
                             <p:spacer width="80" height="1"/>

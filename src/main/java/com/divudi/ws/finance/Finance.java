@@ -502,49 +502,37 @@ public class Finance {
     }
 
     private boolean isUserAuthenticated(String authString) {
-        System.out.println("authString = " + authString);
         try {
             byte[] decoded = Base64.decodeBase64(authString);
             String decodedAuth = new String(decoded, "UTF-8") + "\n";
 
             String[] authParts = decodedAuth.split("\\s+");
-            System.out.println("authParts = " + authParts);
             String username = authParts[0];
-            System.out.println("username = " + username);
             String password = authParts[1];
-            System.out.println("password = " + password);
             return authenticateController.userAuthenticated(username, password);
         } catch (UnsupportedEncodingException ex) {
-            System.out.println("ex = " + ex);
             return false;
         }
     }
 
     private boolean isValidKey(String key) {
-        System.out.println("key = " + key);
         if (key == null || key.trim().equals("")) {
-            System.out.println("No key given");
             return false;
         }
         ApiKey k = apiKeyController.findApiKey(key);
         if (k == null) {
-            System.out.println("No key found");
             return false;
         }
         if (k.getWebUser() == null) {
-            System.out.println("No user for the key");
             return false;
         }
         if (k.getWebUser().isRetired()) {
-            System.out.println("User Retired");
             return false;
         }
         if (!k.getWebUser().isActivated()) {
-            System.out.println("User Inactive");
             return false;
         }
         if (k.getDateOfExpiary().before(new Date())) {
-            System.out.println("Key Expired");
             return false;
         }
         return true;
@@ -915,9 +903,9 @@ public class Finance {
         m.put("td", toDate);
         m.put("ret", true);
         if (recordCount == null || recordCount == 0) {
-            bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP);
+            bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP);
         } else {
-            bills = billFacade.findBySQL(j, m, TemporalType.TIMESTAMP, recordCount);
+            bills = billFacade.findByJpql(j, m, TemporalType.TIMESTAMP, recordCount);
         }
 
         if (bills == null) {

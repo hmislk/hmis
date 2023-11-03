@@ -1,0 +1,71 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/pharmacy/admin/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="subcontent">
+        <h:form  >
+
+            <!-- For AMPPs -->
+            <p:dataTable 
+                id="tblampps"
+                value="#{pharmacyController.ampps}" 
+                var="i"
+                selection="#{pharmacyController.amppsSelected}"
+                rowKey="#{i.id}"
+                rows="5"
+                paginator="true" 
+                paginatorPosition="both"
+                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                rowsPerPageTemplate="5,10,{ShowAll|'All'}"
+                >
+                <f:facet name="header">
+
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h:outputText value="VTMs" />
+                        <div class="d-flex justify-content-end align-items-center">
+                            <h:commandButton
+                                class="btn btn-success mx-2"
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="tblampps" fileName="vtm_list"/> 
+                            </h:commandButton>
+                            <h:commandButton 
+                                class="btn btn-danger"
+                                value="Remove Selected" 
+                                action="#{pharmacyController.deleteMultipleAmpps()}"
+                                onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                            return false;" 
+                                />
+                        </div>
+                    </div>
+
+                </f:facet>
+                <p:column 
+                    selectionMode="multiple" width="50" >
+                </p:column>
+                <p:column 
+                    headerText="Name" 
+                    sortBy="#{i.name}"
+                    filterBy="#{i.name}"
+                    filterMatchMode="contains">
+                    <h:outputText value="#{i.name}" ></h:outputText>
+                </p:column>
+                <p:column headerText="Actions" exportable="false" >
+                    <h:commandButton 
+                        class="btn btn-warning text-white"
+                        value="Delete" 
+                        action="#{pharmacyController.deleteSingleAmpp()}" >
+                        <f:setPropertyActionListener 
+                            value="#{i}" 
+                            target="#{pharmacyController.ampp}" ></f:setPropertyActionListener>
+                    </h:commandButton>
+                </p:column>
+            </p:dataTable>
+
+        </h:form>
+    </ui:define>
+</ui:composition>

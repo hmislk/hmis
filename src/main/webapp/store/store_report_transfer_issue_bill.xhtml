@@ -20,12 +20,12 @@
                             <h:outputLabel value="Transfer From" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Transfer To" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{storeReportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{storeReportsTransfer.toDepartment}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{storeReportsTransfer.fromDate}" pattern="dd MM yyyy HH:mm:ss" ></p:calendar>
@@ -83,7 +83,7 @@
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

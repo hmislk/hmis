@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/channel/management_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
 
 
@@ -25,7 +25,7 @@
                             <p:autoComplete  forceSelection="true" value="#{sheduleController.speciality}" id="acSpeciality"
                                              completeMethod="#{doctorSpecialityController.completeSpeciality}" rendered="#{sheduleController.feeChangeStaff}"
                                              var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                             converter="specilityCon">
+                                             >
                                 <f:ajax event="itemSelect" execute="acSpeciality" render="scStaff"  />
                             </p:autoComplete>
 
@@ -33,7 +33,7 @@
                             <p:autoComplete   forceSelection="true" value="#{sheduleController.currentStaff}" id="scStaff"
                                               completeMethod="#{sheduleController.completeStaff}" rendered="#{sheduleController.feeChangeStaff}"
                                               var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                              converter="stfcon">   
+                                              >   
                             </p:autoComplete>
                         </h:panelGrid>
                         
@@ -73,13 +73,13 @@
                     </h:panelGrid>
 
                     <h:panelGrid id="gpSelectButtons" columns="3"  >                     
-                        <p:commandButton ajax="false" id="btnAdd" value="Clear" action="#{sheduleController.prepareAddFeeChange}" styleClass="buttons" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" id="btnAdd" value="Clear" action="#{sheduleController.prepareAddFeeChange}" styleClass="buttons"  >
                             <f:ajax render="btnAdd  pg1 btnSave" execute="" >
                             </f:ajax>
                         </p:commandButton>
                         <p:commandButton ajax="false" id="btnSave" value="Save"  
                                          action="#{sheduleController.saveFeeChanges()}"
-                                         styleClass="buttons" onclick="onSubmitButton();">
+                                         styleClass="buttons" >
 
                         </p:commandButton>
                     </h:panelGrid>

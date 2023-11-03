@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
 
@@ -21,14 +21,14 @@
 
                             <h:panelGrid columns="2"  >
                                 <h:outputLabel value="Department" ></h:outputLabel>
-                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter" >
+                                <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
                                 </p:autoComplete>
 
                                 <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.fromDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar value="#{reportsStock.fromDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                                 <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar value="#{reportsStock.toDateE}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                <p:calendar value="#{reportsStock.toDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                                 <h:outputLabel value="Category" ></h:outputLabel>
                                 <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 

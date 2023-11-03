@@ -19,7 +19,7 @@
 
                 <h:form id="bill" >
 
-                    <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;" onclick="onSubmitButton();"  ></p:commandButton>
+                    <p:commandButton id="nullButton2" value="No Action" action="#" style="display: none;"   ></p:commandButton>
                     <p:defaultCommand  target="btnAdd" />  
 
 
@@ -67,7 +67,7 @@
 
                                     <p:panel header="Patient Detail">                                        
                                         <h:outputLabel value="Type Patinet Name or BHT : "/>
-                                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                                         value="#{pharmacySaleBhtController.patientEncounter}" 
                                                         completeMethod="#{admissionController.completePatient}"
                                                         var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -106,7 +106,6 @@
                                             </style>
                                             <p:autoComplete accesskey="i"   forceSelection="true"  id="acStock" 
                                                             value="#{pharmacySaleBhtController.stock}" 
-                                                            converter="stockCon" 
                                                             completeMethod="#{pharmacySaleController.completeAvailableStocks}" 
                                                             var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" 
                                                             >
@@ -126,7 +125,7 @@
                                                 <p:column headerText="Expiry">
                                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > i.itemBatch.dateOfExpire ?'color: red; ': 
                                                                             commonController.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
-                                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:ajax event="focus" process="acStock" ></p:ajax>
@@ -146,7 +145,7 @@
                                         </h:panelGrid>
 
                                         <p:commandButton  accesskey="a" id="btnAdd" value="Add" 
-                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} " onclick="onSubmitButton();"  ></p:commandButton>
+                                                          action="#{pharmacySaleBhtController.addBillItem}" process="@this acStock txtQty" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} "   ></p:commandButton>
 
                                         <p:focus id="focusQty" for="txtQty" ></p:focus>
                                         <p:focus id="focusItem" for="acStock" ></p:focus>
@@ -185,12 +184,12 @@
 
                                             <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
 
                                             </p:column>
                                             <p:column headerText="Remove">
-                                                <p:commandButton value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false" onclick="onSubmitButton();"  >
+                                                <p:commandButton value="Remove" action="#{pharmacySaleBhtController.removeBillItem(bi)}" ajax="false"   >
 
                                                 </p:commandButton>
                                             </p:column>
@@ -220,7 +219,7 @@
 
 
 
-                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;" onclick="onSubmitButton();"  ></p:commandButton>
+                        <p:commandButton id="nullButton3" value="No Action" action="#" style="display: none;"   ></p:commandButton>
                         <p:defaultCommand  target="btnPrint" />  
 
                         <div class="nonPrintBlock" >
@@ -229,7 +228,7 @@
                             </p:commandButton>
                             <p:commandButton accesskey="n" value="New Pharmacy Bill" ajax="false"
                                              action="pharmacy_bill_issue_bht"
-                                             actionListener="#{pharmacySaleBhtController.resetAll()}" onclick="onSubmitButton();"  ></p:commandButton>
+                                             actionListener="#{pharmacySaleBhtController.resetAll()}"   ></p:commandButton>
 
                         </div>
 

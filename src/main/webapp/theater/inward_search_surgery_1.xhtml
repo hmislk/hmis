@@ -9,8 +9,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header" >
@@ -19,15 +19,15 @@
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" 
                                                 value="#{searchController.fromDate}" navigator="false" 
-                                                pattern="dd MMMM yyyy hh mm ss a" >
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
 
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
 
                                     </p:calendar>
-                                    <p:commandButton ajax="false" action="#{searchController.createInwardSurgeryBillsReport()}" value="Search" onclick="onSubmitButton();" />
-                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
+                                    <p:commandButton ajax="false" action="#{searchController.createInwardSurgeryBillsReport()}" value="Search"  />
+                                    <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="surgery_details"  />
                                     </p:commandButton>
                                 </h:panelGrid>
@@ -95,7 +95,7 @@
                                 <h:panelGroup rendered="#{bb.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>                             
                             </p:column>

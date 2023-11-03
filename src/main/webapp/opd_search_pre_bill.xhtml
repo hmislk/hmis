@@ -15,9 +15,9 @@
                             <h:outputLabel value="OPD BILL SEARCH TO PAY "/>
 
                             <h:panelGrid columns="5" >
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
                                 <p:commandButton id="btnSearch" ajax="false" value="Search All" action="#{searchController.createOpdPreTable}"/>
                                 <p:commandButton ajax="false" value="Not Paid Only" action="#{searchController.createOpdPreTableNotPaid}"/>
@@ -66,14 +66,14 @@
                             </p:column>   
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
                                                    value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>                             
                             </p:column>                 
@@ -88,7 +88,7 @@
                                 </h:panelGroup>                               
                             </p:column>                                                          
                             <p:column headerText="Net Value" >
-
+ 
                                 <h:outputLabel value="#{bill.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
@@ -109,14 +109,14 @@
                                     </p:column>
                                     <p:column >
                                         <h:outputLabel value="#{rb.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{rb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
                                             <h:outputLabel style="color: red;" rendered="#{rb.cancelled}"
                                                            value="#{rb.cancelledBill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>                               
                                     </p:column> 

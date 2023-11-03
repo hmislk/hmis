@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="item">
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl />
+                <p:panel header="Downloads" >
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p:commandButton 
+                                value="Download Services as an Excel" 
+                                class="w-100"
+                                ajax="false"
+                                action="#{serviceController.downloadServicesAsExcel}" />
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

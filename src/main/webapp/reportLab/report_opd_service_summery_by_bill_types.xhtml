@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportLab/lab_summeries_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"
                 >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:form >
             
@@ -19,11 +19,11 @@
                
                 <h:panelGrid columns="2" >
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar id="frmDate" value="#{serviceSummery.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                    <p:calendar id="toDate" value="#{serviceSummery.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
                     <h:outputLabel value="Service Name"/>
@@ -43,7 +43,7 @@
                     <h:outputLabel value="Department"/>
                     <p:autoComplete id="todep" completeMethod="#{departmentController.completeDept}" 
                                     var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                    value="#{serviceSummery.department}" converter="departmentConverter"/>
+                                    value="#{serviceSummery.department}" />
 
                     <h:outputLabel value="Payment Type : " ></h:outputLabel>
                     <p:selectOneMenu   id="pay" value="#{serviceSummery.paymentMethod}">     
@@ -78,11 +78,11 @@
                     <h:outputLabel value="#{serviceSummery.service.name}"/>
                     <h:outputLabel value=" : "/>
                     <h:outputLabel value="#{serviceSummery.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="--"/>
                     <h:outputLabel value="#{serviceSummery.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <p:outputLabel value="Bills" style="float: left"></p:outputLabel>
                 </f:facet>
@@ -115,7 +115,7 @@
 
                 <p:column headerText="Date">
                     <h:outputLabel value="#{d.billItem.createdAt}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </p:column>
 
@@ -187,11 +187,11 @@
                         <h:outputLabel value="#{serviceSummery.service.name}"/>
                         <h:outputLabel value=" : "/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="--"/>
                         <h:outputLabel value="#{serviceSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <p:outputLabel value="Canceled Bills" style="float: left"></p:outputLabel>
                     </f:facet>
@@ -224,7 +224,7 @@
 
                     <p:column headerText="Date">
                         <h:outputLabel value="#{d.billItem.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 
@@ -296,11 +296,11 @@
                         <h:outputLabel value="#{serviceSummery.service.name}"/>
                         <h:outputLabel value=" : "/>
                         <h:outputLabel value="#{serviceSummery.fromDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <h:outputLabel value="--"/>
                         <h:outputLabel value="#{serviceSummery.toDate}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                         <p:outputLabel value="Refund Bills" style="float: left"></p:outputLabel>
                     </f:facet>
@@ -333,7 +333,7 @@
 
                     <p:column headerText="Date">
                         <h:outputLabel value="#{d.billItem.createdAt}">
-                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
 

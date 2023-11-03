@@ -26,11 +26,11 @@
                         <h:outputLabel value="From"/>
                         <p:calendar id="frmDate" 
                                     value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To"/>
                         <p:calendar id="toDate" 
                                     value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
 
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
@@ -40,14 +40,14 @@
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
-                                             onclick="onSubmitButton();" /> 
+                                              /> 
 
                             <p:commandButton value="Fill Additional Only"
                                              process="@this frmDate toDate roster"
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                             onclick="onSubmitButton();" /> 
+                                              /> 
 
                         </h:panelGroup>
 
@@ -56,7 +56,7 @@
                                              process="lst"
                                              update="lst"
                                              action="#{shiftFingerPrintAnalysisController.save()}" 
-                                             onclick="onSubmitButton();"/>
+                                             />
 
                             <p:commandButton value="Back" ajax="false" 
                                              action="#{shiftFingerPrintAnalysisController.back()}" 
@@ -70,7 +70,7 @@
                                      update="lst"
                                      actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                      action="#{shiftFingerPrintAnalysisController.createShiftTableResetByStaff()}" 
-                                     onclick="onSubmitButton();" 
+                                      
                                      style="float: right;" ajax="false"/> 
 
                     <p:commandButton value="Back" rendered="#{hrReportController.backButtonPage ne null}" 
@@ -202,7 +202,7 @@
 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
                             <h:panelGroup  >
-                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
+                                <p:selectOneMenu  value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
                                                    itemLabel="#{i.timeLabel}" itemValue="#{i}" />
@@ -218,7 +218,7 @@
                     <p:column headerText="Attendence End" styleClass="fixedColumn200">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <h:panelGroup >                           
-                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
+                                <p:selectOneMenu  value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="endRc "
@@ -232,7 +232,7 @@
 
                     <p:column headerText="Varified Start"  styleClass="fixedColumn200">
 
-                        <h:panelGroup id="strRc"       >
+                        <h:panelGroup id="strRc"   >
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
                                 <p:calendar                                   
                                     value="#{sts.startRecord.recordTimeStamp}" 

@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGroup rendered="#{patientEncounterController.current ne null}" >
+            <h:form>
+
+                <p:panelGrid columns="2" >
+                    <p:outputLabel value="First Registered" ></p:outputLabel>
+                    <p:outputLabel value="#{patientEncounterController.current.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                    </p:outputLabel>
+                    <p:outputLabel value="Last Visit" ></p:outputLabel>
+                    <h:panelGroup >
+                        <p:outputLabel value="#{(patientEncounterController.encounters ne null and not empty patientEncounterController.encounters) ? patientEncounterController.encounters[0].encounterDate : ''}"
+                                       rendered="#{patientEncounterController.encounters ne null and not empty patientEncounterController.encounters}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                        </p:outputLabel>
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Allergies" />
+                    <h:panelGroup rendered="#{patientEncounterController.patientAllergies != null and not empty patientEncounterController.patientAllergies}">
+                        <ui:repeat value="#{patientEncounterController.patientAllergies}" var="allergy">
+                            <h:outputText value="#{allergy.itemValue.name}" styleClass="ui-messages-error" />
+                            <h:outputText value="#{not loop.last ? ', ' : ''}" styleClass="ui-messages-error"/>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{patientEncounterController.patientAllergies == null or empty patientEncounterController.patientAllergies}">
+                        <p:outputLabel value="No Allergies" styleClass="ui-messages-success" />
+                    </h:panelGroup>
+
+
+
+
+                    <p:outputLabel value="Disease Conditions" />
+                    <h:panelGroup rendered="#{patientEncounterController.patientDiagnoses != null and not empty patientEncounterController.patientDiagnoses}">
+                        <ui:repeat value="#{patientEncounterController.patientDiagnoses}" var="dx">
+                            <h:outputText value="#{dx.itemValue.name}" styleClass="ui-messages-warning" />
+                            <ui:fragment rendered="#{not status.last}">
+                                <span>, </span>
+                            </ui:fragment>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{patientEncounterController.patientDiagnoses == null or empty patientEncounterController.patientDiagnoses}">
+                        <p:outputLabel value="No Disease Conditions" styleClass="ui-messages-success" />
+                    </h:panelGroup>
+
+                    <p:outputLabel value="Medicines" />
+                    <h:panelGroup rendered="#{patientEncounterController.patientMedicines != null and not empty patientEncounterController.patientMedicines}">
+                        <ui:repeat value="#{patientEncounterController.patientMedicines}" var="rx">
+                            <h:outputText value="#{rx.prescription.item.name}" styleClass="ui-messages-warning" />
+                            <ui:fragment rendered="#{not loop.last}">
+                                <span>, </span>
+                            </ui:fragment>
+                        </ui:repeat>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{patientEncounterController.patientMedicines == null or empty patientEncounterController.patientMedicines}">
+                        <p:outputLabel value="No Medicines" styleClass="ui-messages-success" />
+                    </h:panelGroup>
+
+
+
+                </p:panelGrid>
+
+
+            </h:form>
+
+
+
+        </h:panelGroup>
+    </cc:implementation>
+</html>

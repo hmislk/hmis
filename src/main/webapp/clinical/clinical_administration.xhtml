@@ -13,14 +13,20 @@
                 <h:form>
                     <p:panel header="Clinicals - Administration" >
                         <h:panelGrid columns="1">
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Vocabularies" action="/clinical/clinical_vocabulary" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Symptoms" action="/clinical/clinical_symptoms" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Signs" action="/clinical/clinical_signs" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Diagnosis" action="/clinical/clinical_diagnosis" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigations" action="/clinical/clinical_investigations" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Procedures" action="/clinical/clinical_procedures" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Plan of actions" action="/clinical/clinical_plans" onclick="onSubmitButton();" ></p:commandButton>
-                            <p:commandButton styleClass="linkButton" ajax="false" value="Treatements" action="/clinical/clinical_treatment" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Vocabularies" action="/clinical/clinical_vocabulary"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Symptoms" action="/clinical/clinical_symptoms"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Signs" action="/clinical/clinical_signs"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Diagnosis" action="/clinical/clinical_diagnosis"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Investigations" action="/clinical/clinical_investigations"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Procedures" action="/clinical/clinical_procedures"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Plan of actions" action="/clinical/clinical_plans"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Treatements" action="/clinical/clinical_treatment"  ></p:commandButton>
+                            <hr/><!-- comment -->
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload Patients" action="#{dataUploadBean.toUploadPatients()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload VTMs" action="#{dataUploadBean.toUploadVtms()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload ATMs" action="#{dataUploadBean.toUploadAtms()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload VMPs" action="#{dataUploadBean.toUploadVmps()}"  ></p:commandButton>
+                            <p:commandButton styleClass="linkButton" ajax="false" value="Upload AMPs" action="#{dataUploadBean.toUploadAmps()}"  ></p:commandButton>
 
 
                         </h:panelGrid>

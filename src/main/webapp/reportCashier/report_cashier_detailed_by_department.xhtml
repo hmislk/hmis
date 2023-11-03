@@ -42,18 +42,18 @@
 
                         <h:panelGrid columns="8" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                             <h:outputLabel styleClass="noPrintButton" value="Department"/>
                             
                             <p:autoComplete styleClass="noPrintButton"  value="#{commonReport.department}"  style="text-align: left; margin: 5px; padding: 5px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
                             </p:autoComplete>
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{commonReport.webUser}" ></p:autoComplete>
@@ -66,11 +66,11 @@
 
                                 <h:outputLabel value="From" />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value="To" />
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>
 
                             </h:panelGroup >

@@ -42,11 +42,11 @@
                                                          style="float: right;" 
                                                          value="Delete" process="btnDeletePt" 
                                                          update="acPt :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('patientDetail',view).clientId} " 
-                                                         action="#{patientController.delete()}" onclick="onSubmitButton();" 
+                                                         action="#{patientController.delete()}"  
                                                          rendered="#{webUserController.hasPrivilege('ClinicalPatientDelete')}">
                                         </p:commandButton>
 
-                                        <!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" onclick="onSubmitButton();">
+                                        <!--                                        <p:commandButton id="btnPrintCard" action="/clinical/clinical_print_barcode" style="float: right;" value="Print Card" ajax="false" >
                                                                                  </p:commandButton>-->
 
                                     </f:facet>
@@ -83,7 +83,7 @@
                                             </p:column>
                                             <p:column headerText="Date of Birth">
                                                 <h:outputLabel value="#{apt.person.dob}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                 </h:outputLabel>
                                             </p:column>
                                             <f:ajax event="itemSelect" execute="acPt" render=":#{p:resolveFirstComponentWithId('panelDetails',view).clientId}" 
@@ -106,7 +106,7 @@
                                                      style="float: right;" 
                                                      value="Add New Patient" process="btnAddPt" 
                                                      update="acPt :#{p:resolveFirstComponentWithId('panelDetails',view).clientId} :#{p:resolveFirstComponentWithId('patientDetail',view).clientId} :#{p:resolveFirstComponentWithId('pan1',view).clientId} " 
-                                                     action="#{patientController.prepareAddReg()}" onclick="onSubmitButton();" 
+                                                     action="#{patientController.prepareAddReg()}"  
                                                      >
                                     </p:commandButton>
                                 </f:facet>
@@ -150,7 +150,7 @@
                                                         <f:selectItems value="#{patientController.sexs}"/>
                                                     </p:selectOneMenu>
                                                     <h:outputLabel value="NIC"/>
-                                                    <p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />
+                                                    <p:inputText  value="#{patientController.current.person.nic}" />
                                                     <h:outputLabel value="Code"/>
                                                     <p:inputText value="#{patientController.current.code}"/>
 
@@ -167,13 +167,13 @@
                                                         </p:inputText>
                                                     </h:panelGrid>
                                                     <h:outputLabel value="Date of Birth"/>
-                                                    <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" >
+                                                    <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                                         <f:ajax event="dateSelect" execute="calNewPtDob"/>
                                                     </p:calendar>
 
                                                     <h:outputLabel value="Phone"/>
-                                                    <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
-                                                    </p:inputMask>
+                                                    <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" value="#{patientController.current.person.phone}">
+                                                    </p:inputText>
                                                     <h:outputLabel value="Address"/>
                                                     <p:inputText autocomplete="off"  id="txtNewPtAddress" value="#{patientController.current.person.address}">
                                                     </p:inputText>
@@ -222,7 +222,7 @@
 
 
                                         <p:tab title="Visit Details" >
-                                            <p:dataTable id="tblPastVisits" value="#{patientEncounterController.currentPatientEncounters}"
+                                            <p:dataTable id="tblPastVisits" value="#{patientEncounterController.currentPatientEncountersDateStrings}"
                                                          var="pe"
                                                          >
                                                 <p:column headerText="Visit Date" >
@@ -298,7 +298,7 @@
                                 <p:inputText value="#{patientController.familyMember.nic}"  requiredMessage="please enter NIC no"/>
 
                                 <h:outputLabel value="Date of Birth"/>
-                                <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="dd/MM/yyyy"  requiredMessage="please enter date of birth"/>
+                                <p:calendar  value="#{patientController.familyMember.dob}"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}"  requiredMessage="please enter date of birth"/>
 
                                 <p:commandButton value=" Add Member" actionListener="#{patientController.createFamilymembers}" update=":#{p:resolveFirstComponentWithId('familyDetails',view).clientId} pan2" oncomplete="handleLoginRequest(xhr, status, args)"/>
                                 <p:commandButton value="Cancel" onclick="PF('dlg').hide()" actionListener="#{patientController.listnerFamilyMember()}" ajax="false"/>

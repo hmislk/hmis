@@ -63,7 +63,7 @@ public class TimedItemFeeController implements Serializable {
             String sql = "Select d From Department d where d.retired=false and d.institution=:ins";
             HashMap hm = new HashMap();
             hm.put("ins", getCurrentFee().getInstitution());
-            d = getDepartmentFacade().findBySQL(sql, hm);
+            d = getDepartmentFacade().findByJpql(sql, hm);
         }
 
         return d;
@@ -203,7 +203,7 @@ public class TimedItemFeeController implements Serializable {
         if (currentIx != null && currentIx.getId() != null) {
             HashMap hm = new HashMap();
             hm.put("it", getCurrentIx());
-            fees = getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm);
+            fees = getTimedItemFeeFacade().findByJpql("select c from TimedItemFee c where c.retired = false and c.item=:it", hm);
 
         }
     }
@@ -212,7 +212,7 @@ public class TimedItemFeeController implements Serializable {
 //        if (currentIx != null && currentIx.getId() != null) {
 //            HashMap hm = new HashMap();
 //            hm.put("it", getCurrentIx());
-//            setCharges(getTimedItemFeeFacade().findBySQL("select c from TimedItemFee c where c.retired = false and c.item=:it", hm));
+//            setCharges(getTimedItemFeeFacade().findByJpql("select c from TimedItemFee c where c.retired = false and c.item=:it", hm));
 //        } else {
 //            setCharges(new ArrayList<TimedItemFee>());
 //        }
@@ -330,43 +330,5 @@ public class TimedItemFeeController implements Serializable {
         }
     }
 
-    @FacesConverter("conTimFee")
-    public static class TimedItemFeeControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            TimedItemFeeController controller = (TimedItemFeeController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "timedItemFeeController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof TimedItemFee) {
-                TimedItemFee o = (TimedItemFee) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + TimedItemFeeController.class.getName());
-            }
-        }
-    }
+    
 }

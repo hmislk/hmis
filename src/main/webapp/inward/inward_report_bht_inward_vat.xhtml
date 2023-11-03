@@ -10,17 +10,17 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="BHT VAT Report" styleClass="alignTop" >
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar navigator="true" id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar navigator="true" id="fromDate" value="#{bhtSummeryFinalizedController.fromDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputLabel value="To Date"/>
-                            <p:calendar navigator="true" id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="dd MMMM yyyy hh mm ss a" >
+                            <p:calendar navigator="true" id="toDate" value="#{bhtSummeryFinalizedController.toDate}"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
                             <h:outputText value="Admission Type" ></h:outputText>
                             <p:selectOneMenu  id="lstSelect"   value="#{bhtSummeryFinalizedController.admissionType}" >
@@ -40,7 +40,7 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();"  >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"   >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="newly_added_report"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -56,11 +56,11 @@
                                 <h:outputLabel value="Admission Type : #{bhtSummeryFinalizedController.admissionType}" rendered="#{bhtSummeryFinalizedController.admissionType ne null}" style=" white-space:pre-line;"/>
                                 <h:outputLabel value="From : " style=" white-space:pre-line;"/>
                                 <h:outputLabel  value="#{bhtSummeryFinalizedController.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>                          
                                 <h:outputLabel value="&emsp;&emsp;To :"/>
                                 <h:outputLabel  value="#{bhtSummeryFinalizedController.toDate}" >
-                                    <f:convertDateTime pattern="dd MMM yyyy HH:mm a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column>

@@ -1,0 +1,247 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      
+      xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
+
+    <h:body>
+
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
+
+
+
+            <ui:define name="subcontent">
+
+
+                <h:form>
+                    <p:panel header="Handover Reports" >
+                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
+                        <p:panel  styleClass="tem nonPrintBlock" >
+                            <h:panelGrid columns="2">
+
+                                <h:outputLabel   value="From Date" />
+                                <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>
+
+                                <h:outputLabel   value="To Date" />
+                                <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                </p:calendar>  
+
+                                <h:outputLabel   value="Institution" />
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                    
+                                                 requiredMessage="You must select a institution" >
+                                    <f:selectItem itemLabel="Select Institution"/>
+                                    <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
+                                </p:selectOneMenu>
+                                <h:outputLabel value="Department"/>
+                                <au:department value="#{institutionLabSumeryController.department}" />
+                            </h:panelGrid>
+                            <h:panelGrid columns="6">
+                                <p:spacer width="70" height="1"/>
+                                <p:commandButton id="btnRefresh" styleClass="noPrintButton" value="Refresh" ajax="false" action="#{institutionLabSumeryController.createLabBillsWithoutOwn()}" />
+                                <p:defaultCommand target="btnRefresh"/>
+
+                                <p:commandButton styleClass="noPrintButton" value="Print" ajax="false" >
+                                    <p:printer target="panelReport" />
+                                </p:commandButton>             
+
+                                <p:commandButton value="Excel" ajax="false">
+                                    <p:dataExporter type="xlsx" target="tbl,sum" fileName="Hand_Over_Ins"
+                                                   
+                                                   
+                                                     
+                                                  />
+                                </p:commandButton>
+                                <p:commandButton value="Pdf" ajax="false">
+                                    <p:dataExporter type="pdf" target="tbl,sum" fileName="33" />
+                                </p:commandButton>
+                            </h:panelGrid>
+                        </p:panel>
+                        <p:panel id="panelReport" styleClass="noBorder summeryBorder">
+
+                            <p:dataTable id="tbl" value="#{institutionLabSumeryController.bills}" rowIndexVar="i" var="b" sortBy="#{b.billClass}"  >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Handover Reports"/>
+                                    <br/>
+                                    <h:outputLabel value=" #{institutionLabSumeryController.institution.name}"/><br/>
+                                    <h:outputLabel value="From : "/>
+                                    <h:outputLabel value="#{institutionLabSumeryController.fromDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                    <p:spacer width="30" height="1"/>
+                                    <h:outputLabel value="To :"/>
+                                    <h:outputLabel value="#{institutionLabSumeryController.toDate}">
+                                        <f:convertDateTime pattern="dd MMM yyyy hh:mm:ss a"/>
+                                    </h:outputLabel>
+                                </f:facet>
+
+
+                                <p:column headerText="No" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No"/>
+                                    </f:facet>
+
+                                    <h:outputLabel value="#{i+1}"/>
+                                </p:column>
+                                <p:column headerText="Bill Id" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Bill Id"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.insId}"  ></h:outputLabel>
+                                    <h:outputLabel value="// #{b.billedBill.insId}" ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Department Name" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Department Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.toDepartment.name}"    ></h:outputLabel>
+                                </p:column>
+
+
+                                <p:column headerText="Name" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Name"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.patient.person.name}"    ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Scheme" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Scheme"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.paymentScheme.name}"    ></h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Hospital Fee" styleClass="averageNumericColumn" >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Hospital Fee"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.total - b.staffFee}"    >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Dis." styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Dis."/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Prof. Fee" styleClass="averageNumericColumn"  >
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Prof. Fee"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.staffFee}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Net Total" styleClass="averageNumericColumn">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Total"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{b.netTotal}"  >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <!--
+                                                            <p:summaryRow >
+                                                                <p:column colspan="3" >
+                                                                    <h:outputLabel value="Billed Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}"/>                                   
+                                                                    <h:outputLabel value="Cancelled Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}"/>                                 
+                                                                    <h:outputLabel value="Refund Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}"/>
+                                                                </p:column>
+                                
+                                                                <p:column  >                                    
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" style="text-align: right;" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>                                    
+                                                                </p:column>
+                                
+                                                                <p:column  >
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotB}"  rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </p:column>
+                                
+                                                                <p:column  >
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotR}"  rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </p:column>
+                                
+                                                                <p:column  >
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotR}"  rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </p:column>
+                                
+                                                            </p:summaryRow>-->
+
+                            </p:dataTable>
+
+                            <p:dataTable id="sum" value="#{institutionLabSumeryController.string1Value1s}" var="sv">
+                                <p:column>
+                                    <h:outputLabel value="#{sv.string}"/>
+                                </p:column>
+                                <p:column>
+                                    <h:outputLabel value="#{sv.value}" style="text-align: right;" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+                            </p:dataTable>
+                            <f:facet name="footer">
+                                <h:outputLabel style="float: right" value="Printed By : #{sessionController.loggedUser.webUserPerson.name} " />
+                            </f:facet>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

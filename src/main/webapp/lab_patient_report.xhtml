@@ -14,7 +14,7 @@
 
     </head>
 
-    <body>
+    <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
@@ -63,18 +63,18 @@
                                 <h:panelGrid columns="9" >
                                     <p:commandButton rendered="#{webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved ne true}"  
                                                      value="Save" 
-                                                     action="#{patientReportController.savePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                     action="#{patientReportController.savePatientReport()}" ajax="false"   >
                                     </p:commandButton>
                                     <p:commandButton ajax="false" process="tblVals" update=":#{p:resolveFirstComponentWithId('tblCals',view).clientId} :#{p:resolveFirstComponentWithId('tblFlags',view).clientId} :#{p:resolveFirstComponentWithId('divPrint',view).clientId}"  styleClass="nonPrintBlock"  value="Calculate" 
-                                                     action="#{patientReportController.calculate}" onclick="onSubmitButton();">
+                                                     action="#{patientReportController.calculate}" >
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnApprove"  disabled ="#{!(webUserController.hasPrivilege('LabAutherizing') eq true and patientReportController.currentPatientReport.dataEntered eq true)}"   
-                                                     value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                     value="Approve" action="#{patientReportController.approvePatientReport()}" ajax="false"   >
                                     </p:commandButton>
 
                                     <p:commandButton styleClass="nonPrintBlock"  id="btnCancel"  disabled ="#{!(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   value="Cancel Approval" 
-                                                     action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false" onclick="onSubmitButton();"  >
+                                                     action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
                                     </p:commandButton>
 
                                     <!--                                    <p:commandButton styleClass="nonPrintBlock"  
@@ -87,12 +87,12 @@
                                     <p:spacer width="30" ></p:spacer>
                                     <p:commandButton  styleClass="nonPrintBlock"  value="Patient Report Search" action="#{patientReportController.patientReportSearch}" ajax="false" >
                                     </p:commandButton>
-                                    <p:commandButton  styleClass="nonPrintBlock"  value="Report Search" action="/lab/search_for_reporting_ondemand" ajax="false" onclick="onSubmitButton();"  >
+                                    <p:commandButton  styleClass="nonPrintBlock"  value="Report Search" action="/lab/search_for_reporting_ondemand" ajax="false"   >
                                     </p:commandButton>
-                                    <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false" onclick="onSubmitButton();"  >
+                                    <p:commandButton  styleClass="nonPrintBlock"  value="To Approve List" action="#{searchController.listReportsAwaitingApproval()}" ajax="false"   >
                                     </p:commandButton>
 
-                                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
+                                    <p:commandButton styleClass="nonPrintBlock" ajax="false" value="Back to Visit" action="/clinical/clinical_new_opd_visit.xhtml" style="float: right;"  ></p:commandButton>
 
                                 </h:panelGrid>
 
@@ -569,5 +569,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

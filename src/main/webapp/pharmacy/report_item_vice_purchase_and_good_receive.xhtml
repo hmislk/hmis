@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Item-vice purchase/good receive" >
@@ -25,16 +25,16 @@
                                 itemValue="#{dept}" 
                                 forceSelection="true" 
                                 value="#{pharmacyPurchaseController.department}" 
-                                converter="departmentConverter" >
+                                 >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
                             <p:calendar value="#{pharmacyPurchaseController.fromDate}" 
-                                        pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
                             <h:outputLabel value="To" ></h:outputLabel>
                             <p:calendar value="#{pharmacyPurchaseController.toDate}" 
-                                        pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
 
                         </h:panelGrid>

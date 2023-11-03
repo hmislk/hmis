@@ -95,7 +95,7 @@
                          font-size: 12px!important;" >  
 
                         <h:outputLabel value="#{cc.attrs.bill.billDate}">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
 
                     </div>
@@ -139,7 +139,7 @@
                          font-size:12px!important;" >      
 
                         <h:outputLabel value="#{cc.attrs.bill.billTime}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                         </h:outputLabel>
 
                     </div>

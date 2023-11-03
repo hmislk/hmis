@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/inward/inward_administration.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:panelGroup >
             <h:form id="form"  >
 
@@ -15,14 +15,14 @@
                     <h:panelGrid columns="1" >
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Select Service" />
-                            <p:autoComplete converter="timedIt" 
+                            <p:autoComplete 
                                             forceSelection="true"  
                                             value="#{timedItemFeeController.currentIx}" 
                                             completeMethod="#{timedItemController.completeInvest}" 
                                             var="ix" itemLabel="#{ix.name}" 
                                             itemValue="#{ix}" 
-                                            size="30"
-                                            style="width: 400px;">
+                                            class="w-100 mx-2"
+                                            >
                                 <p:ajax event="itemSelect" process="@this" update="gpDetail" listener="#{timedItemFeeController.fillCharges()}"></p:ajax>
                             </p:autoComplete>
                         </h:panelGrid>
@@ -35,28 +35,29 @@
                                 </f:facet>
                                 <h:panelGrid columns="2">
                                     <h:outputText value="Fee Name"/>
-                                    <h:inputText autocomplete="off" id="txtFeeName" value="#{timedItemFeeController.currentFee.name}"/>
+                                    <p:inputText autocomplete="off" id="txtFeeName" value="#{timedItemFeeController.currentFee.name}" class="mx-2" />
                                     <h:outputText value="Fee Type"/>
-                                    <h:selectOneListbox id="cmbFeeType" size="1" value="#{timedItemFeeController.currentFee.feeType}" >
+                                    <p:selectOneMenu id="cmbFeeType" class="mx-2" value="#{timedItemFeeController.currentFee.feeType}" >
                                         <f:selectItem itemLabel="Please select the type"/>
                                         <f:selectItem itemLabel="Staff Fee" itemValue="Staff" />
                                         <f:selectItem itemLabel="Hospital Fee" itemValue="OwnInstitution" />
                                         <f:selectItem itemLabel="Outside Fee" itemValue="OtherInstitution" />
-                                    </h:selectOneListbox>
+                                    </p:selectOneMenu>
                                     <h:outputText value="Fee"/>
-                                    <h:inputText autocomplete="off" id="txtFee" value="#{timedItemFeeController.currentFee.fee}"/>
+                                    <p:inputText autocomplete="off" id="txtFee" value="#{timedItemFeeController.currentFee.fee}" class="mx-2"/>
                                     <h:outputLabel value="Duration Hour"/>
-                                    <h:inputText autocomplete="off" value="#{timedItemFeeController.currentFee.durationHours}"/>
+                                    <p:inputText autocomplete="off" value="#{timedItemFeeController.currentFee.durationHours}" class="mx-2"/>
                                     <h:outputLabel value="Over Shoot Hour"/>
-                                    <h:inputText autocomplete="off" value="#{timedItemFeeController.currentFee.overShootHours}"/>
+                                    <p:inputText autocomplete="off" value="#{timedItemFeeController.currentFee.overShootHours}" class="mx-2"/>
                                     <h:outputLabel value=""/>
                                     <p:selectBooleanCheckbox value="#{timedItemFeeController.currentFee.booleanValue}"
-                                                             itemLabel="Consider Each Unit"/>
+                                                             itemLabel="Consider Each Unit"
+                                                             class="mx-2"/>
                                     <h:outputText value=""/>
-                                    <h:commandButton id="btnAddTo" value="Add" 
-                                                     action="#{timedItemFeeController.saveCharge}" styleClass="buttons">
+                                    <p:commandButton id="btnAddTo" value="Add" 
+                                                     action="#{timedItemFeeController.saveCharge}" class="m-2">
 
-                                    </h:commandButton>
+                                    </p:commandButton>
                                 </h:panelGrid>
 
                                 <p:dataTable id="dtbFee" rowIndexVar="rowIndex" value="#{timedItemFeeController.charges}" var="bi" >
@@ -77,10 +78,10 @@
                                         </p:commandButton>
                                     </p:column>
                                     <p:column headerText="Remove">
-                                        <h:commandButton id="remove" value="Remove" action="#{timedItemFeeController.removeFee}" >
+                                        <p:commandButton id="remove" value="Remove" action="#{timedItemFeeController.removeFee}" >
                                             <f:setPropertyActionListener value="#{bi}" target="#{timedItemFeeController.removedTimedItemFee}"/>
                                             <p:ajax update=":#{p:resolveFirstComponentWithId('lblTotal',view).clientId} dtbFee"  process="remove dtbFee" />
-                                        </h:commandButton>
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
 

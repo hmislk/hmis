@@ -15,18 +15,18 @@
                                 <h:outputLabel value="Visit of #{patientEncounterController.current.patient.person.nameWithTitle} on " >
                                 </h:outputLabel>
                                 <h:outputLabel value="#{patientEncounterController.current.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
                                 <h:outputLabel value= " by #{patientEncounterController.current.opdDoctor.person.nameWithTitle}" >
                                 </h:outputLabel>
                                 <p:spacer width="10" ></p:spacer>
                                 <h:panelGrid columns="6">
-                                    <p:commandButton ajax="false" value="Save Visit" action="#{patientEncounterController.saveSelected()}"  onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Pharmacy Issue" action="#{patientEncounterController.issueItems()}"  onclick="onSubmitButton();"></p:commandButton>
-                                    <p:commandButton ajax="false" value="Services/Investigation" action="#{patientEncounterController.issueServices()}"  onclick="onSubmitButton();"></p:commandButton>
+                                    <p:commandButton ajax="false" value="Save Visit" action="#{patientEncounterController.saveSelected()}"   ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Pharmacy Issue" action="#{patientEncounterController.issueItems()}"  ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Services/Investigation" action="#{patientEncounterController.issueServices()}"  ></p:commandButton>
 
-                                    <p:commandButton ajax="false" value="Back to search" action="clinical_patient_for_receptionist"  style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
-                                    <p:commandButton ajax="false" value="Back to queue" action="clinical_queue" style="float: right;" onclick="onSubmitButton();" ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Back to search" action="clinical_patient_for_receptionist"  style="float: right;"  ></p:commandButton>
+                                    <p:commandButton ajax="false" value="Back to queue" action="clinical_queue" style="float: right;"  ></p:commandButton>
 
                                     
 
@@ -83,7 +83,7 @@
                                             <p:commandButton ajax="false" id="btnAddDx" value="Add Diagnosis" 
                                                              action="#{patientEncounterController.addDx()}" 
                                                              process="acDx txtDx" 
-                                                             update="tblDx" onclick="onSubmitButton();" >
+                                                             update="tblDx"  >
                                             </p:commandButton>
                                             <p:inputTextarea 
                                                 id="txtDx" 
@@ -103,7 +103,7 @@
                                                 <h:outputLabel value="#{edx.lobValue}" ></h:outputLabel>
                                             </p:column>
                                             <p:column  >
-                                                <p:commandButton ajax="false" value="X" update="tblDx" action="#{patientEncounterController.removeCfv()}" onclick="onSubmitButton();"> 
+                                                <p:commandButton ajax="false" value="X" update="tblDx" action="#{patientEncounterController.removeCfv()}" > 
                                                     <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
                                                 </p:commandButton>
                                             </p:column>
@@ -125,7 +125,7 @@
                                             <h:outputLabel value="Name" ></h:outputLabel>
                                             <p:inputText autocomplete="off" id="txtPersonName" value="#{patientEncounterController.current.patient.person.name}" ></p:inputText>
                                             <h:outputLabel value="Date of Birth" ></h:outputLabel>
-                                            <p:calendar id="calPersonDob" value="#{patientEncounterController.current.patient.person.dob}" pattern="dd MMMM yyyy" navigator="true" ></p:calendar>
+                                            <p:calendar id="calPersonDob" value="#{patientEncounterController.current.patient.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" navigator="true" ></p:calendar>
                                             <h:outputLabel value="Address" ></h:outputLabel>
                                             <h:inputTextarea id="txtPatientAddress"  value="#{patientEncounterController.current.patient.person.address}" ></h:inputTextarea>
 
@@ -140,7 +140,7 @@
 
 
                                             <p:commandButton ajax="false" value="Update Patient" actionListener="#{patientEncounterController.updatePerson()}"
-                                                             process="@this txtPersonName calPersonDob txtPatientComments txtPatientAddress" update="panelPt" onclick="onSubmitButton();" ></p:commandButton>
+                                                             process="@this txtPersonName calPersonDob txtPatientComments txtPatientAddress" update="panelPt"  ></p:commandButton>
 
                                         </h:panelGrid>
 
@@ -332,7 +332,7 @@
                                                     <f:convertDateTime pattern="yyyy MM dd" ></f:convertDateTime>
                                                 </h:outputLabel>
                                                 <h:outputLabel value="#{bill.singleBillSession.serviceSession.startingTime}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column  headerText="Bill Type">
@@ -381,7 +381,7 @@
 
                                             <p:column headerText="Visit Date" >
                                                 <h:outputLabel value="#{pe.createdAt}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Dx" >
@@ -393,7 +393,7 @@
                                                 </ui:repeat>
                                             </p:column>
                                             <p:column headerText="View" >
-                                                <p:commandButton ajax="false" value="View" action="#{patientEncounterController.prepareToDisplayPastVisit()}" onclick="onSubmitButton();" >
+                                                <p:commandButton ajax="false" value="View" action="#{patientEncounterController.prepareToDisplayPastVisit()}"  >
                                                     <f:setPropertyActionListener target="#{patientEncounterController.encounterToDisplay}" value="#{pe}" ></f:setPropertyActionListener>
                                                 </p:commandButton>
                                             </p:column>

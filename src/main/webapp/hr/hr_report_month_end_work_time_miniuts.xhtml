@@ -8,7 +8,7 @@
       
       xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
-    <body>
+    <h:body>
 
         <ui:composition template="/resources/template/template.xhtml">
 
@@ -21,9 +21,9 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="Employee : "/>
                             <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
                             <h:outputLabel value="Institution : "/>
@@ -40,7 +40,7 @@
 
                         <h:panelGrid columns="4" >
                             <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReport()}"/>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -88,11 +88,11 @@
                                     <h:outputLabel value="Employee Working Time and Over Time Report " />
                                     <h:outputLabel value="From : "/>
                                     <h:outputLabel value="#{hrReportController.fromDate}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                     <h:outputLabel value=" To : "/>
                                     <h:outputLabel value="#{hrReportController.toDate}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </f:facet>
                                 <p:column  styleClass="shortNumericColumn">
@@ -287,5 +287,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

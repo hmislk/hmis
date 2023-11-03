@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/lab/administration.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -11,7 +11,7 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
 
         <h:form id="form"  >
@@ -23,7 +23,7 @@
                     <h:outputLabel value="Sample Reports" styleClass="nonPrintBlock" ></h:outputLabel>
                 </f:facet>
                 <p:commandButton ajax="false" value="Generate Sample Reports" action="#{investigationController.prepareSelectedReportSamples}"
-                                 styleClass="noPrintButton" onclick="onSubmitButton();"  />
+                                 styleClass="noPrintButton"   />
                 <p:commandButton styleClass="nonPrintBlock"  ajax="false" value="Print" onclick="window.print();" />
 
                 <p:dataTable id="tbl" rowIndexVar="rowIndex" 
@@ -33,7 +33,7 @@
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                              rowsPerPageTemplate="10,20,50,100,500,1000"
-                             styleClass="nonPrintBlock"            
+                             styleClass="nonPrintBlock"        
                              >
                     <p:column headerText="Select" selectionMode="multiple" >
                     </p:column> 

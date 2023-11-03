@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/lab/administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panelGrid columns="1" >
                         <p:panel header="Select Investigation and Field" >
@@ -83,7 +83,7 @@
                                 <h:outputLabel value="Label" ></h:outputLabel>
                                 <p:inputTextarea value="#{investigationItemDynamicLabelController.flagMessage}" ></p:inputTextarea>
                                 <h:outputLabel value="Label" ></h:outputLabel>
-                                <p:commandButton value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}" onclick="onSubmitButton();"  >
+                                <p:commandButton value="Save" ajax="false" action="#{investigationItemDynamicLabelController.saveForDynamicLabel()}"   >
                                 </p:commandButton>
 
 
@@ -135,7 +135,7 @@
                                     </p:column>
 
                                     <p:column headerText="Remove" exportable="false">
-                                        <p:commandButton ajax="false" value="Remove" action="#{investigationItemDynamicLabelController.removeDynamicLabelValue()}" onclick="onSubmitButton();"  >
+                                        <p:commandButton ajax="false" value="Remove" action="#{investigationItemDynamicLabelController.removeDynamicLabelValue()}"   >
                                             <f:setPropertyActionListener value="#{f}" target="#{investigationItemDynamicLabelController.removingInvestigationItemofDynamicLabelType}" />
                                         </p:commandButton>
                                     </p:column>

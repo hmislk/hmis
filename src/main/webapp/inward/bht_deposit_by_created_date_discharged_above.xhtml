@@ -21,7 +21,7 @@
                             <h:outputLabel value="To :" ></h:outputLabel>
 
                             <p:calendar value="#{mdInwardReportController.toDate}" 
-                                        pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
 
                             <p:outputLabel value="Admission Type :"/>
@@ -46,7 +46,7 @@
                             </p:selectOneMenu>
                             <h:outputLabel value="B H T No :" ></h:outputLabel>
                             <h:panelGrid columns="1">
-                                <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                                 value="#{mdInwardReportController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
@@ -78,13 +78,13 @@
 
                        
                         <h:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischargedAbove()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.createDepositByCreatedDateDischargedAbove()}"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.notDisBhtPySummerries()}">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Deposite_of_Undischaged_Patient"  />
                             </p:commandButton>  
                         </h:panelGrid>
@@ -97,11 +97,11 @@
                                     <h:panelGrid columns="4">
                                         <h:outputLabel value="From  "/>
                                         <h:outputLabel value="#{mdInwardReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value="To  "/>
                                         <h:outputLabel value="#{mdInwardReportController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy &nbsp; hh:mm:ss a" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
                                     </h:panelGrid>
                                 </f:facet>
@@ -132,7 +132,7 @@
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -210,7 +210,7 @@
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{can.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
@@ -287,7 +287,7 @@
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{ref.createdAt}"  >
-                                        <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 

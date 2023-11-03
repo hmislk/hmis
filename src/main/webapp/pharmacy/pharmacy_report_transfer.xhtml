@@ -10,20 +10,36 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h:form >
-                    <p:panel header="Pharmacy Reports" >
-                        <p:panelGrid columns="4" styleClass="alignTop">
-                            <p:panel header="Transfer Reports" >
-                                <p:panelGrid columns="1" styleClass="alignTop">
-                                    <p:commandButton value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Receive By Bill Item" action="pharmacy_report_transfer_receive_bill_item" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Issue by Bill" action="pharmacy_report_transfer_issue_bill" ajax="false" ></p:commandButton>                            
-                                    <p:commandButton value="Transfer Receive by Bill" action="pharmacy_report_transfer_receive_bill" ajax="false" ></p:commandButton>                            
-                               </p:panelGrid>
-                            </p:panel>                            
-                        </p:panelGrid>
-                    </p:panel>
-                </h:form>
+
+                <p:panel header="Pharmacy Reports" >
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel>
+                                    <p:tab title="Transfer Reports" >
+                                      
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton value="Transfer Issue By Bill Item" action="pharmacy_report_transfer_issue_bill_item" ajax="false" class="w-100"></p:commandButton>                            
+                                            <p:commandButton value="Transfer Receive By Bill Item" action="pharmacy_report_transfer_receive_bill_item" ajax="false" class="w-100"></p:commandButton>                            
+                                            <p:commandButton value="Transfer Issue by Bill" action="pharmacy_report_transfer_issue_bill" ajax="false" class="w-100"></p:commandButton>                            
+                                            <p:commandButton value="Transfer Receive by Bill" action="pharmacy_report_transfer_receive_bill" ajax="false" class="w-100"></p:commandButton>                            
+                                        </div>
+                                            
+                                    </p:tab>         
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+
+
+
+                </p:panel>
+
             </ui:define>
 
 

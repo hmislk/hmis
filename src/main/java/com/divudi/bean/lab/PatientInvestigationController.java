@@ -26,6 +26,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
 import com.divudi.entity.Sms;
+import com.divudi.entity.UserPreference;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.InvestigationItem;
 import com.divudi.entity.lab.PatientInvestigation;
@@ -125,6 +126,7 @@ public class PatientInvestigationController implements Serializable {
     private ItemForItemController itemForItemController;
     @Inject
     private SmsController smsController;
+    
 
     /**
      * Class Variables
@@ -145,6 +147,7 @@ public class PatientInvestigationController implements Serializable {
     @Temporal(TemporalType.TIME)
     private Date fromDate;
     Date toDate;
+    private int activeIndexOfManageInvestigation;
 
     boolean showSamplingPagination;
     List<Investigation> investSummery;
@@ -193,7 +196,7 @@ public class PatientInvestigationController implements Serializable {
 
             }
         }
-        patientReportItemValues = getPatientReportItemValueFacade().findBySQL(j, m, 10000000);
+        patientReportItemValues = getPatientReportItemValueFacade().findByJpql(j, m, 10000000);
     }
 
     public void sentRequestToAnalyzer() {
@@ -413,11 +416,11 @@ public class PatientInvestigationController implements Serializable {
         String j = "select ps from PatientSample ps "
                 + "where ps.readyTosentToAnalyzer=true "
                 + " and ps.sentToAnalyzer=false "
-                + " and lower(ps.machine.name) like :ma ";
+                + " and (ps.machine.name) like :ma ";
 
         Map m = new HashMap();
         m.put("ma", "%dimension%");
-        PatientSample ps = getPatientSampleFacade().findFirstBySQL(j, m);
+        PatientSample ps = getPatientSampleFacade().findFirstByJpql(j, m);
         if (ps != null) {
             ps.setReadyTosentToAnalyzer(false);
             ps.setSentToAnalyzer(true);
@@ -431,6 +434,7 @@ public class PatientInvestigationController implements Serializable {
         SysMex sysMex = new SysMex();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
+        
         if (sysMex.getBytes().size() > 189 && sysMex.getBytes().size() < 200) {
             SysMexAdf1 m1 = new SysMexAdf1();
             m1.setInputStringBytesSpaceSeperated(msg);
@@ -545,14 +549,14 @@ public class PatientInvestigationController implements Serializable {
         String j = "select ps from PatientSample ps where ps.id = :id";
         Map m = new HashMap();
         m.put("id", id);
-        return getPatientSampleFacade().findFirstBySQL(j, m);
+        return getPatientSampleFacade().findFirstByJpql(j, m);
     }
 
     public List<PatientSampleComponant> getPatientSampleComponents(PatientSample ps) {
         String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
         Map m = new HashMap();
         m.put("ps", ps);
-        return patientSampleComponantFacade.findBySQL(j, m);
+        return patientSampleComponantFacade.findByJpql(j, m);
     }
 
     private List<PatientInvestigation> getPatientInvestigations(List<PatientSampleComponant> pscs) {
@@ -586,7 +590,7 @@ public class PatientInvestigationController implements Serializable {
                 + " and pi.retired=false "
                 + " order by pi.id";
         m.put("bi", bi);
-        PatientInvestigation pi = getFacade().findFirstBySQL(j, m);
+        PatientInvestigation pi = getFacade().findFirstByJpql(j, m);
         pi.isRetired();
         return pi;
     }
@@ -597,7 +601,7 @@ public class PatientInvestigationController implements Serializable {
         jpql = "select pi from PatientInvestigation pi where pi.billItem.bill=:b";
         Map m = new HashMap();
         m.put("b", bill);
-        List<PatientInvestigation> pis = getFacade().findBySQL(jpql, m);
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
         ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
             ////System.out.println("pi = " + pi);
@@ -615,7 +619,7 @@ public class PatientInvestigationController implements Serializable {
         jpql = "select pi from PatientInvestigation pi where pi.billItem=:b";
         Map m = new HashMap();
         m.put("b", billItem);
-        List<PatientInvestigation> pis = getFacade().findBySQL(jpql, m);
+        List<PatientInvestigation> pis = getFacade().findByJpql(jpql, m);
         ////System.out.println("pis = " + pis);
         for (PatientInvestigation pi : pis) {
             ////System.out.println("pi = " + pi);
@@ -698,7 +702,7 @@ public class PatientInvestigationController implements Serializable {
             temSql = "SELECT inv FROM Investigation inv WHERE inv.id in(SELECT i.investigation.id FROM PatientInvestigation i where i.retired=false and i.collected = false and i.billItem.bill.billDate between :fromDate and :toDate)";
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
-            investSummery = getInvestFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+            investSummery = getInvestFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         }
         if (investSummery == null) {
             investSummery = new ArrayList<Investigation>();
@@ -763,7 +767,7 @@ public class PatientInvestigationController implements Serializable {
         if (currentInvestigation != null) {
 
             sql = "select i from InvestigationItem i where i.retired = false and i.item.id = " + currentInvestigation.getId() + " and i.ixItemType = com.divudi.data.InvestigationItemType.Value order by i.cssTop, i.cssLeft";
-            setCurrentInvestigationItems(getInvestigationItemFacade().findBySQL(sql));
+            setCurrentInvestigationItems(getInvestigationItemFacade().findByJpql(sql));
         } else {
             setCurrentInvestigationItems(new ArrayList<InvestigationItem>());
         }
@@ -779,7 +783,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientInvestigation> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from PatientInvestigation c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from PatientInvestigation c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -866,7 +870,7 @@ public class PatientInvestigationController implements Serializable {
         Map m = new HashMap();
         sql = "select i from ReportItem i where i.item=:ix order by i.cssTop";
         m.put("ix", getCurrent().getInvestigation());
-        currentReportItems = getReportItemFacade().findBySQL(sql, m);
+        currentReportItems = getReportItemFacade().findByJpql(sql, m);
         return currentReportItems;
     }
 
@@ -891,7 +895,7 @@ public class PatientInvestigationController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM PatientInvestigation i where i.retired=false ";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
             if (items == null) {
                 items = new ArrayList<>();
             }
@@ -923,27 +927,21 @@ public class PatientInvestigationController implements Serializable {
             return;
         }
         Bill bill = current.getBillItem().getBill();
-        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getPhone() == null) {
+        if (bill == null || bill.getPatient() == null || bill.getPatient().getPerson() == null || bill.getPatient().getPerson().getSmsNumber()== null) {
             JsfUtil.addErrorMessage("System Error");
             return;
         }
-        String sendingNo = bill.getPatient().getPerson().getPhone();
-        if (sendingNo.contains("077") || sendingNo.contains("076") || sendingNo.contains("070")
-                || sendingNo.contains("071") || sendingNo.contains("072")
-                || sendingNo.contains("075") || sendingNo.contains("078")) {
-        } else {
-            JsfUtil.addErrorMessage("Wrong Telephone Number");
-            return;
-        }
-
+        
         Sms s = new Sms();
+        s.setPending(false);
         s.setBill(bill);
         s.setCreatedAt(new Date());
         s.setCreater(sessionController.getLoggedUser());
         s.setDepartment(sessionController.getLoggedUser().getDepartment());
         s.setInstitution(sessionController.getLoggedUser().getInstitution());
         s.setPatientInvestigation(current);
-        s.setReceipientNumber(bill.getPatient().getPerson().getPhone());
+       
+        s.setReceipientNumber(bill.getPatient().getPerson().getSmsNumber());
 
         String messageBody = "Dear Sir/Madam, "
                 + "Reports bearing bill number " + bill.getInsId() + " is ready for collection at "
@@ -953,17 +951,16 @@ public class PatientInvestigationController implements Serializable {
         s.setSentSuccessfully(true);
         s.setSmsType(MessageType.LabReport);
         getSmsFacade().create(s);
+        
+        UserPreference ap = sessionController.getApplicationPreference();
 
-        //System.out.println("getSmsManagerEjb() = " + getSmsManagerEjb());
-        //System.out.println("s.getReceipientNumber() = " + messageBody);
-        //System.out.println("messageBody = " + s.getReceipientNumber());
-        getSmsController();
-        boolean sent = getSmsManagerEjb().sendSms(s.getReceipientNumber(), s.getSendingMessage(),
-                s.getInstitution().getSmsSendingUsername(),
-                s.getInstitution().getSmsSendingPassword(),
-                s.getInstitution().getSmsSendingAlias());
+      
+        boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
 
         if (sent) {
+            s.setSentSuccessfully(true);
+            getSmsFacade().edit(s);
+            
             getCurrent().getBillItem().getBill().setSmsed(true);
             getCurrent().getBillItem().getBill().setSmsedAt(new Date());
             getCurrent().getBillItem().getBill().setSmsedUser(getSessionController().getLoggedUser());
@@ -974,7 +971,7 @@ public class PatientInvestigationController implements Serializable {
         } else {
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
-        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
+//        getLabReportSearchByInstitutionController().createPatientInvestigaationList();
     }
 
     public void markAsSampled() {
@@ -1045,7 +1042,7 @@ public class PatientInvestigationController implements Serializable {
 //            //////System.out.println("ToDate to get the receive list is " + getToDate());
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
-            lstToReceive = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+            lstToReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         }
         if (lstToReceive == null) {
             lstToReceive = new ArrayList<>();
@@ -1063,13 +1060,13 @@ public class PatientInvestigationController implements Serializable {
                 temSql = "SELECT i FROM PatientInvestigation i where i.retired=false and i.collected = true and i.sampledAt between :fromDate and :toDate and i.receiveDepartment.id = " + getSessionController().getDepartment().getId();
                 temMap.put("toDate", getToDate());
                 temMap.put("fromDate", getFromDate());
-                lstToReceiveSearch = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+                lstToReceiveSearch = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
             } else {
-                temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where (upper(p.name) like '%" + selectText.toUpperCase() + "%' or upper(b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or upper(i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
+                temSql = "select pi from PatientInvestigation pi join pi.investigation i join pi.billItem.bill b join b.patient.person p   where ((p.name) like '%" + selectText.toUpperCase() + "%' or (b.insId) like '%" + selectText.toUpperCase() + "%' or p.phone like '%" + selectText + "%' or (i.name) like '%" + selectText.toUpperCase() + "%' )  and pi.retired=false and b.createdAt between :fromDate and :toDate and pi.receiveDepartment.id = " + getSessionController().getDepartment().getId();
                 temMap.put("toDate", getToDate());
                 temMap.put("fromDate", getFromDate());
 //                //////System.out.println("sql is " + temSql);
-                lstToReceiveSearch = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+                lstToReceiveSearch = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
             }
 
@@ -1093,7 +1090,7 @@ public class PatientInvestigationController implements Serializable {
         temSql = "SELECT i FROM PatientInvestigation i where i.retired=false  and i.collected = false and i.billItem.bill.billDate between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+        lstToSamle = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
     }
 
@@ -1106,7 +1103,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("ins", sessionController.getLoggedUser().getInstitution());
-        patientSamples = getPatientSampleFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        patientSamples = getPatientSampleFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
         /**
          *
          * ps.setSampleDepartment(sessionController.getLoggedUser().getDepartment());
@@ -1136,13 +1133,15 @@ public class PatientInvestigationController implements Serializable {
 
         samplingRequestResponse += "Login=1";
         String zplTemplate = "^XA\r\n"
-                + "^LH150,10\r\n"
-                + "^F010,20,^ADN,18,10^FD#{header}^FS\r\n"
-                + "^LH150,30\r\n"
-                + "^F010,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n"
-                + "^LH150,155\r\n"
-                + "^F010,20,^ADN,18,10^FD#{footer}^FS\r\n"
+                + "^LH170,10\r\n" // was 150
+                + "^FO30,20,^ADN,18,10^FD#{header}^FS\r\n" // was 10
+                + "^LH170,30\r\n" // was 150
+                + "^FO30,10,^BCN,100,Y,N,N^FD#{barcode}^FS\r\n" // was 10
+                + "^LH170,155\r\n" // was 150
+                + "^FO30,20,^ADN,18,10^FD#{footer}^FS\r\n" // was 10
                 + "^XZ\r\n";
+
+
         String ptLabel = "";
         Bill tb;
         tb = patientSamples.get(0).getBill();
@@ -1219,7 +1218,7 @@ public class PatientInvestigationController implements Serializable {
         String j = "Select b from Bill b where b.insId=:id";
         Map m = new HashMap();
         m.put("id", insId);
-        Bill b = getBillFacade().findFirstBySQL(j, m);
+        Bill b = getBillFacade().findFirstByJpql(j, m);
         List<Bill> bs = billController.validBillsOfBatchBill(b.getBackwardReferenceBill());
         if (bs == null || bs.isEmpty()) {
             JsfUtil.addErrorMessage("Can not find the bill. Please recheck.");
@@ -1251,7 +1250,7 @@ public class PatientInvestigationController implements Serializable {
             j = "Select pi from PatientInvestigation pi "
                     + " where pi.cancelled=:can "
                     + " and pi.billItem.bill=:bill";
-            List<PatientInvestigation> pis = getFacade().findBySQL(j, m);
+            List<PatientInvestigation> pis = getFacade().findByJpql(j, m);
             for (PatientInvestigation ptix : pis) {
                 Investigation ix = ptix.getInvestigation();
 
@@ -1284,7 +1283,7 @@ public class PatientInvestigationController implements Serializable {
                             m.put("sc", ixi.getSampleComponent());
                         }
 
-                        PatientSample pts = getPatientSampleFacade().findFirstBySQL(j, m);
+                        PatientSample pts = getPatientSampleFacade().findFirstByJpql(j, m);
                         if (pts == null) {
                             pts = new PatientSample();
                             pts.setTube(ixi.getTube());
@@ -1321,7 +1320,7 @@ public class PatientInvestigationController implements Serializable {
                         m.put("pt", b.getPatient());
                         m.put("ptix", ptix);
                         m.put("ixc", ixi.getSampleComponent());
-                        ptsc = getPatientSampleComponantFacade().findFirstBySQL(j, m);
+                        ptsc = getPatientSampleComponantFacade().findFirstByJpql(j, m);
                         if (ptsc == null) {
                             ptsc = new PatientSampleComponant();
                             ptsc.setPatientSample(pts);
@@ -1351,7 +1350,7 @@ public class PatientInvestigationController implements Serializable {
         m = new HashMap();
         m.put("pts", ps);
 
-        ts = getItemFacade().findBySQL(j, m);
+        ts = getItemFacade().findByJpql(j, m);
         return ts;
     }
 
@@ -1365,7 +1364,7 @@ public class PatientInvestigationController implements Serializable {
         m.put("t", ItemType.SampleComponent);
         m.put("r", false);
         m.put("m", ix);
-        return getItemFacade().findBySQL(j, m);
+        return getItemFacade().findByJpql(j, m);
     }
 
     private PatientInvestigation patientInvestigationOfBillComponant(List<PatientInvestigation> bcs, BillComponent bc) {
@@ -1403,7 +1402,7 @@ public class PatientInvestigationController implements Serializable {
         temSql = "SELECT i FROM PatientInvestigation i where i.retired=false  and i.collected = true and i.billItem.bill.billDate between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
-        lstToSamle = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+        lstToSamle = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         checkRefundBillItems(lstToSamle);
     }
 
@@ -1419,7 +1418,7 @@ public class PatientInvestigationController implements Serializable {
         sql = "select bi from BillItem bi "
                 + " where bi.referanceBillItem.id=:bi ";
         m.put("bi", pi.getBillItem().getId());
-        List<BillItem> bis = billItemFacade.findBySQL(sql, m);
+        List<BillItem> bis = billItemFacade.findByJpql(sql, m);
         if (bis.isEmpty()) {
             pi.getBillItem().setTransRefund(false);
         } else {
@@ -1447,7 +1446,7 @@ public class PatientInvestigationController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("d", getSessionController().getDepartment());
 //        //////System.out.println("Sql is " + temSql);
-        toReceive = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+        toReceive = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Lab/worksheets(/faces/lab/receive.xhtml)");
     }
@@ -1503,7 +1502,7 @@ public class PatientInvestigationController implements Serializable {
 //            //////System.out.println(temSql);
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
-            lstToEnterData = getFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+            lstToEnterData = getFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         }
         if (lstToEnterData == null) {
             lstToEnterData = new ArrayList<PatientInvestigation>();
@@ -1535,7 +1534,7 @@ public class PatientInvestigationController implements Serializable {
             Map temMap = new HashMap();
             temMap.put("toDate", getToDate());
             temMap.put("fromDate", getFromDate());
-            lstToApprove = getPrFacade().findBySQL(temSql, temMap, TemporalType.TIMESTAMP);
+            lstToApprove = getPrFacade().findByJpql(temSql, temMap, TemporalType.TIMESTAMP);
         }
         if (lstToApprove == null) {
             lstToApprove = new ArrayList<PatientReport>();
@@ -1561,7 +1560,7 @@ public class PatientInvestigationController implements Serializable {
 
         String temSql;
         temSql = "SELECT i FROM PatientReport i";
-        lstToPrint = getPrFacade().findBySQL(temSql);
+        lstToPrint = getPrFacade().findByJpql(temSql);
 
         if (lstToPrint == null) {
             lstToPrint = new ArrayList<PatientReport>();
@@ -1697,6 +1696,8 @@ public class PatientInvestigationController implements Serializable {
         }
         return patientSamples;
     }
+    
+    
 
     public void setPatientSamples(List<PatientSample> patientSamples) {
         this.patientSamples = patientSamples;
@@ -1842,6 +1843,14 @@ public class PatientInvestigationController implements Serializable {
         return patientReportItemValueFacade;
     }
 
+    public int getActiveIndexOfManageInvestigation() {
+        return activeIndexOfManageInvestigation;
+    }
+
+    public void setActiveIndexOfManageInvestigation(int activeIndexOfManageInvestigation) {
+        this.activeIndexOfManageInvestigation = activeIndexOfManageInvestigation;
+    }
+
     /**
      *
      */
@@ -1901,4 +1910,5 @@ public class PatientInvestigationController implements Serializable {
         this.billItemFacade = billItemFacade;
     }
 
+    
 }

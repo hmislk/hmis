@@ -6,16 +6,14 @@ package com.divudi.entity;
 
 import java.io.Serializable;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
 
 /**
  *
  * @author Buddhika
  */
 @Entity
-@Inheritance
 public class Vocabulary extends Category implements Serializable {
-    private static final long serialVersionUID = 1L;
+    
 
     @Override
     public int hashCode() {

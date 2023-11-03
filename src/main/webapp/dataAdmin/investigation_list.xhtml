@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/dataAdmin/report_entered_data.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                >
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup >
+            <h:form id="form"  >
+                <p:growl  />
+                <p:panel id="panIx"  >
+
+                    <f:facet name="header" >
+                        <h:outputLabel value="List of Investigations"></h:outputLabel>
+                    </f:facet>
+                    <p:commandButton ajax="false" value="Process" action="#{investigationController.listAllIxs}" icon="pi pi-play" />
+
+                    <p:commandButton id="excel" ajax="false" value="Download as Excel" class="m-2" icon="pi pi-file-excel">
+                        <p:dataExporter target="tbl" type="csv" fileName="List of All Investigations" />
+                    </p:commandButton>
+
+                    <p:commandButton value="Download as JSON" ajax="false" icon="pi pi-arrow-down">
+                        <p:fileDownload value="#{investigationItemController.ixToJsonFile}" />
+                    </p:commandButton>
+
+
+
+
+
+                    <p:dataTable id="tbl" 
+                                 rowIndexVar="rowIndex" 
+                                 value="#{investigationController.allIxs}" 
+                                 var="ix" 
+
+                                 rows="20"
+                                 paginator="true"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="20, 50, 100" 
+
+                                 >
+                        <p:column headerText="No." width="30">
+                            <h:outputLabel value="#{rowIndex + 1}" ></h:outputLabel>
+                        </p:column>  
+                        <p:column headerText="Name" sortBy="#{ix.name}" filterBy="#{ix.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Printing Name" sortBy="#{ix.printName}" filterBy="#{ix.printName}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.printName}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Full Name" sortBy="#{ix.fullName}" filterBy="#{ix.fullName}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.fullName}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Code" sortBy="#{ix.code}" filterBy="#{ix.code}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.code}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Category" >
+                            <h:outputLabel value="#{ix.category.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Institution" sortBy="#{ix.institution.name}" filterBy="#{ix.institution.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.institution.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Department" sortBy="#{ix.department.name}" filterBy="#{ix.department.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{ix.department.name}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Price" sortBy="#{ix.total}" width="200" style="text-align: right; padding-right: 20px;">
+                            <h:outputLabel value="#{ix.total}" >
+                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            </h:outputLabel>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+
+        <h:form>
+
+
+
+
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

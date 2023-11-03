@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/dataAdmin/report_entered_data.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Institution Report (#{creditCompanyController.institutionType})" >
@@ -22,13 +22,13 @@
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{institutionController.institutionTypes}"/>
                             </p:selectOneMenu>
-                            <p:commandButton ajax="false" value="Fill" action="#{creditCompanyController.fillInstitutions()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{creditCompanyController.fillInstitutions()}"  ></p:commandButton>
                             <h:panelGrid columns="2">
                                 <p:commandButton value="Print" ajax="false" action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" >
+                                <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  >
                                     <p:dataExporter type="xlsx" target="tbl" fileName="Detailed_#{creditCompanyController.institutionType}_List"  />
                                 </p:commandButton>
                             </h:panelGrid>
@@ -132,7 +132,7 @@
                                         <h:outputLabel value="Created At"/>
                                     </f:facet>                                    
                                     <h:outputLabel value="#{i.createdAt}"  >
-                                        <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                 </p:column>
 

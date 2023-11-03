@@ -6,8 +6,8 @@
  * Author:  buddhika
  * Created: Sep 10, 2022
  */
-select concat('rename table ', table_name, ' to  temp' , ';','rename table temp to  ',  upper(table_name), ';' ) from information_schema.tables where table_schema = 'arogya';
-concat('rename table ', table_name, ' to  temp' , ';','rename table temp to  ',  upper(table_name), ';' )
+select concat('rename table ', table_name, ' to  temp' , ';','rename table temp to  ',  (table_name), ';' ) from information_schema.tables where table_schema = 'arogya';
+concat('rename table ', table_name, ' to  temp' , ';','rename table temp to  ',  (table_name), ';' )
 
 rename table agenthistory to  temp;rename table temp to  AGENTHISTORY;
 rename table agentreferencebook to  temp;rename table temp to  AGENTREFERENCEBOOK;

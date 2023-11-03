@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/pharmacy/pharmacy_reports_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -9,7 +9,7 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup >
             <h:form  >
@@ -21,13 +21,13 @@
                                         var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                         forceSelection="true" styleClass="mediuminput"
                                         value="#{pharmacyController.department}" 
-                                        converter="departmentConverter" >
+                                         >
                         </p:autoComplete>
                         <h:outputLabel value="" ></h:outputLabel>
 
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" value="#{pharmacyController.fromDate}"  styleClass="mediuminput"
-                                    navigator="true"  pattern="dd MMMM yyyy hh:mm" >
+                                    navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <p:commandButton ajax="false"
                                          action="#{pharmacyController.createAllItemTransactionSummery()}" value="Process"/>
@@ -35,7 +35,7 @@
 
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" value="#{pharmacyController.toDate}"  styleClass="mediuminput"
-                                    navigator="true" pattern="dd MMMM yyyy hh:mm" >
+                                    navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <p:commandButton value="Excel" ajax="false">

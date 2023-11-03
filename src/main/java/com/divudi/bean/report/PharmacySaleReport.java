@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.report;
 
+import com.divudi.bean.common.AuditEventApplicationController;
 import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
@@ -25,6 +26,7 @@ import com.divudi.data.table.String1Value6;
 import com.divudi.data.table.String2Value4;
 import com.divudi.ejb.BillReportBean;
 import com.divudi.ejb.CommonFunctions;
+import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
 import com.divudi.entity.BilledBill;
@@ -65,9 +67,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -230,6 +235,8 @@ public class PharmacySaleReport implements Serializable {
     /////
     @Inject
     CommonController commonController;
+    @Inject
+    AuditEventApplicationController auditEventApplicationController;
     @EJB
     private CommonFunctions commonFunctions;
     @EJB
@@ -305,7 +312,7 @@ public class PharmacySaleReport implements Serializable {
                 + " group by s.itemBatch.item "
                 + " order by s.itemBatch.item.name";
 
-        nonMovingItems = itemFacade.findBySQL(j, m);
+        nonMovingItems = itemFacade.findByJpql(j, m);
         ////System.out.println("nonMovingItems = " + nonMovingItems);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Administration/Bulk update/Update bulk category(/faces/pharmacy/pharmacy_report_non_moving_items.xhtml)");
@@ -360,7 +367,33 @@ public class PharmacySaleReport implements Serializable {
 //
 //    }
     public void createGRNBillItemTable() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createGRNBillItemTable()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
 //select bi from BillItem bi where  bi.retired=false  and bi.bill.billType=:bt  and bi.bill.createdAt bettween :fd and :td  and bi.bill.depId like :di  and bi.bill.referenceBill.deptId like :po;
         String sql;
@@ -371,14 +404,14 @@ public class PharmacySaleReport implements Serializable {
                 + " and bi.bill.createdAt between :fd and :td ";
 
         if (searchKeyword.getBillNo() != null && !searchKeyword.getBillNo().toUpperCase().trim().equals("")) {
-            sql += " and (upper(bi.bill.depId) like :di) ";
+            sql += " and ((bi.bill.depId) like :di) ";
             m.put("di", "%" + searchKeyword.getBillNo().toUpperCase().trim() + "%");
         }
 //        BillItem bi = new BillItem();
 //        bi.getBill().getReferenceBill().getDeptId();
 //        bi.getBill().getFromInstitution();
         if (searchKeyword.getRefBillNo() != null && !searchKeyword.getRefBillNo().toUpperCase().trim().equals("")) {
-            sql += " and (upper(bi.bill.referenceBill.deptId) like :po) ";
+            sql += " and ((bi.bill.referenceBill.deptId) like :po) ";
             m.put("po", "%" + searchKeyword.getRefBillNo().toUpperCase().trim() + "%");
         }
 
@@ -395,11 +428,16 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", getFromDate());
         m.put("td", getToDate());
 
-        billItems = getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         totalPurchaseValue = getFreeQtyByPurchaseRateTotal(billItems);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN bill item report(/faces/pharmacy/pharmacy_report_grn_billitem.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/GRN/GRN bill item report(/faces/pharmacy/pharmacy_report_grn_billitem.xhtml?faces-redirect=true)");
     }
 
     public double getFreeQtyByPurchaseRateTotal(List<BillItem> items) {
@@ -538,10 +576,44 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createTableSaleBillItems() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createTableSaleBillItems()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         billItems = createSaleBillItems(BillType.PharmacySale);
         grantTotal = fetchSaleByBillTotal(billItems);
         wholeSaleBillItems = createSaleBillItems(BillType.PharmacyWholeSale);
         grantNetTotalWholeSale = fetchSaleByBillTotal(wholeSaleBillItems);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
     }
 
     public double fetchSaleByBillTotal(List<BillItem> bis) {
@@ -583,7 +655,7 @@ public class PharmacySaleReport implements Serializable {
         }
 
         sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
-        billItems = billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billItems = billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -622,7 +694,7 @@ public class PharmacySaleReport implements Serializable {
         }
 
         sql += "  order by i.item.name,i.createdAt,i.bill.billClassType ";
-        return billItemFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return billItemFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -656,7 +728,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private List<Object[]> fetchSaleValueByPaymentmethodBillDate() {
         String sql;
 
@@ -719,6 +791,1061 @@ public class PharmacySaleReport implements Serializable {
 
     }
 
+    public String navigatePharmacyReportGrnDetail() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnDetail()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grn_detail.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportGrnDetailBySupplier() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnDetailBySupplier()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grn_detail_by_supplier.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportGrnBillItem() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnBillItem()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grn_billitem.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportGrnRegistory() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnRegistory()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grn_registory.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportPurchaseBillByDepartment() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportPurchaseBillByDepartment()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_purchase_bills_by_department.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportPurchaseDetailBySupplier() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportPurchaseDetailBySupplier()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_purchase_detail_by_supplier.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportPurchaseDetail() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportPurchaseDetail()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_purchase_detail.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportGrnAndPurchaseDetail() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnAndPurchaseDetail()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grn_and_purchase_detail.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportPurchaseBillItem() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportPurchaseBillItem()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_purchase_bill_item.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportGrnPaymentDetail() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnPaymentDetail()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grnPayment_detail.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportGrnPaymentDetailBySupplier() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnPaymentDetailBySupplier()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grnPayment_detail_by_supplier.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportUnitIssueBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportUnitIssueBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_unit_issue_bill.xhtml?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportUnitIssueDepartmentByDepartment() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportUnitIssueDepartmentByDepartment()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_unit_issue_department_by_department?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportUnitReportByItem() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportUnitReportByItem()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/unit_report_by_item?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportUnitReportByItem1() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportUnitReportByItem1()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/unit_report_by_item_1?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportBhtIssueBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportBhtIssueBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportBhtIssueBillItem() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportBhtIssueBillItem()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_bht_issue_billItem?faces-redirect=true";
+    }
+
+    public String navigateReportBhtIssueByItem() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigateReportBhtIssueByItem()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/inward/report_bht_issue_by_item?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportStaffIssueBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportStaffIssueBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_staff_issue_bill?faces-redirect=true";
+    }
+
+    public String navigatePharmacyReportBhtIssueItemWithMargin() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportBhtIssueItemWithMargin()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportIssueByDateSummary() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportIssueByDateSummary()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_issue_by_date_summery?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportTransferRecieveItemCount() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportTransferRecieveItemCount()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_transfer_receive_item_count_bht_issue_count?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportCategoryViceMovement() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportCategoryViceMovement()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_category_vice_movement?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportCategoryViceMovementItemBach() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportCategoryViceMovementItemBach()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_category_vice_movement_item_batch?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportSummaryAll() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportSummaryAll()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_summery_all?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportGrnDetail1() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportGrnDetail1()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_report_grn_detail_1?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyBillReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyBillReport()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy/pharmacy_bill_report?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyWholeBillReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyWholeBillReport()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy_wholesale/pharmacy_whole_bill_report?faces-redirect=true";
+    }
+    
+    public String navigatePharmacyReportCredit() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("navigatePharmacyReportCredit()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        return "/pharmacy_wholesale/pharmacy_report_credit?faces-redirect=true";
+    }
+    
+    
     private List<Object[]> fetchSaleValueByPaymentmethodByBill() {
         String sql;
 
@@ -1118,8 +2245,6 @@ public class PharmacySaleReport implements Serializable {
         Date fd = getCommonFunctions().getStartOfDay(date);
         Date td = getCommonFunctions().getEndOfDay(date);
 
-        System.err.println("From " + fd);
-
         m.put("fd", fd);
         m.put("td", td);
         m.put("pm1", PaymentMethod.Cash);
@@ -1480,7 +2605,7 @@ public class PharmacySaleReport implements Serializable {
                 + " i.createdAt between :fd and :td "
                 + " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1509,7 +2634,7 @@ public class PharmacySaleReport implements Serializable {
         }
         sql += " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1533,7 +2658,7 @@ public class PharmacySaleReport implements Serializable {
                 + " i.createdAt between :fd and :td "
                 + " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1558,7 +2683,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and i.bill.createdAt between :fd and :td "
                 + " order by i.bill.deptId ";
 
-        return getBillItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1596,7 +2721,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql += " order by i.deptId ";
 
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -1619,7 +2744,7 @@ public class PharmacySaleReport implements Serializable {
                 + "  and type(i)=:class"
                 + "  and i.createdAt between :fd and :td "
                 + " order by i.deptId ";
-        return getBillFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
 
@@ -2236,7 +3361,7 @@ public class PharmacySaleReport implements Serializable {
         return getBillItemFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
+
     private double calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod paymentMethod) {
         //   List<Stock> billedSummery;
         String sql;
@@ -2548,7 +3673,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSaleReportByDate() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSaleReportByDate()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedSummery = new PharmacySummery();
 
@@ -2603,7 +3754,12 @@ public class PharmacySaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartment();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by bill type(/faces/pharmacy/pharmacy_report_sale_by_date_summery.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by bill type(/faces/pharmacy/pharmacy_report_sale_by_date_summery.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
 
@@ -2611,8 +3767,6 @@ public class PharmacySaleReport implements Serializable {
         billedSummery = new PharmacySummery();
 
         List<String1Value3> listRowSale = setPharmacyBills(fetchSaleValueByDepartment(BillType.PharmacySale));
-
-        System.err.println(listRowSale);
 
         billedSummery.setBills(listRowSale);
 
@@ -2917,8 +4071,35 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createCategoryMovementReportNew() {
-        Date startTime = new Date();
+         FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
 
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createCategoryMovementReportNew()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        
         String sql;
         Map m = new HashMap();
 
@@ -2961,7 +4142,6 @@ public class PharmacySaleReport implements Serializable {
 
                 //System.out.println("cv = " + cv);
                 //System.out.println("sv = " + sv);
-
                 //System.out.println("pi = " + pi);
                 //System.out.println("ti = " + ti);
                 if (sv == 0) {
@@ -3025,7 +4205,13 @@ public class PharmacySaleReport implements Serializable {
             totalMargineValue += r.getMarginValue();
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date(/faces/pharmacy/pharmacy_report_category_vice_movement.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+      
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Category-vice movement report/Movement report stock by date(/faces/pharmacy/pharmacy_report_category_vice_movement?faces-redirect=true)");
     }
 
     public void createCategoryMovementReportByItemBatch() {
@@ -3087,7 +4273,6 @@ public class PharmacySaleReport implements Serializable {
                 //System.out.println("***billType = " + billType);
                 //System.out.println("itemBatch.getItem().getName() = " + itemBatch.getItem().getName());
                 //System.out.println("qty = " + qty);
-
                 if (pi == null || !itemBatch.equals(pi)) {
                     r = new CategoryMovementReportRow();
                     r.setItemBatch(itemBatch);
@@ -3388,7 +4573,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createIssueReportByDate() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createIssueReportByDate()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedSummery = new PharmacySummery();
 
@@ -3423,8 +4634,12 @@ public class PharmacySaleReport implements Serializable {
         billedSummery.setRefundedTotal(calGrantNetTotalIssue(new RefundBill()));
 
         grantNetTotal = calGrantNetTotalIssue();
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer issue summery report by date(/faces/pharmacy/pharmacy_report_issue_by_date_summery.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Transfer Report/Transfer issue summery report by date(/faces/pharmacy/pharmacy_report_issue_by_date_summery?faces-redirect=true)");
 
     }
 
@@ -3749,7 +4964,7 @@ public class PharmacySaleReport implements Serializable {
         hm.put("ins", getInstitution());
         hm.put("dep", getDepartment());
 
-        return getBillFacade().findBySQL(sql, hm, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
 
     }
 
@@ -4175,12 +5390,38 @@ public class PharmacySaleReport implements Serializable {
                 + " and d.departmentType=:dtp ";
         HashMap hm = new HashMap();
         hm.put("dtp", departmentType);
-        return departmentFacade.findBySQL(sql, hm);
+        return departmentFacade.findByJpql(sql, hm);
 
     }
 
     public void createPharmacyReport() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createPharmacyReport()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         List<Department> departments = fetchDepartment(DepartmentType.Pharmacy);
 
@@ -4521,12 +5762,44 @@ public class PharmacySaleReport implements Serializable {
             totalUnitIssueNC += newRow.getValue6();
             unitIssues.add(newRow);
         }
-
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/All department sale summery(/faces/pharmacy/pharmacy_report_summery.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/All department sale summery(/faces/pharmacy/pharmacy_report_summery.xhtml?faces-redirect=true)");
 
     }
 
     public void createSalePaymentMethod() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethod()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethod();
@@ -4584,10 +5857,43 @@ public class PharmacySaleReport implements Serializable {
         grantCardTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Card);
         grantCashTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBillItem(PaymentMethod.Credit);
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
-    
+
     public void createSalePaymentMethodBillDate() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
+        Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethodBillDate()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
         List<Object[]> list = fetchSaleValueByPaymentmethodBillDate();
@@ -4646,10 +5952,43 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBillItemBillDate(PaymentMethod.Credit);
 
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
     }
 
     public void createSalePaymentMethodByBill() {
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethodByBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedPaymentSummery = new PharmacyPaymetMethodSummery();
 
@@ -4709,7 +6048,12 @@ public class PharmacySaleReport implements Serializable {
         grantCashTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Cash);
         grantCreditTotal = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by paymentmethod(By bill)(/faces/pharmacy/pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml)");
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Summery/Sale summery by paymentmethod(By bill)(/faces/pharmacy/pharmacy_report_sale_by_date_summery_payment_method_by_bill.xhtml?faces-redirect=true)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
     }
 
@@ -4737,7 +6081,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createPharmacyIssueBHT() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createPharmacyIssueBHT()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         itemWithDepBHTIssues = new ArrayList<>();
         ItemWithDepBHTIssue depBHTIssue = null;
@@ -4784,7 +6154,13 @@ public class PharmacySaleReport implements Serializable {
             }
         }
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue with margin report(/faces/pharmacy/pharmacy_report_bht_issue_item_with_margin.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/BHT issue/BHT issue with margin report(/faces/pharmacy/pharmacy_report_bht_issue_item_with_margin?faces-redirect=true)");
 
     }
 
@@ -4793,7 +6169,7 @@ public class PharmacySaleReport implements Serializable {
 
         sql = " select d from Department d where d.retired=false ";
 
-        return getDepartmentFacade().findBySQL(sql);
+        return getDepartmentFacade().findByJpql(sql);
     }
 
     public List<ItemBatch> fetchPharmacyItemBatchs(Bill b) {
@@ -4813,7 +6189,7 @@ public class PharmacySaleReport implements Serializable {
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        return itemBatchFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        return itemBatchFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> fetchPharmacyItemTotals(Department d, ItemBatch i, Bill b) {
@@ -4888,7 +6264,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSaleReportByDateDetail() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSaleReportByDateDetail()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -4958,12 +6360,44 @@ public class PharmacySaleReport implements Serializable {
         grantNetTotal = calGrantNetTotalByDepartment(paymentMethod);
         grantDiscount = calGrantDiscountByDepartmentByBill(paymentMethod);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail - by bill(/faces/pharmacy/pharmacy_report_sale_by_date_detail.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail - by bill(/faces/pharmacy/pharmacy_report_sale_by_date_detail.xhtml?faces-redirect=true)");
 
     }
 
     public void createSaleReportByDateDetailPaymentScheme() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSaleReportByDateDetailPaymentScheme()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -5032,6 +6466,11 @@ public class PharmacySaleReport implements Serializable {
 
         grantNetTotal = calGrantNetTotalByDepartmentPaymentScheme();
         grantDiscount = calGrantDiscountByDepartmentPaymentScheme();
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale detail by discount schema(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme.xhtml)");
 
@@ -5114,7 +6553,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalereportByDateSummeryPaymentscheam() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalereportByDateSummeryPaymentscheam()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         if (department == null) {
             UtilityController.addErrorMessage("Select Department");
@@ -5140,7 +6605,13 @@ public class PharmacySaleReport implements Serializable {
         canTotalWholeSale = w.getCancelledTotal();
         refTotalWholeSale = w.getRefundTotal();
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_by_payment_scheme_1.xhtml?faces-redirect=true)");
 
     }
 
@@ -5286,7 +6757,33 @@ public class PharmacySaleReport implements Serializable {
     }
 
     public void createSalePaymentMethodDetailByBill() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletRequest request = (HttpServletRequest) context.getExternalContext().getRequest();
+        ServletContext servletContext = (ServletContext) context.getExternalContext().getContext();
+
+        String url = request.getRequestURL().toString();
+
+        String ipAddress = request.getRemoteAddr();
+
+        AuditEvent auditEvent = new AuditEvent();
+        auditEvent.setEventStatus("Started");
+        long duration;
         Date startTime = new Date();
+        auditEvent.setEventDataTime(startTime);
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+        }
+
+        if (sessionController != null && sessionController.getInstitution() != null) {
+            auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+        }
+        if (sessionController != null && sessionController.getLoggedUser() != null) {
+            auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+        }
+        auditEvent.setUrl(url);
+        auditEvent.setIpAddress(ipAddress);
+        auditEvent.setEventTrigger("createSalePaymentMethodDetailByBill()");
+        auditEventApplicationController.logAuditEvent(auditEvent);
 
         billedDetail = new PharmacyDetail();
         cancelledDetail = new PharmacyDetail();
@@ -5464,7 +6961,13 @@ public class PharmacySaleReport implements Serializable {
         grantCreditTotalWholeSale = calGrantTotalByPaymentMethodByBill(PaymentMethod.Credit, BillType.PharmacyWholeSale);
         grantDiscountWholeSale = calGrantDiscountByDepartmentByBill(BillType.PharmacyWholeSale);
 
-        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml)");
+        Date endTime = new Date();
+        duration = endTime.getTime() - startTime.getTime();
+        auditEvent.setEventDuration(duration);
+        auditEvent.setEventStatus("Completed");
+        auditEventApplicationController.logAuditEvent(auditEvent);
+
+        commonController.printReportDetails(fromDate, toDate, startTime, "Pharmacy/Reports/Summeries/Sale Details/Sale summery by discount scheme summery(/faces/pharmacy/pharmacy_report_sale_by_date_detail_payment_method.xhtml?faces-redirect=true)");
     }
 
     public void createSalePaymentMethodDetailBillItems() {
@@ -5636,7 +7139,6 @@ public class PharmacySaleReport implements Serializable {
 
         items = new ArrayList<>();
         for (Item i : ampsWithDealor) {
-            System.err.println("in");
             ////System.out.println("item = " + i.getName());
             List<Amp> allAmps = getAmpItems(i);
             ////System.out.println("amps = " + allAmps.size());
@@ -5689,7 +7191,7 @@ public class PharmacySaleReport implements Serializable {
                 + " or c.departmentType!=:dep2 )"
                 + " order by c.name ";
 
-        return ampFacade.findBySQL(sql, m);
+        return ampFacade.findByJpql(sql, m);
     }
 
     public List<Amp> getAllDealorItems() {
@@ -5701,7 +7203,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and i.item.retired=false "
                 + " order by i.item.name ";
 
-        return ampFacade.findBySQL(sql);
+        return ampFacade.findByJpql(sql);
     }
 
     public List<Object[]> getAllDealorItemsWithCount() {
@@ -5725,7 +7227,7 @@ public class PharmacySaleReport implements Serializable {
                 + " and i.item=:a ";
 
         m.put("a", a);
-        return ampFacade.findBySQL(sql, m);
+        return ampFacade.findByJpql(sql, m);
     }
 
     public List<Institution> getAllDealors() {
@@ -5735,7 +7237,7 @@ public class PharmacySaleReport implements Serializable {
                 + " where i.retired=false "
                 + " order by i.institution.name ";
 
-        return institutionFacade.findBySQL(sql);
+        return institutionFacade.findByJpql(sql);
     }
 
     public List<ItemsDistributors> getAllDealorItems(Institution ins) {
@@ -5749,7 +7251,7 @@ public class PharmacySaleReport implements Serializable {
 
         m.put("ins", ins);
 
-        return itemsDistributorsFacade.findBySQL(sql, m);
+        return itemsDistributorsFacade.findByJpql(sql, m);
     }
 
     public List<Institution> getItemDealors(Item i) {
@@ -5763,7 +7265,7 @@ public class PharmacySaleReport implements Serializable {
 
         m.put("item", i);
 
-        return institutionFacade.findBySQL(sql, m);
+        return institutionFacade.findByJpql(sql, m);
     }
 
     /**

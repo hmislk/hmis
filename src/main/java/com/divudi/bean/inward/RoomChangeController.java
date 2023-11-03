@@ -286,7 +286,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt desc";
         hm.put("pe", getCurrent());
-        return getPatientRoomFacade().findFirstBySQL(sql, hm);
+        return getPatientRoomFacade().findFirstByJpql(sql, hm);
     }
 
     public void changeGurdianRoom() {
@@ -310,7 +310,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public List<Admission> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Admission c where c.retired=false and c.discharged!=true and upper(c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or upper(c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
+        selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
         return selectedItems;
     }
 
@@ -375,19 +375,7 @@ public class RoomChangeController implements Serializable {
     }
 
     public Admission getCurrent() {
-        if (current == null) {
-            Person p = new Person();
-            Patient tPatient = new Patient();
-            tPatient.setPerson(p);
-
-            current = new Admission();
-            current.setPatient(tPatient);
-
-            Person g = new Person();
-            current.setGuardian(g);
-
-            addLinenCharge = 0.0;
-        }
+       
         return current;
     }
 
@@ -405,7 +393,7 @@ public class RoomChangeController implements Serializable {
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
         hm.put("class", GuardianRoom.class);
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -416,7 +404,7 @@ public class RoomChangeController implements Serializable {
                 + " where pr.patientEncounter=:pe "
                 + " order by pr.admittedAt";
         hm.put("pe", getCurrent());
-        patientRoom = getPatientRoomFacade().findBySQL(sql, hm);
+        patientRoom = getPatientRoomFacade().findByJpql(sql, hm);
 
     }
 
@@ -428,7 +416,7 @@ public class RoomChangeController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Admission i where i.retired=false and i.discharged=false order by i.bhtNo";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
             if (items == null) {
                 items = new ArrayList<>();
             }
@@ -457,7 +445,7 @@ public class RoomChangeController implements Serializable {
         if (patientList == null) {
             String temSql;
             temSql = "SELECT i FROM Patient i where i.retired=false ";
-            patientList = getPatientFacade().findBySQL(temSql);
+            patientList = getPatientFacade().findByJpql(temSql);
         }
         return patientList;
     }

@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"            
                 >
 
     <ui:define name="content">
@@ -68,13 +68,13 @@
                         <h:panelGroup>
                             <h:outputLabel value="From : "  />
                             <h:outputLabel  value="#{bookKeepingSummery.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGroup>
                         <h:panelGroup>
                             <h:outputLabel value="To : "/> 
                             <h:outputLabel  value="#{bookKeepingSummery.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGroup>
                     </h:panelGrid>

@@ -25,11 +25,11 @@
                     <h:outputLabel value="From Date"/>
                     <p:calendar id="frmDate" 
                                 value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                pattern="dd MMMM yyyy" />
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
                     <h:outputLabel value="To Date"/>
                     <p:calendar id="toDate" 
                                 value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                pattern="dd MMMM yyyy" />
+                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
 
                     <h:outputLabel value="Staff : "/>
                     <hr:completeStaff id="roster" value="#{shiftFingerPrintAnalysisController.staff}"/>
@@ -39,14 +39,14 @@
                                          update="lst"
                                          actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                          action="#{shiftFingerPrintAnalysisController.createShiftTableByStaff()}" 
-                                         onclick="onSubmitButton();" /> 
+                                          /> 
 
                         <p:commandButton value="Fill Additional Only"
                                          process="@this frmDate toDate roster"
                                          update="lst"
                                          actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                          action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                         onclick="onSubmitButton();" /> 
+                                          /> 
                     </h:panelGroup>
                 </h:panelGrid>
 
@@ -76,7 +76,7 @@
                                                       or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
                             <f:facet name="header">
                                 <h:outputLabel value="#{data.date}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column headerText="Shift Name" styleClass="singleLine">
@@ -88,12 +88,12 @@
 
                             <p:column headerText="Shift Start">
                                 <h:outputLabel value="#{sts.shiftStartTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Shift End Time">
                                 <h:outputLabel value="#{sts.shiftEndTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </h:outputLabel>
 
                             </p:column>

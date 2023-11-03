@@ -62,12 +62,12 @@ public class ItemFeeController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getCurrentFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -79,7 +79,7 @@ public class ItemFeeController implements Serializable {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -92,7 +92,7 @@ public class ItemFeeController implements Serializable {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + fee.getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -221,12 +221,12 @@ public class ItemFeeController implements Serializable {
 
     public void createCharges() {
         String sql = "select c from ItemFee c where c.retired = false and c.item.id = " + currentIx.getId();
-        fees = itemFeeFacade.findBySQL(sql);
+        fees = itemFeeFacade.findByJpql(sql);
     }
     
     public List<ItemFee> getFees(Item i){
         String sql="select c from ItemFee c where c.retired = false and c.item.id = " + i.getId();
-        List<ItemFee> fees=itemFeeFacade.findBySQL(sql);
+        List<ItemFee> fees=itemFeeFacade.findByJpql(sql);
         return fees;
     }
 

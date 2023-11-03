@@ -13,10 +13,13 @@ public enum InvestigationItemType {
     Css,
     Barcode,
     BarcodeVertical,
+    QrCode,
     Investigation,
     Template,
     AntibioticList,
     Antibiotic,
+    Image,
+    Html,
     @Deprecated
     List,
     @Deprecated

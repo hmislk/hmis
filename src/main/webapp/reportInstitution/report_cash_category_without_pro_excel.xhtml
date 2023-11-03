@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
-                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"                
+                xmlns:ca="http://java.sun.com/jsf/composite/cashSummery"            
                 >
 
     <ui:define name="content">
@@ -63,13 +63,13 @@
                         <h:panelGroup>
                             <h:outputLabel value="From : "  />
                             <h:outputLabel  value="#{cashSummeryControllerExcel1.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGroup>
                         <h:panelGroup>
                             <h:outputLabel value="To : "/>
                             <h:outputLabel  value="#{cashSummeryControllerExcel1.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGroup>
                     </h:panelGrid>
@@ -505,7 +505,7 @@
                         <h:outputLabel value="Slip Date"/>
                     </f:facet>
                     <h:outputLabel value="#{ch.chequeDate}">                                
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>  
                 </p:column> 
                 <p:column headerText="Total" style="width: 20%; text-align: right;">
@@ -568,7 +568,7 @@
                         <p:outputLabel value="Cheque Date"/>    
                     </f:facet>
                     <h:outputLabel value="#{ch.chequeDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>                               
                 </p:column> 
 

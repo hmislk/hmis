@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:p="http://primefaces.org/ui"                
                 xmlns:bi="http://java.sun.com/jsf/composite/bill"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
 
@@ -38,10 +38,10 @@
                             </h:panelGroup>
 
                             <p:commandButton id="btnSettle" value="Settle" action="#{cashRecieveBillController.settleBillPharmacy()}"
-                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" onclick="onSubmitButton();">
+                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                             </p:commandButton>
                             <p:defaultCommand target="btnSettle"/>
-                            <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >
+                            <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -71,7 +71,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Paying Institution : "/>
                                 <p:outputLabel value="#{cashRecieveBillController.institution.name}" id="ins"/>
-                                <p:commandButton ajax="false" action="#{cashRecieveBillController.removeAll()}" value="Remove Selected" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" action="#{cashRecieveBillController.removeAll()}" value="Remove Selected" />
                             </f:facet>       
                             <p:ajax  event="rowSelect" process="@this" 
                                      update=":#{p:resolveFirstComponentWithId('tot',view).clientId}" 
@@ -124,7 +124,7 @@
                                 </p:inputText>
                             </p:column>
 <!--                            <p:column headerText="Remove">
-                                <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" action="#{cashRecieveBillController.remove(b)}" value="X" >
                                 </p:commandButton>
                             </p:column>-->
                         </p:dataTable>
@@ -148,7 +148,7 @@
 
 
                 <p:panel rendered="#{cashRecieveBillController.printPreview}" >
-                    <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}" onclick="onSubmitButton();" >
+                    <p:commandButton value="New Bill" ajax="false" action="#{cashRecieveBillController.prepareNewBill()}"  >
                     </p:commandButton>
                     <bi:insRecieve billController="#{cashRecieveBillController}"  bill="#{cashRecieveBillController.current}" dup="false"/>                       
                 </p:panel>

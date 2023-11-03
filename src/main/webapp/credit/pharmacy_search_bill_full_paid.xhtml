@@ -5,7 +5,7 @@
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"                    
+                xmlns:p="http://primefaces.org/ui"                
                 xmlns:bi="http://java.sun.com/jsf/composite/bill"
                 xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
     <ui:define name="content">
@@ -15,10 +15,10 @@
                     <h:outputLabel value="Credit Payment Bills "/>                          
                     <h:panelGrid columns="5" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                         </p:calendar>
                         <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.reportSettledPharmacyBills()}"/>
                     </h:panelGrid>

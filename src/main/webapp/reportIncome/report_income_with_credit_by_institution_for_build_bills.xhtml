@@ -9,11 +9,11 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/reportIncome/report_income.xhtml">
 
 
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:outputStylesheet library="css" name="printing.css" />
 
 
@@ -27,13 +27,13 @@
                                 <p:spacer width="20" height="0"/>
                                 <h:panelGrid columns="2">
                                     <h:outputLabel value="From Date" />
-                                    <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                    <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                                     </p:calendar>
                                     <h:outputLabel value="To Date" />
-                                    <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                                    <p:calendar styleClass="noPrintButton" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                                     </p:calendar>
                                     <h:outputLabel styleClass="noPrintButton" value="Institution" style="text-align: left; margin: 0px; padding: 0px;" ></h:outputLabel>
-                                    <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
+                                    <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                    
                                                      requiredMessage="You must select a institution" >
                                         <f:selectItem itemLabel="Select Institution"/>
                                         <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
@@ -76,11 +76,11 @@
                                 <h:outputLabel value="&emsp; #{institutionLabSumeryController.department.name}"/>
                                 <h:outputLabel value="From : " style="white-space: pre-line"/>
                             <h:outputLabel value="#{institutionLabSumeryController.fromDate}"  >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                                 <h:outputLabel value="&emsp;To : "  />
                             <h:outputLabel value="#{institutionLabSumeryController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </h:outputLabel>
                                 
                             </f:facet>

@@ -9,7 +9,9 @@ package com.divudi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,8 +24,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Entity
 @XmlRootElement
@@ -46,7 +48,7 @@ public class WebUser implements Serializable {
     @ManyToOne
     WebTheme userWebTheme;
     String webUserPassword;
-    
+
     @OneToOne
     Person webUserPerson;
     //Main Properties
@@ -54,22 +56,30 @@ public class WebUser implements Serializable {
     String name;
     String description;
     //Created Properties
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     WebUser creater;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date createdAt;
     //Retairing properties
-  @JsonIgnore   boolean retired;
-    @ManyToOne @JsonIgnore
+    @JsonIgnore
+    boolean retired;
+    @ManyToOne
+    @JsonIgnore
     WebUser retirer;
-    @Temporal(javax.persistence.TemporalType.TIMESTAMP) @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
     Date retiredAt;
     String retireComments;
     //Activation properties
-   @JsonIgnore  boolean activated;
- @JsonIgnore    @ManyToOne
+    @JsonIgnore
+    boolean activated;
+    @JsonIgnore
+    @ManyToOne
     WebUser activator;
-  @JsonIgnore   @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    @JsonIgnore
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date activatedAt;
     String activateComments;
     @ManyToOne
@@ -78,11 +88,14 @@ public class WebUser implements Serializable {
     String defLocale;
     String email;
     String telNo;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Institution institution;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Department department;
-    @ManyToOne @JsonIgnore
+    @ManyToOne
+    @JsonIgnore
     Staff staff;
 
     String code;
@@ -140,7 +153,49 @@ public class WebUser implements Serializable {
     }
 
     public String getPrimeTheme() {
-        return primeTheme;
+        List<String> validThemes = Arrays.asList(
+                "cerulean",
+                "darkly",
+                "litera",
+                "simplex",
+                "solar",
+                "minty",
+                "primefaces-arya-blue",
+                "primefaces-bootstrap4-blue-dark",
+                "primefaces-bootstrap4-blue-light",
+                "primefaces-bootstrap4-dark-common",
+                "primefaces-bootstrap4-light-common",
+                "primefaces-bootstrap4-purple-dark",
+                "primefaces-bootstrap4-purple-light",
+                "primefaces-luna-amber",
+                "primefaces-luna-blue",
+                "primefaces-luna-common",
+                "primefaces-luna-green",
+                "primefaces-luna-pink",
+                "primefaces-material-compact-deeppurple-dark",
+                "primefaces-material-compact-deeppurple-light",
+                "primefaces-material-compact-indigo-dark",
+                "primefaces-material-compact-indigo-light",
+                "primefaces-material-dark-common",
+                "primefaces-material-deeppurple-dark",
+                "primefaces-material-deeppurple-light",
+                "primefaces-material-indigo-dark",
+                "primefaces-material-indigo-light",
+                "primefaces-material-light-common",
+                "primefaces-mytheme",
+                "primefaces-nova-colored",
+                "primefaces-nova-common",
+                "primefaces-nova-dark",
+                "primefaces-nova-light",
+                "primefaces-saga-blue",
+                "primefaces-vela-blue"
+        );
+
+        if (validThemes.contains(primeTheme)) {
+            return primeTheme;
+        } else {
+            return "cerulean";
+        }
     }
 
     public void setPrimeTheme(String primeTheme) {

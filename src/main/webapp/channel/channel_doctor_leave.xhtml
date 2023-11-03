@@ -11,7 +11,7 @@
             <h:panelGrid columns="2" id="spec">     
                 <p:panel header="Speciality">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="specilityCon" id="acSpeciality" value="#{serviceSessionLeaveController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="acSpeciality" value="#{serviceSessionLeaveController.speciality}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{doctorSpecialityController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}" />
                             <p:ajax  event="change" process="@this" update="tbl scStaff"  /> 
                         </p:selectOneListbox>
@@ -21,7 +21,7 @@
 
                 <p:panel header="Consultant">       
                     <h:panelGrid columns="1">
-                        <p:selectOneListbox converter="stfcon" id="scStaff" value="#{serviceSessionLeaveController.currentStaff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
+                        <p:selectOneListbox  id="scStaff" value="#{serviceSessionLeaveController.currentStaff}" style="height: 300px; width: 300px; padding: 2px; margin: auto;" >
                             <f:selectItems value="#{serviceSessionLeaveController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
                             <p:ajax  event="change" process="@this" update="tbl"  /> 
                         </p:selectOneListbox>
@@ -40,7 +40,7 @@
                     <p:column>
                         <p:commandButton value="Remove" 
                                          ajax="false" action="#{serviceSessionLeaveController.remove(d)}" 
-                                         onclick="onSubmitButton();" disabled="#{d.retired eq true}"
+                                          disabled="#{d.retired eq true}"
                                          >
                             <!--<f:setPropertyActionListener value="#{d}" target="#{serviceSessionLeaveController.current}"/>-->
                         </p:commandButton>
@@ -49,11 +49,11 @@
                 </p:dataTable>
 
 
-                <p:calendar id="calS" mode="inline" value="#{serviceSessionLeaveController.current.sessionDate}" pattern="dd MMMM yyyy" >
+                <p:calendar id="calS" mode="inline" value="#{serviceSessionLeaveController.current.sessionDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                     <f:ajax event="dateSelect" execute="@this"  />
                 </p:calendar>
                 <p:outputLabel/>
-                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.removeLeave}" onclick="onSubmitButton();"/>
+                <p:commandButton ajax="false" value="Add" action="#{serviceSessionLeaveController.removeLeave}" />
             </h:panelGrid>
 
         </h:form>

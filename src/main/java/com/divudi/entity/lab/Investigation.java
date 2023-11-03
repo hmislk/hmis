@@ -7,13 +7,10 @@ package com.divudi.entity.lab;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.SymanticType;
 import com.divudi.entity.Item;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 
 /**
@@ -21,21 +18,17 @@ import javax.persistence.ManyToOne;
  * @author buddhika
  */
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class Investigation extends Item implements Serializable {
 
     static final long serialVersionUID = 1L;
     //Main Properties
     @ManyToOne
-    @JsonIgnore
+    @Deprecated
     InvestigationCategory investigationCategory;
     @ManyToOne
-    @JsonIgnore
     InvestigationTube investigationTube;
     @ManyToOne
-    @JsonIgnore
     Sample sample;
-    @JsonIgnore
     Double SampleVolume;
 
     public InvestigationCategory getInvestigationCategory() {

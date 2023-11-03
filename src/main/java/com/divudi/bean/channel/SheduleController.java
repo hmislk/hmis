@@ -18,6 +18,7 @@ import com.divudi.entity.Department;
 import com.divudi.entity.FeeChange;
 import com.divudi.entity.ItemFee;
 import com.divudi.entity.ServiceSession;
+import com.divudi.entity.ServiceSessionInstance;
 import com.divudi.entity.SessionNumberGenerator;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.Staff;
@@ -117,7 +118,7 @@ public class SheduleController implements Serializable {
                 + " or f.item=:ses )"
                 + " order by f.id";
         m.put("ses", current);
-        itemFees = itemFeeFacade.findBySQL(sql, m);
+        itemFees = itemFeeFacade.findByJpql(sql, m);
     }
 
     public ItemFee createStaffFee() {
@@ -210,7 +211,7 @@ public class SheduleController implements Serializable {
                     sql = " select pi.staff from PersonInstitution pi where pi.retired=false "
                             + " and pi.type=:typ "
                             + " and pi.institution=:ins "
-                            + " and (upper(pi.staff.person.name) like '%" + query.toUpperCase() + "%'or  upper(pi.staff.code) like '%" + query.toUpperCase() + "%' )"
+                            + " and ((pi.staff.person.name) like '%" + query.toUpperCase() + "%'or  (pi.staff.code) like '%" + query.toUpperCase() + "%' )"
                             + " and pi.staff.speciality=:spe "
                             + " order by pi.staff.person.name ";
 
@@ -218,13 +219,13 @@ public class SheduleController implements Serializable {
                     m.put("spe", getSpeciality());
                     m.put("typ", PersonInstitutionType.Channelling);
                 } else {
-                    sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
+                    sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) and p.speciality.id = " + getSpeciality().getId() + " order by p.person.name";
                 }
             } else {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql, m);
+            suggestions = getStaffFacade().findByJpql(sql, m);
         }
         return suggestions;
     }
@@ -239,7 +240,7 @@ public class SheduleController implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
         }
         //////// // System.out.println(sql);
-        suggestions = getStaffFacade().findBySQL(sql);
+        suggestions = getStaffFacade().findByJpql(sql);
 
         return suggestions;
     }
@@ -251,8 +252,8 @@ public class SheduleController implements Serializable {
             suggestions = new ArrayList<>();
         } else {
             if (getCurrentStaff() != null) {
-                sql = "select p from ServiceSession p where p.retired=false and upper(p.name) like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
-                suggestions = getFacade().findBySQL(sql);
+                sql = "select p from ServiceSession p where p.retired=false and (p.name) like '%" + query.toUpperCase() + "%' and p.staff.id = " + getCurrentStaff().getId() + " order by p.name";
+                suggestions = getFacade().findByJpql(sql);
             } else {
                 suggestions = new ArrayList<>();
             }
@@ -299,7 +300,7 @@ public class SheduleController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = departmentFacade.findBySQL(sql);
+            d = departmentFacade.findByJpql(sql);
         }
 
         return d;
@@ -339,7 +340,7 @@ public class SheduleController implements Serializable {
                 + " order by s.sessionWeekday,s.startingTime ";
         hm.put("stf", currentStaff);
         hm.put("class", ServiceSession.class);
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
         List<ServiceSession> tmp = new ArrayList<>();
         for (ServiceSession i : items) {
             if (i.getSessionDate() != null) {
@@ -376,7 +377,7 @@ public class SheduleController implements Serializable {
 
         m.put("class", ServiceSession.class);
 
-        return itemFeeFacade.findBySQL(sql, m);
+        return itemFeeFacade.findByJpql(sql, m);
     }
 
     public void prepareAdd() {
@@ -476,7 +477,7 @@ public class SheduleController implements Serializable {
                 + " and bs.serviceSession.sessionDate>=:nd";
         m.put("ss", ss);
         m.put("nd", new Date());
-        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.DATE);
 //        double d=getFacade().findAggregateLong(sql, m, TemporalType.TIMESTAMP);
         return sss.size() > 0;
     }
@@ -494,8 +495,8 @@ public class SheduleController implements Serializable {
         m.put("sg", ss.getSessionNumberGenerator());
         m.put("ss", ss);
         m.put("class", ServiceSession.class);
-        List<ServiceSession> sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
-        sss = getFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        List<ServiceSession> sss = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
+        sss = getFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
         return sss.isEmpty();
     }
 
@@ -512,7 +513,7 @@ public class SheduleController implements Serializable {
 
         String sql;
         sql = " SELECT sg FROM ServiceSession sg WHERE sg.retired=false";
-        List<ServiceSession> list = facade.findBySQL(sql);
+        List<ServiceSession> list = facade.findByJpql(sql);
 
         for (ServiceSession sng : list) {
             if (sng.getSessionNumberGenerator() != null) {
@@ -606,52 +607,24 @@ public class SheduleController implements Serializable {
                     + " and s.originatingSession is null "
                     + " and type(s)=:class "
                     + " order by s.sessionWeekday,s.startingTime ";
-            List<Long> tmp = new ArrayList<>();
+            List<Long> serviceSessionIds = new ArrayList<>();
             System.err.println("Time stage 2.1 = " + new Date());
-            tmp = serviceSessionFacade.findLongList(sql, m);
+            serviceSessionIds = serviceSessionFacade.findLongList(sql, m);
             System.err.println("Time stage 2.2 = " + new Date());
 
-            System.err.println("Fetch Original Sessions = " + tmp.size());
-            System.err.println("Time stage 3.1 = " + new Date());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-//            calculateFeeBySessionIdList(tmp, channelBillController.getPaymentMethod());
-            System.err.println("Time stage 3.2 = " + new Date());
-            if (tmp.isEmpty()) {
+            System.err.println("Fetch Original Sessions = " + serviceSessionIds.size());
+            if (serviceSessionIds.isEmpty()) {
                 return;
             }
-            System.err.println("Time stage 4.1 = " + new Date());
-            generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(tmp, null);
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-            System.err.println("Time stage 4.2 = " + new Date());
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
-
-            System.err.println("Time stage 5 = " + new Date());
-//            generateSessionEvents(serviceSessions);
-//            generateSessionEvents(serviceSessions);
+            generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(serviceSessionIds, null);
         }
     }
 
-    public void generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(List<Long> inputSessions, Date d) {
+    public void generateDailyServiceSessionsFromWeekdaySessionsNewByServiceSessionId(List<Long> inputSessionIds, Date d) {
         int sessionDayCount = 0;
-        List<ServiceSession> createdSessions = new ArrayList<>();
+        List<ServiceSessionInstance> createdSessions = new ArrayList<>();
 
-        if (inputSessions == null || inputSessions.isEmpty()) {
+        if (inputSessionIds == null || inputSessionIds.isEmpty()) {
             return;
         }
         Date nowDate;
@@ -668,11 +641,10 @@ public class SheduleController implements Serializable {
         Integer tmp = 0;
         int rowIndex = 0;
         List<ServiceSession> sessions = new ArrayList<>();
-        int finalSessionDayCount = finalVariables.getSessionSessionDayCounterLargestById(inputSessions);
-        finalSessionDayCount=10;
+        int finalSessionDayCount = 10;
         while (toDate.after(nowDate) && sessionDayCount < finalSessionDayCount) {
             if (sessions.isEmpty()) {
-                for (Long s : inputSessions) {
+                for (Long s : inputSessionIds) {
                     ServiceSession ss = serviceSessionFacade.find(s);
                     sessions.add(ss);
                     if (ss.getSessionDate() != null) {
@@ -681,7 +653,7 @@ public class SheduleController implements Serializable {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
-                            ServiceSession newSs = new ServiceSession();
+                            ServiceSessionInstance newSs = new ServiceSessionInstance();
                             newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
@@ -705,10 +677,9 @@ public class SheduleController implements Serializable {
                         Calendar wdc = Calendar.getInstance();
                         wdc.setTime(nowDate);
                         if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
-                            ServiceSession newSs = new ServiceSession();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            ServiceSessionInstance newSs =  channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
-                                newSs = new ServiceSession();
+                                newSs = new ServiceSessionInstance();
 //                            System.err.println("Cretate New");
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -737,8 +708,7 @@ public class SheduleController implements Serializable {
                         Calendar nDate = Calendar.getInstance();
                         nDate.setTime(nowDate);
                         if (sessionDate.get(Calendar.DATE) == nDate.get(Calendar.DATE) && sessionDate.get(Calendar.MONTH) == nDate.get(Calendar.MONTH) && sessionDate.get(Calendar.YEAR) == nDate.get(Calendar.YEAR)) {
-                            ServiceSession newSs = new ServiceSession();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            ServiceSessionInstance newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -760,10 +730,9 @@ public class SheduleController implements Serializable {
                         Calendar wdc = Calendar.getInstance();
                         wdc.setTime(nowDate);
                         if (ss.getSessionWeekday() != null && (ss.getSessionWeekday() == wdc.get(Calendar.DAY_OF_WEEK))) {
-                            ServiceSession newSs = new ServiceSession();
-                            newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
+                            ServiceSessionInstance newSs = channelBean.fetchCreatedServiceSession(ss.getStaff(), nowDate, ss);
                             if (newSs == null) {
-                                newSs = new ServiceSession();
+                                newSs = new ServiceSessionInstance();
 //                            System.err.println("Cretate New");
                                 newSs = channelBean.createServiceSessionForChannelShedule(ss, nowDate);
                             }
@@ -841,7 +810,7 @@ public class SheduleController implements Serializable {
         m.put("ss", ss);
         m.put("class", ServiceSession.class);
         m.put("sd", commonFunctions.getStartOfDay());
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
         return items;
     }
 
@@ -851,7 +820,7 @@ public class SheduleController implements Serializable {
         sql = "Select DISTINCT(f.serviceSession) from ItemFee f "
                 + " where f.retired=false "
                 + " and f.serviceSession is not null ";
-        List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findBySQL(sql);
+        List<ServiceSession> serviceSessionsAll = serviceSessionFacade.findByJpql(sql);
         for (ServiceSession s : serviceSessionsAll) {
 
         }
@@ -876,7 +845,7 @@ public class SheduleController implements Serializable {
         tmpList.removeAll(fetchSessionByFee("Doctor Fee", FeeType.Staff));
         createFeesForServiceSessionList(tmpList, "Doctor Fee", FeeType.Staff);
 
-//        List<ServiceSession> serviceSessions = serviceSessionFacade.findBySQL(sql, m);
+//        List<ServiceSession> serviceSessions = serviceSessionFacade.findByJpql(sql, m);
 //        //// // System.out.println("serviceSessions.size() = " + serviceSessions.size());
 //        serviceSessionsAll.removeAll(serviceSessions);
 //        for (ServiceSession ss : serviceSessionsAll) {
@@ -904,8 +873,7 @@ public class SheduleController implements Serializable {
                 + " and f.name='" + feeName + "'"
                 + " order by f.id";
         m.put("fType", feeType);
-        list = serviceSessionFacade.findBySQL(sql, m);
-        System.err.println("********");
+        list = serviceSessionFacade.findByJpql(sql, m);
         return list;
 
     }
@@ -1001,7 +969,7 @@ public class SheduleController implements Serializable {
             m.put("sp", speciality);
         }
         m.put("ed", effectiveDate);
-        List<FeeChange> changes = getFeeChangeFacade().findBySQL(sql, m, TemporalType.DATE);
+        List<FeeChange> changes = getFeeChangeFacade().findByJpql(sql, m, TemporalType.DATE);
         for (FeeChange fc : feeChanges) {
             if ((fc.getFee().getFee() == 0) && (fc.getFee().getFfee() == 0)) {
                 continue;
@@ -1061,7 +1029,7 @@ public class SheduleController implements Serializable {
                 + " fc.retired=false "
                 + " and fc.validFrom>:ed ";
         m.put("ed", effectiveDate);
-        feeChangesList = getFeeChangeFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        feeChangesList = getFeeChangeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void removeAddFee(FeeChange fc) {
@@ -1106,7 +1074,7 @@ public class SheduleController implements Serializable {
 
     public List<ServiceSession> getAllSession() {
         String sql = "Select s From ServiceSession s where s.retired=false order by s.staff.speciality.name,s.staff.person.name,s.sessionWeekday,s.startingTime ";
-        List<ServiceSession> tmp = getFacade().findBySQL(sql);
+        List<ServiceSession> tmp = getFacade().findByJpql(sql);
 
         return tmp;
     }

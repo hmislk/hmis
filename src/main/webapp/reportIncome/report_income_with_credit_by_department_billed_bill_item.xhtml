@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                template="/resources/template/template.xhtml"
+                template="/reportIncome/report_income.xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -10,7 +10,7 @@
                 xmlns:au="http://java.sun.com/jsf/composite/autocomplete">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <h:outputStylesheet library="css" name="printing.css" />
 
@@ -23,10 +23,10 @@
                     <h:panelGrid columns="2" styleClass="noPrintButton">
 
                         <h:outputLabel value="From" />
-                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="To" />
-                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{commonReport1.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel  value="Department" />
                         <p:autoComplete styleClass="noPrintButton"  value="#{commonReport1.department}" 
@@ -68,11 +68,11 @@
                         <h:outputLabel value="#{commonReport1.department.name}"  />
                         <h:outputLabel value="From : " style="white-space: pre-line"/>
                         <h:outputLabel value="#{commonReport1.fromDate}"  >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:outputLabel>
                         <h:outputLabel value="&emsp; &emsp;To : "  />
                         <h:outputLabel value="#{commonReport1.toDate}" >
-                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:outputLabel>
                     </f:facet>
 
@@ -88,7 +88,7 @@
                             <h:outputLabel value="Date and Time"/>
                         </f:facet>
                         <p:outputLabel value="#{bi.bill.createdAt}" >
-                            <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </p:outputLabel>
                     </p:column>
 

@@ -39,7 +39,7 @@ public class BankController implements Serializable {
     String selectText = "";
 
     public List<Institution> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Bank and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false and i.institutionType = com.divudi.data.InstitutionType.Bank and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -130,7 +130,7 @@ public class BankController implements Serializable {
     public List<Institution> getItems() {
         if (items == null) {
             String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.Bank order by i.name";
-            items = getEjbFacade().findBySQL(sql);
+            items = getEjbFacade().findByJpql(sql);
         }
         return items;
     }

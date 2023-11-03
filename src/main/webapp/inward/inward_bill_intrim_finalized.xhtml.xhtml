@@ -16,7 +16,7 @@
                 <p:panel header="All Bill Items ( Pharmacy Issue )">
                     <p:panel header="patient Details">
                         <h:outputLabel value="Type Patinet Name or BHT : "/>
-                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" converter="admis"
+                        <p:autoComplete widgetVar="aPt2"  id="acPt2" forceSelection="true" 
                                         value="#{patientEncounterReportController.current}" 
                                         completeMethod="#{admissionController.completePatient}"
                                         var="apt2" itemLabel="#{apt2.bhtNo}"
@@ -35,7 +35,7 @@
                         </p:autoComplete>
                         
                         <h:form>
-                            <p:commandButton action="#{patientEncounterReportController.selectAllBillItems()}" value="Fill" ajax="false" onclick="onSubmitButton();"  ></p:commandButton>
+                            <p:commandButton action="#{patientEncounterReportController.selectAllBillItems()}" value="Fill" ajax="false"   ></p:commandButton>
                         </h:form>
                     </p:panel>
                     <p:panel header="Issuing Details" id="gpDetail">

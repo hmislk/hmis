@@ -68,7 +68,7 @@ public class AgentReferenceBookController implements Serializable {
         //////System.out.println(sql);
         m.put("t", InstitutionType.Agency);
         m.put("q", "%" + query.toUpperCase() + "%");
-        suggestions = getInstitutionFacade().findBySQL(sql, m);
+        suggestions = getInstitutionFacade().findByJpql(sql, m);
         //////System.out.println("suggestions = " + suggestions);
 
         return suggestions;
@@ -109,7 +109,7 @@ public class AgentReferenceBookController implements Serializable {
         
         hm.put("rfe", bookEnum);
 
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, hm);
+        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, hm);
 
         for (AgentReferenceBook arb : agentReferenceBooks) {
             if (arb.getBookNumber() == agentReferenceBook.getBookNumber()) {
@@ -180,7 +180,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("fd", frmDate);
         m.put("td", toDate);
 
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
     public void bulkDeleteChannelBooks() {
@@ -229,7 +229,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("ins", institution);
         m.put("ag", dbl);
 
-        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstBySQL(sql, m, TemporalType.DATE);
+        AgentReferenceBook agentReferenceBook = getAgentReferenceBookFacade().findFirstByJpql(sql, m, TemporalType.DATE);
 
         if (agentReferenceBook == null) {
             return true;
@@ -273,7 +273,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("ins", institution);
         m.put("rn", "%" + refNumber.toUpperCase() + "%");
 
-        List<AgentHistory> ahs = agentHistoryFacade.findBySQL(sql, m);
+        List<AgentHistory> ahs = agentHistoryFacade.findByJpql(sql, m);
 
         if (ahs.isEmpty()) {
             return false;
@@ -301,7 +301,7 @@ public class AgentReferenceBookController implements Serializable {
         m.put("rb", bookEnum);
         m.put("ins", getAgentReferenceBook().getInstitution());
         
-        agentReferenceBooks = getAgentReferenceBookFacade().findBySQL(sql, m, TemporalType.TIMESTAMP,10);
+        agentReferenceBooks = getAgentReferenceBookFacade().findByJpql(sql, m, TemporalType.TIMESTAMP,10);
     }
 
     public AgentReferenceBook getAgentReferenceBook() {

@@ -16,9 +16,9 @@
 
                     <h:panelGrid columns="2">
                         <h:outputLabel value="From Date"/>
-                        <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="dd MMMM yyyy" />
+                        <p:calendar navigator="true" id="frmDate" value="#{shiftTableController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To Date"/>
-                        <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="dd MMMM yyyy" />
+                        <p:calendar navigator="true" id="toDate" value="#{shiftTableController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="Employee : "/>
                         <hr:completeStaff value="#{shiftTableController.staff}"/>
                     </h:panelGrid>
@@ -27,7 +27,7 @@
                         <p:commandButton ajax="false" value="Fill Old Roster"
                                          actionListener="#{shiftTableController.makeTableNull()}"
                                          action="#{shiftTableController.fetchShiftTableByStaff()}"
-                                         onclick="onSubmitButton();" />   
+                                          />   
                         <p:commandButton value="Print" ajax="false" action="#"  >
                             <p:printer target="print" ></p:printer>
                         </p:commandButton>
@@ -53,11 +53,11 @@
                 <f:facet name="header">
                     <h:outputLabel value="Roster of #{shiftTableController.staff.person.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="   To  "/>
                     <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </f:facet>
                 <p:dataGrid  id="lst" columns="#{shiftTableController.dateRange}"
@@ -83,7 +83,7 @@
                             <p:autoComplete value="#{sts.shift}"
                                             autocomplete="off"
                                             rendered="#{!shiftTableController.all}"
-                                            forceSelection="true"     
+                                            forceSelection="true" 
                                             styleClass="autoComplete75px"
                                             completeMethod="#{shiftController.completeShift}"
                                             var="mys" 
@@ -104,7 +104,7 @@
                             <p:autoComplete value="#{sts.shift}"
                                             autocomplete="off"
                                             rendered="#{shiftTableController.all}"
-                                            forceSelection="true"     
+                                            forceSelection="true" 
                                             styleClass="autoComplete75px"
                                             completeMethod="#{shiftController.completeShiftAll}"
                                             var="mys" 
@@ -139,11 +139,11 @@
                 <f:facet name="header">
                     <h:outputLabel value=" Roster Of #{shiftTableController.staff.person.name}"/><br/>
                     <h:outputLabel value="#{shiftTableController.fromDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                     <h:outputLabel value="   To  "/>
                     <h:outputLabel value="#{shiftTableController.toDate}">
-                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                     </h:outputLabel>
                 </f:facet>
                 <p:dataGrid columns="#{shiftTableController.dateRange}"

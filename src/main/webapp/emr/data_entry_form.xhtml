@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+               <h1>#{captureComponentController.opdVisit.patient.person.nameWithTitle}</h1>
+               <h1>#{captureComponentController.opdVisit.patient.age}</h1>
+
+
+                <h:form class="form" >
+
+                    <p:dataTable value="#{captureComponentController.dataEntryItems}" var="d">
+                        <p:column>
+                            <p:outputLabel value="#{d.name}"></p:outputLabel>
+                        </p:column>
+                        <p:column>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text'}">
+                                <p:inputText></p:inputText>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_text_Area'}">
+                                <p:inputTextarea></p:inputTextarea>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Input_Number'}">
+                                <p:inputNumber></p:inputNumber>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Rating'}">
+                                <p:rating></p:rating>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'MultiSelectListBox'}">
+                                <p:multiSelectListbox></p:multiSelectListbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectBooleanButton'}">
+                                <p:selectBooleanButton></p:selectBooleanButton>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectBooleanCheckBox'}">
+                                <p:selectBooleanCheckbox></p:selectBooleanCheckbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectOneRadio'}">
+                                <p:selectOneRadio></p:selectOneRadio>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectCheckBoxMenu'}">
+                                <p:selectCheckboxMenu></p:selectCheckboxMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectOneMenu'}">
+                                <p:selectOneMenu></p:selectOneMenu>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectOneListBox'}">
+                                <p:selectOneListbox></p:selectOneListbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'SelectManyButton'}">
+                                <p:selectManyButton></p:selectManyButton>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Signature'}">
+                                <p:signature></p:signature>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Slider'}">
+                                <p:slider></p:slider>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Spinner'}">
+                                <p:spinner></p:spinner>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'TextEditor'}">
+                                <p:textEditor></p:textEditor>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'ToggleSwitch'}">
+                                <p:toggleSwitch></p:toggleSwitch>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'TriStateCheckBox'}">
+                                <p:triStateCheckbox></p:triStateCheckbox>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'AutoComplete'}">
+                                <p:autoComplete></p:autoComplete>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{d.componentPresentationType eq 'Calendar'}">
+                                <p:calendar></p:calendar>
+                            </h:panelGroup>
+
+                        </p:column>
+                    </p:dataTable>
+
+
+                </h:form>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

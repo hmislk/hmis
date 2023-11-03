@@ -9,16 +9,16 @@
 
     <h:body>
 
-        <ui:composition template="././resources/template/template.xhtml">
+        <ui:composition template="/dataAdmin/report_entered_data.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Store Item List">
                         <h:panelGrid columns="3">
                             <p:commandButton ajax="false" value="Item" action="#{ampController.storeNoDeleteItem()}" 
-                                             onclick="onSubmitButton();" ></p:commandButton>
+                                              ></p:commandButton>
                             <p:commandButton ajax="false" value="deleted Item" action="#{ampController.storeDeleteItem()}" 
-                                             onclick="onSubmitButton();" ></p:commandButton>
+                                              ></p:commandButton>
                             <p:commandButton value="Excel" ajax="false" >
                                 <p:dataExporter target="tbl" type="xlsx" fileName="Items_list" />
                             </p:commandButton>

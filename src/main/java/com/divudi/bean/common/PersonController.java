@@ -43,15 +43,15 @@ public class PersonController implements Serializable {
     String selectText = "";
 
     public List<Person> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Person c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Person c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<Person> completePerson(String qry) {
         List<Person> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Person c where c.retired=false and "
-                    + "  upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name", 20);
+            a = getFacade().findByJpql("select c from Person c where c.retired=false and "
+                    + "  (c.name) like '%" + qry.toUpperCase() + "%' order by c.name", 20);
         }
         if (a == null) {
             a = new ArrayList<Person>();

@@ -11,16 +11,42 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form >
+
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h3>Reports</h3>
+                                <div class="btn-group-vertical d-flex">
+                                    <h4>Medicines</h4>
+                                    <h:commandButton value="Generic Names (VTMs)" action="#{vtmController.navigateToListAllVtms()}" styleClass="btn btn-primary mb-2" />
+                                    <h:commandButton value="Trade Names (ATMs)" action="#{atmController.navigateToListAllAtms()}" styleClass="btn btn-primary mb-2" />
+                                    <h:commandButton value="Product Names (VMPs)" action="#{vmpController.navigateToListAllVmps()}" styleClass="btn btn-primary mb-2" />
+                                    <h:commandButton value="Items (AMPs)" action="#{ampController.navigateToListAllAmps()}" styleClass="btn btn-primary mb-2" />
+                                </div>
+                                <div class="btn-group-vertical d-flex">
+                                    <h4>Group 2</h4>
+                                    <h:commandButton value="Generic Names (VTMs)" action="#{vtmController.navigateToListAllVtms()}" styleClass="btn btn-primary mb-2" />
+                                    <h:commandButton value="Trade Names (ATMs)" action="#{atmController.navigateToListAllAtms()}" styleClass="btn btn-primary mb-2" />
+                                    <h:commandButton value="Product Names (VMPs)" action="#{vmpController.navigateToListAllVmps()}" styleClass="btn btn-primary mb-2" />
+                                    <h:commandButton value="Items (AMPs)" action="#{ampController.navigateToListAllAmps()}" styleClass="btn btn-primary mb-2" />
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                               
+                            </div>
+                        </div>
+                    </div>
+
                     <p:panelGrid columns="1" >
-                        <p:commandButton ajax="false" value="All Visits" action="/clinical/clinical_reports_all_opd_visits" actionListener="#{patientEncounterController.listAllEncounters()}" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="All Visits" action="/clinical/clinical_reports_all_opd_visits" actionListener="#{patientEncounterController.listAllEncounters()}"  >
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Daily Visits" action="/clinical/report_queue" actionListener="#{patientEncounterController.listAllEncounters()}" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Daily Visits" action="/clinical/report_queue" actionListener="#{patientEncounterController.listAllEncounters()}"  >
                         </p:commandButton>
                     </p:panelGrid>
-                    
+
                 </h:form>
-                
-                
+
+
             </ui:define>
 
         </ui:composition>

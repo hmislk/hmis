@@ -7,10 +7,12 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
+import com.divudi.data.Title;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Doctor;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
+import com.divudi.entity.Vocabulary;
 import com.divudi.facade.DoctorFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
@@ -26,6 +28,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -63,11 +70,11 @@ public class DoctorController implements Serializable {
         } else {
             sql = " select p from Doctor p "
                     + " where p.retired=false "
-                    + " and (upper(p.person.name) like :q or upper(p.code) like :q) "
+                    + " and ((p.person.name) like :q or (p.code) like :q) "
                     + " order by p.person.name";
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findBySQL(sql,hm);
+            suggestions = getFacade().findByJpql(sql,hm);
         }
         return suggestions;
     }
@@ -77,7 +84,7 @@ public class DoctorController implements Serializable {
         
          String temSql;
             temSql = "SELECT d FROM Doctor d where d.retired=false ";
-            doctors = getFacade().findBySQL(temSql);   
+            doctors = getFacade().findByJpql(temSql);   
             
             commonController.printReportDetails(startTime, startTime, startTime, "All doctor Search(/faces/inward/report_all_doctors.xhtml)");
             
@@ -96,13 +103,13 @@ public class DoctorController implements Serializable {
             sql = "select c from Doctor c "
                     + "where c.retired=false "
                     + " and type(c)!=:class "
-                    + " and upper(c.person.name) like :q "
+                    + " and (c.person.name) like :q "
                     + " order by c.person.name";
 
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
         }
 
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
 
         return selectedItems;
     }
@@ -110,6 +117,62 @@ public class DoctorController implements Serializable {
     public void prepareAdd() {
         current = new Doctor();
         specialityController.recreateModel();
+    }
+    
+    // Method to generate the Excel file and initiate the download
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Doctor Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Name");
+            headerRow.createCell(1).setCellValue("Phone");
+            headerRow.createCell(2).setCellValue("Fax");
+            headerRow.createCell(3).setCellValue("Mobile");
+            headerRow.createCell(4).setCellValue("Address");
+            headerRow.createCell(5).setCellValue("Code");
+            headerRow.createCell(6).setCellValue("Speciality");
+            headerRow.createCell(7).setCellValue("Registration");
+            headerRow.createCell(8).setCellValue("Qualification");
+            headerRow.createCell(9).setCellValue("Refering Charge");
+            
+            
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (Doctor doctor : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(doctor.getName());
+                row.createCell(1).setCellValue(doctor.getPerson().getPhone());
+                row.createCell(2).setCellValue(doctor.getPerson().getFax());
+                row.createCell(3).setCellValue(doctor.getPerson().getMobile());
+                row.createCell(4).setCellValue(doctor.getPerson().getAddress());
+                row.createCell(5).setCellValue(doctor.getCode());
+                row.createCell(6).setCellValue(doctor.getSpeciality().getDescription());
+                row.createCell(7).setCellValue(doctor.getRegistration());
+                row.createCell(8).setCellValue(doctor.getQualification());
+                row.createCell(9).setCellValue(doctor.getCharge());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"doctor_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
     }
 
     public void delete() {
@@ -140,6 +203,10 @@ public class DoctorController implements Serializable {
     private void recreateModel() {
         items = null;
     }
+    public Title[] getTitle() {
+        return Title.values();
+    }
+    
 
     public void saveSelected() {
         if (current == null) {
@@ -229,7 +296,7 @@ public class DoctorController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Doctor i where i.retired=false ";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }
@@ -263,6 +330,7 @@ public class DoctorController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
+            System.out.println("value = " + value);
             DoctorController controller = (DoctorController) facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "doctorController");
             return controller.getEjbFacade().find(getKey(value));
@@ -295,45 +363,6 @@ public class DoctorController implements Serializable {
         }
     }
 
-    @FacesConverter("conDoc")
-    public static class DoctorConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            DoctorController controller = (DoctorController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "doctorController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Doctor) {
-                Doctor o = (Doctor) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + DoctorController.class.getName());
-            }
-        }
-    }
 
     public CommonController getCommonController() {
         return commonController;

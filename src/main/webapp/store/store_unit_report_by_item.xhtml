@@ -8,9 +8,8 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
-
-            <ui:define name="content">
+        <ui:composition template="/store/store_summery_index.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header=" Issue Report">
                         <h:panelGrid columns="2" >
@@ -18,27 +17,27 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
                         <h:outputLabel value="Category" />
                         <p:autoComplete completeMethod="#{categoryController.completeConsumableAndAssetCategory}" 
                                         var="cat" itemLabel="#{cat.name}"
                                         itemValue="#{cat}" forceSelection="true" 
-                                        value="#{reportsTransfer.category}" converter="categoryConverter" >
+                                        value="#{reportsTransfer.category}"  >
                         </p:autoComplete>
 
                         <p:commandButton ajax="false" value="Fill" 
@@ -53,11 +52,11 @@
                                 <h:outputLabel value="From :  " style="white-space:  pre-line"/>
                                 <h:outputLabel value="#{reportsTransfer.fromDate}"  >
                                     <p:spacer width="30" height="1"/>
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                                 <h:outputLabel value="To : "/>
                                 <h:outputLabel value="#{reportsTransfer.toDate}"  >
-                                    <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                             </f:facet>
                             <p:column headerText="Item">

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportLab/lab_summeries_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -10,7 +10,7 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
 
         <h:panelGroup rendered="true" >
@@ -50,11 +50,11 @@
                         <au:department value="#{investigationMonthSummeryOwnControllerSession.department}" />
 
                         <h:outputLabel value="From"/>
-                        <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" styleClass="dateTimePicker" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value=""/>

@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:se="http://java.sun.com/jsf/composite/pharmacy/search">
+    <h:body>
+        <ui:composition template="/pharmacy/admin/index.xhtml">
+            <ui:define name="subcontent">
+                <h:panelGroup >
+                    <h:form id="form"  >
+                        <p:growl />
+                        <div class="container">
+                            <div class="row">
+                                <h2>Manage ATM</h2>
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-header">Search Atm</div>
+                                        <div class="card-body">
+                                            <h:inputText autocomplete="off" id="txtSearch" value="#{atmController.selectText}" class="form-control" >
+                                                <f:ajax execute="txtSearch" render="lstSelect" event="keyup" />
+                                            </h:inputText>
+                                            <p:selectOneListbox id="lstSelect" value="#{atmController.current}" style="min-width: 223px; height: 300px;max-height: 400px;">
+                                                <f:selectItems  value="#{atmController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                                <p:ajax event="change"   update="gpDetail" process="lstSelect" >
+                                                </p:ajax>
+                                            </p:selectOneListbox>
+                                        </div>
+                                        <div class="card-footer">
+                                            <div class="d-flex justify-content-between">
+                                                <h:commandButton id="btnAdd" value="Add" action="#{atmController.prepareAdd()}" styleClass="buttons btn btn-primary" >
+                                                    <f:ajax render="btnAdd  btnDelete btnSave   lstSelect gpDetail " execute="" >
+                                                    </f:ajax>
+                                                </h:commandButton>
+                                                <h:commandButton id="btnDelete" onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                            return false;" action="#{atmController.delete()}"  value="Delete" class="btn btn-danger" >
+                                                </h:commandButton>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-md-6">
+                                    <h:panelGroup id="gpDetail" >
+                                        <div class="card md-3">
+                                            <div class="card-header d-flex justify-content-between">
+                                                Edit Details
+                                                <p:commandButton id="btnSave" value="Save"  action="#{atmController.saveSelected()}" styleClass="buttons btn btn-primary" 
+                                                                 ajax="false" >
+                                                </p:commandButton>
+                                                <p:defaultCommand target="btnSave"/>
+                                            </div>
+                                            <div class="card-body">
+
+                                                <div class="mb-3 w-100">
+                                                    <label for="lblName" class="form-label w-100">Name</label>
+                                                    <h:inputText autocomplete="off" id="txtName" value="#{atmController.current.name}" 
+                                                                 required="true" class="form-control" ></h:inputText>
+                                                    <label for="lblVtm" class="form-label w-100">VTM</label>
+                                                    <div class="w-100">
+                                                        
+                                                    <p:autoComplete completeMethod="#{vtmController.completeVtm}" 
+                                                                    value="#{atmController.current.vtm}" var="v" style="width: 100%;"
+                                                                    itemLabel="#{v.name}" itemValue="#{v}" ></p:autoComplete>
+                                                    </div>
+                                                
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </h:form>
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

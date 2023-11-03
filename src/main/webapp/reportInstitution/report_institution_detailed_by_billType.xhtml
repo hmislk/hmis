@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportInstitution/report_own.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -11,7 +11,7 @@
                 xmlns:cashier="http://java.sun.com/jsf/composite/cashier">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
@@ -24,11 +24,11 @@
                         <h:outputLabel value="#{labels.company_name}"/> <br/>
                         <h:panelGrid columns="2" styleClass="noPrintButton" >
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{commonReport.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{commonReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
 
@@ -75,12 +75,12 @@
                             <p:spacer width="20" height="0"/>
                             <h:outputLabel value="From" />
                             <h:outputLabel  value="#{commonReport.fromDate}" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <p:spacer width="10" height="0"/>
                             <h:outputLabel value="To"/>
                             <h:outputLabel  value="#{commonReport.toDate}" style="float: right" >
-                                <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </h:panelGrid>
                     </f:facet>
@@ -95,11 +95,11 @@
                                 <h:outputLabel value="Opd Bills "/> 
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -270,11 +270,11 @@
                                 <h:outputLabel value="Cancelled"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
 
@@ -283,7 +283,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -439,11 +439,11 @@
                                 <h:outputLabel value="Refunded" />
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
 
@@ -452,7 +452,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -611,11 +611,11 @@
                                 <h:outputLabel value="Opd Bills "/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -783,11 +783,11 @@
                                 <h:outputLabel value="Cancelled"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time">
@@ -795,7 +795,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b1.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="Cashier"  >
@@ -944,11 +944,11 @@
                                 <h:outputLabel value="Refunded" />
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time">
@@ -956,7 +956,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1109,11 +1109,11 @@
                                 <h:outputLabel value="Payments"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
 
@@ -1122,7 +1122,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>   
 
@@ -1189,11 +1189,11 @@
                                 <h:outputLabel value="PaymentsCancel" />
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
 
@@ -1202,7 +1202,7 @@
                                     <h:outputLabel value="PaymentsCancel" />
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1271,11 +1271,11 @@
                                 <h:outputLabel value="Petty Cash Payment"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -1284,7 +1284,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b4.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1385,11 +1385,11 @@
                                 <h:outputLabel  value="Petty Cash Payment Cancel"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -1398,7 +1398,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b4.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1464,7 +1464,7 @@
                                     <h:outputLabel value="Billed Date/Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b4.billedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1501,11 +1501,11 @@
                                 <h:outputLabel value="Credit Company Payment Recieve"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
 
@@ -1514,7 +1514,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1619,11 +1619,11 @@
                                 <h:outputLabel value="Credit Company Payment Cancel"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time" style="width:16%; " >
@@ -1631,7 +1631,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -1705,7 +1705,7 @@
                                     <h:outputLabel value="Billed Date/Time"/>
                                 </f:facet> 
                                 <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
                             <p:column exportable="false">
@@ -1760,11 +1760,11 @@
                                 <h:outputLabel value="Cashier Agent Payment Detail Report"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
 
@@ -1796,7 +1796,7 @@
                                     <h:outputLabel value="Date And Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1858,7 +1858,7 @@
                                     <h:outputLabel value="Slip Date"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.chequeDate}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1867,7 +1867,7 @@
                                     <h:outputLabel value="Slip Bank"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.bank.name}" >
-                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
 
@@ -1923,11 +1923,11 @@
                                 <h:outputLabel value="Agent Payment Cancel"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
 
@@ -1936,7 +1936,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.createdAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -2021,7 +2021,7 @@
                                     <h:outputLabel value="Billed Date/Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b7.billedBill.createdAt}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 
@@ -2077,11 +2077,11 @@
                                 <h:outputLabel value="Inward Payments" />
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
@@ -2089,7 +2089,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>     
                             <p:column headerText="Cashier"  >
@@ -2152,11 +2152,11 @@
                                 <h:outputLabel value="Inward Payments Cancel"/>
                                 <br></br><h:outputLabel value="From - " />
                                 <h:outputLabel  value="#{commonReport.fromDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To - "/>
                                 <h:outputLabel  value="#{commonReport.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yy HH:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet> 
                             <p:column headerText="Time" rendered="#{commonReport.fromDate ne commonReport.toDate}"  >
@@ -2164,7 +2164,7 @@
                                     <h:outputLabel value="Time"/>
                                 </f:facet>
                                 <h:outputLabel value="#{b.createdAt}"  >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                 </h:outputLabel>
                             </p:column>
 

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"                    
+<ui:composition template="/hr/hr_admin.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"                
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -9,7 +9,7 @@
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
 
 
-    <ui:define name="content">
+    <ui:define name="subContent">
 
         <h:panelGroup >
             <h:form  >
@@ -27,19 +27,19 @@
                                         render="lst" listener="#{staffPaySheetComponentAllController.makeItemNull}" />
                             </p:selectOneMenu>
                             <h:outputLabel value="From"/>                            
-                            <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="dd MM yyyy">
+                            <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}">
                                 <f:ajax execute="@this" render="#{p:resolveFirstComponentWithId('frm',view).clientId}" event="dateSelect"/>
                             </p:calendar>
                             <h:outputLabel value="To"/>
-                            <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="dd MM yyyy"/>
+                            <p:calendar value="#{staffPaySheetComponentAllController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
 
                             <h:outputLabel value="Value"/>
                             <p:inputText id="val" autocomplete="off"  value="#{staffPaySheetComponentAllController.staffPaySheetComponentValue}"/>
 
-                            <p:commandButton  value="Add" action="#{staffPaySheetComponentAllController.save}" onclick="onSubmitButton();">
+                            <p:commandButton  value="Add" action="#{staffPaySheetComponentAllController.save}" >
 
                             </p:commandButton>
-                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}" ajax="false" onclick="onSubmitButton();" />
+                            <p:commandButton value="Clear" action="#{staffPaySheetComponentAllController.makeNull}" ajax="false"  />
 
                         </h:panelGrid>                      
                     </p:panel>
@@ -62,11 +62,11 @@
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
                                         action="#{staffController.createStaffWithCode()}"
-                                         onclick="onSubmitButton();"/>
+                                         />
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
-                                      filteredValue="#{staffController.filteredStaff}"     
-                                      scrollHeight="300"                                   
+                                      filteredValue="#{staffController.filteredStaff}" 
+                                      scrollHeight="300"                               
                                       rowKey="#{s.id}" 
                                       selection="#{staffController.selectedList}"
                                       rowIndexVar="i">
@@ -93,12 +93,12 @@
                 <p:panel id="lst">
                     <f:facet name="header">      
                         <h:outputLabel value="#{staffPaySheetComponentAllController.paysheetComponent.name}" style="text-transform:capitalize;" />
-                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" />
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         <p:calendar id="frm" value="#{staffPaySheetComponentAllController.fromDate}"
-                                    pattern="dd MM yyyy hh:mm:ss a" />                       
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>
@@ -122,7 +122,7 @@
                     <h:panelGrid columns="3">
                         
                           <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_staff_paysheet_component_all"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -153,7 +153,7 @@
                                     <h:outputLabel value="From"  />
                                 </f:facet>
                                 <h:outputLabel value="#{i.fromDate}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="To" >
@@ -163,11 +163,11 @@
                                 <p:cellEditor>  
                                     <f:facet name="output">
                                         <h:outputLabel value="#{i.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputLabel>
                                     </f:facet>
                                     <f:facet name="input">
-                                        <p:calendar value="#{i.toDate}"  pattern="dd MMMM yyyy" />
+                                        <p:calendar value="#{i.toDate}"  pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </f:facet>
                                 </p:cellEditor>
 
@@ -252,7 +252,7 @@
                             </p:column>  
 
                             <p:column style="width:6%" exportable="false" >  
-                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" onclick="onSubmitButton();">
+                                <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" >
                                     <f:setPropertyActionListener target="#{staffPaySheetComponentAllController.current}" value="#{i}" />
                                 </p:commandButton>
                             </p:column>  

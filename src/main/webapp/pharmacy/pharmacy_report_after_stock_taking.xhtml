@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="After Stock Taking Report" >
@@ -20,7 +20,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{reportsStock.department}" converter="departmentConverter"/>
+                                            forceSelection="true" value="#{reportsStock.department}" />
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
@@ -43,7 +43,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
                                     <h:outputLabel value="for #{reportsStock.category.name}"/> <br/><br/>
-                                    <h:outputLabel value="Date : "><p:clock pattern="dd MM yy hh:mm:ss a" /></h:outputLabel>                                   
+                                    <h:outputLabel value="Date : "><p:clock pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  /></h:outputLabel>                                   
                                 </f:facet> 
                                 
                                 <p:column headerText="Item"

@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="patient" type="com.divudi.entity.Patient" class="com.divudi.entity.Patient" />
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <h:panelGroup rendered="#{cc.attrs.patient ne null}">
+            <h:form>
+
+                <p:panel class="m-2 p-2">
+                    <f:facet name="header">
+                        <p:outputLabel value="Edit Patient Demographic Details" />
+                        <p:spacer width="10" />
+                        <p:commandButton value="Save" action="#{patientController.saveSelected(cc.attrs.patient)}"
+                                         ajax="false" icon="pi pi-check" iconPos="right" styleClass="ui-button-warning" />
+                    </f:facet>
+                    <div class="container-fluid">
+                        <div class="row form-group">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Title:"  class="form-label" />
+                                <p:selectOneMenu id="cmbTitle" value="#{cc.attrs.patient.person.title}" class="form-control">
+                                    <f:selectItem itemLabel="Select Title"  />
+                                    <f:selectItems value="#{billController.title}" var="i" itemLabel="#{i.label}"
+                                                   itemValue="#{i}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-10">
+                                <p:outputLabel value="Name:" for="txtName" class="form-label" />
+                                <p:inputText id="txtName" value="#{cc.attrs.patient.person.name}" class="w-100 form-control" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-2">
+                                <p:outputLabel value="Sex:"  class="form-label" />
+                                <p:selectOneMenu id="txtNewSex" value="#{cc.attrs.patient.person.sex}" class="form-control" >
+                                    <f:selectItem itemLabel="Select Gender" />
+                                    <f:selectItems value="#{billController.sex}" />
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="col-md-4">
+                                <p:outputLabel value="Age :"  class="form-label" />
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <p:inputText autocomplete="off" id="year" placeholder="Years"
+                                                     value="#{patientController.ageYearComponant}" class="form-control" >
+                                            <f:ajax event="blur" execute="@this" render="calNewPtDob"
+                                                    listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p:inputText autocomplete="off" id="month" placeholder="months" class="form-control" 
+                                                     value="#{patientController.ageMonthComponant}">
+                                            <f:ajax event="blur" execute="@this" render="calNewPtDob"
+                                                    listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p:inputText autocomplete="off" id="day" placeholder="days"
+                                                     value="#{patientController.ageDateComponant}" class="form-control" >
+                                            <f:ajax event="blur" execute="@this" render="calNewPtDob"
+                                                    listener="#{patientController.calculateDobFromAgeComponants(cc.attrs.patient)}" />
+                                        </p:inputText>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <p:outputLabel value="Date of Birth:"  class="form-label" />
+                                <p:datePicker value="#{cc.attrs.patient.person.dob}" id="calNewPtDob"
+                                              pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" yearNavigator="true"
+                                              maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
+                                    <p:ajax event="dateSelect" process="calNewPtDob" update="year month day"
+                                            listener="#{patientController.calculateAgeComponantsFromDob(cc.attrs.patient)}" />
+                                </p:datePicker>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-3">
+                                <p:outputLabel value="Phone:"  class="form-label" />
+                                <p:inputText value="#{cc.attrs.patient.person.phone}" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="Mobile:"  class="form-label" />
+                                <p:inputText value="#{cc.attrs.patient.person.mobile}" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <p:outputLabel value="Email:"  class="form-label" />
+                                <p:inputText value="#{cc.attrs.patient.person.email}" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <h:outputLabel class="form-label" value="NIC No:" />
+                                <h:panelGroup>
+                                    <p:inputText autocomplete="off" id="txtNIC" value="#{cc.attrs.patient.person.nic}" class="form-control" />
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <p:outputLabel value="Address:"  class="form-label" />
+                                <p:inputText value="#{cc.attrs.patient.person.address}" style="width: 100%;" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-6">
+                                <p:outputLabel value="PHN Number:"  class="form-label" />
+                                <p:inputText value="#{cc.attrs.patient.phn}" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <h:outputLabel class="form-label" value="MRN No"  />
+                                <h:panelGroup>
+                                    <p:inputText autocomplete="off" id="txtMrn" value="#{cc.attrs.patient.code}" class="form-control" />
+                                </h:panelGroup>
+                            </div>
+                        </div>
+                        <div class="row form-group">
+                            <div class="col-md-12">
+                                <p:outputLabel value="Comments:"  class="form-label" />
+                                <p:inputText value="#{cc.attrs.patient.comments}" style="width: 100%;" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+
+
+
+    </cc:implementation>
+</html>

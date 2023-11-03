@@ -70,7 +70,7 @@
             <p:column headerText="Invoice Date" >
                 <h:commandLink action="store_reprint_grn" >
                     <h:outputLabel  value="#{bill.invoiceDate}">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>                    
                     <f:setPropertyActionListener value="#{bill}" target="#{storeBillSearch.bill}"/>
                 </h:commandLink>

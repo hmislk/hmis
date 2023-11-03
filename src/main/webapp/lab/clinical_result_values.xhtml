@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="./../resources/template/template.xhtml">
 
@@ -70,13 +70,13 @@
 
                             <p:column headerText="Date of Birth">
                                 <h:outputText value="#{v.patient.person.dob}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Approved At">
                                 <h:outputText value="#{v.patientReport.approveAt}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
 
@@ -106,5 +106,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

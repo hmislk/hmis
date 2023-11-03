@@ -29,6 +29,11 @@
             <p:inputText autocomplete="off" value="#{searchController.searchKeyword.code}"/>
             
         </h:panelGrid>
+        
+          
+        <p:commandButton ajax="false" value="Download" >
+            <p:dataExporter target="tblBills" type="xlsx" fileName="bill_list" ></p:dataExporter>
+        </p:commandButton>
 
         <p:spacer height="30"/>
         <p:dataTable rowIndexVar="i" id="tblBills" value="#{searchController.bills}" var="bill" >
@@ -58,7 +63,7 @@
             <p:column headerText="Invoice Date" >
                 <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
                     <h:outputLabel  value="#{bill.invoiceDate}">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                     </h:outputLabel>                    
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                 </h:commandLink>

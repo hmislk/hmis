@@ -81,7 +81,7 @@ public class AmppController implements Serializable {
     public List<Ampp> completeAmpp(String qry) {
         List<Ampp> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from Ampp c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from Ampp c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -99,13 +99,13 @@ public class AmppController implements Serializable {
         items = null;
     }
 
-    private void saveVmpp() {
-        if (getCurrent().getVmpp().getId() == null) {
-            getVmppFacade().create(getCurrent().getVmpp());
-        } else {
-            getVmppFacade().edit(getCurrent().getVmpp());
-        }
-    }
+//    private void saveVmpp() {
+//        if (getCurrent().getVmpp().getId() == null) {
+//            getVmppFacade().create(getCurrent().getVmpp());
+//        } else {
+//            getVmppFacade().edit(getCurrent().getVmpp());
+//        }
+//    }
 
     public void saveSelected() {
         Vmpp tmp = getPharmacyBean().getVmpp(getCurrent(), getPackUnit());
@@ -203,8 +203,8 @@ public class AmppController implements Serializable {
     }
 
     public void searchItems(AjaxBehaviorEvent e) {
-        selectedItems = getFacade().findBySQL("select c from Ampp c where c.retired=false "
-                + " and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Ampp c where c.retired=false "
+                + " and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 
     }
 
@@ -219,45 +219,7 @@ public class AmppController implements Serializable {
     /**
      *
      */
-    @FacesConverter("amppCon")
-    public static class AmppControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            AmppController controller = (AmppController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "amppController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof Ampp) {
-                Ampp o = (Ampp) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + AmppController.class.getName());
-            }
-        }
-    }
+   
     
      @FacesConverter(forClass = Ampp.class)
     public static class AmppConverter implements Converter {

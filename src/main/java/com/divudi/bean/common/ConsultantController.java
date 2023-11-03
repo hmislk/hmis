@@ -11,6 +11,7 @@ package com.divudi.bean.common;
 import com.divudi.entity.Consultant;
 import com.divudi.entity.Person;
 import com.divudi.entity.Speciality;
+import com.divudi.entity.Vocabulary;
 import com.divudi.facade.ConsultantFacade;
 import com.divudi.facade.PersonFacade;
 import java.io.Serializable;
@@ -26,6 +27,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
  *
@@ -66,7 +72,7 @@ public class ConsultantController implements Serializable {
         } else {
             sql = "select c from Consultant c "
                     + " where c.retired=false"
-                    + " and upper(c.person.name) like :q ";
+                    + " and (c.person.name) like :q ";
 
             sql += " and c.speciality=:s ";
             sql += " order by c.codeInterger , c.person.name ";
@@ -74,7 +80,7 @@ public class ConsultantController implements Serializable {
 
             hm.put("q", "%" + getSelectText().toUpperCase() + "%");
         }
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
 
         return selectedItems;
     }
@@ -99,6 +105,62 @@ public class ConsultantController implements Serializable {
         current = null;
         getCurrent();
     }
+    
+    public void downloadAsExcel() {
+        getItems();
+        try {
+            // Create a new Excel workbook
+            Workbook workbook = new XSSFWorkbook();
+            Sheet sheet = workbook.createSheet("Consultent Data");
+
+            // Create a header row
+            Row headerRow = sheet.createRow(0);
+            headerRow.createCell(1).setCellValue("Name");
+            headerRow.createCell(2).setCellValue("Code");
+            headerRow.createCell(3).setCellValue("Consultant Serial No");
+            headerRow.createCell(4).setCellValue("Phone");
+            headerRow.createCell(5).setCellValue("Fax");
+            headerRow.createCell(6).setCellValue("Mobile");
+            headerRow.createCell(7).setCellValue("Address");
+            headerRow.createCell(8).setCellValue("Speciality");
+            headerRow.createCell(9).setCellValue("Registration");
+            headerRow.createCell(10).setCellValue("Qualification");
+            headerRow.createCell(11).setCellValue("Refering Charge");
+            // Add more columns as needed
+
+            // Populate the data rows
+            int rowNum = 1;
+            for (Consultant consultant : items) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(1).setCellValue(consultant.getName());
+                row.createCell(2).setCellValue(consultant.getCode());
+                row.createCell(3).setCellValue(consultant.getPerson().getSerealNumber());
+                row.createCell(4).setCellValue(consultant.getPerson().getPhone());
+                row.createCell(5).setCellValue(consultant.getPerson().getFax());
+                row.createCell(6).setCellValue(consultant.getPerson().getMobile());
+                row.createCell(7).setCellValue(consultant.getPerson().getAddress());
+                
+                row.createCell(8).setCellValue(consultant.getSpeciality().getDescription());
+                row.createCell(9).setCellValue(consultant.getRegistration());
+                row.createCell(10).setCellValue(consultant.getQualification());
+                row.createCell(11).setCellValue(consultant.getCharge());
+            }
+
+            // Set the response headers to initiate the download
+            FacesContext context = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"consultant_data.xlsx\"");
+
+            // Write the workbook to the response output stream
+            workbook.write(response.getOutputStream());
+            workbook.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            // Handle any exceptions
+            e.printStackTrace();
+        }
+    }
 
     public void createConsultantTable() {
         String sql;
@@ -114,7 +176,7 @@ public class ConsultantController implements Serializable {
 
         sql += " order by c.codeInterger , c.person.name ";
 
-        items = getFacade().findBySQL(sql, m);
+        items = getFacade().findByJpql(sql, m);
         
     }
 
@@ -209,7 +271,7 @@ public class ConsultantController implements Serializable {
         if (items == null) {
             String temSql;
             temSql = "SELECT i FROM Consultant i where i.retired=false ";
-            items = getFacade().findBySQL(temSql);
+            items = getFacade().findByJpql(temSql);
         }
         return items;
     }

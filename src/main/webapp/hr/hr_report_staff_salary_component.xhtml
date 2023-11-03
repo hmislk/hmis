@@ -63,7 +63,7 @@
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryComponent()}"/>
                         <p:commandButton ajax="false" value="Process Special" action="#{hrReportController.createStaffSalaryComponentSpecial()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="staff_salary_component"/>
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#">
@@ -79,10 +79,10 @@
                                     <br/>
                                     <h:outputLabel value="SC Cycle : " />
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedFromDate}" >
-                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.workedToDate}"  >
-                                        <f:convertDateTime pattern="yyyy MMM dd hh:mm:ss a" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >

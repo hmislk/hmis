@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/emr/admin/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="subcontent">
+        <h:form >
+            <p:growl/>
+            <p:focus id="selectFocus" context="gpSelect"/>
+            <p:focus id="detailFocus" context="gpDetail"/>
+            <p:panel header="Manage Procedures">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <h:panelGrid columns="3"  class="w-100" >
+                                <p:commandButton id="btnAdd"
+                                                 value="Add" 
+                                                 class="w-100"
+                                                 update="gpDetail lstSelect detailFocus" 
+                                                 action="#{procedureController.prepareAdd()}"  >
+                                </p:commandButton>
+                                <p:commandButton id="btnDelete" 
+                                                 ajax="false"
+                                                 onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                             return false;" 
+                                                 class="w-100"
+                                                 action="#{procedureController.delete()}" 
+                                                 process="lstSelect btnDelete"
+                                                 update="lstSelect gpDetail"
+                                                 value="Delete">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Download as Excel" 
+                                    class="w-100"
+                                    ajax="false"
+                                    action="#{procedureController.downloadAsExcel}" />
+
+                            </h:panelGrid>
+
+                            <h:panelGrid id="gpSelect" class="w-100">
+                                <p:selectOneListbox id="lstSelect" 
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    scrollHeight="500"
+                                                    value="#{procedureController.current}">
+                                    <f:selectItems value="#{procedureController.items}" 
+                                                   var="myItem" 
+                                                   itemValue="#{myItem}" 
+                                                   itemLabel="#{myItem.name}"></f:selectItems>
+                                    <f:ajax render="gpDetail" execute="lstSelect">
+                                    </f:ajax>
+                                </p:selectOneListbox>
+
+                            </h:panelGrid>
+
+                        </div>
+
+                        <div class="col-md-7">
+
+                            <h:panelGroup id="gpDetail">
+                                <div class="form-group row">
+                                    <label for="txtName" class="col-sm-2 col-form-label">Name</label>
+                                    <div class="col-sm-10">
+                                        <p:inputText autocomplete="off" id="txtName" value="#{procedureController.current.name}" styleClass="form-control"></p:inputText>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="txtCode" class="col-sm-2 col-form-label">Code</label>
+                                    <div class="col-sm-10">
+                                        <p:inputText autocomplete="off" id="txtCode" value="#{procedureController.current.code}" styleClass="form-control"></p:inputText>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label for="txtDes" class="col-sm-2 col-form-label">Description</label>
+                                    <div class="col-sm-10">
+                                        <p:inputTextarea id="txtDes" value="#{procedureController.current.descreption}" styleClass="form-control"></p:inputTextarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-sm-10">
+                                        <p:commandButton id="btnSave" 
+                                                         value="Save"
+                                                         process="gpDetail" 
+                                                         update="lstSelect selectFocus" 
+                                                         action="#{procedureController.saveSelected()}" >
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+        </h:form>
+
+
+    </ui:define>
+
+</ui:composition>

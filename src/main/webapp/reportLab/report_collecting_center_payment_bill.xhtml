@@ -24,11 +24,11 @@
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="From Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{channelReportTempController.fromDate}"
-                                                navigator="true" pattern="dd MMMM yyyy hh mm ss a" >      
+                                                navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                     </p:calendar>
                                     <h:outputLabel value="To Date"/>
                                     <p:calendar styleClass="dateTimePicker" id="toDate" value="#{channelReportTempController.toDate}" 
-                                                navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                                navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                     </p:calendar>
                                     <p:outputLabel value="Collecting Centre Name" />
                                     <p:autoComplete converter="deal" value="#{channelReportTempController.reportKeyWord.institution}" styleClass="mediuminput"
@@ -39,7 +39,7 @@
                                     </p:autoComplete>
                                 </h:panelGrid>
                                 <h:panelGrid columns="3" >
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportTempController.createCollectingCenterPaymentTable()}" onclick="onSubmitButton();"/>
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{channelReportTempController.createCollectingCenterPaymentTable()}" />
                                     <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                                         <p:printer target="reportPrint"  />
                                     </p:commandButton>
@@ -80,11 +80,11 @@
                                             <p:outputLabel value="Billed at" />
                                         </f:facet>
                                         <h:outputLabel value="#{bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value=" - " rendered="#{bill.cancelled}"/>
                                         <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column>  
                                     <p:column>

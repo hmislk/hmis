@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/store/store_summery_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Issue Report">
                         <h:panelGrid columns="2" >
@@ -19,20 +19,20 @@
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="To Department" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}"
                                             itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}" converter="departmentConverter" >
+                                            value="#{reportsTransfer.toDepartment}"  >
                             </p:autoComplete>
 
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Item Category"/>
                             <p:selectOneMenu value="#{reportsTransfer.category}" >
                                 <f:selectItem itemLabel="Select Category"/>
@@ -44,7 +44,7 @@
                         <p:spacer width="95" height="1"/>
                         <p:commandButton ajax="false" value="Fill" 
                                          action="#{reportsTransfer.fillItemCountsWithOutMarginStore}" />
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tbl" fileName="store_unit_report_by_item"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >

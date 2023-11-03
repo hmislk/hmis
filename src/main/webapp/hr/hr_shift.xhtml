@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
+<ui:composition template="/hr/hr_admin.xhtml"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core">
 
-    <ui:define name="content">
+    <ui:define name="subContent">
         <h:form>
             <p:panel header="Manage Shifts" >
                 <h:panelGrid id ="gpVeda" columns="4" styleClass="alignTop" >
@@ -29,7 +29,7 @@
                                 </p:selectOneListbox>                               
                             </h:panelGrid>
                             <h:panelGrid id="gpSelectButtons" columns="3"  >
-                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{shiftController.prepareAdd()}" styleClass="buttons" onclick="onSubmitButton();" >
+                                <p:commandButton id="btnAdd" ajax="false" value="Add" action="#{shiftController.prepareAdd()}" styleClass="buttons"  >
                                 </p:commandButton>
                                 <p:commandButton id="btnDelete" ajax="false" onclick="if (!confirm('Are you sure you want to delete this record?'))
                                             return false;" action="#{shiftController.delete()}"  value="Delete"  >
@@ -45,7 +45,7 @@
                             <h:outputLabel value="Shift Detail &nbsp;"/>
                             <p:commandButton ajax="false" value="Save"  
                                              action="#{shiftController.saveSelected}"  
-                                             onclick="onSubmitButton();"/>
+                                             />
                             <p:commandButton ajax="false" value="Print" style="float: right;" >
                                 <p:printer target="panelPrint" ></p:printer>
                             </p:commandButton>
@@ -62,11 +62,11 @@
                             <h:outputLabel value="Shift Order" rendered="false"/>
                             <p:inputText autocomplete="off" value="#{shiftController.current.shiftOrder}" rendered="false"/>
                             <p:outputLabel value="Starting Time"/>
-                            <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
+                            <p:calendar id='start'  value="#{shiftController.current.startingTime}" navigator="true" pattern="#{sessionController.applicationPreference.longTimeFormat}" timeOnly="true">                            
                             </p:calendar>  
 
                             <p:outputLabel value="End Time"/>                        
-                            <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="hh:mm:ss a" timeOnly="true">                            
+                            <p:calendar  value="#{shiftController.current.endingTime}" navigator="true" pattern="#{sessionController.applicationPreference.longTimeFormat}" timeOnly="true">                            
                             </p:calendar>  
 
                             <p:outputLabel value="Previous Shift"/>
@@ -138,13 +138,13 @@
                         <p:outputLabel value="Starting Time"/>
                         <h:outputLabel value=":"/>
                         <h:outputLabel value="#{shiftController.current.startingTime}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>  
 
                         <p:outputLabel value="End Time"/>
                         <h:outputLabel value=":"/>
                         <h:outputLabel value="#{shiftController.current.endingTime}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </h:outputLabel>  
 
                         <p:outputLabel value="Previous Shift"/>
@@ -203,7 +203,7 @@
                         <p:outputLabel value="Created At"/>
                         <h:outputLabel value=":"/>
                         <p:outputLabel value="#{shiftController.current.createdAt}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                         </p:outputLabel>
 
                     </h:panelGrid>

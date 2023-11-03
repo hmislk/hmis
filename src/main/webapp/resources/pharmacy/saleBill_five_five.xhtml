@@ -18,7 +18,6 @@
 
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: avoid!important;">
-
             <div class="institutionName">
                 <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
             </div>
@@ -60,7 +59,7 @@
                                 <f:convertDateTime pattern="dd/MM/yy " ></f:convertDateTime>
                             </h:outputLabel>
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a"  ></f:convertDateTime>
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
                         <td style="width: 50px;"></td>
@@ -280,12 +279,12 @@
                                 </h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}"     style="text-align: right;" >
+                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}" style="text-align: right;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
                             <td    style="text-align: right;" >
-                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.netValue/bip.qty}"     >
+                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.netValue/bip.qty}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>
@@ -312,7 +311,7 @@
                                 </h:outputLabel>
                             </td>
                             <td>
-                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}"     style="text-align: right;" >
+                                <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}" style="text-align: right;" >
                                     <f:convertNumber integerOnly="true" />
                                 </h:outputLabel>
                             </td>
@@ -442,16 +441,11 @@
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.code}"/>
             </div>
-
             <div class="footer" style="text-align: center;">
                 <br/>
                 <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
                 <br/>
             </div>
-
-            
-
-
         </div>
     </cc:implementation>
 </html>

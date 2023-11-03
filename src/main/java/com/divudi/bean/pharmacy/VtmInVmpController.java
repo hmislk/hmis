@@ -10,10 +10,9 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UtilityController;
-import com.divudi.entity.pharmacy.VtmsVmps;
+import com.divudi.entity.pharmacy.VirtualProductIngredient;
 import com.divudi.facade.VtmsVmpsFacade;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -26,8 +25,8 @@ import javax.inject.Named;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -38,16 +37,16 @@ public class VtmInVmpController implements Serializable {
     SessionController sessionController;
     @EJB
     private VtmsVmpsFacade ejbFacade;
-    List<VtmsVmps> selectedItems;
-    private VtmsVmps current;
-    private List<VtmsVmps> items = null;
+    List<VirtualProductIngredient> selectedItems;
+    private VirtualProductIngredient current;
+    private List<VirtualProductIngredient> items = null;
     String selectText = "";
 
     public void prepareAdd() {
-        current = new VtmsVmps();
+        current = new VirtualProductIngredient();
     }
 
-    public void setSelectedItems(List<VtmsVmps> selectedItems) {
+    public void setSelectedItems(List<VirtualProductIngredient> selectedItems) {
         this.selectedItems = selectedItems;
     }
 
@@ -65,13 +64,19 @@ public class VtmInVmpController implements Serializable {
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Updated Successfully.");
         } else {
-            current.setCreatedAt(new Date());
-            current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
             UtilityController.addSuccessMessage("Saved Successfully");
         }
         recreateModel();
         getItems();
+    }
+
+    public void save(VirtualProductIngredient v) {
+        if (v.getId() != null) {
+            getFacade().edit(v);
+        } else {
+            getFacade().create(v);
+        }
     }
 
     public void setSelectText(String selectText) {
@@ -97,11 +102,11 @@ public class VtmInVmpController implements Serializable {
     public VtmInVmpController() {
     }
 
-    public VtmsVmps getCurrent() {
+    public VirtualProductIngredient getCurrent() {
         return current;
     }
 
-    public void setCurrent(VtmsVmps current) {
+    public void setCurrent(VirtualProductIngredient current) {
         this.current = current;
     }
 
@@ -109,8 +114,6 @@ public class VtmInVmpController implements Serializable {
 
         if (current != null) {
             current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             UtilityController.addSuccessMessage("Deleted Successfully");
         } else {
@@ -126,14 +129,14 @@ public class VtmInVmpController implements Serializable {
         return ejbFacade;
     }
 
-    public List<VtmsVmps> getItems() {
+    public List<VirtualProductIngredient> getItems() {
         if (items == null) {
             String j;
-            j="select v "
+            j = "select v "
                     + " from VtmsVmps v "
                     + " where v.retired=false "
                     + " order by v.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }
@@ -141,7 +144,7 @@ public class VtmInVmpController implements Serializable {
     /**
      *
      */
-    @FacesConverter(forClass = VtmsVmps.class)
+    @FacesConverter(forClass = VirtualProductIngredient.class)
     public static class VtmInVmpControllerConverter implements Converter {
 
         @Override
@@ -171,8 +174,8 @@ public class VtmInVmpController implements Serializable {
             if (object == null) {
                 return null;
             }
-            if (object instanceof VtmsVmps) {
-                VtmsVmps o = (VtmsVmps) object;
+            if (object instanceof VirtualProductIngredient) {
+                VirtualProductIngredient o = (VirtualProductIngredient) object;
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "

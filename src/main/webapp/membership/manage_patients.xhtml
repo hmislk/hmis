@@ -80,7 +80,7 @@
                                             </p:column>
                                             <p:column headerText="Date of Birth">
                                                 <h:outputLabel value="#{apt.person.dob}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                 </h:outputLabel>
                                             </p:column>
                                         </p:autoComplete>
@@ -125,10 +125,10 @@
                                                 </p:selectOneMenu>
                                                 
                                                 <h:outputLabel value="Membership From"/>
-                                                <p:calendar value="#{patientController.current.fromDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                                                <p:calendar value="#{patientController.current.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                                                 
                                                 <h:outputLabel value="Membership To"/>
-                                                <p:calendar value="#{patientController.current.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                                                <p:calendar value="#{patientController.current.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
                                                 
                                                 
                                                 <h:outputLabel value="Title"/>
@@ -154,7 +154,7 @@
                                                 </p:selectOneMenu>
 
                                                 <h:outputLabel value="Date of Birth"/>
-                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob" styleClass="dateTimePicker"  navigator="true" pattern="dd/MM/yyyy" >
+                                                <p:calendar  value="#{patientController.current.person.dob}" id="calNewPtDob" styleClass="dateTimePicker"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                                                     <f:ajax event="dateSelect" execute="calNewPtDob" render="year month day" listener="#{patientController.dobChangeListen()}"/>
                                                 </p:calendar>
 
@@ -191,11 +191,11 @@
                                                                 itemValue="#{npt}">
                                                 </p:autoComplete>
                                                 <h:outputLabel value="Phone"/>
-                                                <p:inputMask mask="999-9999999" id="txtNewPtPhone" autocomplete="off" maxlength="11" style="width: 280px;" value="#{patientController.current.person.phone}">
-                                                </p:inputMask>
+                                                <p:inputText  id="txtNewPtPhone" autocomplete="off" maxlength="11" style="width: 280px;" value="#{patientController.current.person.phone}">
+                                                </p:inputText>
                                                 <h:outputLabel value="NIC" />
                                                 <p:inputText maxlength="12" value="#{patientController.current.person.nic}" style="width: 280px;"/>
-                                                <!--<p:inputMask mask="999999999V" value="#{patientController.current.person.nic}" />-->
+                                                <!--<p:inputText  value="#{patientController.current.person.nic}" />-->
                                                 <h:outputLabel value="Email"/>
                                                 <p:inputText autocomplete="off" value="#{patientController.current.person.email}" style="width: 280px;"/>
                                                 <h:outputLabel value="P/F/M No "/>

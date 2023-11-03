@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
@@ -21,7 +20,6 @@ import javax.persistence.Transient;
  * @author Buddhika
  */
 @Entity
-@Inheritance
 public class ServiceSession extends Item implements Serializable {
 
     @Transient
@@ -251,8 +249,6 @@ public class ServiceSession extends Item implements Serializable {
     public Date getTransStartTime() {
         Calendar st = Calendar.getInstance();
         Calendar start = Calendar.getInstance();
-//        //// // System.out.println("sessionAt = " + sessionAt);
-//        //// // System.out.println("startingTime = " + startingTime);
         if (sessionAt == null || startingTime == null) {
             return null;
         }

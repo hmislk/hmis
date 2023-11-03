@@ -20,7 +20,7 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" value="#{storeReportsStock.department}" converter="departmentConverter"/>
+                                            forceSelection="true" value="#{storeReportsStock.department}" />
                             
                             <h:outputLabel value="Category" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{storeItemCategoryController.completeCategory}" var="dept" 
@@ -44,7 +44,7 @@
                                     <h:outputLabel value="Before Stock Taking Report in #{storeReportsStock.department.name} "/>                                  
                                     <h:outputLabel value="for #{storeReportsStock.category.name}"/><br/><br/>
                                     <h:outputLabel value="Date : ">
-                                        <p:clock pattern="dd MM yy HH:mm:ss a"/></h:outputLabel>
+                                        <p:clock pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></h:outputLabel>
                                 </f:facet> 
                                 
                                 <p:column headerText="Item">

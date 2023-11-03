@@ -11,7 +11,7 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  id="cat" converter="categoryConverter"
+        <p:autoComplete  forceSelection="true"  value="#{cc.attrs.value}"  id="cat" 
                          completeMethod="#{categoryController.completeServiceInvestigationCategory}" var="ix"
                          itemLabel="#{ix.name}" itemValue="#{ix}" >            
         </p:autoComplete> 

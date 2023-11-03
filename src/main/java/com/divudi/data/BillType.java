@@ -44,12 +44,14 @@ public enum BillType {
     AgentPaymentReceiveBill,
     AgentCreditNoteBill,
     AgentDebitNoteBill,
+    PatientPaymentReceiveBill,
     CollectingCentrePaymentReceiveBill,
     CollectingCentreCreditNoteBill,
     CollectingCentreDebitNoteBill,
     @Deprecated
     PharmacyBill, //Cash In
     PharmacySale,
+    PharmacySaleWithoutStock,
     PharmacyWholeSale,
     @Deprecated
     SandryGrn,

@@ -8,14 +8,11 @@ package com.divudi.entity.hr;
 import com.divudi.entity.Staff;
 import java.util.Date;
 import javax.persistence.Entity;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 public class AmendmentForm extends HrForm {
 
     @Temporal(TemporalType.TIMESTAMP)

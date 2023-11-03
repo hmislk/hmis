@@ -7,9 +7,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/lab/administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
 
                 <h:form>
 
@@ -21,14 +21,14 @@
 
                             <h:panelGrid columns="1"  >
                                 <p:commandButton  ajax="false" value="Add Many Investigations" action="#{investigationController.toAddManyIx()}"/>
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Update to New Report Format" action="#{investigationItemController.convertCssValuesToRiValues()}" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Change Ix Institution According To Dept" action="#{investigationController.changeIxInstitutionAccordingToDept}" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Update to New Report Format" action="#{investigationItemController.convertCssValuesToRiValues()}"  />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Change Ix Institution According To Dept" action="#{investigationController.changeIxInstitutionAccordingToDept}"  />
                                 
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Find Master Items" action="#{investigationController.changeIxReportedAsToMasterItem}" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Ix Cats to Cats Categories" action="#{investigationController.catToIxCat}" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Worksheet Items" action="#{investigationController.reportItemsToWorksheetItems}" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="Copy Ix" action="/lab/copy" onclick="onSubmitButton();" />
-                                <p:commandButton  styleClass="linkButton" ajax="false" value="To Delete Many Investigation Items" action="/lab/investigation_values_to_delete" onclick="onSubmitButton();" />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Find Master Items" action="#{investigationController.changeIxReportedAsToMasterItem}"  />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Ix Cats to Cats Categories" action="#{investigationController.catToIxCat}"  />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Add Worksheet Items" action="#{investigationController.reportItemsToWorksheetItems}"  />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="Copy Ix" action="/lab/copy"  />
+                                <p:commandButton  styleClass="linkButton" ajax="false" value="To Delete Many Investigation Items" action="/lab/investigation_values_to_delete"  />
                             </h:panelGrid>
                         </p:panel>
 

@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/pharmacy/admin/index.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="subcontent">
+        <h:panelGroup >
+            <h:form  >
+                <p:panel >
+                    <f:facet name="header" >
+                        <h:outputLabel value="Manage Multiple Pharmaceutical Items" ></h:outputLabel>
+                    </f:facet>
+                    <p:panel>
+                        <h:panelGrid columns="2" id="pan" >
+                            <p:commandButton 
+                                value="Fill" 
+                                action="#{pharmacyController.fillPharmaceuticalLights()}"
+                                ajax="false" />
+                            <p:commandButton 
+                                ajax="false"
+                                value="Active Categories" 
+                                action="#{pharmacyController.deleteSelectedPharmaceuticalLight()}" />
+                        </h:panelGrid>
+
+                        <p:dataTable 
+                            value="#{pharmacyController.allLights}" 
+                            var="c" 
+                            selection="#{pharmacyController.selectedLights}"
+                            rowKey="#{c.id}"
+
+                            paginator="true"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15"
+
+
+                            >
+                            <p:column selectionMode="multiple"></p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Name" />
+                                </f:facet>
+                                <p:outputLabel value="#{c.name}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Code" />
+                                </f:facet>
+                                <p:outputLabel value="#{c.description}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Status" />
+                                </f:facet>
+                                <p:outputLabel value="#{c.retired}" />
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Retired At" />
+                                </f:facet>
+                                <p:outputLabel value="#{c.retiredAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <p:outputLabel value="Retired User" />
+                                </f:facet>
+                                <p:outputLabel value="#{c.retirer.webUserPerson.name}" />
+                            </p:column>
+                            F                        </p:dataTable>
+                    </p:panel>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

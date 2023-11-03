@@ -15,7 +15,7 @@
 
                 <f:facet name="header" >
                     <h:outputLabel value="Manage User Privilages"/>
-                    <p:commandButton value="Update User Privilage"  action="#{userPrivilageController.savePrivileges()}" ajax="false" onclick="onSubmitButton();" >  
+                    <p:commandButton value="Update User Privilage"  action="#{userPrivilageController.savePrivileges()}" ajax="false"  >  
                     </p:commandButton>
 
 
@@ -27,7 +27,7 @@
 
                 <h:panelGrid  columns="2" >                          
 
-                    <p:autoComplete id="user" converter="webUs" forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" 
+                    <p:autoComplete id="user"  forceSelection="true"  completeMethod="#{webUserController.completeUser}" var="us" 
                                     itemLabel="#{us.webUserPerson.name}" itemValue="#{us}"  
                                     value="#{userPrivilageController.currentWebUser}" >
                         <f:ajax event="itemSelect" execute="user" render="tree" />

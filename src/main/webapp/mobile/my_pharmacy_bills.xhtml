@@ -6,7 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <body>
+    <h:body>
 
         <ui:composition template="./mobile_template.xhtml">
 
@@ -33,7 +33,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Date" >
                                     <p:outputLabel value="#{b.billDate}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </p:outputLabel>
                                 </p:column>
                             </p:dataTable>
@@ -50,5 +50,5 @@
 
         </ui:composition>
 
-    </body>
+    </h:body>
 </html>

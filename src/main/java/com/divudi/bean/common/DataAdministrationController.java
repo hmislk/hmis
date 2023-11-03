@@ -164,6 +164,7 @@ public class DataAdministrationController {
     private DepartmentType departmentType;
     private SearchKeyword searchKeyword;
     CommonController commonController;
+    private int manageCheckEnteredDataIndex;
 
     Date fromDate;
     Date toDate;
@@ -192,7 +193,7 @@ public class DataAdministrationController {
 
         sql = "SELECT c FROM PharmaceuticalItemCategory c ";
 
-        Set<Category> allCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+        Set<Category> allCats = new HashSet<>(categoryFacade.findByJpql(sql, m));
 
         sql = "SELECT i.category "
                 + " FROM Item i "
@@ -201,7 +202,7 @@ public class DataAdministrationController {
         ////System.out.println("sql = " + sql);
         m = new HashMap();
 
-        Set<Category> usedCats = new HashSet<>(categoryFacade.findBySQL(sql, m));
+        Set<Category> usedCats = new HashSet<>(categoryFacade.findByJpql(sql, m));
 
         ////System.out.println("Used Cats " + usedCats.size());
         ////System.out.println("All Cats after removing " + allCats.size());
@@ -237,7 +238,7 @@ public class DataAdministrationController {
         sql = "select b from Bill b where (b.billType=:bt1 or b.billType=:bt2) order by b.id desc";
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.PharmacyPre);
-        List<Bill> bs = getBillFacade().findBySQL(sql, m, 20);
+        List<Bill> bs = getBillFacade().findByJpql(sql, m, 20);
         for (Bill b : bs) {
             ////System.out.println("b = " + b);
             ////System.out.println("b.getBillType() = " + b.getBillType());
@@ -267,7 +268,7 @@ public class DataAdministrationController {
         m.put("bct", BilledBill.class);
         m.put("bt", BillType.PaymentBill);
 
-        bs = billFacade.findBySQL(s, m);
+        bs = billFacade.findByJpql(s, m);
         int i = 1;
         for (Bill b : bs) {
             Bill cb = b.getCancelledBill();
@@ -296,7 +297,7 @@ public class DataAdministrationController {
 
     public void makeAllAmpsWithNullDepartmentTypeToPharmacyType() {
         String j = "Select a from Amp a where a.retired=false and a.departmentType is null";
-        List<Item> amps = itemFacade.findBySQL(j);
+        List<Item> amps = itemFacade.findByJpql(j);
         for (Item a : amps) {
             if (a instanceof Amp) {
                 Amp amp = (Amp) a;
@@ -324,11 +325,10 @@ public class DataAdministrationController {
         m.put("bt", BillType.PaymentBill);
         m.put("rbt", BillType.OpdBill);
 
-//        bills = billFacade.findBySQL(s, m);
-        bills = billFacade.findBySQL(s, m, 10);
+//        bills = billFacade.findByJpql(s, m);
+        bills = billFacade.findByJpql(s, m, 10);
         for (Bill cb : bills) {
             for (BillItem bi : cb.getBillItems()) {
-                System.err.println("**************");
                 //System.out.println("bi = " + bi);
                 //System.out.println("bi.getRetiredAt() = " + bi.getRetiredAt());
                 //System.out.println("bi.isRetired() = " + bi.isRetired());
@@ -343,19 +343,19 @@ public class DataAdministrationController {
                 }
                 String sql;
                 sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
-                List<BillFee> tmp = getBillFeeFacade().findBySQL(sql);
+                List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
                 if (tmp.size() > 0) {
                 } else {
                     sql = "Select bi From BillItem bi where bi.retired=false and bi.referanceBillItem.id=" + bi.getReferanceBillItem().getId();
                     BillItem billItem = getBillItemFacade().findFirstByJpql(sql);
                     sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
-                    tmp = getBillFeeFacade().findBySQL(sql);
+                    tmp = getBillFeeFacade().findByJpql(sql);
                     if (tmp.size() > 0) {
                         billSearch.cancelBillFee(cb, bi, tmp);
                     } else {
                         saveBillFee(billItem);
                         sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + billItem.getId();
-                        tmp = getBillFeeFacade().findBySQL(sql);
+                        tmp = getBillFeeFacade().findByJpql(sql);
                         billSearch.cancelBillFee(cb, bi, tmp);
                     }
                 }
@@ -375,14 +375,13 @@ public class DataAdministrationController {
 
         m.put("tps", Arrays.asList(new Class[]{Investigation.class, Service.class}));
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
         int j = 1;
         for (Item i : items) {
             i.setVatable(true);
             i.setVatPercentage(15.0);
             itemFacade.edit(i);
-            System.err.println("**** " + j + " ****");
             j++;
         }
 
@@ -408,7 +407,7 @@ public class DataAdministrationController {
 
     public void restBillNumber() {
         String sql = "Select b from BillNumber b where b.retired=false";
-        List<BillNumber> list = billNumberFacade.findBySQL(sql);
+        List<BillNumber> list = billNumberFacade.findByJpql(sql);
         for (BillNumber b : list) {
             b.setRetired(true);
             b.setRetiredAt(new Date());
@@ -444,7 +443,7 @@ public class DataAdministrationController {
 //        m.put("bts", BillType.PharmacyTransferReceive);
 //        m.put("bts", BillType.PharmacyTransferRequest);
 //        
-        bills = getBillFacade().findBySQL(j, m);
+        bills = getBillFacade().findByJpql(j, m);
 
         for (Bill b : bills) {
             ////System.out.println("b = " + b);
@@ -505,7 +504,7 @@ public class DataAdministrationController {
                 + " order by b.createdAt ";
         temMap.put("billType", BillType.InwardBill);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public void updateInwardServiceBillWithPaymentmethord() {
@@ -613,7 +612,7 @@ public class DataAdministrationController {
 
         m.put("ins", reportKeyWord.getInstitution());
 
-        staffs = getStaffFacade().findBySQL(sql, m);
+        staffs = getStaffFacade().findByJpql(sql, m);
         for (Staff s : staffs) {
             s.getPerson().setZoneCode(reportKeyWord.getString());
             if (s.getPerson().getNic() != null && !s.getPerson().getNic().equals("")) {
@@ -666,7 +665,7 @@ public class DataAdministrationController {
             }
         }
         sql += " order by i.name ";
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
     }
 
@@ -801,7 +800,7 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("class", ServiceSession.class);
 
-        sessions = serviceSessionFacade.findBySQL(sql, m);
+        sessions = serviceSessionFacade.findByJpql(sql, m);
 
         sql = "Select s From ServiceSession s where s.retired=false "
                 + " and s.originatingSession is not null "
@@ -809,7 +808,7 @@ public class DataAdministrationController {
                 + " and type(s)=:class ";
         m.put("cd", new Date());
 
-        sessions.addAll(serviceSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP));
+        sessions.addAll(serviceSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP));
 
         return sessions;
     }
@@ -827,7 +826,7 @@ public class DataAdministrationController {
             m.put("depT", departmentType);
         }
 
-        departments = getDepartmentFacade().findBySQL(sql, m);
+        departments = getDepartmentFacade().findByJpql(sql, m);
 
     }
 
@@ -836,7 +835,6 @@ public class DataAdministrationController {
         List<Object> objects = fetchAllBilledBillTypes();
         for (Object ob : objects) {
             BillType bt = (BillType) ob;
-            System.err.println("Time l1 = " + new Date());
             Bill b = fetchBill(bt, true);
             if (b != null) {
                 bills.add(b);
@@ -850,7 +848,6 @@ public class DataAdministrationController {
 
     public void createDuplicateBillTableByBillType() {
         bills = new ArrayList<>();
-        System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
         for (Bill b : totals.getBills()) {
 //            System.err.println("Time For In = " + new Date());
@@ -869,7 +866,6 @@ public class DataAdministrationController {
 
     public void createBillTable() {
         bills = new ArrayList<>();
-        System.err.println("Time 1 = " + new Date());
         BillListWithTotals totals = billEjb.findBillsAndTotals(fromDate, toDate, new BillType[]{reportKeyWord.getBillType()}, null, null, null, null);
         for (Bill b : totals.getBills()) {
             bills.add(b);
@@ -885,7 +881,7 @@ public class DataAdministrationController {
                 + " b.retired=false "
                 + " and b.billType is not null ";
 
-        objects = getBillFacade().findObjectBySQL(sql);
+        objects = getBillFacade().findObjectByJpql(sql);
 
         return objects;
     }
@@ -903,7 +899,7 @@ public class DataAdministrationController {
             sql += " order by b.createdAt desc";
         }
         m.put("bt", bt);
-        b = getBillFacade().findFirstBySQL(sql, m);
+        b = getBillFacade().findFirstByJpql(sql, m);
         return b;
     }
 
@@ -927,7 +923,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Pharmacy);
         m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         int j = 1;
@@ -956,7 +952,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Pharmacy);
 //        m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         int j = 1;
@@ -987,7 +983,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Store);
         m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         int j = 1;
@@ -1014,7 +1010,7 @@ public class DataAdministrationController {
         m.put("dep", DepartmentType.Store);
 //        m.put("cat", itemCategory);
 
-        items = itemFacade.findBySQL(sql, m);
+        items = itemFacade.findByJpql(sql, m);
 
 
         for (Item i : items) {
@@ -1042,12 +1038,12 @@ public class DataAdministrationController {
                 + " b.createdAt between :fromDate and :toDate  ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  (upper(b.insId) like :billNo )";
+            sql += " and  ((b.insId) like :billNo )";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and  (upper(i.name) like :itm )";
+            sql += " and  ((i.name) like :itm )";
             temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
@@ -1056,7 +1052,7 @@ public class DataAdministrationController {
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
 
-        patientInvestigations = getPatientInvestigationFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 50);
+        patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
     }
 
@@ -1135,7 +1131,7 @@ public class DataAdministrationController {
         }
         sql += " order by c.description, c.name ";
 
-        return getPharmaceuticalItemCategoryFacade().findBySQL(sql);
+        return getPharmaceuticalItemCategoryFacade().findByJpql(sql);
     }
     
 //    Getters & Setters
@@ -1500,6 +1496,18 @@ public class DataAdministrationController {
 
     public void setSelectedPharmaceuticalItemCategorys(List<PharmaceuticalItemCategory> selectedPharmaceuticalItemCategorys) {
         this.selectedPharmaceuticalItemCategorys = selectedPharmaceuticalItemCategorys;
+    }
+
+    public int getManageCheckEnteredDataIndex() {
+        return manageCheckEnteredDataIndex;
+    }
+
+    public void setManageCheckEnteredDataIndex(int manageCheckEnteredDataIndex) {
+        this.manageCheckEnteredDataIndex = manageCheckEnteredDataIndex;
+    }
+    
+    public String navigateToAdminDataAdministration(){
+        return "/dataAdmin/admin_data_administration";
     }
 
 }

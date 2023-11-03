@@ -9,16 +9,16 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_summery_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="Pharmacy Whole Sale Report" >
 
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Institution" ></h:outputLabel>
-                            <p:autoComplete converter="institutionConverter"
+                            <p:autoComplete 
                                             completeMethod="#{institutionController.completeIns}" var="ins" 
                                             itemLabel="#{ins.name}" itemValue="#{ins}" forceSelection="true" 
                                             value="#{billController.institution}">
@@ -26,12 +26,12 @@
                             <h:outputLabel value="Department" ></h:outputLabel>
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{billController.department}" converter="departmentConverter" >
+                                            value="#{billController.department}"  >
                             </p:autoComplete>
                             <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{billController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{billController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{billController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{billController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
 
                         <h:panelGrid columns="3">
@@ -58,11 +58,11 @@
                                     <h:outputLabel value="#{billController.department.name}"/> &#13;&nbsp;
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{billController.fromDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>&#13;&nbsp;
                                         <h:outputLabel value="To : "/>
                                         <h:outputLabel value="#{billController.toDate}">
-                                            <f:convertDateTime pattern="dd/MM/yy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                 </f:facet>
 
@@ -99,7 +99,7 @@
                             <p:column headerText="Billed at"  
                                       sortBy="#{bill.createdAt}">
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value="#{bill.createdAt.time}" >
                                     
@@ -108,13 +108,13 @@
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  

@@ -138,12 +138,12 @@ public class PettyCashBillController implements Serializable {
                 + " and b.billType= :btp "
                 + " and b.createdAt > :fd "
                 + " and b.invoiceNumber=:inv ";
-//                + " and upper(b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
+//                + " and (b.invoiceNumber) like '%" + inv.trim().toUpperCase() + "%'";
         HashMap h = new HashMap();
         h.put("btp", BillType.PettyCash);
         h.put("fd", fd);
         h.put("inv", inv);
-        List<Bill> tmp = getBillFacade().findBySQL(sql, h, TemporalType.TIMESTAMP);
+        List<Bill> tmp = getBillFacade().findByJpql(sql, h, TemporalType.TIMESTAMP);
 
         if (tmp.size() > 0) {
             return true;
@@ -204,7 +204,7 @@ public class PettyCashBillController implements Serializable {
 
         getCurrent().setDepartment(getSessionController().getDepartment());
         getCurrent().setInstitution(getSessionController().getInstitution());
-        getCurrent().setComments(comment);
+//        getCurrent().setComments(comment);
 
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());

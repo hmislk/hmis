@@ -28,8 +28,8 @@
                                 </p:column>
                             </p:autoComplete>
                             <p:watermark for="acColl" value="Collecting Centre" />
-                            <p:commandButton ajax="false" action="#{labBillCollectingController.settleBill()}" value="Settle" onclick="onSubmitButton();" />
-                            <p:commandButton ajax="false" action="/lab/bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" value="New Bill" onclick="onSubmitButton();" />
+                            <p:commandButton ajax="false" action="#{labBillCollectingController.settleBill()}" value="Settle"  />
+                            <p:commandButton ajax="false" action="/lab/bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" value="New Bill"  />
 
                             
 
@@ -66,7 +66,7 @@
                                                     <h:outputLabel  rendered="#{labBillCollectingController.searchedPatient!=null}" value="DOB"  />
 
                                                     <h:outputLabel rendered="#{labBillCollectingController.searchedPatient!=null}" value="#{labBillCollectingController.searchedPatient.person.dob}">
-                                                        <f:convertDateTime pattern="dd/MM/yy" />
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                     </h:outputLabel>
 
                                                     <h:outputLabel  rendered="#{labBillCollectingController.searchedPatient!=null}" value="Adress" />
@@ -129,7 +129,7 @@
                                         <h:outputText id="lblQuaD" value="Qualification" ></h:outputText>
                                         <h:inputText autocomplete="off" id="txtQuaD" value="#{doctorController.current.qualification}"  ></h:inputText>   
 
-                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();" onclick="onSubmitButton();" >
+                                        <p:commandButton id="btnDocSave" value="Add New" process="btnDocSave panDoc" update="panDoc #{p:resolveFirstComponentWithId('cmbDoc',view).clientId}" actionListener="#{doctorController.saveSelected()}" styleClass="buttons" oncomplete="dlg.hide();"  >
                                         </p:commandButton>
 
                                     </h:panelGrid>  
@@ -147,7 +147,7 @@
                                         </p:tab>
                                                                       
                                         <p:tab title="Staff">
-                                            <p:autoComplete forceSelection="true" converter="stfcon" value="#{labBillCollectingController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
+                                            <p:autoComplete forceSelection="true"  value="#{labBillCollectingController.staff}" completeMethod="#{staffController.completeStaff}" var="ix2" itemLabel="#{ix2.person.name}" itemValue="#{ix2}" size="30"  style="width: 400px;">
                                             </p:autoComplete>
                                         </p:tab>
 
@@ -291,7 +291,7 @@
                     <p:commandButton value="Print" ajax="false" action="#">
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>
-                    <p:commandButton value="New Bill" ajax="false" action="/lab/bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}" onclick="onSubmitButton();"  >
+                    <p:commandButton value="New Bill" ajax="false" action="/lab/bill_collecting_centre" actionListener="#{labBillCollectingController.prepareNewBill()}"   >
                     </p:commandButton>
 
                 </div>
@@ -317,7 +317,7 @@
 
                                 <div class="billdatePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.billDate}">
-                                        <f:convertDateTime pattern="dd/MM/yy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </div>
 
@@ -330,7 +330,7 @@
                                 <div class="billtimePrinting" >
                                     <h:outputLabel value="#{labBillCollectingController.current.billTime}"
                                                    >
-                                        <f:convertDateTime pattern="hh mm ss a"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
                                     </h:outputLabel>
                                 </div>
 

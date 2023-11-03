@@ -455,7 +455,7 @@ public class PharmacyWholeSaleController implements Serializable {
         m.put("s", d);
         m.put("vmp", amp.getVmp());
         sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public List<Item> getItemsWithoutStocks() {
@@ -496,14 +496,14 @@ public class PharmacyWholeSaleController implements Serializable {
         List<Item> items;
         String sql;
         sql = "select i from Item i where i.retired=false "
-                + " and upper(i.name) like :n and type(i)=:t "
-                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and upper(ibs.itemBatch.item.name) like :n ) order by i.name ";
+                + " and (i.name) like :n and type(i)=:t "
+                + " and i.id not in(select ibs.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (ibs.itemBatch.item.name) like :n ) order by i.name ";
         m.put("t", Amp.class);
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -518,11 +518,11 @@ public class PharmacyWholeSaleController implements Serializable {
         m.put("s", d);
         m.put("n", "%" + qry.toUpperCase() + "%");
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
-        stockList = getStockFacade().findBySQL(sql, m, 20);
+        stockList = getStockFacade().findByJpql(sql, m, 20);
 //        itemsWithoutStocks = completeRetailSaleItems(qry);
         //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
@@ -542,12 +542,12 @@ public class PharmacyWholeSaleController implements Serializable {
 
         //////System.out.println("qry = " + qry);
         if (qry.length() > 4) {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n or upper(i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         } else {
-            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
 
-        items = getStockFacade().findBySQL(sql, m, 20);
+        items = getStockFacade().findByJpql(sql, m, 20);
 
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
@@ -581,36 +581,36 @@ public class PharmacyWholeSaleController implements Serializable {
         if (qry.length() > 4) {
             sql = "select i from Amp i "
                     + "where i.retired=false and "
-                    + "(upper(i.name) like :n or upper(i.code) like :n  or upper(i.barcode) like :n  or upper(i.vmp.name) like :n) and "
-                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (upper(ibs.itemBatch.item.name) like :n or upper(ibs.itemBatch.item.code) like :n  or upper(ibs.itemBatch.item.barcode) like :n  or upper(ibs.itemBatch.item.vmp.name) like :n )  ) "
+                    + "((i.name) like :n or (i.code) like :n  or (i.barcode) like :n  or (i.vmp.name) like :n) and "
+                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ((ibs.itemBatch.item.name) like :n or (ibs.itemBatch.item.code) like :n  or (ibs.itemBatch.item.barcode) like :n  or (ibs.itemBatch.item.vmp.name) like :n )  ) "
                     + "order by i.name ";
 
         } else {
 
             sql = "select i from Amp i "
                     + "where i.retired=false and "
-                    + "(upper(i.name) like :n or upper(i.code) like :n or upper(i.vmp.name) like :n) and "
-                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and (upper(ibs.itemBatch.item.name) like :n or upper(ibs.itemBatch.item.code) like :n or upper(ibs.itemBatch.item.vmp.name) like :n )  ) "
+                    + "((i.name) like :n or (i.code) like :n or (i.vmp.name) like :n) and "
+                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ((ibs.itemBatch.item.name) like :n or (ibs.itemBatch.item.code) like :n or (ibs.itemBatch.item.vmp.name) like :n )  ) "
                     + "order by i.name ";
 
         }
 
 //        if (qry.length() > 4) {
-//            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.barcode) like :n or upper(i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+//            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
 //        } else {
-//            sql = "select i from Stock i where i.stock >:s and i.department=:d and (upper(i.itemBatch.item.name) like :n or upper(i.itemBatch.item.code) like :n or upper(i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+//            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
 //        }
 //        
 //        sql = "select i from Amp i "
 //                + "where i.retired=false and "
-//                + "upper(i.name) like :n and "
+//                + "(i.name) like :n and "
 //                + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ibs.itemBatch.item.name like :n) "
 //                + "order by i.name ";
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("n", "%" + qry + "%");
         double s = 0.0;
         m.put("s", s);
-        items = getItemFacade().findBySQL(sql, m, 10);
+        items = getItemFacade().findByJpql(sql, m, 10);
         return items;
     }
 
@@ -647,7 +647,7 @@ public class PharmacyWholeSaleController implements Serializable {
                 + "amp.vmp=:vmp "
                 + "and amp<>:a "
                 + "order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findBySQL(sql, m);
+        replaceableStocks = getStockFacade().findByJpql(sql, m);
     }
 
     public void makeStockAsBillItemStock() {

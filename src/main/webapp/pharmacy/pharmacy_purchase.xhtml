@@ -27,16 +27,16 @@
                                             forceSelection="true"
                                             completeMethod="#{dealerController.completeDealor}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                             <h:outputLabel value="Purchasing Institution"/>
-                            <p:autoComplete converter="institutionConverter" value="#{pharmacyPurchaseController.bill.referenceInstitution}"
+                            <p:autoComplete  value="#{pharmacyPurchaseController.bill.referenceInstitution}"
                                             completeMethod="#{institutionController.completeCompany}" 
                                             forceSelection="true"
                                             var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" />
                             <p:commandButton  value="Settle" action="#{pharmacyPurchaseController.settle}"
-                                              onclick="onSubmitButton();"
+                                              
                                             ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
                             <p:commandButton value="New Bill" ajax="false"
-                                             onclick="onSubmitButton();"
+                                             
                                             action="#{pharmacyPurchaseController.makeNull()}" >
                             </p:commandButton>
 
@@ -126,7 +126,7 @@
                                      id="tmp" value="#{pharmacyPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />  
                         <p:commandButton id="btnAdd" value="Add Item" 
                                         action="#{pharmacyPurchaseController.addItem}" 
-                                         onclick="onSubmitButton();"
+                                         
                                          process="itemselectgrid" update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId}"/>
                     </p:panelGrid>
 
@@ -201,7 +201,7 @@
                     </p:column>  
 
                     <p:column headerText="DoE" style="width:100px;">                    
-                        <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 90px;"  navigator="true" pattern="dd/MM/yy" >
+                        <p:calendar  value="#{ph.pharmaceuticalBillItem.doe}" style="width: 90px;"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
                             <f:ajax event="dateSelect" execute="@this" render="txtBatch" listener="#{pharmacyPurchaseController.setBatch(ph)}"
                                     />
                         </p:calendar>
@@ -226,7 +226,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{pharmacyPurchaseController.bill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{pharmacyPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>
                         <p:panelGrid columns="2" id="tot" style="min-width: 100%">
                             <p:outputLabel value="Gross Total"/>
@@ -267,7 +267,7 @@
 
             <p:panel rendered="#{pharmacyPurchaseController.printPreview}">
                 <p:commandButton ajax="false" 
-                                 onclick="onSubmitButton();"
+                                 
                                 action="#{pharmacyPurchaseController.makeNull()}" value="New Bill"/>                    
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>

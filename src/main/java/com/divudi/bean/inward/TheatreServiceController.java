@@ -102,30 +102,30 @@ public class TheatreServiceController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrent().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
     }
 
-    public List<TheatreService> completeService(String query) {
-        List<TheatreService> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select c from TheatreService c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            //////// // System.out.println(sql);
-            suggestions = getTheatreServiceFacade().findBySQL(sql);
-        }
-        return suggestions;
-    }
+//    public List<TheatreService> completeService(String query) {
+//        List<TheatreService> suggestions;
+//        String sql;
+//        if (query == null) {
+//            suggestions = new ArrayList<>();
+//        } else {
+//            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+//            //////// // System.out.println(sql);
+//            suggestions = getTheatreServiceFacade().findByJpql(sql);
+//        }
+//        return suggestions;
+//    }
 
     public List<TheatreService> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getTheatreServiceFacade().findBySQL("select c from TheatreService c where c.retired=false order by c.name");
+            selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false order by c.name");
         } else {
-            selectedItems = getTheatreServiceFacade().findBySQL("select c from TheatreService c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+            selectedItems = getTheatreServiceFacade().findByJpql("select c from TheatreService c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         }
         return selectedItems;
     }
@@ -146,29 +146,6 @@ public class TheatreServiceController implements Serializable {
         this.reportedAs = reportedAs;
     }
 
-    public void correctIx() {
-        List<TheatreService> allItems = getTheatreServiceFacade().findAll();
-        for (TheatreService i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getTheatreServiceFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<TheatreService> allItems = getTheatreServiceFacade().findAll();
-        for (TheatreService i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getTheatreServiceFacade().edit(i);
-        }
-
-    }
 
     public String getBulkText() {
 
@@ -180,7 +157,7 @@ public class TheatreServiceController implements Serializable {
     }
 
     public List<TheatreService> completeItem(String qry) {
-        List<TheatreService> completeItems = getTheatreServiceFacade().findBySQL("select c from Item c where ( type(c) = TheatreService or type(c) = Packege ) and c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+        List<TheatreService> completeItems = getTheatreServiceFacade().findByJpql("select c from Item c where ( type(c) = TheatreService or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         return completeItems;
     }
 
@@ -346,7 +323,7 @@ public class TheatreServiceController implements Serializable {
         HashMap hash = new HashMap();
         String sql = "select c from ItemFee c where c.retired = false and type(c.item) = :ser order by c.item.name";
         hash.put("ser", TheatreService.class);
-        temp = getItemFeeFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
+        temp = getItemFeeFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
 
         if (temp == null) {
             return new ArrayList<ItemFee>();
@@ -355,28 +332,28 @@ public class TheatreServiceController implements Serializable {
         return temp;
     }
 
-    public List<ServiceFee> getServiceFee() {
-
-        List<ServiceFee> temp = new ArrayList<ServiceFee>();
-
-        for (TheatreService s : getItem()) {
-            ServiceFee si = new ServiceFee();
-            si.setService(s);
-
-            String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
-
-            si.setItemFees(getItemFeeFacade().findBySQL(sql));
-
-            temp.add(si);
-        }
-
-        return temp;
-    }
+//    public List<ServiceFee> getServiceFee() {
+//
+//        List<ServiceFee> temp = new ArrayList<ServiceFee>();
+//
+//        for (TheatreService s : getItem()) {
+//            ServiceFee si = new ServiceFee();
+//            si.setService(s);
+//
+//            String sql = "select c from ItemFee c where c.retired = false and c.item.id =" + s.getId();
+//
+//            si.setItemFees(getItemFeeFacade().findByJpql(sql));
+//
+//            temp.add(si);
+//        }
+//
+//        return temp;
+//    }
 
     public List<TheatreService> getItems() {
         String sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.department.name";
         //////// // System.out.println(sql);
-        items = getTheatreServiceFacade().findBySQL(sql);
+        items = getTheatreServiceFacade().findByJpql(sql);
 
         for (TheatreService i : items) {
 
@@ -397,10 +374,10 @@ public class TheatreServiceController implements Serializable {
         if (selectText.isEmpty()) {
             sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.name";
         } else {
-            sql = "select c from TheatreService c where c.retired=false and upper(c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
+            sql = "select c from TheatreService c where c.retired=false and (c.name) like '%" + selectText.toUpperCase() + "%' order by c.category.name,c.name";
         }
         //////// // System.out.println(sql);
-        items = getTheatreServiceFacade().findBySQL(sql);
+        items = getTheatreServiceFacade().findByJpql(sql);
 
         if (items == null) {
             items = new ArrayList<TheatreService>();
@@ -414,7 +391,7 @@ public class TheatreServiceController implements Serializable {
             sql = "select c from TheatreService c where c.retired=false order by c.category.name,c.name";
 
             //////// // System.out.println(sql);
-            items = getTheatreServiceFacade().findBySQL(sql);
+            items = getTheatreServiceFacade().findByJpql(sql);
 
             for (TheatreService i : items) {
 
@@ -442,7 +419,7 @@ public class TheatreServiceController implements Serializable {
     private List<ItemFee> getFees(Item i) {
         String sql = "Select f From ItemFee f where f.retired=false and f.item.id=" + i.getId();
 
-        return getItemFeeFacade().findBySQL(sql);
+        return getItemFeeFacade().findByJpql(sql);
     }
 
     public SpecialityFacade getSpecialityFacade() {
@@ -561,49 +538,6 @@ public class TheatreServiceController implements Serializable {
     public static class ServiceControllerConverter implements Converter {
 
         public ServiceControllerConverter() {
-        }
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            ServiceController controller = (ServiceController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "theatreServiceController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof TheatreService) {
-                TheatreService o = (TheatreService) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + TheatreServiceController.class.getName());
-            }
-        }
-    }
-
-    @FacesConverter("inwServ")
-    public static class ServiceConverter implements Converter {
-
-        public ServiceConverter() {
         }
 
         @Override

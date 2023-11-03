@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+        <title>Facelet Title</title>
+    </h:head>
+    <h:body>
+
+        <h:panelGroup rendered="#{patientController.printPreview}">
+
+            <style>
+                /* Styles for on-screen display (screening) */
+                @media screen {
+                    .bill {
+                        margin: 0 auto;
+                        max-width: 800px;
+                        border: 1px solid #000;
+                        padding: 20px;
+                        background-color: #fafafa;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+                    }
+
+                    .header {
+                        text-align: center;
+                    }
+
+                    body, html {
+                        margin: 0;
+                        padding: 0;
+                        border: none;
+                    }
+                }
+
+                /* Styles for printing */
+                @media print {
+                    body, html {
+                        margin: 0;
+                        padding: 0;
+                        border: none;
+                    }
+                    .no-print {
+                        display: none;
+                    }
+                    .bill {
+                        width: 100%;
+                        margin: 0px; /* adding some margin for a paper-like feel */
+                        padding: 0;
+                        border: none;
+                        background-color: transparent;
+                        box-shadow: none;
+                    }
+                    .header {
+                        text-align: center;
+                    }
+                }
+            </style>
+
+
+
+
+            <h:panelGroup id="billPanel" class="bill" layout="block">
+                <div class="header">
+                    <h3><strong>#{patientController.bill.department.printingName}</strong></h3>
+                </div>
+            </h:panelGroup>
+        </h:panelGroup>
+
+    </h:body>
+</html>
+

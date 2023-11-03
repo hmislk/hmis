@@ -23,13 +23,13 @@
             </p:column>
             <p:column headerText="Start Time" style="text-align: center;">
                 <h:outputLabel value="#{ti.fromTime}">
-                    <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                 </h:outputLabel>
             </p:column>
 
             <p:column headerText="Stopped Time" style="text-align: center;">
                 <h:outputLabel value="#{ti.toTime}">
-                    <f:convertDateTime pattern="dd MMMM yyyy hh mm a"/>
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                 </h:outputLabel>
             </p:column>   
             <p:column style="text-align: right;"  headerText="Total Charge">

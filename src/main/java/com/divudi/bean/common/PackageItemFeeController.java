@@ -77,12 +77,12 @@ public class PackageItemFeeController implements Serializable {
             suggestions = new ArrayList<Staff>();
         } else {
             if (getCurrentFee().getSpeciality() == null) {
-                sql = "select p from Staff p where p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             } else {
-                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and (upper(p.person.name) like '%" + query.toUpperCase() + "%'or  upper(p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
+                sql = "select p from Staff p where p.speciality.id=" + getCurrentFee().getSpeciality().getId() + " and p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
             //////// // System.out.println(sql);
-            suggestions = getStaffFacade().findBySQL(sql);
+            suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -95,7 +95,7 @@ public class PackageItemFeeController implements Serializable {
             return new ArrayList<Department>();
         } else {
             String sql = "Select d From Department d where d.retired=false and d.institution.id=" + getCurrentFee().getInstitution().getId();
-            d = getDepartmentFacade().findBySQL(sql);
+            d = getDepartmentFacade().findByJpql(sql);
         }
 
         return d;
@@ -105,7 +105,7 @@ public class PackageItemFeeController implements Serializable {
         String temSql;
         if (getCurrentPackege() != null) {
             temSql = "SELECT i FROM PackageItem i where i.retired=false and i.packege.id = " + getCurrentPackege().getId();
-            items = getPackageItemFacade().findBySQL(temSql);
+            items = getPackageItemFacade().findByJpql(temSql);
         } else {
             items = null;
         }
@@ -228,7 +228,7 @@ public class PackageItemFeeController implements Serializable {
     public List<PackageFee> getCharges() {
 
         if (currentIx != null && currentIx.getId() != null) {
-            setCharges(getPackageFeeFacade().findBySQL("select c from PackageFee c where c.retired = false and c.packege.id=" + getCurrentPackege().getId() + " and c.item.id = " + currentIx.getId()));
+            setCharges(getPackageFeeFacade().findByJpql("select c from PackageFee c where c.retired = false and c.packege.id=" + getCurrentPackege().getId() + " and c.item.id = " + currentIx.getId()));
 
         } else {
             setCharges(new ArrayList<PackageFee>());

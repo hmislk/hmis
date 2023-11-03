@@ -9,19 +9,19 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="B.H.T. DEPOSIT PAYMENT  SUMMERIES " >
 
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="From Date :"/>
-                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             
                             <h:outputLabel value="To ;" ></h:outputLabel>
-                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="dd/MMM/yyyy - hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             
                          
                             <p:outputLabel value="Admission Type :"/>
@@ -47,7 +47,7 @@
                               
                                 <h:outputLabel value="B H T No :" ></h:outputLabel>
                                 <h:panelGrid columns="1">
-                                <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                                 value="#{mdInwardReportController.patientEncounter}"
                                                 completeMethod="#{admissionController.completePatientAll}" 
                                                 var="myItem" itemValue="#{myItem}" 
@@ -83,13 +83,13 @@
                         </h:panelGroup>
 
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}" onclick="onSubmitButton();" ></p:commandButton>
+                            <p:commandButton ajax="false" value="Fill" action="#{mdInwardReportController.allBhtPySummerriesByCreatedDate()}"  ></p:commandButton>
 
                             <p:commandButton value="Print" ajax="false" action="#"  >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" onclick="onSubmitButton();" actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;"  actionListener="#{mdInwardReportController.allBhtPySummerriesByCreatedDate}">
                                 <p:dataExporter type="xlsx" target="tbl2" fileName="All_Payment_by_Created_Date_Date"  />
                             </p:commandButton>  
                         </p:panelGrid>

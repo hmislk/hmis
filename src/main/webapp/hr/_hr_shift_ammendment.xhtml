@@ -16,7 +16,7 @@
                                          value="#{shiftAmendmentController.shiftAmendment1.staff}"
                                          completeMethod="#{staffController.completeStaffCode}" 
                                          var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                         converter="stfcon">   
+                                         >   
                             <p:ajax event="itemSelect" process="@this" update="stf1"/>
                         </p:autoComplete>   
 
@@ -27,7 +27,7 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar value="#{shiftAmendmentController.shiftAmendment1.fromDate}" 
                                     navigator="true"
-                                    pattern="dd MM yyyy" >                               
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" >                               
                         </p:calendar>     
                         <h:outputLabel value="From Shift"/>
                         <p:autoComplete value="#{shiftAmendmentController.shiftAmendment1.fromShift}"
@@ -41,7 +41,7 @@
                         <h:outputLabel value="To Date"/>
                         <p:calendar value="#{shiftAmendmentController.shiftAmendment1.toDate}" 
                                     navigator="true"
-                                    pattern="dd MM yyyy" >                               
+                                    pattern="#{sessionController.applicationPreference.shortDateFormat}" >                               
                         </p:calendar>     
                         <h:outputLabel value="From Shift"/>
                         <p:autoComplete value="#{shiftAmendmentController.shiftAmendment1.toShift}"

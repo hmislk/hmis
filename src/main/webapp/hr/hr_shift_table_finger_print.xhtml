@@ -22,11 +22,11 @@
                         <h:outputLabel value="From Date"/>
                         <p:calendar id="frmDate" 
                                     value="#{shiftFingerPrintAnalysisController.fromDate}"
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="To Date"/>
                         <p:calendar id="toDate" 
                                     value="#{shiftFingerPrintAnalysisController.toDate}" 
-                                    pattern="dd MMMM yyyy" />
+                                    pattern="#{sessionController.applicationPreference.longDateFormat}" />
                         <h:outputLabel value="Roster"/>
                         <p:selectOneMenu id="roster" value="#{shiftFingerPrintAnalysisController.roster}">
                             <f:selectItem itemLabel="Select Roster"/>
@@ -42,21 +42,21 @@
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTable()}" 
-                                             onclick="onSubmitButton();" /> 
+                                              /> 
 
                             <p:commandButton value="Fill Additional Only"
                                              process="@this frmDate toDate roster"
                                              update="lst"
                                              actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                              action="#{shiftFingerPrintAnalysisController.createShiftTableAdditional()}" 
-                                             onclick="onSubmitButton();" /> 
+                                              /> 
                         </h:panelGroup>
 
                         <p:commandButton value="SAVE"
                                          process="lst"
                                          update="lst"
                                          action="#{shiftFingerPrintAnalysisController.save()}" 
-                                         onclick="onSubmitButton();"/>
+                                         />
                     </h:panelGrid>
 
                     <p:commandButton value="Reset and Fill"
@@ -64,7 +64,7 @@
                                      update="lst"
                                      actionListener="#{shiftFingerPrintAnalysisController.makeTableNull()}"
                                      action="#{shiftFingerPrintAnalysisController.createShiftTableReset()}" 
-                                     onclick="onSubmitButton();" 
+                                      
                                      style="float: right;"/>
                 </p:panel>
 
@@ -85,7 +85,7 @@
                                               or sts.shift.dayType eq 'SleepingDay' ? 'highLight2':null}">
                     <f:facet name="header">
                         <h:outputLabel value="#{data.date}" >
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
                     </f:facet>
                     <p:column headerText="No" styleClass="singleLine">
@@ -136,7 +136,7 @@
 
                         <h:panelGroup rendered="#{sts.previousStaffShift eq null}" >        
                             <h:panelGroup  >
-                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.startRecord}"  > 
+                                <p:selectOneMenu  value="#{sts.startRecord}"  > 
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i"
                                                    itemLabel="#{i.timeLabel}" itemValue="#{i}" />
@@ -156,7 +156,7 @@
                     <p:column headerText="Ending Record Frm Attendence">
                         <h:panelGroup rendered="#{sts.nextStaffShift eq null}">
                             <h:panelGroup >                           
-                                <p:selectOneMenu converter="fingerPrintRecordCon" value="#{sts.endRecord}">  
+                                <p:selectOneMenu  value="#{sts.endRecord}">  
                                     <f:selectItem itemLabel="Select"/>
                                     <f:selectItems value="#{sts.fingerPrintRecordList}" var="i" itemLabel="#{i.timeLabel}"  itemValue="#{i}" />
                                     <f:ajax event="change" execute="@this" render="endRc "
@@ -170,11 +170,11 @@
 
                     <p:column headerText="Starting Record Varified">
 
-                        <h:panelGroup id="strRc"       >
+                        <h:panelGroup id="strRc"   >
                             <h:panelGroup rendered="#{sts.startRecord ne null}" >
                                 <p:calendar                                   
                                     value="#{sts.startRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh mm ss a"  >                           
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >                           
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenStart(sts)}"/>
                                 </p:calendar>
@@ -194,7 +194,7 @@
                             <h:panelGroup rendered="#{sts.endRecord ne null}">
                                 <p:calendar                                    
                                     value="#{sts.endRecord.recordTimeStamp}" 
-                                    pattern="dd MM yy hh mm ss a" >          
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >          
                                     <p:ajax event="click" process="@this" update="@this"
                                             listener="#{shiftFingerPrintAnalysisController.listenEnd(sts)}"/>
                                 </p:calendar>                             

@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
                     <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
                     <p:panel header="Bill Type Summery" >
@@ -17,31 +17,39 @@
                             <p:panel header="Fillters" >
                                 <p:panelGrid columns="2" >
                                     <h:outputLabel value="From"/>
-                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                     <h:outputLabel value="To"/>                                
-                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
+                                    <h:outputLabel value="Institution"/>                                
+                                    <p:selectOneMenu value="#{billSearch.institution}" >
+                                        <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                        <f:selectItems value="#{sessionController.loggableInstitutions}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                    </p:selectOneMenu>
+
                                     <h:outputLabel value="Department"/>                                
                                     <p:selectOneMenu value="#{billSearch.department}" >
                                         <f:selectItem itemLabel="All Departments" ></f:selectItem>
-                                        <f:selectItems value="#{departmentController.items}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
+                                        <f:selectItems value="#{sessionController.loggableDepartments}" var="d" itemLabel="#{d.institution.name} - #{d.name}" itemValue="#{d}" ></f:selectItems>
                                     </p:selectOneMenu>
+
                                     <h:outputLabel value="Type"/>                                
                                     <p:selectOneMenu value="#{billSearch.billType}" >
                                         <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.billTypes}" ></f:selectItems>
+                                        <f:selectItems var="billtype" itemLabel="#{billtype.label}" itemValue="#{billtype}" value="#{enumController.billTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
+                                    
                                     <h:outputLabel value="Billed/Cancelled/Refunded"/>                                
                                     <p:selectOneMenu value="#{billSearch.billClassType}" >
                                         <f:selectItem itemLabel="All Types" ></f:selectItem>
-                                        <f:selectItems value="#{enumController.billClassTypes}" ></f:selectItems>
+                                        <f:selectItems var="billclass" itemLabel="#{billclass}" value="#{enumController.billClassTypes}" ></f:selectItems>
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="User"/>
-                                    <p:autoComplete id="cmbUser" converter="webUs" placeholder="All Users"
+                                    <p:autoComplete id="cmbUser"  placeholder="All Users"
                                                     forceSelection="true" inputStyle="width:190px;"
                                                     completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
@@ -50,7 +58,7 @@
                                 </p:panelGrid>
                                 <p:panelGrid columns="3" >
 
-                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillBillTypeSummery}" styleClass="noPrintButton">
+                                    <p:commandButton  value="Process" ajax="false" action="#{billSearch.fillTransactionTypeSummery()}" styleClass="noPrintButton">
                                     </p:commandButton>
 
 
@@ -59,9 +67,9 @@
 
                                     <p:commandButton  value="Export as Excel" ajax="false" styleClass="noPrintButton" >
                                         <p:dataExporter type="xlsx" target="tblBills" fileName="Bill Data"
-                                                       
-                                                            
-                                                       />
+
+
+                                                        />
                                     </p:commandButton>
 
 

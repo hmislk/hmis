@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/inward/inward_reports.xhtml">
+            <ui:define name="subcontent">
                 <h:outputStylesheet library="css" name="printing.css" />
 
                 <h:form>
@@ -18,7 +18,7 @@
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="To Date"/>
                             <p:calendar styleClass="dateTimePicker" id="toDate" 
-                                        value="#{searchController.toDate}" navigator="true" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                        value="#{searchController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                             </p:calendar>
                             <h:outputLabel value="Due Type"/>
                             <p:selectOneRadio value="#{searchController.reportKeyWord.string}" >
@@ -33,7 +33,7 @@
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="tblFee" ></p:printer>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tblFee" fileName="BHT_Income_by_Categories"  />
                             </p:commandButton> 
                         </h:panelGrid>

@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <p:panel header="Reports">
+                    <div class="row" >
+                        <div class="col-md-3" >
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title="Lists">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="All Bills" action="/analytics/all_bills"
+                                                             class="w-100"></p:commandButton>
+                                            <p:commandButton ajax="false" value="List of Bills of Other Institutions"
+                                                             action="#{searchController.navigateToListOtherInstitutionBills()}"
+                                                             class="w-100"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="OPD Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="OPD Bill List" action="#{searchController.navigateToOpdBillList()}" 
+                                                             styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Cancelled Bill List" action="#" styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Returned Bill List" action="#" styleClass="linkButton"></p:commandButton>
+
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Lab Reports" disabled="true">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Bill List" action="#"  styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Test List" action="report_list_lab_tests"  styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Referral Bill List" action="#"  styleClass="linkButton"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Referral Test List" action="#"  styleClass="linkButton"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="SMS Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="SMS faild list" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>  
+                                    <p:tab title="Audit Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Audit Event List" 
+                                                             action="#{auditEventController.navigateToAuditEventList()}"></p:commandButton>
+                                        </div>
+                                    </p:tab>  
+
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9" >
+                            <ui:insert name="report">
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

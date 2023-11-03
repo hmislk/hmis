@@ -59,7 +59,7 @@
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffSalaryEPF()}"/>
 
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
 
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_staff_epf_etf_to_export"  />
                         </p:commandButton>
@@ -90,11 +90,11 @@
                                     </h:panelGroup>
 
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryFromDate}" rendered="#{hrReportController.reportKeyWord.salaryCycle ne null}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                     To
                                     <h:outputLabel value="#{hrReportController.reportKeyWord.salaryCycle.salaryToDate}" rendered="#{hrReportController.reportKeyWord.salaryCycle ne null}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
 
                                 </f:facet>

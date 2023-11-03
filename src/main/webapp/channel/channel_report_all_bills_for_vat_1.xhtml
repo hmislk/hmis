@@ -1,0 +1,192 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/channel/channel_reports.xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ez="http://java.sun.com/jsf/composite/ezcomp"
+                
+                xmlns:ca="http://java.sun.com/jsf/composite/cashier">
+    <ui:define name="subContent">
+        <h:panelGroup rendered="true" >
+            <h:form>
+                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <p:panel  header="Channel Bill List With VAT 15%">
+                    <p:panelGrid columns="2" styleClass="noPrintButton"> 
+                        <h:outputLabel value="From Date"/>
+                        <p:calendar id="frmDate" value="#{channelReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+
+                        <h:outputLabel value="To Date"/>
+                        <p:calendar id="toDate" value="#{channelReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                        <h:outputLabel styleClass="noPrintButton" value="User Name"/>
+                        <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
+                                        value="#{channelReportController.reportKeyWord.webUser}" ></p:autoComplete>
+                        <h:outputLabel value="Session Date"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.sessoinDate}" />
+                        <h:outputLabel value="Without Agency"/>
+                        <p:selectBooleanCheckbox value="#{channelReportController.agncyOnCall}" />
+                    </p:panelGrid>
+                    <h:panelGrid columns="3" class="my-2"> 
+                        <p:commandButton style="margin-right: 10px" ajax="false" id="btnRefresh" value="Process" action="#{channelReportController.createAllChannelBillReportForVat}">
+                        </p:commandButton>
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
+                            <p:printer target="billFeeReport"  />
+                        </p:commandButton>
+                        <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton" style="float: right; margin-right: 10px" >
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_all_bills_for_vat"  />
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                </p:panel>
+                <p:panel id="billFeeReport" header="Channel Bill List">
+
+
+                    <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
+                        <f:facet name="header" >
+                            <p:outputLabel value="Channel Bill List With VAT 15%" />
+                            <h:outputLabel class="ml-5" value="From : " style=" white-space:pre-line;"/>
+                            <h:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>                          
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
+                        </f:facet>
+
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Channel Reciept No" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.insId}" />                                    
+                            <p:outputLabel value="(#{b.billedBill.insId})" rendered="#{b.billedBill ne null}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: left;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Patient Name" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.patient.person.name}" />                                    
+                        </p:column>
+
+                        <p:column style="text-align: left;" rendered="#{!channelReportController.sessoinDate}">
+                            <f:facet name="header" >
+                                <p:outputLabel value="Created Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.createdAt}" >
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
+                            </p:outputLabel>                                    
+                        </p:column>
+
+                        <p:column style="text-align: left;" rendered="#{channelReportController.sessoinDate}" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Session Date" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.singleBillSession.sessionDate}" >
+                                <f:convertDateTime pattern="dd MMM yyyy HH:mm:ss" />
+                            </p:outputLabel>                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Doctor Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.staffFee}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>                                    
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Hospital Fee" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.netTotal-b.staffFee}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>                                  
+                        </p:column>
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Net Total" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.netTotal}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>                                  
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="vat" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.vat}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>                                  
+                        </p:column>
+
+                        <p:column style="text-align: right;" >
+                            <f:facet name="header" >
+                                <p:outputLabel value="Vat Plus Net Total" />
+                            </f:facet>
+                            <p:outputLabel value="#{b.netTotal+b.vat}" >
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>                                   
+                        </p:column>
+
+                        <p:columnGroup type="footer">
+
+                            <p:row>
+                                <p:column colspan="3" footerText="Total" style=" text-align: left;">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total"/>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.channelTotal.staffFee}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.channelTotal.staffFee}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.channelTotal.hosFee}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.channelTotal.hosFee}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.channelTotal.netTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.channelTotal.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.channelTotal.vat}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.channelTotal.vat}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                                <p:column footerText="#{channelReportController.channelTotal.vat+channelReportController.channelTotal.netTotal}" style=" text-align: right">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{channelReportController.channelTotal.vat+channelReportController.channelTotal.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+                            </p:row>
+
+                        </p:columnGroup>
+
+                    </p:dataTable>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+
+</ui:composition>

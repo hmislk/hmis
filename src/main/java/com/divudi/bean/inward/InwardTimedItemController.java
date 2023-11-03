@@ -188,7 +188,7 @@ public class InwardTimedItemController implements Serializable {
         m.put("fd", frmDate);
         m.put("td", toDate);
 
-        items = getPatientItemFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        items = getPatientItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         total = 0.0;
         totalMins = 0.0;
@@ -592,7 +592,7 @@ public class InwardTimedItemController implements Serializable {
                 + " and i.retired=false and i.patientEncounter=:pe";
         HashMap hm = new HashMap();
         hm.put("pe", getCurrent().getPatientEncounter());
-        items = getPatientItemFacade().findBySQL(sql, hm);
+        items = getPatientItemFacade().findByJpql(sql, hm);
 
         if (items == null) {
             items = new ArrayList<>();

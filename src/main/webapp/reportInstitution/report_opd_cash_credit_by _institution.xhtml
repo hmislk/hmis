@@ -15,10 +15,10 @@
                             <h:outputLabel value="OPD BILL SEARCH "/>                          
                             <h:panelGrid columns="8" >
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{institutionLabSumeryController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{institutionLabSumeryController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{institutionLabSumeryController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                                <p:calendar id="toDate" value="#{institutionLabSumeryController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                                 </p:calendar>
                                 <h:outputLabel value="paymentMethod"/>
                                 <p:selectOneMenu   id="cmbPs" value="#{institutionLabSumeryController.paymentMethod}"  >
@@ -26,7 +26,7 @@
                                     <f:selectItems value="#{institutionLabSumeryController.paymentMethord}" />
                                 </p:selectOneMenu>
                                 <h:outputLabel   value="Institution" />
-                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                        
+                                <p:selectOneMenu styleClass="noPrintButton"  value="#{institutionLabSumeryController.institution}"                                    
                                                  requiredMessage="You must select a institution" >
                                     <f:selectItem itemLabel="Select Institution"/>
                                     <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
@@ -67,19 +67,19 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
@@ -148,11 +148,11 @@
                                 <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From  : "/>
 
                                 <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value="&emsp; To: " />
                                 <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Cancel Bills" />
                             </f:facet>
@@ -170,19 +170,19 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  
@@ -251,11 +251,11 @@
                                 <h:outputLabel value="Report by #{institutionLabSumeryController.paymentMethod} Bill OPD &emsp;From : "/>
 
                                 <h:outputLabel  value="#{institutionLabSumeryController.fromDate}">
-                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" &emsp;To : " />
                                 <h:outputLabel  value="#{institutionLabSumeryController.toDate}" >
-                                    <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - Refund Bills" />
                             </f:facet>
@@ -273,19 +273,19 @@
                             </p:column>
                             <p:column headerText="Billed at"  >
                                 <h:outputLabel value="#{bill.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{bill.refunded}" >
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>  

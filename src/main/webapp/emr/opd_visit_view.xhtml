@@ -1,0 +1,193 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      >
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form >
+
+
+
+                    <div class="row w-100 m-2" >
+                        <div class="col-md-4" >
+                            <div class="card m-2" >
+                                <div class="card card-header" >
+                                    <h4>Details</h4>
+                                </div>
+                                <div class="card card-body" >
+                                    <p:panelGrid columns="2" class="w-100">
+                                        <h:outputLabel value="Name" rendered="#{not empty viewEncounterController.encounter.patient.person.name}" />
+                                        <p:outputLabel value="#{viewEncounterController.encounter.patient.person.name}" rendered="#{not empty viewEncounterController.encounter.patient.person.name}" />
+
+                                        <h:outputLabel value="Date of Birth" rendered="#{viewEncounterController.encounter.patient.person.dob ne null}" />
+                                        <p:outputLabel value="#{viewEncounterController.encounter.patient.person.dob}" rendered="#{viewEncounterController.encounter.patient.person.dob ne null}" />
+
+                                        <h:outputLabel value="Address" rendered="#{not empty viewEncounterController.encounter.patient.person.address}" />
+                                        <h:outputText value="#{viewEncounterController.encounter.patient.person.address}" rendered="#{not empty viewEncounterController.encounter.patient.person.address}" />
+
+                                        <h:outputLabel value="Age" rendered="#{viewEncounterController.encounter.patient.age ne null}" />
+                                        <h:outputLabel value="#{viewEncounterController.encounter.patient.age}" rendered="#{viewEncounterController.encounter.patient.age ne null}" />
+
+                                        <h:outputLabel value="Picture" />
+                                        <h:panelGroup >
+                                            <p:graphicImage style="border: 1px solid red; width: 150px;" id="photos" cache="false" 
+                                                            rendered="#{viewEncounterController.encounter.patient.baImage ne null}"    
+                                                            value="#{patientController.getPhotoByByte(viewEncounterController.encounter.patient.baImage)}"  />
+
+
+                                        </h:panelGroup>
+                                        <h:outputLabel value="Sex" rendered="#{not empty viewEncounterController.encounter.patient.person.sex}" />
+                                        <h:outputLabel value="#{viewEncounterController.encounter.patient.person.sex}" rendered="#{not empty viewEncounterController.encounter.patient.person.sex}" />
+
+                                        <h:outputLabel value="Personal Hx" rendered="#{not empty viewEncounterController.encounter.patient.comments}" />
+                                        <h:outputText value="#{viewEncounterController.encounter.patient.comments}" rendered="#{not empty viewEncounterController.encounter.patient.comments}" />
+
+                                        <h:outputLabel value= "Visit Date" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{viewEncounterController.encounter.createdAt}" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value= "Visit Time" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{viewEncounterController.encounter.createdAt}" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                                        </h:outputLabel>
+
+                                        <h:outputLabel value= "Doctor" rendered="#{not empty viewEncounterController.encounter.creater.webUserPerson.nameWithTitle}" >
+                                        </h:outputLabel>
+                                        <h:outputLabel value= "#{viewEncounterController.encounter.creater.webUserPerson.nameWithTitle}" rendered="#{not empty viewEncounterController.encounter.creater.webUserPerson.nameWithTitle}" >
+                                        </h:outputLabel>
+
+                                        <p:outputLabel value="Comments" rendered="#{not empty viewEncounterController.encounter.comments}" />
+                                        <h:outputText value="#{viewEncounterController.encounter.comments}" rendered="#{not empty viewEncounterController.encounter.comments}" />
+
+                                        <p:outputLabel value="Weight" rendered="#{viewEncounterController.encounter.weight ne null}" />
+                                        <h:panelGroup rendered="#{viewEncounterController.encounter.weight ne null}" >
+                                            <p:outputLabel  value="#{viewEncounterController.encounter.weight}" />
+                                            <p:outputLabel  value="&nbsp;kg"  ></p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <p:outputLabel value="Height" rendered="#{viewEncounterController.encounter.height ne null}" ></p:outputLabel>
+                                        <h:panelGroup rendered="#{viewEncounterController.encounter.height ne null}" >
+                                            <p:outputLabel value="#{viewEncounterController.encounter.height}" />
+                                            <p:outputLabel  value="&nbsp;cm"  ></p:outputLabel>
+                                        </h:panelGroup>
+
+                                        <p:outputLabel value="BP" rendered="#{viewEncounterController.encounter.sbp ne null and viewEncounterController.encounter.dbp ne null}" />
+                                        <h:panelGroup rendered="#{viewEncounterController.encounter.sbp ne null and viewEncounterController.encounter.dbp ne null}" >
+                                            <p:outputLabel value="#{viewEncounterController.encounter.sbp}" />
+                                            <p:outputLabel value="/" ></p:outputLabel>
+                                            <p:outputLabel value="#{viewEncounterController.encounter.dbp}" />
+                                            <p:outputLabel  value="&nbsp;mmHg"  ></p:outputLabel>
+                                        </h:panelGroup>
+
+
+                                    </p:panelGrid>
+
+                                </div>
+                            </div>
+
+
+
+                        </div>
+
+                        <div class="col-md-4" >
+                            <div class="card m-2" >
+                                <div class="card card-header" >
+                                    <h4><p:outputLabel value="Medicines" ></p:outputLabel></h4>
+                                </div>
+                                <div class="card card-body" >
+                                    <p:dataTable
+                                        id="tblRxx"
+                                        emptyMessage="No Medicines"
+                                        value="#{patientEncounterController.encounterMedicines}"
+                                        var="rx">
+                                        <p:column >
+                                            <p:outputLabel value="#{rx.prescription.item.name} #{rx.prescription.dose % 1 == 0 ? rx.prescription.dose.intValue() : rx.prescription.dose} #{rx.prescription.doseUnit.name} #{rx.prescription.frequencyUnit.name} for #{rx.prescription.duration % 1 == 0 ? rx.prescription.duration.intValue() : rx.prescription.duration} #{rx.prescription.durationUnit.name} (#{rx.prescription.indoor ? 'indoor' : 'outdoor'})">
+                                            </p:outputLabel>
+                                            <p:spacer height="1" width="5" ></p:spacer>
+                                            <p:commandLink value="X" class="text-danger" 
+                                                           id="btnDeleteRx"
+                                                           process="btnDeleteRx"
+                                                           update="tblRxx"
+                                                           onclick="if (!confirm('Are you sure you want to delete this allergy?'))
+                                                                       return false;"
+                                                           action="#{patientEncounterController.removePatientDiagnosis()}"
+                                                           >
+                                                <f:setPropertyActionListener target="#{patientEncounterController.removingClinicalFindingValue}" value="#{rx}"/>
+                                            </p:commandLink>
+                                            <p:tooltip value="Delete" for="btnDeleteRx" ></p:tooltip>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+                            <div class="card m-2" >
+                                <div class="card card-header" >
+                                    <h4><p:outputLabel value="Diagnosis" ></p:outputLabel></h4>
+                                </div>
+                                <div class="card card-body" >
+                                    <p:dataTable id="tblDx" 
+                                                 value="#{viewEncounterController.encounter.diagnosis}"
+                                                 emptyMessage="No Diagnoses" 
+                                                 paginatorAlwaysVisible="false"
+                                                 rows="5"
+                                                 paginator="true"
+                                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+                                                 var="edx" class="w-100" >
+                                        <p:column width="10" >
+                                            <h:outputLabel value="#{edx.clinicalFindingItem.name}" ></h:outputLabel>
+                                            <p:commandLink ajax="false" value="&nbsp;(X)" action="#{patientEncounterController.removeCfv()}" > 
+                                                <f:setPropertyActionListener value="#{edx}" target="#{patientEncounterController.removingCfv}" />
+                                            </p:commandLink>
+                                        </p:column>
+                                        <p:column width="10" >
+                                            <h:outputLabel value="#{edx.lobValue}" ></h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                </div>
+                            </div>
+
+                            <div class="card m-2">
+                                <div class="card card-header">
+                                    <h4>Prescription</h4>
+                                </div>
+                                <div class="card card-body">
+                                    <p:commandButton ajax="false" value="Print"  icon="pi pi-print" >
+                                        <p:printer target="txtDocs" ></p:printer>
+                                    </p:commandButton>
+                                    <p:textEditor id="txtDocs" 
+                                                  toolbarVisible="false"
+                                                  secure='false' widgetVar="textEditorWidget" 
+                                                  value="#{patientEncounterController.encounterPrescreption.stringValue}">
+                                    </p:textEditor>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" >
+                            <div class="card m-2" >
+                                <div class="card card-header" >
+                                    <h4><p:outputLabel value="Patient Details" ></p:outputLabel></h4>
+                                </div>
+                                <div class="card card-body" >
+
+                                    <p:panelGrid columns="2" id="panelPt" class="w-100" >
+
+                                    </p:panelGrid>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

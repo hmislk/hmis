@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form >
                     <p:panel >
                         <f:facet name="header" >
@@ -19,9 +19,9 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Discharge From : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{inwardReportController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <h:outputLabel value="Discharge To : " ></h:outputLabel>
-                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>                            
+                            <p:calendar value="#{inwardReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>                            
                             <h:outputLabel value="Admission Type : " ></h:outputLabel>
                             <p:selectOneMenu  id="lstAdmissionType"   value="#{inwardReportController.admissionType}" >
                                 <f:selectItem itemLabel="All Admission Types"/>
@@ -43,9 +43,9 @@
 
                         </h:panelGrid>
                         <p:panelGrid columns="3">
-                            <p:commandButton ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}" onclick="onSubmitButton();"  ></p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Process By Created Date(Inward)" action="#{inwardReportController.fillProfessionalPaymentDone()}"   ></p:commandButton>
+                            <p:commandButton ajax="false" value="Process By Created Date(OPD)" action="#{inwardReportController.fillProfessionalPaymentDoneOPD()}"   ></p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1,tb2,tb3" fileName="bht_income_by_categories"  />
                             </p:commandButton>
                             <p:commandButton value="Print" ajax="false" action="#" >
@@ -58,11 +58,11 @@
                                 <h:outputLabel value="Inward Doctor Payment Done Report - " ></h:outputLabel>
                                 <h:outputLabel value=" From : " ></h:outputLabel>
                                 <h:outputLabel value="#{inwardReportController.fromDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                                 <h:outputLabel value=" - To : " ></h:outputLabel>
                                 <h:outputLabel value="#{inwardReportController.toDate}" >
-                                    <f:convertDateTime pattern="yyyy MM dd hh:mm:ss a" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                 </h:outputLabel>
                             </f:facet>
                             <p:dataTable value="#{inwardReportController.billedBill}" var="billedBill" id="tb1">

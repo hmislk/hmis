@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"                    
+<ui:composition template="/hr/hr_admin.xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"                
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subContent">
 
         <h:panelGroup >
             <h:form  >
@@ -21,7 +21,7 @@
                                          value="#{staffChangeController.staff}"
                                          completeMethod="#{staffController.completeStaffCode}"  
                                          var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                         converter="stfcon">   
+                                         >   
                             <f:ajax event="itemSelect" execute="@this" render="lst det" listener="#{staffChangeController.findBasic(commonController.currentDateTime)}" />
                             <p:column headerText="Name">
                                 #{mys.person.name}
@@ -71,10 +71,10 @@
                     <p:panel>
                         <h:panelGrid columns="3">
                             <h:outputLabel value="Active From"/>
-                            <p:calendar pattern="dd MMMM yyyy"
+                            <p:calendar pattern="#{sessionController.applicationPreference.longDateFormat}"
                                         navigator="true"
                                         value="#{staffChangeController.fromDate}"/>
-                            <p:commandButton ajax="false" value="Change" action="#{staffChangeController.update}" onclick="onSubmitButton();" />
+                            <p:commandButton ajax="false" value="Change" action="#{staffChangeController.update}"  />
                         </h:panelGrid>
                     </p:panel>
                 </h:panelGrid>

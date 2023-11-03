@@ -68,8 +68,8 @@ public class AntibioticController implements Serializable {
         if (query == null) {
             suggestions = new ArrayList<>();
         } else {
-            sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-            suggestions = getFacade().findBySQL(sql);
+            sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
+            suggestions = getFacade().findByJpql(sql);
         }
         return suggestions;
     }
@@ -98,29 +98,6 @@ public class AntibioticController implements Serializable {
         this.billBean = billBean;
     }
 
-    public void correctIx() {
-        List<Antibiotic> allItems = getEjbFacade().findAll();
-        for (Antibiotic i : allItems) {
-            i.setPrintName(i.getName());
-            i.setFullName(i.getName());
-            i.setShortName(i.getName());
-            i.setDiscountAllowed(Boolean.TRUE);
-            i.setUserChangable(false);
-            i.setTotal(getBillBean().totalFeeforItem(i));
-            getEjbFacade().edit(i);
-        }
-
-    }
-
-    public void correctIx1() {
-        List<Antibiotic> allItems = getEjbFacade().findAll();
-        for (Antibiotic i : allItems) {
-            i.setBilledAs(i);
-            i.setReportedAs(i);
-            getEjbFacade().edit(i);
-        }
-
-    }
 
     public String getBulkText() {
         return bulkText;
@@ -132,10 +109,10 @@ public class AntibioticController implements Serializable {
 
     public List<Antibiotic> getSelectedItems() {
         if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findBySQL("select c from Antibiotic c where c.retired=false order by c.name");
+            selectedItems = getFacade().findByJpql("select c from Antibiotic c where c.retired=false order by c.name");
         } else {
-            String sql = "select c from Antibiotic c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
-            selectedItems = getFacade().findBySQL(sql);
+            String sql = "select c from Antibiotic c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name";
+            selectedItems = getFacade().findByJpql(sql);
         }
         return selectedItems;
     }
@@ -269,7 +246,7 @@ public class AntibioticController implements Serializable {
         if (items == null) {
             String j;
             j = "select an from Antibiotic an where an.retired=false order by an.name";
-            items = getFacade().findBySQL(j);
+            items = getFacade().findByJpql(j);
         }
         return items;
     }

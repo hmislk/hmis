@@ -64,7 +64,7 @@
                                 <h:outputLabel value="Summary"/>
                             </f:facet>
                             <h:panelGrid columns="2">                                
-                                <p:commandButton ajax="false" value="Cal Cash Value" action="#{cashInController.calTotal()}" onclick="onSubmitButton();"/>
+                                <p:commandButton ajax="false" value="Cal Cash Value" action="#{cashInController.calTotal()}" />
                                 <p:inputText autocomplete="off" value="#{cashInController.bill.cashTransaction.cashValue}"
                                              disabled="#{cashInController.referenceBill ne null}">
                                     <f:convertNumber pattern="#000.00"/>
@@ -155,15 +155,15 @@
                         </p:panel>
 
                         <p:panel>
-                            <p:commandButton ajax="false" value="Settle" action="#{cashInController.settle()}" onclick="onSubmitButton();"/>
-                            <p:commandButton ajax="false" value="Clear" action="#{cashInController.makeNull()}" onclick="onSubmitButton();"/>
+                            <p:commandButton ajax="false" value="Settle" action="#{cashInController.settle()}" />
+                            <p:commandButton ajax="false" value="Clear" action="#{cashInController.makeNull()}" />
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
 
                 <p:panel rendered="#{cashInController.printPreview}">
                     <p:commandButton ajax="false" value="New Bill"
-                                    actionListener="#{cashInController.makeNull()}" onclick="onSubmitButton();"/>
+                                    actionListener="#{cashInController.makeNull()}" />
 
                     <bi:cashIn  bill="#{cashInController.bill}"/>
                 </p:panel>

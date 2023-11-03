@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <p:panel>
+                    <f:facet name="header" >
+                        <h:outputLabel value="Other Institution BILL List"/>                          
+                    </f:facet>
+                    <h:panelGrid columns="2" >
+                        <h:outputLabel value="From Date"/>
+                        <p:datePicker styleClass="dateTimePicker" 
+                                      id="fromDate" 
+                                      value="#{searchController.fromDate}" 
+                                      showTime="true"
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
+                        </p:datePicker>
+                        <h:outputLabel value="To Date"/>
+                        <p:datePicker id="toDate" value="#{searchController.toDate}" 
+                                      showTime="true"
+                                      pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
+                        </p:datePicker>
+                        <h:outputLabel value="Institution"/>
+                        <p:autoComplete  completeMethod="#{institutionController.completeIns}" 
+                                         var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" 
+                                         forceSelection="true" 
+                                         value="#{searchController.otherInstitution}" ></p:autoComplete>
+
+
+                        <p:commandButton id="btnSearch" ajax="false" value="Search" 
+                                         action="#{searchController.fillOtherInstitutionBills}"/>
+                        <p:commandButton id="btnExcel" ajax="false" value="Excel" >
+                            <p:dataExporter fileName="All Bills" type="xls" target="tblBills" ></p:dataExporter>
+                        </p:commandButton>
+                    </h:panelGrid>
+
+                    <p:dataTable rowIndexVar="i" id="tblBills" 
+                                 value="#{searchController.bills}" 
+                                 reflow="true"
+                                 var="bill"  
+                                 style="min-width: 100%;"  
+                                 paginator="true"
+                                 rows ="10"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15"
+                                 >
+                        <p:column headerText="No" styleClass="alignTop" width="15">
+                            <h:outputLabel value="#{bill.id}"/>
+                        </p:column>
+                        <p:column headerText="Institution Type" style="min-width: 150px;">
+                            <h:outputText value="#{searchController.getInstitutionType(bill)}" />
+                        </p:column>
+                        <p:column headerText="Bill Class" >                                
+                            <h:outputLabel value="#{bill.billClassType}"/>
+                        </p:column>
+                        <p:column headerText="Bill Type" >                                
+                            <h:outputLabel value="#{bill.billType}"/>
+                        </p:column>
+                        <p:column headerText="Date/Time">
+                            <h:outputLabel value="Invoice Date " rendered="#{bill.invoiceDate != null}"/>
+                            <h:outputLabel value="#{bill.invoiceDate}" rendered="#{bill.invoiceDate != null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+
+                            <h:outputLabel value="Created At " rendered="#{bill.createdAt != null}"/>
+                            <p:outputLabel value="#{bill.createdAt}" rendered="#{bill.createdAt != null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            </p:outputLabel>
+
+                            <h:outputLabel value="Bill Date " rendered="#{bill.billDate != null}"/>
+                            <p:outputLabel value="#{bill.billDate}" rendered="#{bill.billDate != null}">
+                                <f:convertDateTime pattern="dd-MMMM-yyyy"></f:convertDateTime>
+                            </p:outputLabel>
+
+                            <h:outputLabel value="Bill Time " rendered="#{bill.billTime != null}"/>
+                            <p:outputLabel value="#{bill.billTime}" rendered="#{bill.billTime != null}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"></f:convertDateTime>
+                            </p:outputLabel>
+                        </p:column>
+
+                        <p:column headerText="User" >                                
+                            <h:outputLabel   value="#{bill.creater.webUserPerson.name}"/>
+                        </p:column> 
+                        <p:column headerText="Numbers">
+                            <h:outputLabel value="Invoice No" rendered="#{not empty bill.invoiceNumber}"/>
+                            <h:outputLabel value="#{bill.invoiceNumber}" rendered="#{not empty bill.invoiceNumber}"/>
+
+                            <h:outputLabel value="Ins ID" rendered="#{not empty bill.insId}"/>
+                            <h:outputLabel value="#{bill.insId}" rendered="#{not empty bill.insId}"/>
+
+                            <h:outputLabel value="Dept ID" rendered="#{not empty bill.deptId}"/>
+                            <h:outputLabel value="#{bill.deptId}" rendered="#{not empty bill.deptId}"/>
+
+                            <h:outputLabel value="ID" rendered="#{bill.id != null}"/>
+                            <h:outputLabel value="#{bill.id}" rendered="#{bill.id != null}"/>
+                        </p:column>
+
+                        <p:column headerText="Status" style="min-width: 100px;">
+                            <h:outputText value="#{bill.cancelled ? 'Cancelled' : (bill.refunded ? 'Returned' : '')}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

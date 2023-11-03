@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/pharmacy/pharmacy_summery_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <p:panel id="panelPrint" styleClass="noBorder summeryBorder" header="Movement Report Stock by Date by Batch">
                 <h:panelGrid columns="2" styleClass="noPrintButton">
@@ -35,11 +35,11 @@
 
 
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy hh:mm:ss a"  >
+                    <p:calendar value="#{pharmacySaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
                     <p:calendar value="#{pharmacySaleReport.toDate}" navigator="true" 
-                                pattern="dd MMMM yyyy hh:mm:ss a" >
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
 
 
@@ -67,12 +67,12 @@
                         <h:outputLabel value="#{pharmacySaleReport.department.name}"/>&#13;&nbsp;
                         <h:outputLabel value="From  "/>
                         <h:outputLabel value="#{pharmacySaleReport.fromDate}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                         </h:outputLabel>
                         &#13;&nbsp;
                         <h:outputLabel value="To  "/>
                         <h:outputLabel value="#{pharmacySaleReport.toDate}">
-                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                         </h:outputLabel>
                        &#13;&nbsp;
                     </f:facet>

@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -40,6 +41,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -52,17 +55,18 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item> {
 
-//    @JsonIgnore
+
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<InvestigationItem> reportItems;
-    //
-//    @JsonIgnore
+
     @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     List<WorksheetItem> worksheetItems;
-    
-//    @JsonIgnore
+
+
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<ItemFee> itemFeesAuto;
 
@@ -73,6 +77,8 @@ public class Item implements Serializable, Comparable<Item> {
     @JsonIgnore
     Long id;
     int orderNo;
+
+    private Long itemId;
 
     @ManyToOne
     Category category;
@@ -118,7 +124,7 @@ public class Item implements Serializable, Comparable<Item> {
     @JsonIgnore
     Date createdAt;
     //Retairing properties 
-    @JsonIgnore
+//    @JsonIgnore
     boolean retired;
     @ManyToOne
     @JsonIgnore
@@ -193,6 +199,9 @@ public class Item implements Serializable, Comparable<Item> {
     @ManyToOne
     private Machine machine;
 
+    @Transient
+    private ItemType medicineType;
+
     String creditNumbers;
     String cashNumbers;
     String agencyNumbers;
@@ -209,6 +218,16 @@ public class Item implements Serializable, Comparable<Item> {
     @OneToOne(cascade = CascadeType.ALL)
     private ReportItem reportItem;
 
+    @ManyToOne //Strength Units in VMP & AMP
+    private MeasurementUnit strengthUnit;
+    @ManyToOne
+    private MeasurementUnit baseUnit;
+    @ManyToOne
+    private MeasurementUnit issueUnit;
+    private Double issueUnitsPerPackUnit;
+    private MeasurementUnit packUnit;
+    private Double baseUnitsPerIssueUnit;
+
     @Transient
     double channelStaffFee;
     @Transient
@@ -224,6 +243,11 @@ public class Item implements Serializable, Comparable<Item> {
     @Transient
     private String transCodeFromName;
 
+    @Column(name = "DTYPE", insertable = false, updatable = false)
+    private String clazz;
+    
+    
+    
     public double getVatPercentage() {
         return 0;
     }
@@ -382,10 +406,10 @@ public class Item implements Serializable, Comparable<Item> {
     double totalFee;
     @Transient
     double totalFfee;
-    @Transient @JsonIgnore
+    @Transient
     List<ItemFee> itemFees;
 
-    @Transient  @JsonIgnore
+    @Transient
     private List<ItemFee> itemFeesActive;
 
     public List<ItemFee> getItemFeesAuto() {
@@ -1104,6 +1128,35 @@ public class Item implements Serializable, Comparable<Item> {
         this.hasMoreThanOneComponant = hasMoreThanOneComponant;
     }
 
+    public ItemType getMedicineType() {
+
+        if (this instanceof Amp) {
+            medicineType = ItemType.Amp;
+        }
+        if (this instanceof Ampp) {
+            medicineType = ItemType.Ampp;
+        }
+        if (this instanceof Atm) {
+            medicineType = ItemType.Atm;
+        }
+        if (this instanceof Vmp) {
+            medicineType = ItemType.Vmp;
+        }
+        if (this instanceof Vmpp) {
+            medicineType = ItemType.Vmpp;
+        }
+        if (this instanceof Vtm) {
+            medicineType = ItemType.Vtm;
+        }
+        if (this instanceof Service) {
+            medicineType = ItemType.Service;
+        }
+        if (this instanceof Investigation) {
+            medicineType = ItemType.Investigation;
+        }
+        return medicineType;
+    }
+
     public ReportItem getReportItem() {
         if (reportItem == null) {
             reportItem = new ReportItem();
@@ -1142,12 +1195,79 @@ public class Item implements Serializable, Comparable<Item> {
     }
 
     public String getTransCodeFromName() {
+        if(name==null){
+            name = "";
+        }
         transCodeFromName = name.trim().toLowerCase().replace(" ", "_");
         return transCodeFromName;
     }
 
     public void setTransCodeFromName(String transCodeFromName) {
         this.transCodeFromName = transCodeFromName;
+    }
+
+    public Long getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public MeasurementUnit getStrengthUnit() {
+        return strengthUnit;
+    }
+
+    public void setStrengthUnit(MeasurementUnit strengthUnit) {
+        this.strengthUnit = strengthUnit;
+    }
+
+    public Double getIssueUnitsPerPackUnit() {
+        return issueUnitsPerPackUnit;
+    }
+
+    public void setIssueUnitsPerPackUnit(Double issueUnitsPerPackUnit) {
+        this.issueUnitsPerPackUnit = issueUnitsPerPackUnit;
+    }
+
+    public MeasurementUnit getPackUnit() {
+        return packUnit;
+    }
+
+    public void setPackUnit(MeasurementUnit packUnit) {
+        this.packUnit = packUnit;
+    }
+
+    public MeasurementUnit getBaseUnit() {
+        return baseUnit;
+    }
+
+    public void setBaseUnit(MeasurementUnit baseUnit) {
+        this.baseUnit = baseUnit;
+    }
+
+    public MeasurementUnit getIssueUnit() {
+        return issueUnit;
+    }
+
+    public void setIssueUnit(MeasurementUnit issueUnit) {
+        this.issueUnit = issueUnit;
+    }
+
+    public Double getBaseUnitsPerIssueUnit() {
+        return baseUnitsPerIssueUnit;
+    }
+
+    public void setBaseUnitsPerIssueUnit(Double baseUnitsPerIssueUnit) {
+        this.baseUnitsPerIssueUnit = baseUnitsPerIssueUnit;
+    }
+
+    public String getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
     }
 
     static class ReportItemComparator implements Comparator<ReportItem> {

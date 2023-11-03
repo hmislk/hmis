@@ -37,7 +37,7 @@ public class AuthenticateController {
     public boolean userAuthenticated(String inputUserName, String inputPassword) {
         String temSQL;
         temSQL = "SELECT u FROM WebUser u WHERE u.retired = false";
-        List<WebUser> allUsers = getFacede().findBySQL(temSQL);
+        List<WebUser> allUsers = getFacede().findByJpql(temSQL);
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(inputUserName)) {
                 if (getSecurityController().matchPassword(inputPassword, u.getWebUserPassword())) {

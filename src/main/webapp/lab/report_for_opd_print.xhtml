@@ -12,59 +12,62 @@
                 <h:form>
                     <p:panel header="Search Bills" >
                         <f:facet name="header">
+                            </f:facet>
                             <h:panelGrid columns="1" >
-                                <h:panelGrid columns="7" >
+                                <h:panelGrid columns="7" class="mb-2" >
 
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >      
+                                    <h:outputLabel value="From Date " class="mx-2"/>
+                                    <p:calendar styleClass="dateTimePicker" id="fromDate" class="mx-2" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >      
                                     </p:calendar>
-                                    <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm a" >                                                                              
+                                    <h:outputLabel value="To Date " class="mx-2"/>
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" class="mx-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                                                                              
                                     </p:calendar>
-                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" action="#{searchController.createPatientInvestigationsTableLogin()}" onclick="onSubmitButton();" />
-                                    <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPatientInvestigationsTable()}" onclick="onSubmitButton();" />
-                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" action="#{searchController.createPatientInvestigationsTableAll()}" onclick="onSubmitButton();" />
+                                    <p:commandButton id="btnSearch3" ajax="false" value="Search Loged Department" class="m-2" action="#{searchController.fillToDepartmentPatientInvestigations()}"  />
+                                    <p:commandButton id="btnSearch" ajax="false" value="Search" class="m-2" action="#{searchController.createPatientInvestigationsTable()}"  />
+                                    <p:commandButton id="btnSearch2" ajax="false" value="Search All" class="m-2" action="#{searchController.createPatientInvestigationsTableAll()}"  />
+                                
                                 </h:panelGrid>
+                                
                                 <h:panelGrid columns="8" >
-                                    <h:outputLabel value="Bill No"/>
-                                    <h:outputLabel value="Patient Name"/>
-                                    <h:outputLabel value="Patient Phone"/>                               
-                                    <h:outputLabel value="Investigation Name"/>
-                                    <h:outputLabel value="BHT"/>
+                                    <h:outputLabel value="Bill No" class="mx-2"/>
+                                    <h:outputLabel value="Patient Name" class="mx-2"/>
+                                    <h:outputLabel value="Patient Phone" class="mx-2"/>                               
+                                    <h:outputLabel value="Investigation Name" class="mx-2"/>
+                                    <h:outputLabel value="BHT" class="mx-2"/>
                                     <h:outputLabel/><h:outputLabel/><h:outputLabel/>
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" />
-                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" />
-                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}"/>
-                                    
-                                    <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
-                                                    value="#{searchController.patientEncounter}"
-                                            completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                            var="myItem" itemValue="#{myItem}" 
-                                            itemLabel="#{myItem.bhtNo}" 
-                                            size="30"  >                                
-                                <p:column>
-                                    #{myItem.bhtNo}
-                                </p:column>
-                                <p:column>
-                                    #{myItem.patient.person.nameWithTitle}
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                </p:column>
-                                <p:column>
-                                    <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
-                                </p:column>
-                            </p:autoComplete>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="mx-2"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.patientName}" class="mx-2"/>
+                                    <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.patientPhone}" class="mx-2"/>
+                                    <p:inputText autocomplete="off" value="#{searchController.searchKeyword.itemName}" class="mx-2"/>
+
+                                    <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                                                     value="#{searchController.patientEncounter}"
+                                                     completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
+                                                     var="myItem" itemValue="#{myItem}" 
+                                                     itemLabel="#{myItem.bhtNo}" 
+                                                     size="30" class="mx-2" >                                
+                                        <p:column>
+                                            #{myItem.bhtNo}
+                                        </p:column>
+                                        <p:column>
+                                            #{myItem.patient.person.nameWithTitle}
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
+                                        </p:column>
+                                        <p:column>
+                                            <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
+                                        </p:column>
+                                    </p:autoComplete>
 
                                 </h:panelGrid>
                             </h:panelGrid>
-                        </f:facet>
+                        
 
 
 
 
-                        <p:dataTable  id="tblBills" value="#{searchController.patientInvestigations}" var="pi" rowIndexVar="i" >
+                        <p:dataTable class="mt-4" id="tblBills" value="#{searchController.patientInvestigations}" var="pi" rowIndexVar="i" >
                             <p:column  headerText="No" styleClass="alignTop" >
                                 <p:outputLabel value="#{i+1}" />
                             </p:column>
@@ -115,24 +118,24 @@
                                     <br/>
                                     <h:outputLabel value="Sampled : " />
                                     <h:outputLabel rendered="#{pi.collected}" value="#{pi.sampledAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <br/>
                                     <h:outputLabel value="Received : " />
                                     <h:outputLabel rendered="#{pi.received}" value="#{pi.receivedAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                     <br/>
                                     <h:panelGroup rendered="#{pi.billItem.bill.cancelled}" >
                                         <h:outputLabel style="color: red;" value="Cancelled : " />
                                         <h:outputLabel style="color: red;" rendered="#{pi.billItem.bill.cancelled}" value="#{pi.billItem.bill.cancelledBill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{pi.billItem.refunded eq true}" >
                                         <h:outputLabel style="color: red;" value="Refunded : " />
                                         <h:outputLabel style="color: red;" rendered="#{pi.billItem.refunded eq true}" value="#{pi.billItem.referanceBillItem.bill.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </h:panelGroup>
                                 </p:tooltip>
@@ -171,7 +174,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                           
+
 
                             <p:column headerText="Data-Entered Reports"  styleClass="alignTop noBorderGrid" >
 
@@ -180,13 +183,13 @@
 
                                         <h:panelGrid columns="6" styleClass="noBorderGrid">
 
-                                          
+
 
                                             <p:commandLink id="cmdOldReportPrint" ajax="false" action="/lab/patient_report_print">
                                                 <p:graphicImage library="image" name="print.jpg" styleClass="standedicon" ></p:graphicImage>
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}"></f:setPropertyActionListener>
                                             </p:commandLink>
-                                            
+
                                             <p:graphicImage id="imgApproved" library="image" name="approved_icon.png" 
                                                             style="height: 30px; width: 30px; #{dpr.approved ? '':'opacity: 0.1;'}" ></p:graphicImage>
                                             <p:graphicImage id="imgPrinted" library="image" name="print_ok.png" 
@@ -206,7 +209,7 @@
                                             <h:outputLabel value="To Print" styleClass="#{dpr.approved ? 'greentext':'yellowtext'}" >
                                             </h:outputLabel>
                                         </p:tooltip>
-                                        
+
 
 
                                     </h:column>

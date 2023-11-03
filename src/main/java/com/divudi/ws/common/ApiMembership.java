@@ -40,7 +40,6 @@ import com.divudi.facade.ItemFeeFacade;
 import com.divudi.facade.MembershipSchemeFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -57,6 +56,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 /**
  * REST Web Service
@@ -115,7 +116,7 @@ public class ApiMembership {
     @GET
     @Path("/banks")
     @Produces("application/json")
-    public String getBanks() {
+    public Response getBanks() {
         JSONArray array = new JSONArray();
         JSONObject jSONObjectOut = new JSONObject();
         try {
@@ -140,9 +141,15 @@ public class ApiMembership {
             jSONObjectOut.put("error", "1");
             jSONObjectOut.put("error_description", "Invalid Argument.");
         }
-        String json = jSONObjectOut.toString();
-        return json;
 
+        String json = jSONObjectOut.toString();
+
+        ResponseBuilder response = Response.ok(json);
+        response.header("Access-Control-Allow-Origin", "*");
+        response.header("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
+        response.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+
+        return response.build();
     }
 
 //      {
@@ -163,7 +170,6 @@ public class ApiMembership {
             @PathParam("nic") String nic) {
         JSONObject jSONObjectOut = new JSONObject();
         String json;
-        URLDecoder decoder = new URLDecoder();
 
         String s = fetchErrors(title, name, sex, dob, address, phone, nic);
 //        //// // System.out.println("s = " + s);
@@ -182,10 +188,10 @@ public class ApiMembership {
 //            MembershipScheme ms = getMembershipSchemeFacade().find(2670l);
             Person person = new Person();
             person.setTitle(Title.valueOf(title));
-            person.setName(decoder.decode(name, "+"));
+            person.setName(name);
             person.setSex(Sex.valueOf(sex));
             person.setDob(getCommonController().getConvertDateTimeFormat24(dob));
-            person.setAddress(decoder.decode(address, "+"));
+            person.setAddress(address);
             person.setPhone(phone.substring(0, 3) + "-" + phone.substring(3, 10));
             person.setNic(nic);
             person.setCreatedAt(new Date());
@@ -471,7 +477,7 @@ public class ApiMembership {
     private void saveBillFee(Item item, BillItem bi, Bill b) {
         List<BillFee> billFees = new ArrayList<>();
         String sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + item.getId();
-        List<ItemFee> itemFee = getItemFeeFacade().findBySQL(sql);
+        List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
         double val = 0.0;
         double valGros = 0.0;
         double vat = 0.0;
@@ -529,7 +535,7 @@ public class ApiMembership {
     private BillItem fechserviceFee(Item item) {
         BillItem bi = new BillItem();
         String sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + item.getId();
-        List<ItemFee> itemFee = getItemFeeFacade().findBySQL(sql);
+        List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
         double val = 0.0;
         double valGros = 0.0;
         double vat = 0.0;
@@ -594,7 +600,7 @@ public class ApiMembership {
         m.put("bTp", bt);
         m.put("class", BilledBill.class);
 
-        Bill b = getBillFacade().findFirstBySQL(sql, m);
+        Bill b = getBillFacade().findFirstByJpql(sql, m);
 
 //        //// // System.out.println("b = " + b);
         return b;

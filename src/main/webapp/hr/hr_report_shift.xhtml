@@ -24,7 +24,7 @@
                         </h:panelGrid>
 
                         <p:commandButton ajax="false" value="Process" action="#{hrReportController.createShiftTable()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_attendance"  />
                         </p:commandButton>
                         <p:commandButton value="Print" ajax="false" action="#" >
@@ -47,14 +47,14 @@
                               
                                 <p:column headerText="Starting Time">
                                     <h:outputLabel value="#{ss.startingTime}" rendered="#{ss.startingTime ne null}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
                                     
                                 </p:column>
                                 
                                 <p:column headerText="Ending Time">
                                     <h:outputLabel value="#{ss.endingTime}" rendered="#{ss.endingTime ne null}">
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
                                     
                                 </p:column>

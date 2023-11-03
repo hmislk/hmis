@@ -40,11 +40,11 @@
                     <div class="billdatePrinting">                   
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}"  >
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>                      
                         <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 
@@ -59,11 +59,11 @@
 
                         <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
                                        rendered="#{cc.attrs.bill.cancelledBill.insId ne null}">
-                            <f:convertDateTime pattern="hh mm a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                         </h:outputLabel>                        
                         <h:outputLabel value="#{cc.attrs.bill.billTime}" 
                                        rendered="#{cc.attrs.bill.cancelledBill.insId eq null }">
-                            <f:convertDateTime pattern="hh mm a"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
                         </h:outputLabel>
                     </div>
 
@@ -84,7 +84,7 @@
 
                     <div class="itemsPrinting">
 
-                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;"     >
+                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.insId}"  />                                    
@@ -119,7 +119,7 @@
                     
                     <div class="itemsPrintingMid">
 
-                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;"     >
+                        <h:dataTable value="#{cc.attrs.controller.billItems}" var="bip" style="font-size:11px!important;" >
 
                             <h:column >
                                 <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  11px!important;"  />                                    

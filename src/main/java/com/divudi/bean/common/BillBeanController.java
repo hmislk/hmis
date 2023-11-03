@@ -134,7 +134,7 @@ public class BillBeanController implements Serializable {
         hm.put("ps", paymentScheme);
         hm.put("pm", paymentMethod);
 
-        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstBySQL(sql, hm);
+        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstByJpql(sql, hm);
 
         if (allowedPaymentMethod != null) {
             return true;
@@ -143,23 +143,23 @@ public class BillBeanController implements Serializable {
         }
     }
 
-    public boolean checkAllowedPaymentMethod(MembershipScheme membershipScheme, PaymentMethod paymentMethod) {
-        String sql = "Select s From AllowedPaymentMethod s"
-                + " where s.retired=false "
-                + " and  s.membershipScheme=:ms "
-                + " and s.paymentMethod=:pm ";
-        HashMap hm = new HashMap();
-        hm.put("ms", membershipScheme);
-        hm.put("pm", paymentMethod);
-
-        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstBySQL(sql, hm);
-
-        if (allowedPaymentMethod != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//    public boolean checkAllowedPaymentMethod(MembershipScheme membershipScheme, PaymentMethod paymentMethod) {
+//        String sql = "Select s From AllowedPaymentMethod s"
+//                + " where s.retired=false "
+//                + " and  s.membershipScheme=:ms "
+//                + " and s.paymentMethod=:pm ";
+//        HashMap hm = new HashMap();
+//        hm.put("ms", membershipScheme);
+//        hm.put("pm", paymentMethod);
+//
+//        AllowedPaymentMethod allowedPaymentMethod = getAllowedPaymentMethodFacade().findFirstByJpql(sql, hm);
+//
+//        if (allowedPaymentMethod != null) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
     public DepartmentFacade getDepartmentFacade() {
         return departmentFacade;
@@ -181,7 +181,7 @@ public class BillBeanController implements Serializable {
         hm.put("btp", billType);
         hm.put("inw", inwardChargeType);
 
-        BillItem b = getBillItemFacade().findFirstBySQL(sql, hm);
+        BillItem b = getBillItemFacade().findFirstByJpql(sql, hm);
 //        System.err.println("BillItem " + b);
         return b;
     }
@@ -196,7 +196,7 @@ public class BillBeanController implements Serializable {
         hm.put("b", bill);
         hm.put("inw", inwardChargeType);
 
-        BillItem b = getBillItemFacade().findFirstBySQL(sql, hm);
+        BillItem b = getBillItemFacade().findFirstByJpql(sql, hm);
 //        System.err.println("BillItem " + b);
         return b;
     }
@@ -218,7 +218,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm", paymentMethod);
         temMap.put("adm", admissionType);
         temMap.put("ins", institution);
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public double calFeeValue(FeeType feeType, Date fromDate,
@@ -1082,7 +1082,7 @@ public class BillBeanController implements Serializable {
         temMap.put("bTp", billType);
         temMap.put("ins", institution);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItems(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
@@ -1109,7 +1109,7 @@ public class BillBeanController implements Serializable {
         temMap.put("btp", billType);
         temMap.put("ins", institution);
 
-        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> fetchBills(BillType billType, boolean isOpd, Date fromDate, Date toDate, Institution institution) {
@@ -1134,7 +1134,7 @@ public class BillBeanController implements Serializable {
         temMap.put("btp", billType);
         temMap.put("ins", institution);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItemsPharmacy(BillType billType, Date fromDate, Date toDate, Institution institution) {
@@ -1155,7 +1155,7 @@ public class BillBeanController implements Serializable {
         temMap.put("btp", billType);
         temMap.put("ins", institution);
 
-        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> fetchBillItemsPharmacyOld(BillType billType, Date fromDate, Date toDate, Institution institution) {
@@ -1176,7 +1176,7 @@ public class BillBeanController implements Serializable {
         temMap.put("btp", billType);
         temMap.put("ins", institution);
 
-        return getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItems(Bill b, Date fromDate, Date toDate, Institution institution) {
@@ -1194,7 +1194,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("bl", b);
         temMap.put("ins", institution);
-        return getBillItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Category> fetchBilledOpdCategory(Date fromDate, Date toDate, Institution institution) {
@@ -1220,7 +1220,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Category> tmp = getCategoryFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -1245,7 +1245,7 @@ public class BillBeanController implements Serializable {
         temMap.put("cred", creditCompany);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("pm", PaymentMethod.Credit);
-        List<Category> tmp = getCategoryFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Category> tmp = getCategoryFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -1337,7 +1337,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm4", PaymentMethod.Slip);
         temMap.put("bt", BillType.OpdBill);
 
-        bills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -1563,7 +1563,7 @@ public class BillBeanController implements Serializable {
         temMap.put("fromDate", fromDate);
         temMap.put("type", PreBill.class);
         temMap.put("ins", institution);
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return lstBills;
 
@@ -1717,7 +1717,7 @@ public class BillBeanController implements Serializable {
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("pm4", PaymentMethod.Slip);
-        List<Item> tmp = getItemFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        List<Item> tmp = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         return tmp;
 
@@ -2137,7 +2137,7 @@ public class BillBeanController implements Serializable {
         temMap.put("billClass", bill.getClass());
         temMap.put("btp", BillType.OpdBill);
 
-        return getBillItemFacade().countBySql(sql, temMap, TemporalType.TIMESTAMP);
+        return getBillItemFacade().countByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
     }
 
@@ -2163,7 +2163,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", forwardBill);
         hm.put("srgBtp", surgeryBillType);
-        Bill bill = getBillFacade().findFirstBySQL(sql, hm);
+        Bill bill = getBillFacade().findFirstByJpql(sql, hm);
 
         return bill;
     }
@@ -2182,7 +2182,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", bi);
 
-        return getEncounterComponentFacade().findBySQL(sql, hm);
+        return getEncounterComponentFacade().findByJpql(sql, hm);
 
     }
 
@@ -2193,7 +2193,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", bi);
 
-        return getEncounterComponentFacade().findBySQL(sql, hm);
+        return getEncounterComponentFacade().findByJpql(sql, hm);
 
     }
 
@@ -2204,7 +2204,7 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("bill", b);
 
-        return getBillItemFacade().findFirstBySQL(sql, hm);
+        return getBillItemFacade().findFirstByJpql(sql, hm);
     }
 
     public double getTotalByBillItem(Bill bill) {
@@ -2266,7 +2266,7 @@ public class BillBeanController implements Serializable {
                 + " and f.item=:itm";
         HashMap hm = new HashMap();
         hm.put("itm", billItem.getItem());
-        return getItemFeeFacade().findBySQL(sql, hm);
+        return getItemFeeFacade().findByJpql(sql, hm);
     }
 
     public ItemFee getItemFee(BillItem billItem, FeeType feeType) {
@@ -2279,14 +2279,14 @@ public class BillBeanController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("itm", billItem.getItem());
         hm.put("ftp", feeType);
-        return getItemFeeFacade().findFirstBySQL(sql, hm);
+        return getItemFeeFacade().findFirstByJpql(sql, hm);
     }
 
 //    public Fee getFee(FeeType feeType) {
 //        HashMap hm = new HashMap();
 //        String sql = "Select f from Fee f where f.retired=false and f.FeeType=:nm";
 //        hm.put("nm", FeeType.Matrix);
-//        return getFeeFacade().findFirstBySQL(sql, hm, TemporalType.TIMESTAMP);
+//        return getFeeFacade().findFirstByJpql(sql, hm, TemporalType.TIMESTAMP);
 //    }
     public BillFee createBillFee(BillItem billItem, Fee i) {
         BillFee f;
@@ -2421,7 +2421,7 @@ public class BillBeanController implements Serializable {
             dbl[0] = 0.0;
             dbl[1] = 0.0;
             dbl[2] = 0.0;
-            dbl[3] = 0.0;
+//            dbl[3] = 0.0;
             return dbl;
         }
 
@@ -2503,7 +2503,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2522,7 +2522,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2541,7 +2541,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2567,7 +2567,7 @@ public class BillBeanController implements Serializable {
         temMap.put("billType", type);
         temMap.put("dep", department);
 
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2586,7 +2586,7 @@ public class BillBeanController implements Serializable {
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2603,7 +2603,7 @@ public class BillBeanController implements Serializable {
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP, 100);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2620,7 +2620,7 @@ public class BillBeanController implements Serializable {
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2635,13 +2635,13 @@ public class BillBeanController implements Serializable {
         sql = "select b from BilledBill b where"
                 + " b.billType = :billType and b.retired=false"
                 + " and  b.createdAt between :fromDate and :toDate"
-                + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
+                + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2656,13 +2656,13 @@ public class BillBeanController implements Serializable {
         sql = "select b from PreBill b where"
                 + " b.billType = :billType and b.retired=false"
                 + " and  b.createdAt between :fromDate and :toDate"
-                + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
-                + " or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
+                + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%' "
+                + " or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.insId desc  ";
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         //System.err.println("Search : " + sql);
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2675,11 +2675,11 @@ public class BillBeanController implements Serializable {
         String sql;
         Map temMap = new HashMap();
         sql = "select b from BilledBill b where b.billType = :billType and b.institution.id=" + ins.getId() + " and b.retired=false and  b.createdAt between :fromDate "
-                + " and :toDate and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+                + " and :toDate and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2694,14 +2694,14 @@ public class BillBeanController implements Serializable {
         if (searchStr == null || searchStr.trim().equals("")) {
             sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and b.creater.id = " + user.getId() + " order by b.id desc  ";
         } else {
-            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and  b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
         }
 
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         //////System.out.println("sql ");
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2716,13 +2716,13 @@ public class BillBeanController implements Serializable {
         if (searchStr == null || searchStr.trim().equals("")) {
             sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and b.creater.id = " + user.getId() + " order by b.id desc  ";
         } else {
-            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and (upper(b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or upper(b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or upper(b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
+            sql = "select b from BilledBill b where b.billType = :billType and b.retired=false and b.institution.id=" + ins.getId() + " and b.createdAt between :fromDate and :toDate and  b.creater.id = " + user.getId() + " and ((b.patient.person.name) like '%" + searchStr.toUpperCase() + "%'  or (b.patient.person.phone) like '%" + searchStr.toUpperCase() + "%'  or (b.insId) like '%" + searchStr.toUpperCase() + "%') order by b.id desc  ";
         }
         temMap.put("billType", type);
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
         //////System.out.println("sql ");
-        lstBills = getBillFacade().findBySQL(sql, temMap, TemporalType.TIMESTAMP);
+        lstBills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         if (lstBills == null) {
             lstBills = new ArrayList<>();
@@ -2779,7 +2779,7 @@ public class BillBeanController implements Serializable {
     public List<Item> itemFromPackage(Item packege) {
 
         String sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
-        List<Item> packageItems = getItemFacade().findBySQL(sql);
+        List<Item> packageItems = getItemFacade().findByJpql(sql);
 
         return packageItems;
     }
@@ -2787,7 +2787,7 @@ public class BillBeanController implements Serializable {
     public List<Item> itemFromMedicalPackage(Item packege) {
 
         String sql = "Select i from MedicalPackageItem p join p.item i where p.retired=false and p.packege.id = " + packege.getId();
-        List<Item> packageItems = getItemFacade().findBySQL(sql);
+        List<Item> packageItems = getItemFacade().findByJpql(sql);
 
         return packageItems;
     }
@@ -3206,7 +3206,7 @@ public class BillBeanController implements Serializable {
         if (billItem.getItem() instanceof Packege) {
             sql = "Select i from PackageItem p join p.item i "
                     + " where p.packege.id = " + billItem.getItem().getId();
-            List<Item> packageItems = getItemFacade().findBySQL(sql);
+            List<Item> packageItems = getItemFacade().findByJpql(sql);
             for (Item i : packageItems) {
                 b = new BillComponent();
                 BillItem bit = new BillItem();
@@ -3255,7 +3255,7 @@ public class BillBeanController implements Serializable {
         String sql;
         sql = "Select f from PackageFee f where f.retired=false and f.packege.id=" + packege.getId()
                 + " and f.item.id = " + billItem.getItem().getId();
-        List<PackageFee> packFee = getPackageFeeFacade().findBySQL(sql);
+        List<PackageFee> packFee = getPackageFeeFacade().findByJpql(sql);
         for (Fee i : packFee) {
             f = new BillFee();
             f.setFee(i);
@@ -3290,13 +3290,13 @@ public class BillBeanController implements Serializable {
     public List<Fee> getMedicalPackageFee(Item packege, Item item) {
         String sql;
         sql = "Select f from MedicalPackageFee f where f.retired=false and f.packege.id=" + packege.getId() + " and f.item.id = " + item.getId();
-        return getFeeFacade().findBySQL(sql);
+        return getFeeFacade().findByJpql(sql);
     }
 
     public List<Fee> getPackageFee(Item packege, Item item) {
         String sql;
         sql = "Select f from PackageFee f where f.retired=false and f.packege.id=" + packege.getId() + " and f.item.id = " + item.getId();
-        return getFeeFacade().findBySQL(sql);
+        return getFeeFacade().findByJpql(sql);
     }
 
     public List<BillFee> billFeefromBillItemMedicalPackage(BillItem billItem, Item packege) {
@@ -3304,7 +3304,7 @@ public class BillBeanController implements Serializable {
         BillFee f;
         String sql;
         sql = "Select f from MedicalPackageFee f where f.retired=false and f.packege.id=" + packege.getId() + " and f.item.id = " + billItem.getItem().getId();
-        List<PackageFee> packFee = getPackageFeeFacade().findBySQL(sql);
+        List<PackageFee> packFee = getPackageFeeFacade().findByJpql(sql);
         for (Fee i : packFee) {
             f = new BillFee();
             f.setFee(i);
@@ -3340,10 +3340,10 @@ public class BillBeanController implements Serializable {
         String sql;
         if (billItem.getItem() instanceof Packege) {
             sql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
-            List<Item> packageItems = getItemFacade().findBySQL(sql);
+            List<Item> packageItems = getItemFacade().findByJpql(sql);
             for (Item pi : packageItems) {
                 sql = "Select f from PackageFee f where f.retired=false and f.packege.id = " + billItem.getItem().getId() + " and f.item.id = " + pi.getId();
-                List<PackageFee> packFee = getPackageFeeFacade().findBySQL(sql);
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(sql);
                 for (Fee i : packFee) {
                     f = new BillFee();
                     f.setFee(i);
@@ -3394,7 +3394,7 @@ public class BillBeanController implements Serializable {
             }
         } else {
             sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + billItem.getItem().getId();
-            List<ItemFee> itemFee = getItemFeeFacade().findBySQL(sql);
+            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
             for (Fee i : itemFee) {
                 f = new BillFee();
                 f.setFee(i);
@@ -3450,17 +3450,17 @@ public class BillBeanController implements Serializable {
         String sql;
         if (item instanceof Packege) {
             sql = "Select i from PackageItem p join p.item i where i.retired=false and p.packege.id = " + item.getId();
-            List<Item> packageItems = getItemFacade().findBySQL(sql);
+            List<Item> packageItems = getItemFacade().findByJpql(sql);
             for (Item pi : packageItems) {
                 sql = "Select f from PackageFee f where f.retired=false and f.packege.id = " + item.getId() + " and f.item.id = " + pi.getId();
-                List<PackageFee> packFee = getPackageFeeFacade().findBySQL(sql);
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(sql);
                 for (Fee i : packFee) {
                     bf = +i.getFee();
                 }
             }
         } else {
             sql = "Select f from ItemFee f where f.retired=false and f.item.id = " + item.getId();
-            List<ItemFee> itemFee = getItemFeeFacade().findBySQL(sql);
+            List<ItemFee> itemFee = getItemFeeFacade().findByJpql(sql);
             for (Fee i : itemFee) {
                 bf = +i.getFee();
             }
@@ -3593,7 +3593,7 @@ public class BillBeanController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("b", b);
-        return getBillFeeFacade().findBySQL(sql, hm);
+        return getBillFeeFacade().findByJpql(sql, hm);
     }
 
     public List<BillFee> getBillFee(BillItem b) {
@@ -3603,7 +3603,7 @@ public class BillBeanController implements Serializable {
                 + " and bf.billItem.id=" + b.getId();
 
         //   hm.put("b", b);
-        List<BillFee> list = getBillFeeFacade().findBySQL(sql);
+        List<BillFee> list = getBillFeeFacade().findByJpql(sql);
         return list;
     }
 
@@ -3625,7 +3625,7 @@ public class BillBeanController implements Serializable {
                 + " and b.billItem=:b ";
         HashMap hs = new HashMap();
         hs.put("b", billItem);
-        List<EncounterComponent> list = getEncounterComponentFacade().findBySQL(sql, hs);
+        List<EncounterComponent> list = getEncounterComponentFacade().findByJpql(sql, hs);
 
         return list;
     }

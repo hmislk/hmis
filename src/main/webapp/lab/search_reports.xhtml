@@ -16,14 +16,14 @@
                         </f:facet>
                         <h:panelGrid columns="7" >
                             <h:outputLabel value="From"/>
-                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                            <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
                             <p:spacer width="50" height="1" ></p:spacer>
                             <h:outputLabel value="To"/>
-                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" styleClass="dateTimePicker">                                                                              
+                            <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" styleClass="dateTimePicker">                                                                              
                             </p:calendar>
                             <p:spacer width="50" height="1" ></p:spacer>
-                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchPatientInvestigations()}" onclick="onSubmitButton();" />
+                            <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.searchPatientInvestigations()}"  />
                         </h:panelGrid>
                         <p:defaultCommand target="btnSearch" />
 
@@ -136,7 +136,7 @@
                                     <h:outputLabel value="Receive Sample" rendered="#{!pi.received}" ></h:outputLabel>
                                     <h:outputLabel value="Sample received at " rendered="#{pi.received}" ></h:outputLabel>
                                     <h:outputLabel value="#{pi.receivedAt}" rendered="#{pi.received}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:tooltip>
 
@@ -144,7 +144,7 @@
                                     <h:outputLabel value="Collect Sample" rendered="#{!pi.collected }" ></h:outputLabel>
                                     <h:outputLabel value="Sampled at " rendered="#{pi.collected}" ></h:outputLabel>
                                     <h:outputLabel value="#{pi.sampledAt}" rendered="#{pi.collected}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:tooltip>
 
@@ -227,17 +227,17 @@
                                             <br/>
                                             <h:outputLabel value="Data enterd at " ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.dataEntryAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Approved at " rendered="#{dpr.approved}" ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.approveAt}"  rendered="#{dpr.approved}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                             <br/>
                                             <h:outputLabel value="Printed at "  rendered="#{dpr.printed}" ></h:outputLabel>
                                             <h:outputLabel value="#{dpr.printingAt}"  rendered="#{dpr.printed}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:tooltip>
                                         <p:tooltip for="btnRevert" value="Revert Report" ></p:tooltip>

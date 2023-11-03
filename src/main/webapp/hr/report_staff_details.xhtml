@@ -4,7 +4,7 @@
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://java.sun.com/jsf/core"                
+                xmlns:f="http://java.sun.com/jsf/core"            
                 xmlns:hr="http://java.sun.com/jsf/composite/autocomplete">
     <ui:define name="content">
         <h:panelGroup >
@@ -124,7 +124,7 @@
                                 </td>
                                 <td>
                                     <h:outputLabel value="#{staff.dateJoined}" >
-                                        <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </td>
                                 <td>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition template="/resources/template/template.xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"                    
+                xmlns:ui="http://java.sun.com/jsf/facelets"                
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
@@ -24,12 +24,12 @@
                         <h:outputLabel value="From"/>
                         <p:calendar  value="#{staffLoanController.current.fromDate}" 
                                      navigator="true"
-                                     pattern="dd MM yyyy">                            
+                                     pattern="#{sessionController.applicationPreference.shortDateFormat}">                            
                         </p:calendar>
                         <h:outputLabel value="To"/>
                         <p:calendar   value="#{staffLoanController.current.toDate}"
                                       navigator="true"
-                                      pattern="dd MM yyyy">                            
+                                      pattern="#{sessionController.applicationPreference.shortDateFormat}">                            
                         </p:calendar>
                         <h:outputLabel value="Staff "/>
                         <hr:completeStaff value="#{staffLoanController.current.staff}"/>
@@ -51,7 +51,7 @@
                         <h:outputLabel/>
                         <p:selectBooleanCheckbox value="#{staffLoanController.current.completed}" 
                                                  itemLabel="Completed"/>
-                        <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" onclick="onSubmitButton();"/>
+                        <p:commandButton value="Save" action="#{staffLoanController.save}" ajax="false" />
                         
                         </h:panelGrid>
                     </p:panel>
@@ -60,11 +60,11 @@
                         <p:commandButton ajax="false" 
                                          value="Fill Staff"
                                         action="#{staffController.createStaffWithCode()}"
-                                         onclick="onSubmitButton();"/>
+                                         />
                         <p:dataTable  value="#{staffController.staffWithCode}" 
                                       var="s" scrollable="true"
-                                      filteredValue="#{staffController.filteredStaff}"     
-                                      scrollHeight="300"                                   
+                                      filteredValue="#{staffController.filteredStaff}" 
+                                      scrollHeight="300"                               
                                       rowKey="#{s.id}" 
                                       selection="#{staffController.selectedList}"
                                       rowIndexVar="i">
@@ -91,14 +91,14 @@
                 <p:panel id="lst">
                     <f:facet name="header">      
                         <h:outputLabel value="#{staffPaySheetComponentAllController.paysheetComponent.name}" style="text-transform:capitalize;" />
-                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Remove Selected" action="#{staffPaySheetComponentAllController.removeAll}" style="float: right;" />
                         <p:commandButton ajax="false" value="Fill" action="#{staffPaySheetComponentAllController.createStaffPaysheetComponent}" />
                     </f:facet>
                     <h:panelGrid columns="2" >
                         <h:outputLabel value="From : " />
                         <p:calendar value="#{staffPaySheetComponentAllController.fromDate}" 
                                     navigator="true"
-                                    pattern="dd MMMM yyyy hh:mm:ss a" />                       
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />                       
                         <h:outputLabel value="Paysheet Component"/>
                         <p:selectOneMenu value="#{staffPaySheetComponentAllController.paysheetComponent}">                        
                             <f:selectItem itemLabel="Select Paysheet Component"/>
@@ -133,20 +133,20 @@
 
                         <p:column headerText="From" filterBy="#{i.fromDate}" filterMatchMode="contains" >
                             <h:outputLabel value="#{i.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="To" filterBy="#{i.toDate}"  filterMatchMode="contains">
                             <p:cellEditor>  
                                 <f:facet name="output">
                                     <h:outputLabel value="#{i.toDate}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </f:facet>
                                 <f:facet name="input">
                                     <p:calendar value="#{i.toDate}"  
                                                 navigator="true"
-                                                pattern="dd MMMM yyyy" />
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </f:facet>
                             </p:cellEditor>
 
@@ -198,7 +198,7 @@
                         </p:column>  
 
                         <p:column style="width:6%">  
-                            <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" onclick="onSubmitButton();">
+                            <p:commandButton ajax="false" value="Remove" action="#{staffPaySheetComponentAllController.remove}" >
                                 <f:setPropertyActionListener target="#{staffPaySheetComponentAllController.current}" value="#{i}" />
                             </p:commandButton>
                         </p:column>  

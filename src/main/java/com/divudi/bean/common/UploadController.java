@@ -72,7 +72,7 @@ public class UploadController implements Serializable {
                 + " order by u.webContent.name";
         Map m = new HashMap();
         m.put("ret", false);
-        items = getFacade().findBySQL(j, m, TemporalType.DATE);
+        items = getFacade().findByJpql(j, m, TemporalType.DATE);
     }
 
     
@@ -94,7 +94,6 @@ public class UploadController implements Serializable {
             selected.setFileType(file.getContentType());
             saveUpload(selected);
         } catch (IOException ex) {
-            System.out.println("ex = " + ex);
         }
         return toListUploads();
     }

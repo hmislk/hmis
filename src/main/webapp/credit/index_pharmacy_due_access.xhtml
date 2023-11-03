@@ -12,30 +12,43 @@
 
             <ui:define name="content">
 
-                <h:form>
-                    <p:panel header="Pharmacy Dues And Access">
-                        <p:tabView orientation="left" > 
+                <p:panel header="Pharmacy Dues And Access">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h:form>
+                                <p:accordionPanel activeIndex="#{creditCompanyDueController.managePharmacyDueAndAccessIndex}">
+                                    <p:ajax process="@this"></p:ajax>
+                                    <p:tab title=" Dues" >
+                                        <div class="d-grid gap-2"> 
 
-                            <p:tab title=" Dues" >
-                                <h:panelGrid columns="1" >  
+                                            <p:commandButton action="/credit/credit_company_pharmacy_due" actionListener="#{creditCompanyDueController.makeNull()}" value="Due" ajax="false" class="w-100"   />
+                                            <p:commandButton  action="/credit/credit_company_pharmacy_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" class="w-100" />                            
+                                        </div>
+                                    </p:tab>
 
-                                    <p:commandButton action="/credit/credit_company_pharmacy_due" actionListener="#{creditCompanyDueController.makeNull()}" value="Due" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"  />
-                                    <p:commandButton  action="/credit/credit_company_pharmacy_due_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Due Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();"/>                            
-                                </h:panelGrid>
-                            </p:tab>
+                                    <p:tab title=" Excess" >
+                                        <div class="d-grid gap-2">  
 
-                            <p:tab title=" Excess" >
-                                <h:panelGrid columns="1" > 
+<!--                                <p:commandButton action="/credit/credit_company_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  class="w-100" />
+         <p:commandButton   action="/credit/credit_company_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" class="w-100"  />
+         <p:commandButton action="/credit/cash_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  class="w-100" />
+         <p:commandButton   action="/credit/cash_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" class="w-100"  />-->
+                                        </div>
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
 
-<!--                                <p:commandButton action="/credit/credit_company_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
-         <p:commandButton   action="/credit/credit_company_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />
-         <p:commandButton action="/credit/cash_inward_access" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Search" ajax="false"  styleClass="linkButton" onclick="onSubmitButton();"/>
-         <p:commandButton   action="/credit/cash_inward_access_age" actionListener="#{creditCompanyDueController.makeNull()}" value="Excess Age" ajax="false" styleClass="linkButton" onclick="onSubmitButton();" />-->
-                                </h:panelGrid>
-                            </p:tab>
-                        </p:tabView>
-                    </p:panel>
-                </h:form>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+
+
+                </p:panel>
+
             </ui:define>
 
 

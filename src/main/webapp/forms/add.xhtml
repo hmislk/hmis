@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+
+            <ui:define name="contents">
+
+                <h1>Assignment Component</h1>
+
+
+                <h:form class="form" >
+
+                    <p:outputLabel value="Name" for="txtName" class="form-label" ></p:outputLabel>
+                    <p:inputText id="txtName" value="#{ComponentAsignmentController.current.name}" 
+                                 required="true" requiredMessage="Please enter a name" 
+                                 class="form-control">
+                    </p:inputText>
+
+                    <p:outputLabel value="Description" class="form-label"></p:outputLabel>
+                    <p:inputText value="#{ComponentAsignmentController.current.description}" 
+                                 class="form-control"></p:inputText>
+
+                    <p:commandButton ajax="false" value="Save" action="#{ComponentAsignmentController.saveCurrent()}" >
+                    </p:commandButton>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

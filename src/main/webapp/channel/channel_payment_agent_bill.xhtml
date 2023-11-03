@@ -14,25 +14,25 @@
                         <p:panel header="Staff Payments" >
                             <h:panelGrid columns="1" >
                                 <h:panelGrid columns="2" >
-                                    <h:panelGrid columns="1">
+                                    <h:panelGrid columns="6" class="mb-4">
                                         <p:autoComplete completeMethod="#{institutionController.completeAgency}" required="true" id="ins" 
                                         forceSelection="true" value="#{channelStaffPaymentBillController.institution}"
-                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" />
+                                        var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" class="ml-2"/>
 
-                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" navigator="false" pattern="dd MMMM yyyy" />
-                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" navigator="false" pattern="dd MMMM yyyy" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.fromDate}" class="mx-2 ml-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                        <p:calendar value="#{channelStaffPaymentBillController.toDate}" class="mx-2" navigator="false" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         <p:watermark value="Agent" for="ins"/>
 
-                                        <p:commandButton ajax="false" value="Process" action="#{channelStaffPaymentBillController.calculateDueFeesAgency()}"/>
-                                        <p:commandButton ajax="false" value="Clear" action="#{channelStaffPaymentBillController}"/>
+                                        <p:commandButton ajax="false" value="Process" class="mx-2" action="#{channelStaffPaymentBillController.calculateDueFeesAgency()}"/>
+                                        <p:commandButton ajax="false" value="Clear" class="mx-2" action="#{channelStaffPaymentBillController}"/>
                                     </h:panelGrid>
 
 
 
-                                </h:panelGrid>
+                                </h:panelGrid >
 
 
-                                <p:dataTable   id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
+                                <p:dataTable class="mb-4"  id="tblFee" value="#{channelStaffPaymentBillController.dueBillFees}" selection="#{channelStaffPaymentBillController.payingBillFees}" var="bf" rowKey="#{bf.id}" >
 
                                     <f:ajax  event="rowSelectCheckbox" execute="tblFee" listener="#{channelStaffPaymentBillController.performCalculations()}"   
                                              render=":#{p:resolveFirstComponentWithId('ins',view).clientId}  :#{p:resolveFirstComponentWithId('lblDue',view).clientId} :#{p:resolveFirstComponentWithId('lblPay',view).clientId} tblFee"  />  
@@ -57,7 +57,7 @@
 
                                     <p:column headerText="Booked on">
                                         <h:outputLabel value="#{bf.bill.createdAt}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     </p:column>
 
@@ -74,30 +74,30 @@
 
 
 
-                                <p:panel id="pTotals"  >
+                                <p:panel id="pTotals" class=" mb-4" >
                                     <f:facet name="header" >
                                         <h:outputLabel value="Payment Details" />
                                     </f:facet>
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="Total Due" ></h:outputLabel>
-                                        <h:outputLabel id="lblDue" value="#{channelStaffPaymentBillController.totalDue}" >
+                                        <h:outputLabel class="mx-2" id="lblDue" value="#{channelStaffPaymentBillController.totalDue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
-                                        <h:outputLabel value="Paying This time" ></h:outputLabel>
-                                        <h:outputLabel id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
+                                        <h:outputLabel value="Paying This time " ></h:outputLabel>
+                                        <h:outputLabel class="mx-2" id="lblPay"  value="#{channelStaffPaymentBillController.totalPaying }" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>  
                                     </h:panelGrid>
                                 </p:panel>
                                 <h:panelGroup >
 
-                                    <h:outputLabel value="Payment Method" ></h:outputLabel>
-                                    <p:selectOneMenu  id="cmbPay" style="width: 400px;" value="#{channelStaffPaymentBillController.paymentMethod}" >
+                                    <h:outputLabel value="Payment Method " class="ml-2" ></h:outputLabel>
+                                    <p:selectOneMenu class="mx-2" id="cmbPay" style="width: 400px;" value="#{channelStaffPaymentBillController.paymentMethod}" >
                                         <f:selectItem itemLabel="Please select a Payment method" />
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBillAgent()}" onclick="onSubmitButton();" >
+                                    <p:commandButton class="mx-2" ajax="false" value="Pay" action="#{channelStaffPaymentBillController.settleBillAgent()}"  >
                                         
                                     </p:commandButton>
                                 </h:panelGroup>

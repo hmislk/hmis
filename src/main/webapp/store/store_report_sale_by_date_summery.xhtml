@@ -1,22 +1,22 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/store/store_summery_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 >
     <h:body>
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             
             <p:panel header=" Sale Report All">
                 <h:panelGrid columns="2" styleClass="noPrintButton">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a"  >
+                    <p:calendar value="#{storeSaleReport.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"   >
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss a" >
+                    <p:calendar value="#{storeSaleReport.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                     </p:calendar>
                     <h:outputLabel value="Department"/>
                     <p:autoComplete styleClass="noPrintButton"  value="#{storeSaleReport.department}"  style="text-align: left; margin: 0px; padding: 0px;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >

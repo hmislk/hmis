@@ -36,7 +36,7 @@
 
                 <p:dataTable var="bi" styleClass="noBorder" 
                              value="#{storeGrnController.billItems}" 
-                             scrollable="true" scrollHeight="250"                             
+                             scrollable="true" scrollHeight="250"                         
                              id="itemList" editable="true">  
 
                     <f:facet name="header">  
@@ -63,7 +63,7 @@
                     <p:column >
                         <p:commandButton   value="Add Accessories" process="@this" 
                                            update=":#{p:resolveFirstComponentWithId('dialogChannelDetail',view).clientId}"
-                                           style="float: right;"                                            
+                                           style="float: right;"                                        
                                            actionListener="#{storeGrnController.addChildItemListener(bi)}"
                                            oncomplete="PF('dlgAdd').show();">                        
                         </p:commandButton>
@@ -149,7 +149,7 @@
                         <p:cellEditor >
                             <f:facet name="output">
                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}">
-                                    <f:convertDateTime pattern="dd/MM/yy"/>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
                             </f:facet>
                             <f:facet name="input">
@@ -192,7 +192,7 @@
                             <p:outputLabel value="Invoice No : "/>
                             <p:inputText autocomplete="off" value="#{storeGrnController.grnBill.invoiceNumber}" />
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{storeGrnController.grnBill.invoiceDate}"   navigator="true" pattern="dd/MM/yy" /> 
+                            <p:calendar  value="#{storeGrnController.grnBill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
                         </p:panelGrid>   
 
 

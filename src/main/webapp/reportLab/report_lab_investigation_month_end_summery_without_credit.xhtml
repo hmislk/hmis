@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportLab/report_lab.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -9,7 +9,7 @@
                 >
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
         <h:panelGroup rendered="true" >
             <h:form>
@@ -20,11 +20,11 @@
 
                         <h:panelGrid columns="2" styleClass="noPrintButton">
                             <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="frmDate" value="#{investigationMonthSummeryOwnController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
 
                             <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                            <p:calendar id="toDate" value="#{investigationMonthSummeryOwnController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="5">
@@ -49,11 +49,11 @@
                             <h:outputLabel value="Month End Summary Without Credit "/> 
                             <h:outputLabel value="FROM : " style="white-space:  pre-line"/>
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.fromDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                             <h:outputLabel value=" &emsp;To "/>
                             <h:outputLabel value="#{investigationMonthSummeryOwnController.toDate}">
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>  
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />  
                             </h:outputLabel>                                
                         </f:facet>                                                 
 

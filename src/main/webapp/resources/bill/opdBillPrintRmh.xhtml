@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        //<cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
         <cc:attribute name="dup"/>
         <cc:attribute name="refund"/>
         <cc:attribute name="cancell"/>
@@ -64,7 +64,7 @@
                          left: 25%;
                          top: 30%;" >                       
                         <h:outputLabel value="#{cc.attrs.bill.billDate}" style="font-size: 16px;">
-                            <f:convertDateTime pattern="dd/MM/yy"/>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </div>
 

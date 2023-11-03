@@ -13,11 +13,11 @@
             <p:panel header="Investigation Summary" >
                 <p:panelGrid columns="4">
                     <h:outputLabel value="From Date"/>
-                    <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="dd MMMM yyyy" >
+                    <p:calendar id="fromDate" value="#{patientInvestigationController.fromDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="investigation toDate fromDate"/>
                     </p:calendar>
                     <h:outputLabel value="To Date"/>
-                    <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="dd MMMM yyyy" >
+                    <p:calendar id="toDate" value="#{patientInvestigationController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateFormat}" >
                         <f:ajax event="dateSelect" execute="toDate fromDate"  render="investigation toDate fromDate"/>
                     </p:calendar>
                 </p:panelGrid>

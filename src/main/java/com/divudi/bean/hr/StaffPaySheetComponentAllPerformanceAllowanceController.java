@@ -101,7 +101,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
 //            hm.put("st", s);
 //            hm.put("cu", getToDate());
 //
-//            List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+//            List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 //
 //            if (!tmp.isEmpty()) {
 //                getRepeatedComponent().addAll(tmp);
@@ -178,7 +178,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
         hm.put("tp", getPaysheetComponent());
         hm.put("st", getCurrent().getStaff());
         hm.put("dt", getCurrent().getFromDate());
-        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        List<StaffPaysheetComponent> tmp = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
         for (StaffPaysheetComponent ss : tmp) {
             ss.setToDate(getCurrent().getFromDate());
@@ -288,7 +288,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
             hm.put("rs", getReportKeyWord().getRoster());
         }
 
-        items = getStaffPaysheetComponentFacade().findBySQL(sql, hm, TemporalType.DATE);
+        items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
 
 //        if (!getRepeatedComponent().isEmpty()) {
 //            for (StaffPaysheetComponent sp : items) {
@@ -316,7 +316,7 @@ public class StaffPaySheetComponentAllPerformanceAllowanceController implements 
         hm.put("tp1", PaysheetComponentType.addition.getSystemDefinedComponents());
         hm.put("tp2", Arrays.asList(new PaysheetComponentType[]{PaysheetComponentType.LoanInstallemant, PaysheetComponentType.LoanNetSalary, PaysheetComponentType.Advance_Payment_Deduction}));
 
-        return getPaysheetComponentFacade().findBySQL(sql, hm);
+        return getPaysheetComponentFacade().findByJpql(sql, hm);
 
     }
 

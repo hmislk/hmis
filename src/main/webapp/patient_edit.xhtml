@@ -58,7 +58,7 @@
 
                                 <h:outputLabel value="Phone"/>
                                 <p:calendar  value="#{patientController.current.person.dob}" 
-                                             id="calNewPtDob"  navigator="true" pattern="dd/MM/yyyy" 
+                                             id="calNewPtDob"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" 
                                              style="width: 100px!important;"
                                              styleClass="shortinput">
                                     <f:ajax event="dateSelect" />
@@ -77,7 +77,7 @@
                                 </p:inputText>
 
                                 <h:outputLabel value="Area"/>
-                                <p:autoComplete id="acNewPtArea" converter="areaCon" placeholder="Search &amp; Select Area"
+                                <p:autoComplete id="acNewPtArea" placeholder="Search &amp; Select Area"
                                                 completeMethod="#{areaController.completeArea}" 
                                                 var="pta" itemLabel="#{pta.name}" styleClass="shortinputOpd"
                                                 itemValue="#{pta}" forceSelection="true" 

@@ -22,11 +22,13 @@ import com.divudi.data.ReportItemType;
 import com.divudi.data.SessionNumberType;
 import com.divudi.data.Sex;
 import com.divudi.data.MessageType;
+import com.divudi.data.RestAuthenticationType;
 import com.divudi.data.Title;
 import com.divudi.data.hr.DayType;
 import com.divudi.data.hr.LeaveType;
 import com.divudi.data.hr.PaysheetComponentType;
 import com.divudi.data.hr.Times;
+import com.divudi.data.inward.AdmissionStatus;
 import com.divudi.data.inward.AdmissionTypeEnum;
 import com.divudi.data.inward.InwardChargeType;
 import com.divudi.data.inward.PatientEncounterComponentType;
@@ -62,6 +64,14 @@ public class EnumController implements Serializable {
     public SessionNumberType[] getSessionNumberTypes() {
         sessionNumberTypes = SessionNumberType.values();
         return sessionNumberTypes;
+    }
+
+    public RestAuthenticationType[] getRestAuthenticationTypes() {
+        return RestAuthenticationType.values();
+    }
+
+    public AdmissionStatus[] getAdmissionStatuses() {
+        return AdmissionStatus.values();
     }
 
     public CssVerticalAlign[] getCssVerticalAlign() {
@@ -412,7 +422,9 @@ public class EnumController implements Serializable {
             PaymentMethod.Card,
             PaymentMethod.Cheque,
             PaymentMethod.Slip,
-            PaymentMethod.Credit,};
+            PaymentMethod.Credit,
+            PaymentMethod.ewallet,
+            PaymentMethod.PatientDeposit};
 
         return p;
     }

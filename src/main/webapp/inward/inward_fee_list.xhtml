@@ -8,13 +8,13 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_administration.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:commandButton value="Reset" action="#{inwardReportController1.processForItemsWithInwardMatrix}" ajax="false" ></p:commandButton>
-                    <p:commandButton value="Calculate Inward Prices" ajax="false" action="#" ></p:commandButton>
+                    <p:commandButton value="Calculate Inward Prices" ajax="false" action="#" class="m-2" ></p:commandButton>
                     <p:autoComplete value="#{inwardReportController1.department}" 
                                     forceSelection="true" placeholder="Select Department"
                                     completeMethod="#{departmentController.completeDept}" 
@@ -27,14 +27,14 @@
                         </p:column>
                     </p:autoComplete>
 
-                    <p:panelGrid columns="2" styleClass="alignTop" >
-
+                    <div class="d-flex">
                         <p:dataTable selection="#{inwardReportController1.items}" var="item" value="#{itemController.items}"
                                      rowKey="#{item.id}"
                                      rows="10"
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15"
+                                     class="m-1"
                                      >
                             <p:column selectionMode="multiple" style="width:16px;text-align:center"/>
 
@@ -110,6 +110,11 @@
                             </p:column>
 
                         </p:dataTable>
+                    </div>
+
+                    <p:panelGrid columns="2" styleClass="alignTop" >
+
+
 
                     </p:panelGrid>
 

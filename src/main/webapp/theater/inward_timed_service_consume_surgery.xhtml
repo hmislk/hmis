@@ -14,74 +14,76 @@
                     <f:facet name="header" >
                         <h:panelGrid columns="10"  >
                             <h:outputLabel value="Inward Timed Service" />
-                            <p:commandButton ajax="false" value="Clear" action="#{inwardTimedItemController.makeNull}" onclick="onSubmitButton();"  />
-                            
+                            <p:commandButton ajax="false" value="Clear" action="#{inwardTimedItemController.makeNull}"   />
+
                         </h:panelGrid>
                     </f:facet>    
-                    <h:panelGrid columns="2">
-                        <p:panel header="Patient Details">
-                            <h:outputLabel value="Type Surgery Name or BHT : "/>
-                            <p:autoComplete forceSelection="true"
-                                            value="#{inwardTimedItemController.batchBill}" 
-                                            completeMethod="#{billController.completeSurgeryBills}"
-                                            var="apt2" itemLabel="#{amp2.bhtNo}"
-                                            itemValue="#{apt2}" size="30"  style="width: 400px;">
-                                <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
-                                        listener="#{inwardTimedItemController.selectSurgeryBillListener()}"/>
-                                <p:column headerText="Surgery Name">
-                                    <h:outputLabel value="#{apt2.procedure.item.name}"/> 
-                                </p:column>
-                                <p:column headerText="BHT NO">
-                                    <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
-                                </p:column>
-                                <p:column headerText="Patient Name" >
-                                    <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
-                                    </h:outputLabel>
-                                </p:column>
-                            </p:autoComplete>  
-
-                            <br/>
-                            <h:panelGroup id="panSearch1">
-                                <in:bhtDetail admission="#{inwardTimedItemController.batchBill.patientEncounter}"/>
-                            </h:panelGroup>    <br/>                                
-                            <h:panelGroup id="panSearch2">
-                                <in:surgeryDetail procedure="#{inwardTimedItemController.batchBill.procedure}"/>
-                            </h:panelGroup>
-                        </p:panel>
-
-
-                        <p:panel header="Timed Item">
-                            <h:panelGrid columns="2">
-                                <h:outputLabel value="Timed Item"/>
-                                <p:autoComplete  forceSelection="false" 
-                                                 value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.item}"
-                                                 completeMethod="#{timedItemController.completeTimedService}" var="ix" 
-                                                 itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  style="width: 400px;">                              
-                                    <p:column>
-                                        #{ix.name}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p:panel header="Patient Details">
+                                <h:outputLabel value="Type Surgery Name or BHT : "/>&nbsp;
+                                <p:autoComplete forceSelection="true"
+                                                value="#{inwardTimedItemController.batchBill}" 
+                                                completeMethod="#{billController.completeSurgeryBills}"
+                                                var="apt2" itemLabel="#{amp2.bhtNo}"
+                                                itemValue="#{apt2}" size="30"  style="width: 400px;">
+                                    <p:ajax event="itemSelect" process="@this" update="panSearch1 panSearch2"
+                                            listener="#{inwardTimedItemController.selectSurgeryBillListener()}"/>
+                                    <p:column headerText="Surgery Name">
+                                        <h:outputLabel value="#{apt2.procedure.item.name}"/> 
                                     </p:column>
-                                    <p:column>
-                                        #{ix.total}
+                                    <p:column headerText="BHT NO">
+                                        <h:outputLabel value="#{apt2.patientEncounter.bhtNo}"/> 
                                     </p:column>
-                                </p:autoComplete>
+                                    <p:column headerText="Patient Name" >
+                                        <h:outputLabel value="#{apt2.patientEncounter.patient.person.name}">                                                
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>  
 
-                                <p:outputLabel value="StartTime:"/>
-                                <p:calendar id="startTime"  value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" >                             
-                                </p:calendar>                                                                      
+                                <br/>
+                                <h:panelGroup id="panSearch1">
+                                    <in:bhtDetail admission="#{inwardTimedItemController.batchBill.patientEncounter}"/>
+                                </h:panelGroup>    <br/>                                
+                                <h:panelGroup id="panSearch2">
+                                    <in:surgeryDetail procedure="#{inwardTimedItemController.batchBill.procedure}"/>
+                                </h:panelGroup>
+                            </p:panel>
+                        </div>
+                        <div class="col-md-6 p-1">
+                            <p:panel header="Timed Item">
+                                <h:panelGrid columns="2">
+                                    <h:outputLabel value="Timed Item"/>
+                                    <p:autoComplete  forceSelection="false" 
+                                                     value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.item}"
+                                                     completeMethod="#{timedItemController.completeTimedService}" var="ix" 
+                                                     itemLabel="#{ix.name}" itemValue="#{ix}" size="30"  class="w-100">                              
+                                        <p:column>
+                                            #{ix.name}
+                                        </p:column>
+                                        <p:column>
+                                            #{ix.total}
+                                        </p:column>
+                                    </p:autoComplete>
+
+                                    <p:outputLabel value="StartTime:"/>
+                                    <p:calendar id="startTime"  value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100">                             
+                                    </p:calendar>                                                                      
 
 
-                                <p:commandButton value="Add Time Service" ajax="false"
-                                                action="#{inwardTimedItemController.addTimedService()}"
-                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                    <p:commandButton value="Add Time Service" ajax="false"
+                                                     action="#{inwardTimedItemController.addTimedService()}"
+                                                     disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
 
 
 
-                            </h:panelGrid>   
+                                </h:panelGrid>   
 
-                        </p:panel> 
+                            </p:panel> 
+                        </div>
+                    </div>
 
-                    </h:panelGrid> 
                     <p:panel header="Consumed Timed Sevice" id="con">                          
                         <p:dataTable value="#{inwardTimedItemController.timedEncounterComponents}" var="ti">
                             <p:column headerText="Service Name">
@@ -90,25 +92,25 @@
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />  
                             </p:column>
                             <p:column headerText="Total">
                                 #{ti.billFee.patientItem.serviceValue}
                             </p:column>
                             <p:column >
                                 <h:outputLabel value="#{ti.billFee.createdAt}">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>                                                   
                                 <br/>
                                 <h:panelGroup rendered="#{ti.billFee.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  value="#{ti.billFee.retiredAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
@@ -123,18 +125,18 @@
                             </p:column>     
                             <p:column >
                                 <p:commandButton value="Update" ajax="false"  
-                                                action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
-                                                 disabled="#{ti.billFee.id eq null or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />                                                                    
+                                                 action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
+                                                 disabled="#{ti.billFee.id eq null or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />                                                                    
                             </p:column>
                             <p:column headerText="Remove">
                                 <p:commandButton ajax="false" value="Remove"  
                                                  rendered="#{ti.billFee.id eq null}"
-                                                action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
-                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                                 action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
+                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
                                 <p:commandButton ajax="false" value="Remove "  
                                                  rendered="#{ti.billFee.id ne null}"
-                                                action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
-                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}" onclick="onSubmitButton();" />
+                                                 action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
+                                                 disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"  />
                             </p:column>
                         </p:dataTable>
                     </p:panel>

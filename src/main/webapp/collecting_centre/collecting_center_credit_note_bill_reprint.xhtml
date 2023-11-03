@@ -4,7 +4,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"          
+      xmlns:f="http://java.sun.com/jsf/core"      
       xmlns:bi="http://java.sun.com/jsf/composite/bill">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -15,7 +15,7 @@
                             <h:outputLabel value="Reprint" ></h:outputLabel>
                             <hr/>
                             
-                            <p:commandButton ajax="false" value="Cancel" action="collecting_center_credit_note_bill_cancel" disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" onclick="onSubmitButton();">                           
+                            <p:commandButton ajax="false" value="Cancel" action="collecting_center_credit_note_bill_cancel" disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" >                           
                             </p:commandButton>
                             
                         </f:facet>

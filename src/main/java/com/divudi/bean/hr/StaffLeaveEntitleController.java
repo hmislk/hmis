@@ -58,14 +58,14 @@ public class StaffLeaveEntitleController implements Serializable {
     double leaved;
 
     public List<StaffLeaveEntitle> getSelectedItems() {
-//        selectedItems = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findByJpql("select c from StaffLeaveEntitle c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
     public List<StaffLeaveEntitle> completeStaffLeaveEntitle(String qry) {
         List<StaffLeaveEntitle> a = null;
         if (qry != null) {
-            a = getFacade().findBySQL("select c from StaffLeaveEntitle c where c.retired=false and upper(c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
+            a = getFacade().findByJpql("select c from StaffLeaveEntitle c where c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' order by c.name");
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -299,7 +299,7 @@ public class StaffLeaveEntitleController implements Serializable {
 
         sql += "  order by c.staff.code";
 
-        selectedItems = getFacade().findBySQL(sql, hm);
+        selectedItems = getFacade().findByJpql(sql, hm);
     }
 
     public void resetDate() {
@@ -327,7 +327,7 @@ public class StaffLeaveEntitleController implements Serializable {
                 + " where c.retired=false "
                 + " order by c.staff.codeInterger ";
 
-        selectedAllItems = getFacade().findBySQL(sql, hm);
+        selectedAllItems = getFacade().findByJpql(sql, hm);
     }
 
     public List<StaffLeaveEntitle> getItems() {
@@ -385,43 +385,5 @@ public class StaffLeaveEntitleController implements Serializable {
         }
     }
 
-    @FacesConverter("staffCategoryCon")
-    public static class StaffLeaveEntitleControllerConverter implements Converter {
-
-        @Override
-        public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
-                return null;
-            }
-            StaffLeaveEntitleController controller = (StaffLeaveEntitleController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "staffCategoryController");
-            return controller.getEjbFacade().find(getKey(value));
-        }
-
-        java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
-            return key;
-        }
-
-        String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
-        }
-
-        @Override
-        public String getAsString(FacesContext facesContext, UIComponent component, Object object) {
-            if (object == null) {
-                return null;
-            }
-            if (object instanceof StaffLeaveEntitle) {
-                StaffLeaveEntitle o = (StaffLeaveEntitle) object;
-                return getStringKey(o.getId());
-            } else {
-                throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StaffLeaveEntitleController.class.getName());
-            }
-        }
-    }
+    
 }

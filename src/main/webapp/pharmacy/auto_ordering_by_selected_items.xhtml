@@ -53,15 +53,15 @@
 
                                         <h:outputLabel value="Ordering Date" ></h:outputLabel>
                                         <p:calendar value="#{reorderController.orderingDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                         <h:outputLabel value="Expected Delivery Date" ></h:outputLabel>
                                         <p:calendar value="#{reorderController.expectedDeliveryDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                         <h:outputLabel value="Next Delivery Date" ></h:outputLabel>
                                         <p:calendar value="#{reorderController.nextDeliveryDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                         <h:outputLabel value="Days to Order" ></h:outputLabel>
                                         <h:outputLabel value="#{(reorderController.nextDeliveryDate.time  - reorderController.expectedDeliveryDate.time) div (1000*60*60*24)}" >
@@ -75,11 +75,11 @@
                                     <h:panelGrid columns="2" >
                                         <h:outputLabel value="From" ></h:outputLabel>
                                         <p:calendar value="#{reorderController.fromDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                         <h:outputLabel value="To" ></h:outputLabel>
                                         <p:calendar value="#{reorderController.toDate}"
-                                                    pattern="dd MMM yyyy" ></p:calendar>
+                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                         <h:outputLabel value="Bill types" ></h:outputLabel>
                                         <p:selectManyMenu style="width: 300px;height: 150px;"
@@ -112,7 +112,7 @@
                                                 completeMethod="#{institutionController.completeSupplier}" 
                                                 var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                                 forceSelection="true" value="#{reorderController.institution}"
-                                                converter="institutionConverter" >
+                                                 >
                                             </p:autoComplete>
                                             <h:outputLabel value="For" ></h:outputLabel>
                                             <p:selectOneMenu value="#{reorderController.department}" >

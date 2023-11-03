@@ -1,13 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportLab/lab_summeries_index.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://java.sun.com/jsf/core"
                 >
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:panelGroup>
 
             <h:form id="form1">
@@ -16,11 +16,11 @@
                     <h:panelGrid columns="2">
 
                         <h:outputLabel   value="From Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel   value="To Date" />
-                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" >
+                        <p:calendar styleClass="noPrintButton" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>  
                     </h:panelGrid>
                     <h:panelGrid columns="2" id="pan1">

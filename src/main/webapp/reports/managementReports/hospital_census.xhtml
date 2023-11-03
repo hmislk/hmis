@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Hospital Census" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                value="#{reportController.department}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Ward"/>
+                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                                <f:selectItem itemLabel="Select Ward"/>
+                                <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
+                                                itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer><!-- comment -->
+
+                            <p:outputLabel value="Type"/>
+                            <p:selectOneMenu value="#{inwardReportController.admissionType}">
+                                <f:selectItem itemLabel="Select Type"/>
+                            </p:selectOneMenu>
+
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+
+                        </h:panelGrid>
+
+
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="Ward" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Total Beds" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Open Beds" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Previos Day Total" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="New Admission" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Transfer In" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Transfer Out" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Marked for Discharge" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Normal Discharge" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column><!-- comment -->
+                            <p:column headerText="DAMA" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Deaths" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+
+                            <p:column headerText="Others" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Total Percent" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bed Occupancy Rate" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+
+                        </p:dataTable>
+
+                        <p:dataTable>
+                            <p:column headerText="Id" >
+                                <h:outputText value="B" />
+                            </p:column>
+                            <p:column headerText="Year">
+                                <h:outputText value="D" />
+                            </p:column>
+                            <p:column headerText="Brand">
+                                <h:outputText value="T" />
+                            </p:column>
+                            <p:column headerText="Color" >
+                                <h:outputText value="F" />
+                            </p:column>
+                            <p:summaryRow>
+                                <p:column colspan="3" style="text-align:right">
+                                    <h:outputText value="Total:" />
+                                </p:column>
+                                <p:column colspan="3" style="text-align:right">
+                                    <h:outputText value="Total:" />
+                                </p:column><!-- comment -->
+                                <p:column colspan="3" style="text-align:right">
+                                    <h:outputText value="Total:" />
+                                </p:column>
+                            </p:summaryRow>
+                        </p:dataTable>
+
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

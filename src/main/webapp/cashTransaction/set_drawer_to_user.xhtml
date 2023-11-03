@@ -16,11 +16,11 @@
                     <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.nameWithTitle}"/>
                     <h:outputLabel value="Current Drawer"/>
                     <p:autoComplete value="#{sessionController.loggedUser.drawer}"
-                                    forceSelection="true" converter="drawerCon"
+                                    forceSelection="true" 
                                     completeMethod="#{drawerController.completeDrawer}" var="s"
                                     itemLabel="#{s.name}" itemValue="#{s}" ></p:autoComplete>
 
-                    <p:commandButton ajax="false" value="Update" action="#{sessionController.update}" onclick="onSubmitButton();"/>
+                    <p:commandButton ajax="false" value="Update" action="#{sessionController.update}" />
                 </h:panelGrid>
             </h:form>
 

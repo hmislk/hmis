@@ -48,12 +48,12 @@
                                         <p:panelGrid columns="2" >
                                             <p:outputLabel value="Billed Date" ></p:outputLabel>
                                             <h:outputLabel value="#{bill.createdAt}" >
-                                                <f:convertDateTime pattern="dd/MMM/yyyy"/>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                             </h:outputLabel>
 
                                             <p:outputLabel value="Billed Time" ></p:outputLabel>
                                             <h:outputLabel value="#{bill.createdAt.time}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                             </h:outputLabel>
 
                                             <p:outputLabel value="Billed By" ></p:outputLabel>
@@ -65,7 +65,7 @@
                                             <h:panelGroup rendered="#{bill.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled at " />
                                                 <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
 
@@ -74,7 +74,7 @@
                                             <h:panelGroup rendered="#{bill.refunded}" >
                                                 <h:outputLabel style="color: red;" value="Refunded at " />
                                                 <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd/MMM/yyyy - hh:mm:ss a"/>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputLabel>
                                             </h:panelGroup>
 
@@ -87,7 +87,7 @@
 
                             <p:column headerText="Billed At"  sortBy="#{bill.billTime}"  >
                                 <p:outputLabel id="billTime" value="#{bill.billTime}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
 
@@ -140,23 +140,8 @@
                                             <p:outputLabel value="Gender" ></p:outputLabel>
                                             <p:outputLabel value="#{bill.patient.person.sex}" ></p:outputLabel>
                                             <p:outputLabel value="Changing Details" ></p:outputLabel>
-                                            <p:outputLabel value="Not Edited" rendered="#{bill.patient.person.editer eq null}"></p:outputLabel>
-                                            <h:panelGroup rendered="#{bill.patient.person.editer ne null}" >
-                                                <h:outputLabel value="Edited By " />
-                                                <h:outputLabel rendered="#{bill.patient.person.editer ne null}" value="#{bill.patient.person.editer.webUserPerson.name}" >                                       
-                                                </h:outputLabel>
-                                                <h:panelGroup rendered="#{bill.patient.person.editedAt ne null}" >
-                                                    <h:outputLabel value=" on " />
-                                                    <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                        <f:convertDateTime pattern="dd/MMM/yyyy"/>
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value=" at " />
-                                                    <h:outputLabel  rendered="#{bill.patient.person.editedAt ne null}" value="#{bill.patient.person.editedAt}" >
-                                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
-                                                    </h:outputLabel>
-                                                    <h:outputLabel value="." />
-                                                </h:panelGroup>
-                                            </h:panelGroup>
+                                            
+                                            
                                         </p:panelGrid>
                                     </p:panel>
                                 </p:tooltip>
@@ -203,7 +188,7 @@
                                 </p:column>
                                 <p:column headerText="Bill Date">
                                     <p:outputLabel value="#{bill1.billDate}" >
-                                        <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                     </p:outputLabel>
                                 </p:column>
                                 <p:column headerText="Bill From" >                                

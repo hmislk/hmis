@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/inward/inward_administration.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -11,15 +11,13 @@
                 xmlns:credit="http://java.sun.com/jsf/composite/inward/creditCompany">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
         <h:form>
             <h:panelGroup rendered="#{!admissionController.printPreview}" >
                 <p:panel>
                     <p:panelGrid columns="2" >
                         <p:outputLabel value="Select BHT with Errors" ></p:outputLabel>
                         <p:selectOneMenu value="#{admissionController.current}"
-
-                                         converter="admis"
                                          >
                             <f:selectItems value="#{admissionController.admissionsWithErrors}"
                                            var="admi"
@@ -44,14 +42,14 @@
                         <p:outputLabel id="bh" value="#{admissionController.current.bhtNo}" style="font-weight: bold ; margin: 1px; border: 3px  solid black ; padding: 3px; min-width: 150px; display: block; text-align: center ;  "   />
                         <p:inputText id="bht" value="#{admissionController.current.bhtNo}" />
 
-                        <p:autoComplete  converter="fac" forceSelection="true"  
+                        <p:autoComplete  forceSelection="true"  
                                          id="cmbDoc" 
                                          value="#{admissionController.patientRoom.roomFacilityCharge}" 
                                          completeMethod="#{roomFacilityChargeController.completeRoom}"
                                          var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" size="30"   
                                          style="width: 400px;">                            
                         </p:autoComplete>
-                        <p:commandButton ajax="false" value="Update BHT" actionListener="#{admissionController.updateBHTNo}" onclick="onSubmitButton();"/>
+                        <p:commandButton ajax="false" value="Update BHT" actionListener="#{admissionController.updateBHTNo}" />
                         <p:watermark for="bht" value="BHT No" />
                     </h:panelGrid>
                 </p:panel>

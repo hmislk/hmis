@@ -39,7 +39,7 @@ public  class FeeController implements Serializable {
     String selectText = "";
 
     public List<Fee> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Fee c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Fee c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -129,6 +129,14 @@ public  class FeeController implements Serializable {
     public List<Fee> getItems() {
         items = getFacade().findAll("name", true);
         return items;
+    }
+    
+    public String navigateToAdminFee(){
+        return "/admin/pricing/index";
+    }
+    
+    public String navigateToAdminDiscounts(){
+        return "/admin/pricing/admin_discounts";
     }
 
     /**

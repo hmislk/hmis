@@ -63,7 +63,7 @@
                             <ez:enterDateTime id="fromDate" 
                                               idValue="from"
                                               timeEnterListener="#{staffAdditionalFormController.timeEnterListenerFrom()}"
-                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerFrom()}"                                              
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerFrom()}"                                          
                                               date="#{staffAdditionalFormController.currentAdditionalForm.fromTime}"
                                               systemTimeStamp="#{staffAdditionalFormController.fromSystemTimeStamp}"/>
                             <p:spacer height="20"/><p:spacer/>
@@ -71,7 +71,7 @@
                             <ez:enterDateTime id="toDate" 
                                               idValue="to"
                                               timeEnterListener="#{staffAdditionalFormController.timeEnterListenerTo()}"
-                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerTo()}"                                              
+                                              timeSelectListener="#{staffAdditionalFormController.timeSelectListenerTo()}"                                          
                                               date="#{staffAdditionalFormController.currentAdditionalForm.toTime}"
                                               systemTimeStamp="#{staffAdditionalFormController.toSystemTimeStamp}"/>
 
@@ -83,7 +83,7 @@
                             <!--                            <h:outputLabel value="Approved Date"/>
                                                         <p:calendar id="approvedDate" 
                                                                     value="#{staffAdditionalFormController.currentAdditionalForm.approvedAt}"
-                                                                    pattern="dd MMMM yyyy" >
+                                                                    pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                                         </p:calendar>-->
                             <h:outputLabel value="Comment"/>
                             <p:inputTextarea value="#{staffAdditionalFormController.currentAdditionalForm.comments}" />

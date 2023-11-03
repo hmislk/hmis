@@ -9,15 +9,15 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/admin/index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="All Pharmacyutical Item report" >
 
                         <h:panelGrid columns="5" >
                             
-                            <p:autoComplete converter="departmentConverter" completeMethod="#{departmentController.completeDept}" styleClass="noPrintButton"
+                            <p:autoComplete  completeMethod="#{departmentController.completeDept}" styleClass="noPrintButton"
                                             forceSelection="true"
                                             var="d" itemLabel="#{d.name}" itemValue="#{d}"
                                             value="#{pharmacySaleReport.department}" ></p:autoComplete>

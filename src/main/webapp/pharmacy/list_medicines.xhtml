@@ -8,9 +8,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/pharmacy_reports_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Medicine List" >
                         <p:commandButton ajax="false" value="Excel">
@@ -24,39 +24,43 @@
 
                             <p:dataTable id="tblItem" value="#{ampController.items}" var="i"
                                          rowIndexVar="n"
-                                         rowKey="#{i.id}" selection="#{ampController.listToRemove}"
+                                         rowKey="#{i.id}" 
                                          rows="10"
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="20,50,100,1000,5000"
+                                         rowsPerPageTemplate="5,10,15"
                                          >
-                                <p:column id="colSelect"  >
-                                    <f:facet name="header" >
-                                        <h:outputText value="No" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{n+1}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Parent">
-                                    <f:facet name="header" >
-                                        <h:outputText value="Parent" />
-                                    </f:facet>
-                                    <p:outputLabel value="#{i['class'].simpleName}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="Name" 
+                                <p:column headerText="AMP" 
                                           sortBy="#{i.name}"
                                           filterBy="#{i.name}" filterMatchMode="contains">
                                     <f:facet name="header" >
-                                        <h:outputText value="Name" />
+                                        <h:outputText value="AMP" />
                                     </f:facet>
                                     <p:outputLabel value="#{i.name}"></p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Code" 
-                                          sortBy="#{i.transCodeFromName}"
-                                          filterBy="#{i.transCodeFromName}" filterMatchMode="contains">
+                                <p:column headerText="code" 
+                                          sortBy="#{i.code}"
+                                          filterBy="#{i.code}" filterMatchMode="contains">
                                     <f:facet name="header" >
                                         <h:outputText value="Code" />
                                     </f:facet>
-                                    <p:outputLabel value="#{i.transCodeFromName}"></p:outputLabel>
+                                    <p:outputLabel value="#{i.code}"></p:outputLabel>
+                                </p:column>
+                                 <p:column headerText="VMP" 
+                                          sortBy="#{i.vmp.name}"
+                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
+                                    <f:facet name="header" >
+                                        <h:outputText value="VMP" />
+                                    </f:facet>
+                                     <p:outputLabel value="#{i.vmp.name}"></p:outputLabel>
+                                </p:column>
+                                 <p:column headerText="VMP" 
+                                          sortBy="#{i.vmp.name}"
+                                          filterBy="#{i.vmp.name}" filterMatchMode="contains">
+                                    <f:facet name="header" >
+                                        <h:outputText value="VMP" />
+                                    </f:facet>
+                                     <p:outputLabel value="#{i.class}"></p:outputLabel>
                                 </p:column>
                             </p:dataTable>
                         </p:panel>

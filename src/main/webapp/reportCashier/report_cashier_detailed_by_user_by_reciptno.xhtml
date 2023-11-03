@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://java.sun.com/jsf/facelets"
-                template="/resources/template/template.xhtml"
+                template="/reportCashier/report_cashier.xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -11,7 +11,7 @@
                 xmlns:ca="http://java.sun.com/jsf/composite/cashier">
 
 
-    <ui:define name="content">
+    <ui:define name="subcontent">
 
         <h:panelGroup rendered="true" >
             <h:form>
@@ -53,7 +53,7 @@
                             <p:inputText id="trn" value="#{commonReport.toReciptNo}" />
                             <p:spacer width="30" height="1"/>
                             <h:outputLabel styleClass="noPrintButton" value="User Name"/>
-                            <p:autoComplete converter="webUs" completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
+                            <p:autoComplete  completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                             forceSelection="true"
                                             var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
                                             value="#{commonReport.webUser}" ></p:autoComplete>

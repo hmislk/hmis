@@ -1,5 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -11,31 +10,109 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <p:panel header="Please login" id="loginbox" style="text-align: center; " styleClass="nonPrintBlock verticalAndHorizontalCentering">
-            <h:panelGrid columns="2" >
-                <h:panelGroup >
-                    <h:graphicImage  library="image" name="lock.png" />
-                </h:panelGroup>
-                <h:panelGroup >
-                    <h:form id="formLogin">
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Username"  style="text-align: left; margin: 5px; padding: 5px;"  ></h:outputLabel>
-                            <p:inputText autocomplete="off" id="txtUserName"
-                                         value="#{sessionController.userName}"
-                                         style="text-align: left; margin: 5px; padding: 5px;" ></p:inputText>
-                            <h:outputLabel value="Password"  style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
-                            <p:password id="txtPassword" value="#{sessionController.passord }"  style="text-align: left; margin: 5px; padding: 5px;" ></p:password>
-                            <h:outputLabel value=""  style="text-align: left; margin: 5px; padding: 5px;" ></h:outputLabel>
-                            <p:commandButton value="Login" 
-                                             id="btnLogin"
-                                             ajax="false"
-                                             action="#{sessionController.loginActionWithoutDepartment()}" >
-                            </p:commandButton>
-                        </h:panelGrid>
-                    </h:form>
+        <h:outputStylesheet library="css" name="login.css" ></h:outputStylesheet>
+        <section class="h-100 gradient-form" style="background-color: #eeee;">
+            <div class="container py-5 h-100" >
+                <div class="row d-flex justify-content-center align-items-center h-100" >
+                    <div class="col-xl-10" >
+                        <div class="card rounded-3 text-black" >
+                            <div class="row g-0" >
+                                <div class="col-lg-6" >
+                                    <div class="card-body p-md-5 mx-md-4">
+                                        <div class="text-center">
+                                            <h:graphicImage
+                                                rendered="#{not empty sessionController.applicationPreference.logoUrl}"
+                                                value="#{sessionController.applicationPreference.logoUrl}"
+                                                style="width: 185px;"
+                                                alt="logo"
+                                                />
+                                            <h:graphicImage
+                                                rendered="#{empty sessionController.applicationPreference.logoUrl}"
+                                                library="image"
+                                                name="logo.jpg"
+                                                style="width: 185px;"
+                                                alt="logo"
+                                                />
 
-                </h:panelGroup>
-            </h:panelGrid>
-        </p:panel>
+                                        </div>
+                                        <h:form>
+                                            <div class="form-outline mb-4">
+                                                <label class="form-label m-1" for="txtUserName">User Name</label>
+                                                <p:inputText id="txtUserName"
+                                                             required="true" 
+                                                             styleClass="w-100"
+                                                             requiredMessage="Enter a Username"
+                                                             autocomplete="off" value="#{sessionController.userName}" 
+                                                             class="form-control w-100">
+                                                </p:inputText>
+                                            </div>
+                                            <div class="form-outline mb-4">   
+                                                <label class="form-label m-1" for="pwd">Password</label>
+
+                                                <p:password id="pwd"  size="100"     
+                                                            toggleMask="true"
+                                                            value="#{sessionController.passord}" 
+                                                            class="form-control w-100"
+                                                            required="true"
+                                                            requiredMessage="Please enter a password"
+                                                            >
+                                                </p:password>
+                                            </div>
+
+
+                                            <div class="text-center pt-1 mb-5 pb-1">
+                                                <p:commandButton class="btn m-1 w-75 btn"
+                                                                 value="Login"
+                                                                 ajax="false"
+                                                                 action="#{sessionController.loginActionWithoutDepartment()}" >
+                                                </p:commandButton>    
+                                            </div>
+
+
+
+
+
+                                        </h:form>
+
+
+
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 d-flex align-items-center gradient-custom-2" >
+                                    <div class="text-white px-3 py-4 p-md-5 mx-md-4" >
+
+                                        <h4 class="mb-4">
+                                            <h:outputText
+                                                rendered="#{not empty sessionController.applicationPreference.loggingHeader}"
+                                                value="#{sessionController.applicationPreference.loggingHeader}" class="text-white" ></h:outputText>
+                                            <h:outputText
+                                                rendered="#{empty sessionController.applicationPreference.loggingHeader}"
+                                                value="#{bundle.hims}" class="text-white" ></h:outputText>
+                                        </h4>
+
+                                        <!-- Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI -->
+                                        <h:outputText class="small mb-0 text-start"
+                                                      rendered="#{not empty sessionController.applicationPreference.loggingText}"
+                                                      value ="#{sessionController.applicationPreference.loggingText}"
+                                                      escape="false">
+                                        </h:outputText>
+                                        <h:outputText class="small mb-0 text-start"
+                                                      rendered="#{empty sessionController.applicationPreference.loggingText}"
+                                                      value ="#{bundle.hims_tagline_contents}"
+                                                      escape="false">
+                                        </h:outputText>
+
+
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
     </cc:implementation>
 </html>

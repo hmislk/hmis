@@ -102,7 +102,7 @@ public class PharmacyCalculation implements Serializable {
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findBySQL(temSql, hm);
+        tmp = getItemFacade().findByJpql(temSql, hm);
 
         if (tmp == null) {
             tmp = new ArrayList<>();
@@ -383,7 +383,7 @@ public class PharmacyCalculation implements Serializable {
 //
 //        double adjustedGrnQty;
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + ph.getBillItem().getReferanceBillItem().getId();
-//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+//        PharmaceuticalBillItem po = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 //
 //        Item poItem = po.getBillItem().getItem();
 //        Item grnItem = ph.getBillItem().getItem();
@@ -485,7 +485,7 @@ public class PharmacyCalculation implements Serializable {
 //        double oldPrice, newPrice = 0.0;
 //
 //        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.id=" + i.getBillItem().getReferanceBillItem().getId();
-//        PharmaceuticalBillItem tmp = getPharmaceuticalBillItemFacade().findFirstBySQL(sql);
+//        PharmaceuticalBillItem tmp = getPharmaceuticalBillItemFacade().findFirstByJpql(sql);
 //
 //        oldPrice = tmp.getRetailRate();
 //        newPrice = i.getRetailRate();
@@ -548,7 +548,7 @@ public class PharmacyCalculation implements Serializable {
         hash.put("itm", itemBatch.getItem());
         hash.put("ret", itemBatch.getRetailsaleRate());
         hash.put("pur", itemBatch.getPurcahseRate());
-        List<ItemBatch> i = getItemBatchFacade().findBySQL(sql, hash, TemporalType.TIMESTAMP);
+        List<ItemBatch> i = getItemBatchFacade().findByJpql(sql, hash, TemporalType.TIMESTAMP);
         //System.err.println("Size " + i.size());
         if (i.size() > 0) {
 //            //System.err.println("Edit");
@@ -577,11 +577,11 @@ public class PharmacyCalculation implements Serializable {
 
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -598,7 +598,7 @@ public class PharmacyCalculation implements Serializable {
 
         hm.put("am", amp);
 
-        return getItemFacade().findBySQL(sql, hm);
+        return getItemFacade().findByJpql(sql, hm);
 
     }
 
@@ -607,11 +607,11 @@ public class PharmacyCalculation implements Serializable {
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getAmp().getVmp().getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -623,11 +623,11 @@ public class PharmacyCalculation implements Serializable {
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -639,11 +639,11 @@ public class PharmacyCalculation implements Serializable {
         String sql;
         sql = "SELECT i from Amp i where i.retired=false and "
                 + "i.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        items = getItemFacade().findBySQL(sql);
+        items = getItemFacade().findByJpql(sql);
 
         sql = "SELECT i from Ampp i where i.retired=false and "
                 + "i.amp.vmp.id in (select vv.vmp.id from VtmsVmps vv where vv.vmp.id=" + tmp.getVmp().getId() + ")";
-        List<Item> amppList = getItemFacade().findBySQL(sql);
+        List<Item> amppList = getItemFacade().findByJpql(sql);
         for (Item i : amppList) {
             items.add(i);
         }
@@ -775,7 +775,7 @@ public class PharmacyCalculation implements Serializable {
 
         m.put("bts", billTypes);
         m.put("sv", 0.0);
-        List<Bill> bills = getBillFacade().findBySQL(sql, m, 100);
+        List<Bill> bills = getBillFacade().findByJpql(sql, m, 100);
         for (Bill b : bills) {
             calculateRetailSaleValueAndFreeValueAtPurchaseRate(b);
             getBillFacade().edit(b);

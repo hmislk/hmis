@@ -19,7 +19,7 @@
                 <p:panel header="Inward Payment Bill" rendered="#{!inwardPaymentController.printPreview}">
                     <h:panelGrid columns="2">
                         <p:panel header="BHT">
-                            <p:autoComplete converter="admis" widgetVar="aPt" id="acPt" forceSelection="true" 
+                            <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
                                             value="#{inwardPaymentController.current.patientEncounter}"
                                             completeMethod="#{admissionController.completePatientAll}" 
                                             var="myItem" itemValue="#{myItem}" 
@@ -95,15 +95,15 @@
 
 
                             </h:panelGrid>
-                            <p:commandButton id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}" onclick="onSubmitButton();"/>
-                            <p:commandButton value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}" onclick="onSubmitButton();"/>
+                            <p:commandButton id="btnPay" value="Pay" ajax="false" action="#{inwardPaymentController.pay}" />
+                            <p:commandButton value="Clear" ajax="false" action="#{inwardPaymentController.makeNull}" />
                             <p:defaultCommand target="btnPay"/>
                         </p:panel>
                     </h:panelGrid>
                 </p:panel>
 
                 <h:panelGroup rendered="#{inwardPaymentController.printPreview}">
-                    <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}" onclick="onSubmitButton();"/>
+                    <p:commandButton value="New Payment" ajax="false" action="#{inwardPaymentController.makeNull}" />
                     <p:commandButton value="Print" ajax="false" action="#"  >
                         <p:printer target="gpBillPreview" ></p:printer>
                     </p:commandButton>

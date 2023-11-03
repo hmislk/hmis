@@ -58,6 +58,8 @@ public class BillSession implements Serializable {
     @ManyToOne
     ServiceSession serviceSession;
     @ManyToOne
+    private ServiceSessionInstance serviceSessionInstance;
+    @ManyToOne
     Category category;
     @Temporal(javax.persistence.TemporalType.DATE)
     Date sessionDate;
@@ -444,5 +446,15 @@ public class BillSession implements Serializable {
     public void setPaidBillSession(BillSession paidBillSession) {
         this.paidBillSession = paidBillSession;
     }
+
+    public ServiceSessionInstance getServiceSessionInstance() {
+        return serviceSessionInstance;
+    }
+
+    public void setServiceSessionInstance(ServiceSessionInstance serviceSessionInstance) {
+        this.serviceSessionInstance = serviceSessionInstance;
+    }
+    
+    
 
 }

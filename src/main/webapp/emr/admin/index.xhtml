@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <p:panel header="EMR Administration" >
+                    <div class="row" >
+                        <div class="col-md-3" >
+                            <h:form >
+                                <p:accordionPanel widgetVar="basic"  
+                                                  activeIndex="#{emrController.activeIndexOfReports}" 
+                                                  >
+                                    <p:tab title="Clinical Metadata">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Vocabularies" action="#{vocabularyController.navigateToManageVocabularies()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Symptoms" action="#{symptomController.navigateToManageSymptoms()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Signs" action="#{signController.navigateToManageSigns()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Diagnosis" action="#{diagnosisController.navigateToManageDiagnoses()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Investigations" action="#{investigationController.navigateToManageInvestigationForEmr}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Procedures" action="#{procedureController.navigateToManageProcedures()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Plan of actions" action="#{planController.navigateToManagePlans()}"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                    <p:tab title="Upload">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" ajax="false" value="Diagnosis" action="#{dataUploadBean.navigateToUploadDiagnoses()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Upload Patients" action="#{dataUploadBean.toUploadPatients()}"  ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Upload Visits" action="#{dataUploadBean.navigateToUploadVisits()}"  ></p:commandButton>
+                                        </div>
+                                    </p:tab>
+                                </p:accordionPanel>
+                            </h:form>
+                        </div>
+                        <div class="col-md-9" >
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

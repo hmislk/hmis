@@ -44,7 +44,6 @@ import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PersonFacade;
 import com.divudi.facade.ServiceSessionFacade;
 import com.divudi.facade.StaffFacade;
-import java.net.URLDecoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -138,7 +137,7 @@ public class Api {
     @Produces("application/json")
     public String getJson() {
         //TODO return proper representation object
-        return "<html><body><h1>Hello, World!!</body></h1></html>";
+        return "<html><h:body><h1>Hello, World!!</h:body></h1></html>";
     }
 
     @GET
@@ -146,7 +145,7 @@ public class Api {
     @Produces("text/html")
     public String getJson2() {
         //TODO return proper representation object
-        return "<html><body><h1>Hello, World 2!!</body></h1></html>";
+        return "<html><h:body><h1>Hello, World 2!!</h:body></h1></html>";
     }
 
     @GET
@@ -354,7 +353,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
 //        Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder = new URLDecoder();
+        
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
@@ -385,7 +384,7 @@ public class Api {
             }
 //            //// // System.out.println("ss = " + ss);
             Bill b;
-            b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
+            b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
 
 //            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
 //            //// // System.out.println("b = " + b);
@@ -420,7 +419,7 @@ public class Api {
         Long ss_id = Long.parseLong(session_id);
         Long a_id = Long.parseLong(agent_id);
 //        Long ar_no = Long.parseLong(agent_reference_no);
-        URLDecoder decoder = new URLDecoder();
+
         try {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, st_foriegn);
@@ -452,9 +451,9 @@ public class Api {
 //            //// // System.out.println("ss = " + ss);
             Bill b;
             if ("0".equals(st_foriegn)) {
-                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, false);
+                b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
             } else {
-                b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, agent_reference_no, true);
+                b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, true);
             }
 //            Bill b = saveBilledBill(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
 //            //// // System.out.println("b = " + b);
@@ -804,7 +803,7 @@ public class Api {
 //        hh.put("ssDate", getSelectedServiceSession().getSessionDate());
         m.put("ss", ses_id);
 
-        return getBillSessionFacade().findBySQL(sql, m);
+        return getBillSessionFacade().findByJpql(sql, m);
 
     }
 
@@ -874,7 +873,7 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //// // System.out.println("m = " + m);
 //        //// // System.out.println("sql = " + sql);
@@ -948,7 +947,7 @@ public class Api {
         m.put("doc_code", doc_code);
         m.put("class", ServiceSession.class);
 
-        sessions = getServiceSessionFacade().findBySQL(sql, m, TemporalType.TIMESTAMP);
+        sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
         List<ServiceSession> reList = new ArrayList<>();
         for (ServiceSession session : sessions) {
@@ -1016,7 +1015,7 @@ public class Api {
                 + " where bs.bill.id=:id ";
 
         m.put("id", billId);
-        billObjects = billSessionFacade.findBySQL(sql, m);
+        billObjects = billSessionFacade.findByJpql(sql, m);
 
 //        //// // System.out.println("m = " + m);
 //        //// // System.out.println("sql = " + sql);
@@ -1068,7 +1067,7 @@ public class Api {
         m.put("id", agentId);
         m.put("fd", commonFunctions.getStartOfDay(fromDate));
         m.put("td", commonFunctions.getEndOfDay(toDate));
-        billObjects = billSessionFacade.findBySQL(sql, m, TemporalType.TIMESTAMP);
+        billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
 //        //// // System.out.println("m = " + m);
 //        //// // System.out.println("sql = " + sql);
@@ -1586,7 +1585,7 @@ public class Api {
                 + " where f.retired=false "
                 + " and f.item=:ses ";
         m.put("ses", item);
-        List<ItemFee> list = getItemFeeFacade().findBySQL(jpql, m, TemporalType.TIMESTAMP);
+        List<ItemFee> list = getItemFeeFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
 //        System.err.println("Fetch Fess " + list.size());
         return list;
     }

@@ -39,7 +39,7 @@ public class KitchenController implements Serializable {
     String selectText = "";
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -135,7 +135,7 @@ public class KitchenController implements Serializable {
     public List<Department> getItems() {
         if (items == null) {
             String j = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen order by i.name";
-            items = getEjbFacade().findBySQL(j);
+            items = getEjbFacade().findByJpql(j);
         }
         return items;
     }

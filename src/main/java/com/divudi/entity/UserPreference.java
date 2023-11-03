@@ -8,6 +8,7 @@ package com.divudi.entity;
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.PaperType;
 import com.divudi.data.PaymentMethod;
+import com.divudi.data.RestAuthenticationType;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -29,98 +30,149 @@ public class UserPreference implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    String abbreviationForHistory;
-    String abbreviationForExamination;
-    String abbreviationForInvestigations;
-    String abbreviationForTreatments;
-    String abbreviationForManagement;
+
+    /*
+    Owner
+     */
+    @ManyToOne
+    private WebUser webUser;
+    @ManyToOne
+    private Department department;
+    @ManyToOne
+    private Institution institution;
+
+    /*
+    EHR
+     */
+    private String abbreviationForHistory;
+    private String abbreviationForExamination;
+    private String abbreviationForInvestigations;
+    private String abbreviationForTreatments;
+    private String abbreviationForManagement;
+
+    /*
+    Pharmacy
+     */
     @Lob
-    String pharmacyBillHeader;
+    private String pharmacyRetailBillTemplate;
     @Lob
-    String pharmacyBillFooter;
+    private String pharmacyWholesaleBillTemplate;
+
+    /*
+    Inpatients
+     */
     @Lob
     private String inwardDepositBillTemplate;
     @Lob
     private String inwardDepositCancelBillTemplate;
-    @Lob
-    String opdBillHeader;
-    @Lob
-    String opdBillFooter;
-    @Lob
-    String channellingBillHeader;
-    @Lob
-    String channellingBillFooter;
-    
-    @ManyToOne
-    WebUser webUser;
-    @ManyToOne
-    Department department;
-    @ManyToOne
-    Institution institution;
-    boolean institutionSpecificItems=false;
-    private boolean institutionRestrictedBilling=false;
-    boolean printLabelForOPdBill;
-    boolean partialPaymentOfOpdBillsAllowed;
-    boolean partialPaymentOfOpdPreBillsAllowed;
-    boolean paymentMethodAllowedInInwardMatrix;
-    boolean pharmacyBillPrabodha;
-    boolean checkPaymentSchemeValidation;
-    boolean grnBillDetailed;
-    boolean bhtNumberWithYear;
-    boolean depNumGenFromToDepartment;
-    boolean tranferNetTotalbyRetailRate;
-    boolean allowtoChangePaymentMethodDuringPayment;
-    boolean opdPosBillWithoutLogo;
-    boolean channelWithOutReferenceNumber;
-    boolean pharmayPurchaseWithLastRate;
-    boolean inwardAddServiceBillTimeCheck;
-    boolean inwardMoChargeCalculateInitialTime;
-    boolean inwardChangeAdmissionFee;
-    boolean pharmacyBillWithOutItem;
-    boolean fiveFivePaperWithHeadings;
-    boolean showOnlyMarkedDoctors=false;
-    boolean channelSettleWithoutPatientPhoneNumber=false;
-    boolean opdSettleWithoutPatientPhoneNumber=false;
-    boolean channelBillDouble=false;
-    private boolean hasAwebsiteAsFrontEnd = false;
-    private boolean channelDoctorArivalMsgSend=false;
-    String microBiologyFont;
-    String logoName;
-    @Enumerated(EnumType.STRING)
-    PaperType opdBillPaperType;
-    @Enumerated(EnumType.STRING)
-    PaperType pharmacyBillPaperType;
-    @Enumerated(EnumType.STRING)
-    PaperType channelBillPaperType;
-    @Enumerated(EnumType.STRING)
-    ApplicationInstitution applicationInstitution;
-    @Enumerated(EnumType.STRING)
-    PaymentMethod channellingPaymentMethod;
 
-    private Boolean canSettleOpdBillWithoutReferringDoctor;
+    /*
+    Channelling
+     */
+    @Lob
+    private String channellingBillTemplate;
+
+    @Lob
+    private String channellingCancellationBillTemplate;
+    @Lob
+    private String channelingDoctorPaymentBillTemplate;
+
+    /*
+    OPD
+     */
+    @Lob
+    private String opdBillForCashierTemplate;
+    @Lob
+    private String smsTemplateForOpdBillSetting;
+
+    boolean institutionSpecificItems = false;
+    @Lob
+    private String opdBillTemplate;
+    private boolean institutionRestrictedBilling = false;
+    private boolean opdSettleWithoutReferralDetails;
+    private boolean partialPaymentOfOpdBillsAllowed;
+    private boolean partialPaymentOfOpdPreBillsAllowed;
+    private boolean paymentMethodAllowedInInwardMatrix;
+    private boolean pharmacyBillPrabodha;
+    private boolean checkPaymentSchemeValidation;
+    private boolean grnBillDetailed;
+    private boolean bhtNumberWithYear;
+    private boolean depNumGenFromToDepartment;
+    private boolean tranferNetTotalbyRetailRate;
+    private boolean allowtoChangePaymentMethodDuringPayment;
+    private boolean opdSettleWithoutCashTendered;
+    private boolean channelWithOutReferenceNumber;
+    private boolean pharmayPurchaseWithLastRate;
+    private boolean inwardAddServiceBillTimeCheck;
+    private boolean inwardMoChargeCalculateInitialTime;
+    private boolean inwardChangeAdmissionFee;
+    private boolean pharmacyBillWithOutItem;
+    private boolean fiveFivePaperWithHeadings;
+    private boolean showOnlyMarkedDoctors = false;
+    private boolean channelSettleWithoutPatientPhoneNumber = false;
+    private boolean opdSettleWithoutPatientPhoneNumber = false;
+    private boolean channelBillDouble = false;
+    private boolean hasAwebsiteAsFrontEnd = false;
+    private String themeName;
+    private String logoUrl;
+    private String loggingHeader;
+    @Lob
+    private String loggingText;
+    private boolean channelDoctorArivalMsgSend = false;
+    private String microBiologyFont;
+    private String logoName;
+    @Enumerated(EnumType.STRING)
+    private PaperType opdBillPaperType;
+    @Enumerated(EnumType.STRING)
+    private PaperType inwardServiceBillPaperType;
+    @Enumerated(EnumType.STRING)
+    private PaperType pharmacyBillPaperType;
+    @Enumerated(EnumType.STRING)
+    private PaperType channelBillPaperType;
+    @Enumerated(EnumType.STRING)
+    private ApplicationInstitution applicationInstitution;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod channellingPaymentMethod;
+
+    private Boolean canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     private Boolean printBarcodeInOpdBill;
     private Boolean sentEmailWithInvestigationReportApproval;
     private Boolean sentSmsWithInvestigationRequestApproval;
     private Boolean sentDailySmsSummeryForReferringDoctors;
-    
+    private String smsUrl;
+    private String smsUsername;
+    private String smsPassword;
+    private String smsUserAlias;
+    private String smsUsernameParameterName;
+    private String smsPasswordParameterName;
+    private String smsUserAliasParameterName;
+    private String smsPhoneNumberParameterName;
+    private String smsMessageParameterName;
+    @Enumerated
+    private RestAuthenticationType smsAuthenticationType;
+
     private boolean familyMembership;
     private boolean membershipExpires;
-    
+
     private boolean needAreaForPatientRegistration;
     private boolean needNicForPatientRegistration;
     private boolean needPhoneNumberForPatientRegistration;
-    
-    
+
     private boolean channellingSendSmsOnBooking;
     private boolean channellingSendSmsOnCancelling;
     private boolean channellingSendSmsOnArrival;
     private boolean sendBulkSms;
-    
-    
-    
-    
+    private String pharmacyBillFooter;
+    private String pharmacyBillHeader;
+    private String longDateFormat;
+    private String shortDateFormat;
+    private String longDateTimeFormat;
+    private String shortDateTimeFormat;
+    private String longTimeFormat;
+    private String shortTimeFormat;
+
     public ApplicationInstitution getApplicationInstitution() {
-        if(applicationInstitution==null){
+        if (applicationInstitution == null) {
             applicationInstitution = ApplicationInstitution.Ruhuna;
         }
         return applicationInstitution;
@@ -145,7 +197,7 @@ public class UserPreference implements Serializable {
     public void setChannelBillDouble(boolean channelBillDouble) {
         this.channelBillDouble = channelBillDouble;
     }
-    
+
     public boolean isPartialPaymentOfOpdBillsAllowed() {
         return partialPaymentOfOpdBillsAllowed;
     }
@@ -169,10 +221,9 @@ public class UserPreference implements Serializable {
     public void setPharmayPurchaseWithLastRate(boolean pharmayPurchaseWithLastRate) {
         this.pharmayPurchaseWithLastRate = pharmayPurchaseWithLastRate;
     }
-    
-    
+
     public PaperType getOpdBillPaperType() {
-        if(opdBillPaperType==null){
+        if (opdBillPaperType == null) {
             opdBillPaperType = PaperType.FiveFivePaper;
         }
         return opdBillPaperType;
@@ -187,7 +238,7 @@ public class UserPreference implements Serializable {
     }
 
     public void setChannelBillPaperType(PaperType channelBillPaperType) {
-        if(opdBillPaperType==null){
+        if (opdBillPaperType == null) {
             opdBillPaperType = PaperType.Paper24_2x9_3;
         }
         this.channelBillPaperType = channelBillPaperType;
@@ -225,14 +276,13 @@ public class UserPreference implements Serializable {
         this.allowtoChangePaymentMethodDuringPayment = allowtoChangePaymentMethodDuringPayment;
     }
 
-    public boolean isOpdPosBillWithoutLogo() {
-        return opdPosBillWithoutLogo;
+    public boolean isOpdSettleWithoutCashTendered() {
+        return opdSettleWithoutCashTendered;
     }
 
-    public void setOpdPosBillWithoutLogo(boolean opdPosBillWithoutLogo) {
-        this.opdPosBillWithoutLogo = opdPosBillWithoutLogo;
-    }   
-    
+    public void setOpdSettleWithoutCashTendered(boolean opdSettleWithoutCashTendered) {
+        this.opdSettleWithoutCashTendered = opdSettleWithoutCashTendered;
+    }
 
     public String getAbbreviationForHistory() {
         if (abbreviationForHistory == null || "".equals(abbreviationForHistory)) {
@@ -275,7 +325,7 @@ public class UserPreference implements Serializable {
     }
 
     public void setAbbreviationForTreatments(String abbreviationForTreatments) {
-        
+
         this.abbreviationForTreatments = abbreviationForTreatments;
     }
 
@@ -314,7 +364,6 @@ public class UserPreference implements Serializable {
         this.institution = institution;
     }
 
-    
     public Long getId() {
         return id;
     }
@@ -330,15 +379,13 @@ public class UserPreference implements Serializable {
     public void setInstitutionSpecificItems(boolean institutionSpecificItems) {
         this.institutionSpecificItems = institutionSpecificItems;
     }
-    
-    
 
-    public boolean isPrintLabelForOPdBill() {
-        return printLabelForOPdBill;
+    public boolean isOpdSettleWithoutReferralDetails() {
+        return opdSettleWithoutReferralDetails;
     }
 
-    public void setPrintLabelForOPdBill(boolean printLabelForOPdBill) {
-        this.printLabelForOPdBill = printLabelForOPdBill;
+    public void setOpdSettleWithoutReferralDetails(boolean opdSettleWithoutReferralDetails) {
+        this.opdSettleWithoutReferralDetails = opdSettleWithoutReferralDetails;
     }
 
     public boolean isGrnBillDetailed() {
@@ -357,16 +404,12 @@ public class UserPreference implements Serializable {
         this.microBiologyFont = microBiologyFont;
     }
 
-    
-    
-    
-
-    public String getPharmacyBillFooter() {
-        return pharmacyBillFooter;
+    public String getPharmacyWholesaleBillTemplate() {
+        return pharmacyWholesaleBillTemplate;
     }
 
-    public void setPharmacyBillFooter(String pharmacyBillFooter) {
-        this.pharmacyBillFooter = pharmacyBillFooter;
+    public void setPharmacyWholesaleBillTemplate(String pharmacyWholesaleBillTemplate) {
+        this.pharmacyWholesaleBillTemplate = pharmacyWholesaleBillTemplate;
     }
 
     public boolean isDepNumGenFromToDepartment() {
@@ -411,7 +454,7 @@ public class UserPreference implements Serializable {
     public void setInwardAddServiceBillTimeCheck(boolean inwardAddServiceBillTimeCheck) {
         this.inwardAddServiceBillTimeCheck = inwardAddServiceBillTimeCheck;
     }
-    
+
     public boolean isInwardMoChargeCalculateInitialTime() {
         return inwardMoChargeCalculateInitialTime;
     }
@@ -460,48 +503,48 @@ public class UserPreference implements Serializable {
         this.showOnlyMarkedDoctors = showOnlyMarkedDoctors;
     }
 
-    public String getPharmacyBillHeader() {
-        return pharmacyBillHeader;
+    public String getPharmacyRetailBillTemplate() {
+        return pharmacyRetailBillTemplate;
     }
 
-    public void setPharmacyBillHeader(String pharmacyBillHeader) {
-        this.pharmacyBillHeader = pharmacyBillHeader;
+    public void setPharmacyRetailBillTemplate(String pharmacyRetailBillTemplate) {
+        this.pharmacyRetailBillTemplate = pharmacyRetailBillTemplate;
     }
 
-    public String getOpdBillHeader() {
-        return opdBillHeader;
+    public String getChannellingBillTemplate() {
+        return channellingBillTemplate;
     }
 
-    public void setOpdBillHeader(String opdBillHeader) {
-        this.opdBillHeader = opdBillHeader;
+    public void setChannellingBillTemplate(String channellingBillTemplate) {
+        this.channellingBillTemplate = channellingBillTemplate;
     }
 
-    public String getOpdBillFooter() {
-        return opdBillFooter;
+    public String getOpdBillForCashierTemplate() {
+        return opdBillForCashierTemplate;
     }
 
-    public void setOpdBillFooter(String opdBillFooter) {
-        this.opdBillFooter = opdBillFooter;
+    public void setOpdBillForCashierTemplate(String opdBillForCashierTemplate) {
+        this.opdBillForCashierTemplate = opdBillForCashierTemplate;
     }
 
-    public String getChannellingBillHeader() {
-        return channellingBillHeader;
+    public String getChannellingCancellationBillTemplate() {
+        return channellingCancellationBillTemplate;
     }
 
-    public void setChannellingBillHeader(String channellingBillHeader) {
-        this.channellingBillHeader = channellingBillHeader;
+    public void setChannellingCancellationBillTemplate(String channellingCancellationBillTemplate) {
+        this.channellingCancellationBillTemplate = channellingCancellationBillTemplate;
     }
 
-    public String getChannellingBillFooter() {
-        return channellingBillFooter;
+    public String getChannelingDoctorPaymentBillTemplate() {
+        return channelingDoctorPaymentBillTemplate;
     }
 
-    public void setChannellingBillFooter(String channellingBillFooter) {
-        this.channellingBillFooter = channellingBillFooter;
+    public void setChannelingDoctorPaymentBillTemplate(String channelingDoctorPaymentBillTemplate) {
+        this.channelingDoctorPaymentBillTemplate = channelingDoctorPaymentBillTemplate;
     }
 
     public PaymentMethod getChannellingPaymentMethod() {
-        if(channellingPaymentMethod==null){
+        if (channellingPaymentMethod == null) {
             channellingPaymentMethod = PaymentMethod.OnCall;
         }
         return channellingPaymentMethod;
@@ -526,7 +569,7 @@ public class UserPreference implements Serializable {
     public void setOpdSettleWithoutPatientPhoneNumber(boolean opdSettleWithoutPatientPhoneNumber) {
         this.opdSettleWithoutPatientPhoneNumber = opdSettleWithoutPatientPhoneNumber;
     }
-    
+
     public boolean isChannelDoctorArivalMsgSend() {
         return channelDoctorArivalMsgSend;
     }
@@ -534,7 +577,7 @@ public class UserPreference implements Serializable {
     public void setChannelDoctorArivalMsgSend(boolean channelDoctorArivalMsgSend) {
         this.channelDoctorArivalMsgSend = channelDoctorArivalMsgSend;
     }
-    
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -569,8 +612,8 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentEmailWithInvestigationReportApproval() {
-        if(sentEmailWithInvestigationReportApproval==null){
-            sentEmailWithInvestigationReportApproval=true;
+        if (sentEmailWithInvestigationReportApproval == null) {
+            sentEmailWithInvestigationReportApproval = true;
         }
         return sentEmailWithInvestigationReportApproval;
     }
@@ -580,8 +623,8 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentSmsWithInvestigationRequestApproval() {
-        if(sentSmsWithInvestigationRequestApproval==null){
-            sentSmsWithInvestigationRequestApproval=true;
+        if (sentSmsWithInvestigationRequestApproval == null) {
+            sentSmsWithInvestigationRequestApproval = true;
         }
         return sentSmsWithInvestigationRequestApproval;
     }
@@ -591,8 +634,8 @@ public class UserPreference implements Serializable {
     }
 
     public Boolean getSentDailySmsSummeryForReferringDoctors() {
-        if(sentDailySmsSummeryForReferringDoctors==null){
-            sentDailySmsSummeryForReferringDoctors=true;
+        if (sentDailySmsSummeryForReferringDoctors == null) {
+            sentDailySmsSummeryForReferringDoctors = true;
         }
         return sentDailySmsSummeryForReferringDoctors;
     }
@@ -601,15 +644,15 @@ public class UserPreference implements Serializable {
         this.sentDailySmsSummeryForReferringDoctors = sentDailySmsSummeryForReferringDoctors;
     }
 
-    public Boolean getCanSettleOpdBillWithoutReferringDoctor() {
-        if(canSettleOpdBillWithoutReferringDoctor==null){
-            canSettleOpdBillWithoutReferringDoctor = true;
+    public Boolean getCanSettleOpdBillWithInvestigationsWithoutReferringDoctor() {
+        if (canSettleOpdBillWithInvestigationsWithoutReferringDoctor == null) {
+            canSettleOpdBillWithInvestigationsWithoutReferringDoctor = true;
         }
-        return canSettleOpdBillWithoutReferringDoctor;
+        return canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     }
 
-    public void setCanSettleOpdBillWithoutReferringDoctor(Boolean canSettleOpdBillWithoutReferringDoctor) {
-        this.canSettleOpdBillWithoutReferringDoctor = canSettleOpdBillWithoutReferringDoctor;
+    public void setCanSettleOpdBillWithInvestigationsWithoutReferringDoctor(Boolean canSettleOpdBillWithInvestigationsWithoutReferringDoctor) {
+        this.canSettleOpdBillWithInvestigationsWithoutReferringDoctor = canSettleOpdBillWithInvestigationsWithoutReferringDoctor;
     }
 
     public Boolean getPrintBarcodeInOpdBill() {
@@ -716,7 +759,225 @@ public class UserPreference implements Serializable {
         this.hasAwebsiteAsFrontEnd = hasAwebsiteAsFrontEnd;
     }
 
-    
-    
-    
+    public String getThemeName() {
+        return themeName;
+    }
+
+    public void setThemeName(String themeName) {
+        this.themeName = themeName;
+    }
+
+    public String getOpdBillTemplate() {
+        return opdBillTemplate;
+    }
+
+    public void setOpdBillTemplate(String opdBillTemplate) {
+        this.opdBillTemplate = opdBillTemplate;
+    }
+
+    public String getPharmacyBillFooter() {
+        return pharmacyBillFooter;
+    }
+
+    public void setPharmacyBillFooter(String pharmacyBillFooter) {
+        this.pharmacyBillFooter = pharmacyBillFooter;
+    }
+
+    public String getPharmacyBillHeader() {
+        return pharmacyBillHeader;
+    }
+
+    public void setPharmacyBillHeader(String pharmacyBillHeader) {
+        this.pharmacyBillHeader = pharmacyBillHeader;
+    }
+
+    public String getSmsUrl() {
+        return smsUrl;
+    }
+
+    public void setSmsUrl(String smsUrl) {
+        this.smsUrl = smsUrl;
+    }
+
+    public String getSmsUsername() {
+        return smsUsername;
+    }
+
+    public void setSmsUsername(String smsUsername) {
+        this.smsUsername = smsUsername;
+    }
+
+    public String getSmsPassword() {
+        return smsPassword;
+    }
+
+    public void setSmsPassword(String smsPassword) {
+        this.smsPassword = smsPassword;
+    }
+
+    public String getSmsUsernameParameterName() {
+        return smsUsernameParameterName;
+    }
+
+    public void setSmsUsernameParameterName(String smsUsernameParameterName) {
+        this.smsUsernameParameterName = smsUsernameParameterName;
+    }
+
+    public String getSmsPasswordParameterName() {
+        return smsPasswordParameterName;
+    }
+
+    public void setSmsPasswordParameterName(String smsPasswordParameterName) {
+        this.smsPasswordParameterName = smsPasswordParameterName;
+    }
+
+    public String getSmsUserAlias() {
+        return smsUserAlias;
+    }
+
+    public void setSmsUserAlias(String smsUserAlias) {
+        this.smsUserAlias = smsUserAlias;
+    }
+
+    public String getSmsUserAliasParameterName() {
+        return smsUserAliasParameterName;
+    }
+
+    public void setSmsUserAliasParameterName(String smsUserAliasParameterName) {
+        this.smsUserAliasParameterName = smsUserAliasParameterName;
+    }
+
+    public String getSmsPhoneNumberParameterName() {
+        return smsPhoneNumberParameterName;
+    }
+
+    public void setSmsPhoneNumberParameterName(String smsPhoneNumberParameterName) {
+        this.smsPhoneNumberParameterName = smsPhoneNumberParameterName;
+    }
+
+    public String getSmsMessageParameterName() {
+        return smsMessageParameterName;
+    }
+
+    public void setSmsMessageParameterName(String smsMessageParameterName) {
+        this.smsMessageParameterName = smsMessageParameterName;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getLoggingHeader() {
+        return loggingHeader;
+    }
+
+    public void setLoggingHeader(String loggingHeader) {
+        this.loggingHeader = loggingHeader;
+    }
+
+    public String getLoggingText() {
+        return loggingText;
+    }
+
+    public void setLoggingText(String loggingText) {
+        this.loggingText = loggingText;
+    }
+
+    public RestAuthenticationType getSmsAuthenticationType() {
+        return smsAuthenticationType;
+    }
+
+    public void setSmsAuthenticationType(RestAuthenticationType smsAuthenticationType) {
+        this.smsAuthenticationType = smsAuthenticationType;
+    }
+
+    public String getSmsTemplateForOpdBillSetting() {
+        return smsTemplateForOpdBillSetting;
+    }
+
+    public void setSmsTemplateForOpdBillSetting(String smsTemplateForOpdBillSetting) {
+        this.smsTemplateForOpdBillSetting = smsTemplateForOpdBillSetting;
+    }
+
+    public PaperType getInwardServiceBillPaperType() {
+        if (inwardServiceBillPaperType == null) {
+            inwardServiceBillPaperType = PaperType.FiveFivePaper;
+        }
+        return inwardServiceBillPaperType;
+    }
+
+    public void setInwardServiceBillPaperType(PaperType inwardServiceBillPaperType) {
+        this.inwardServiceBillPaperType = inwardServiceBillPaperType;
+    }
+
+    public String getLongDateFormat() {
+        if (longDateFormat == null || longDateFormat.trim().equals("")) {
+            longDateFormat = "dd MMMM yyyy";
+        }
+        return longDateFormat;
+    }
+
+    public void setLongDateFormat(String longDateFormat) {
+        this.longDateFormat = longDateFormat;
+    }
+
+    public String getShortDateFormat() {
+        if (shortDateFormat == null || shortDateFormat.trim().equals("")) {
+            shortDateFormat = "dd MM yy";
+        }
+        return shortDateFormat;
+    }
+
+    public void setShortDateFormat(String shortDateFormat) {
+        this.shortDateFormat = shortDateFormat;
+    }
+
+    public String getLongDateTimeFormat() {
+        if (longDateTimeFormat == null || longDateTimeFormat.trim().equals("")) {
+            longDateTimeFormat = "dd MMMM yyyy hh:mm:ss";
+        }
+        return longDateTimeFormat;
+    }
+
+    public void setLongDateTimeFormat(String longDateTimeFormat) {
+        this.longDateTimeFormat = longDateTimeFormat;
+    }
+
+    public String getShortDateTimeFormat() {
+        if (shortDateTimeFormat == null || shortDateTimeFormat.trim().equals("")) {
+            shortDateTimeFormat = "dd MM yy hh:mm a";
+        }
+        return shortDateTimeFormat;
+    }
+
+    public void setShortDateTimeFormat(String shortDateTimeFormat) {
+        this.shortDateTimeFormat = shortDateTimeFormat;
+    }
+
+    public String getLongTimeFormat() {
+        if (longTimeFormat == null || longTimeFormat.trim().equals("")) {
+            longTimeFormat = "hh:mm:ss a";
+        }
+        return longTimeFormat;
+    }
+
+    public void setLongTimeFormat(String longTimeFormat) {
+        this.longTimeFormat = longTimeFormat;
+    }
+
+    public String getShortTimeFormat() {
+        if (shortTimeFormat == null || shortTimeFormat.trim().equals("")) {
+            shortTimeFormat = "hh:mm a";
+        }
+        return shortTimeFormat;
+    }
+
+    public void setShortTimeFormat(String shortTimeFormat) {
+        this.shortTimeFormat = shortTimeFormat;
+    }
+
 }

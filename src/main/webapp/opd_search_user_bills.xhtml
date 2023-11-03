@@ -8,8 +8,8 @@
       >
 
     <h:body>
-        <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+        <ui:composition template="/reportCashier/report_cashier.xhtml">
+            <ui:define name="subcontent">
                 <h:form>
 <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
                     <p:panel header="Search User Bills" >
@@ -33,14 +33,14 @@
 
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="To Date"/>                                
-                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                 </h:panelGrid>
@@ -48,7 +48,7 @@
 
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="User Name"/>
-                                    <p:autoComplete id="cmbUser" converter="webUs" 
+                                    <p:autoComplete id="cmbUser"  
                                                     forceSelection="true"
                                                     completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
@@ -106,7 +106,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint">
                                     <h:outputLabel value="#{bill.billDate}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -118,7 +118,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel value="#{bill.billTime}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -207,7 +207,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -220,7 +220,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -244,7 +244,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm:ss a" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>
@@ -257,7 +257,7 @@
                                 </f:facet>
                                 <h:commandLink action="bill_reprint" >
                                     <h:outputLabel rendered="#{bill.refunded}" value="#{bill.refundedBill.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </h:commandLink>

@@ -17,11 +17,11 @@
                             <p:panel header="Fill" >
                                 <h:panelGrid columns="2" >
                                     <h:outputLabel value="From"/>
-                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                     <h:outputLabel value="To"/>                                
-                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >
+                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                                         <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
                                     </p:calendar>
                                     <h:outputLabel value="Department"/>                                
@@ -41,7 +41,7 @@
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="User"/>
-                                    <p:autoComplete id="cmbUser" converter="webUs" placeholder="All Users"
+                                    <p:autoComplete id="cmbUser"  placeholder="All Users"
                                                     forceSelection="true" inputStyle="width:190px;"
                                                     completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
                                                     var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"

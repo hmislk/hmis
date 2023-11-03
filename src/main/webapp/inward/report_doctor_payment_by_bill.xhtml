@@ -10,17 +10,17 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/inward/inward_reports.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
                     <p:panel header="Doctor Payment(By Bill)" >
                         <p:panel>
                             <h:panelGrid columns="2">
                                 <p:outputLabel value="From" />
-                                <p:calendar id="fdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
+                                <p:calendar id="fdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.fromDate}"></p:calendar>
                                 <p:outputLabel value="To" />
-                                <p:calendar id="tdate" pattern="dd MMMM yyyy hh:mm:ss a" value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
+                                <p:calendar id="tdate" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  value="#{inwardStaffPaymentBillController.toDate}"></p:calendar>
                                 <h:outputLabel value="Admission Type : " ></h:outputLabel>
                                 <p:selectOneMenu  id="lstAdmissionType"   
                                                   value="#{inwardStaffPaymentBillController.admissionType}" >
@@ -41,12 +41,12 @@
                                 <h:outputLabel  value="Speciality" ></h:outputLabel>
                                 <p:autoComplete style="min-width: 400px!important;" forceSelection="true" value="#{inwardStaffPaymentBillController.speciality}" id="acSpeciality"
                                                 completeMethod="#{specialityController.completeSpeciality}" var="mysp" itemLabel="#{mysp.name}" itemValue="#{mysp}"
-                                                converter="specilityCon">
+                                                >
                                 </p:autoComplete>
                                 <h:outputLabel  value="Staff / Doctor" ></h:outputLabel>
                                 <p:autoComplete style="width: 400px;" forceSelection="true" value="#{inwardStaffPaymentBillController.currentStaff}" id="scStaff"
                                                 completeMethod="#{staffPaymentBillController.completeStaff}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}"
-                                                converter="stfcon">
+                                                >
                                 </p:autoComplete>
                             </h:panelGrid>
                             <p:watermark for="fdate" value="From Date" />
@@ -55,13 +55,13 @@
                             <p:watermark for="scStaff" value="Staff / Doctor" />
                         </p:panel>
                         <p:panelGrid columns="4">
-                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByCreatedDate}" onclick="onSubmitButton();"  />
-                            <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByDischargeDate}" onclick="onSubmitButton();"  />
+                            <p:commandButton ajax="false" value="Fill By Paid Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByCreatedDate}"   />
+                            <p:commandButton ajax="false" value="Fill By Discharge Date" action="#{inwardStaffPaymentBillController.fillDocPayingBillByDischargeDate}"   />
                             <p:commandButton value="Print" ajax="false" action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="doctor_payment_report" />
                             </p:commandButton>
 
@@ -76,11 +76,11 @@
                                         <h:outputLabel value="Inward Doctor Payment #{inwardStaffPaymentBillController.currentStaff.person}"/>
                                         <h:outputLabel value=" : "/>
                                         <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value=" -- "/>
                                         <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </f:facet>
 
@@ -97,7 +97,7 @@
                                             <p:outputLabel value="Date/Time" />
                                         </f:facet>
                                         <p:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </p:outputLabel>
                                     </p:column>
 
@@ -136,11 +136,11 @@
                                         <h:outputLabel value="Inward Doctor Payment Cancel"/>
                                         <h:outputLabel value=" : "/>
                                         <h:outputLabel value="#{inwardStaffPaymentBillController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <h:outputLabel value=" -- "/>
                                         <h:outputLabel value="#{inwardStaffPaymentBillController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a"/>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </f:facet>
 
@@ -157,7 +157,7 @@
                                             <p:outputLabel value="Date/Time" />
                                         </f:facet>
                                         <p:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                                         </p:outputLabel>
                                     </p:column>
 

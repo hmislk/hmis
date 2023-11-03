@@ -45,7 +45,7 @@ public class ServiceSubCategoryController implements Serializable {
     String selectText = "";
 
     public List<ServiceSubCategory> getSelectedItems() {
-        selectedItems = getFacade().findBySQL("select c from ServiceSubCategory c where c.retired=false and upper(c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from ServiceSubCategory c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -153,7 +153,7 @@ public class ServiceSubCategoryController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("parent", getParentCategory());
-        items = getFacade().findBySQL(sql, hm);
+        items = getFacade().findByJpql(sql, hm);
 
         if (items == null) {
             return new ArrayList<>();

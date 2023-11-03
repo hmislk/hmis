@@ -23,7 +23,6 @@
                             <h:outputLabel value="Salary Cycle : "/>
                             <p:selectOneMenu id="advanced" 
                                              value="#{hrReportController.salaryCycle}" 
-                                             converter="salaryCycleConverter"                                      
                                              var="t" 
                                              filter="true" 
                                              filterMatchMode="startsWith"  >
@@ -62,7 +61,7 @@
 
                         <h:panelGrid columns="4" >
                             <p:commandButton ajax="false" value="Process" action="#{hrReportController.createMonthEndWorkTimeReportForMonth}"/>
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" onclick="onSubmitButton();" >
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                                 <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_month_end_work_time_miniuts_summery"  />
                             </p:commandButton>
                             <p:commandButton value="Print All" ajax="false" action="#" >
@@ -271,11 +270,11 @@
                                         <h:outputLabel value="Employee Working Time and Over Time Report " />
                                         <h:outputLabel value="From : "/>
                                         <h:outputLabel value="#{hrReportController.fromDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                         <h:outputLabel value=" To : "/>
                                         <h:outputLabel value="#{hrReportController.toDate}">
-                                            <f:convertDateTime pattern="dd MMMM yyyy" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                         </h:outputLabel>
                                     </f:facet>
                                     <p:columnGroup type="header" >
