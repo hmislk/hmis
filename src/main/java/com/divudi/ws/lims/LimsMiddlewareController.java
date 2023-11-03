@@ -68,6 +68,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,6 +114,44 @@ public class LimsMiddlewareController {
      * Creates a new instance of LIMS
      */
     public LimsMiddlewareController() {
+    }
+
+    @POST
+    @Path("/sysmex")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response receiveSysmexMessage(String message, @HeaderParam("Authorization") String authHeader) {
+        // Decode the Authorization header to get the username and password
+        if (authHeader != null && authHeader.startsWith("Basic ")) {
+            // Extract the encoded username and password
+            String base64Credentials = authHeader.substring("Basic".length()).trim();
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials), StandardCharsets.UTF_8);
+            // credentials = username:password
+            final StringTokenizer tokenizer = new StringTokenizer(credentials, ":");
+            String username = tokenizer.nextToken();
+            String password = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : "";
+
+            // Authenticate the user using the extracted username and password
+            if (authenticate(username, password)) {
+                // Process the message here
+                // Assuming 'processMessage' is a method that handles your message
+                String response = processSysmexRestMessage(message);
+                return Response.ok().entity(response).build();
+            }
+        }
+        return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid credentials").build();
+    }
+
+    private String processSysmexRestMessage(String message) {
+     
+        System.out.println("message = " + message);
+        
+        
+        return "Message received: " + message;
+    }
+
+    private boolean authenticate(String username, String password) {
+        return isValidCredentials(username, password);
     }
 
     @Path("/limsProcessAnalyzerMessage")
