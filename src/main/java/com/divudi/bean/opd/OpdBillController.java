@@ -2153,19 +2153,15 @@ public class OpdBillController implements Serializable {
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
-
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
         p.setCreatedAt(new Date());
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
-
         p.setPaidValue(p.getBill().getNetTotal());
-
         if (p.getId() == null) {
             paymentFacade.create(p);
         }
-
     }
 
     private double reminingCashPaid = 0.0;
@@ -2302,7 +2298,10 @@ public class OpdBillController implements Serializable {
 
     }
 
-    public void changeListener() {
+    public void listnerForPaymentMethodChange() {
+        if(paymentMethod==PaymentMethod.PatientDeposit){
+            getPaymentMethodData().getPatient_deposit().setPatient(patient);
+        }
         calTotals();
     }
 

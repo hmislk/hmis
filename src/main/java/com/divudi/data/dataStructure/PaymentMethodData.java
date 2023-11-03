@@ -1,25 +1,21 @@
-/*
+package com.divudi.data.dataStructure;
+
+/**
  * Open Hospital Management Information System
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
-
-package com.divudi.data.dataStructure;
-
-/**
- *
- * @author safrin
- */
 public class PaymentMethodData {
-    private ComponentDetail creditCard=new ComponentDetail();
-    private ComponentDetail cheque=new ComponentDetail();
-    private ComponentDetail slip=new ComponentDetail();
-    private ComponentDetail ewallet=new ComponentDetail();
-    
-    
-    
+    private ComponentDetail creditCard;
+    private ComponentDetail cheque;
+    private ComponentDetail slip;
+    private ComponentDetail ewallet;
+    private ComponentDetail patient_deposit;
 
     public ComponentDetail getCreditCard() {
+        if (creditCard == null) {
+            creditCard = new ComponentDetail();
+        }
         return creditCard;
     }
 
@@ -28,6 +24,9 @@ public class PaymentMethodData {
     }
 
     public ComponentDetail getCheque() {
+        if (cheque == null) {
+            cheque = new ComponentDetail();
+        }
         return cheque;
     }
 
@@ -36,6 +35,9 @@ public class PaymentMethodData {
     }
 
     public ComponentDetail getSlip() {
+        if (slip == null) {
+            slip = new ComponentDetail();
+        }
         return slip;
     }
 
@@ -44,6 +46,9 @@ public class PaymentMethodData {
     }
 
     public ComponentDetail getEwallet() {
+        if (ewallet == null) {
+            ewallet = new ComponentDetail();
+        }
         return ewallet;
     }
 
@@ -51,7 +56,14 @@ public class PaymentMethodData {
         this.ewallet = ewallet;
     }
 
-    
-    
-    
+    public ComponentDetail getPatient_deposit() {
+        if (patient_deposit == null) {
+            patient_deposit = new ComponentDetail();
+        }
+        return patient_deposit;
+    }
+
+    public void setPatient_deposit(ComponentDetail patient_deposit) {
+        this.patient_deposit = patient_deposit;
+    }
 }

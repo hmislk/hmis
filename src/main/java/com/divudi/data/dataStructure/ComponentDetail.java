@@ -6,6 +6,7 @@
 package com.divudi.data.dataStructure;
 
 import com.divudi.entity.Institution;
+import com.divudi.entity.Patient;
 import java.util.Date;
 
 /**
@@ -18,6 +19,9 @@ public class ComponentDetail {
     private String comment;
     private Institution institution;
     private Date date;
+    private Patient patient;
+    
+    
 
     public Institution getInstitution() {
         return institution;
@@ -49,6 +53,14 @@ public class ComponentDetail {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
 }
