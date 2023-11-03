@@ -333,6 +333,7 @@ public class LimsMiddlewareController {
     }
 
     public static SysMex parseSysMexMessage(String message) {
+//        Correcte Method
         System.out.println("parseSysMexMessage");
         SysMex sysMex = new SysMex();
         // Normalize line endings to \n
