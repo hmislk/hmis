@@ -38,14 +38,8 @@ public class SysMex {
     private String mpv;
     private String pLcr;
     private String pct;
-    
-    
-    
-    
-    //getters/ setts and constructors here
-    
-    
 
+    //getters/ setts and constructors here
     public SysMex() {
     }
 
@@ -162,7 +156,11 @@ public class SysMex {
     }
 
     public Long getSampleIdLong() {
-        sampleIdLong = Long.valueOf(sampleId);
+        try {
+            sampleIdLong = Long.valueOf(sampleId);
+        } catch (Exception e) {
+            sampleIdLong = 0l;
+        }
         return sampleIdLong;
     }
 
