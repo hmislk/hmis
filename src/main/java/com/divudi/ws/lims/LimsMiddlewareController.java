@@ -332,6 +332,9 @@ public class LimsMiddlewareController {
     }
     
     public SysMex parseSysMexMessage(String message) {
+        
+        System.out.println("message = " + message);
+        
         SysMex sysMex = new SysMex();
         String[] lines = message.split("\n");
         
