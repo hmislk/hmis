@@ -45,11 +45,11 @@
                         <f:facet name="header">
                             <p:outputLabel value="From - " />
                             <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                             <p:outputLabel value=" - To - " />
                             <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                             <p:outputLabel value=" Channel Agent " />
                             <p:outputLabel value="#{channelReportController.institution.name}" />
@@ -124,7 +124,7 @@
                                 <p:outputLabel value="Created Date" />
                             </f:facet>
                             <p:outputLabel value="#{a.createdAt}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy hh:mm:ss a" />
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </p:outputLabel>
                         </p:column>
                     </p:dataTable>

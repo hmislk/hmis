@@ -6106,7 +6106,7 @@ public class PharmacySaleReport implements Serializable {
         }
         auditEvent.setUrl(url);
         auditEvent.setIpAddress(ipAddress);
-        auditEvent.setEventTrigger("settleOpdBill()");
+        auditEvent.setEventTrigger("createPharmacyIssueBHT()");
         auditEventApplicationController.logAuditEvent(auditEvent);
 
         itemWithDepBHTIssues = new ArrayList<>();

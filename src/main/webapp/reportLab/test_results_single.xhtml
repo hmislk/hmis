@@ -28,10 +28,10 @@
                                     </p:commandButton>
 
                                     <h:outputLabel value="From" ></h:outputLabel>
-                                    <p:calendar value="#{patientInvestigationController.fromDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                                    <p:calendar value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                     <h:outputLabel value="To" ></h:outputLabel>
-                                    <p:calendar value="#{patientInvestigationController.toDate}" pattern="dd MMMM yyyy" ></p:calendar>
+                                    <p:calendar value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
                                     <h:outputLabel value="Report" ></h:outputLabel>
                                     <p:autoComplete widgetVar="aPt" id="acPt" forceSelection="true" converter="ixcon"

@@ -81,7 +81,7 @@
                                         <h:outputLabel value="Date of Birth:"  class="form-label" />
                                         <p:datePicker value="#{patientController.current.person.dob}" 
                                                       id="calNewPtDob"
-                                                      pattern="dd MMMM yyyy" 
+                                                      pattern="#{sessionController.applicationPreference.longDateFormat}" 
                                                       yearNavigator="true"
                                                       maxdate="#{sessionController.currentDate}" 
                                                       inputStyleClass="form-control"
@@ -129,6 +129,22 @@
                                         <h:outputLabel class="form-label" value="MRN No"  />
                                         <h:panelGroup>
                                             <h:inputText autocomplete="off" id="txtMrn" value="#{patientController.current.code}" class="form-control" />
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                                <div class="row form-group">
+                                    <div class="col-md-6">
+                                        <p:outputLabel value="Patient Account:"  class="form-label" />
+                                        <p:selectBooleanButton value="#{patientController.current.hasAnAccount}"
+                                                               offLabel="No Account"
+                                                               onLabel="Has an account" ></p:selectBooleanButton>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h:outputLabel class="form-label" value="Credit Limit"  />
+                                        <h:panelGroup>
+                                            <p:inputText autocomplete="off" id="txtCreditLimit"
+                                                         value="#{patientController.current.creditLimit}"
+                                                         class="form-control" />
                                         </h:panelGroup>
                                     </div>
                                 </div>

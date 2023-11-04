@@ -75,6 +75,8 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String cashierBillHeading;
     @Enumerated(EnumType.STRING)
     InstitutionType institutionType;
+    @ManyToOne
+    private Route route;
     //Created Properties
     @ManyToOne
     @JsonIgnore
@@ -633,5 +635,15 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     public void setOwnerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
     }
+
+    public Route getRoute() {
+        return route;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+    
+    
 
 }

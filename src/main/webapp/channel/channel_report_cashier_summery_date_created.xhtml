@@ -16,16 +16,13 @@
                 <f:facet name="header">
                     <p:outputLabel value="User Today All Paid Channel Summery" />
                     <p:outputLabel value="****Do Not Change This Report****" style="color: red"/>
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+                   
                 </f:facet>
 
                 <p:panel>
-                    <h:panelGrid columns="2" id="pan1" >
+                    <p:panelGrid columns="2" id="pan1" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a"  >
+                        <p:calendar value="#{channelReportTempController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <!--                        <h:outputLabel value="To Date"/>
                                                 <p:calendar value="#{channelReportTempController.toDate}" navigator="true" pattern="dd MMM yyyy hh:mm:ss a" >
@@ -48,10 +45,10 @@
                             <f:selectItem itemLabel="Please Select a Type"/>
                             <f:selectItems value="#{enumController.channelType}" var="t" itemLabel="#{t.label}" itemValue="#{t}" />    
                         </p:selectOneMenu>
-                    </h:panelGrid> 
-                    <h:panelGrid columns="3">
+                    </p:panelGrid> 
+                    <h:panelGrid columns="3" class="my-2">
                         <p:commandButton action="#{channelReportTempController.createUsercollectionByDateCreated()}" value="Process" ajax="false" />
-                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                        <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-right: 10px; margin-left: 10px">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton actionListener="#{channelReportTempController.createUsercollectionByDateCreated()}" ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -68,12 +65,12 @@
                             <p:outputLabel value="Cashier : #{channelReportTempController.reportKeyWord.webUser.webUserPerson.name}"/>
                             <br></br>
                             <p:outputLabel value="From : " />
-                            <p:outputLabel value="#{channelReportTempController.fromDate}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.fromDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
-                            <p:outputLabel value="  To : " />
-                            <p:outputLabel value="#{channelReportTempController.toDate}" >
-                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            <p:outputLabel class="ml-5" value="  To : " />
+                            <p:outputLabel class="ml-2" value="#{channelReportTempController.toDate}" >
+                                <f:convertDateTime pattern="dd MMMM yyyy HH:mm:ss" />
                             </p:outputLabel>
                         </f:facet>
 

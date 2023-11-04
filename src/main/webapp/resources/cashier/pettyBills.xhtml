@@ -21,7 +21,7 @@
                     <h:outputLabel value="Time"/>
                 </f:facet> 
                 <h:outputLabel value="#{b4.createdAt}" >
-                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" />
+                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                 </h:outputLabel>
             </p:column>
 

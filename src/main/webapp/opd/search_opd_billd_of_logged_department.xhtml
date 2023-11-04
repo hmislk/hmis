@@ -22,12 +22,12 @@
                             <div class="col-md-2">
                                 <div class="form d-flex flex-column" >
                                     <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">      
+                                    <p:calendar id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">      
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
                                     <h:outputLabel value="To Date"/>
-                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" class="w-100" inputStyleClass="form-control">                                                                              
+                                    <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control">                                                                              
                                     </p:calendar>
                                     <p:spacer height="10" width="5" ></p:spacer>
 
@@ -91,7 +91,7 @@
 
                                     <p:column headerText="Billed At"  sortBy="#{bill.billDate}"  >
                                         <p:outputLabel id="billTime" value="#{bill.billDate}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm a" ></f:convertDateTime>
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" ></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
 
@@ -163,7 +163,7 @@
                                         </p:column>
                                         <p:column headerText="Bill Date">
                                             <p:outputLabel value="#{bill1.billDate}" >
-                                                <f:convertDateTime pattern="dd-MM-yy h:m a"></f:convertDateTime>
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                                             </p:outputLabel>
                                         </p:column>
                                         <p:column headerText="Bill From" >                                

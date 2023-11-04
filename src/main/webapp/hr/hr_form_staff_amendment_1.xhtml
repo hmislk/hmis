@@ -70,7 +70,7 @@
                                     <au:completeStaff value="#{staffAmendmentFormController.currAmendmentForm.approvedStaff}"/>                                   
                                     <h:outputLabel value="Approved Date"/>
                                     <p:calendar id="approvedDate" value="#{staffAmendmentFormController.currAmendmentForm.approvedAt}"
-                                                pattern="dd MMMM yyyy" >
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}" >
                                     </p:calendar>
                                     <h:outputLabel value="Comment"/>
                                     <p:inputTextarea value="#{staffAmendmentFormController.currAmendmentForm.comments}" />

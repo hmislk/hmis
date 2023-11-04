@@ -21,11 +21,11 @@
 
                     <h:panelGrid columns="2" style="min-width: 50%;" styleClass="noPrintButton">
                         <h:outputLabel value="From"/>
-                        <p:calendar id="frmDate" styleClass="dateTimePicker" navigator="true" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="frmDate" styleClass="dateTimePicker" navigator="true" value="#{investigationMonthSummeryOwnControllerSession.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
 
                         <h:outputLabel value="To"/>
-                        <p:calendar id="toDate" styleClass="dateTimePicker"  navigator="true" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="dd MMMM yyyy HH:mm:ss" >
+                        <p:calendar id="toDate" styleClass="dateTimePicker"  navigator="true" value="#{investigationMonthSummeryOwnControllerSession.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                         </p:calendar>
                         <h:outputLabel value="Department"/>
                         <autocomplete:department value="#{investigationMonthSummeryOwnControllerSession.department}" ></autocomplete:department>
@@ -89,17 +89,17 @@
                             </p:column>
                             <p:column headerText="Colleted At" >
                                 <p:outputLabel value="#{pi.sampledAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Approved At" >
                                 <p:outputLabel value="#{pi.approveAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <!--                            <p:column headerText="Printed At" >
                                                             <p:outputLabel value="#{pi.printingAt}" >
-                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MMM yyyy hh:mm a" ></f:convertDateTime>
+                                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                                             </p:outputLabel>
                                                         </p:column>-->
                             <p:column headerText="Turn Around time" >

@@ -676,7 +676,7 @@
                                                     <h:outputText value="Date / Time" />
                                                 </f:facet>
                                                 <h:outputText value="#{visit.encounterDate}" >
-                                                    <f:convertDateTime pattern="dd MMM yyyy" ></f:convertDateTime>
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                                                 </h:outputText>
                                             </p:column>
                                             <p:column sortBy="#{visit.comments}" filterBy="#{visit.comments}">

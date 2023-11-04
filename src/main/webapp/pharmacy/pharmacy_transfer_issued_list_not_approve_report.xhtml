@@ -14,10 +14,10 @@
                     <p:outputLabel value="Select Request For Department : #{sessionController.department.name}"/>                   
                     <h:panelGrid columns="6" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >      
+                        <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="dd MMMM yyyy hh mm ss a" >                                                                              
+                        <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:calendar>
                         <h:panelGrid columns="3" style="float : right!important;">
                             <p:commandButton id="btnSearch" ajax="false" value="Search" action="#{searchController.createPoNotPharmacyApproveReport()}"/>

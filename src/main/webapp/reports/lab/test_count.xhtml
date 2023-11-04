@@ -5,18 +5,13 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-
                 <h:form >
-
-
-
                     <p:panel header="Test Counts" >
                         <h:panelGrid columns="5" >
-                            <p:outputLabel value="Institution/Branch" >
+                            <p:outputLabel value="Billing Institution/Branch" >
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromInstitution"
@@ -24,17 +19,14 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                                 <p:ajax process="cmdFromInstitution" update="cmdFromDepartment" ></p:ajax>
                             </p:selectOneMenu>
-
-
-                            <p:spacer></p:spacer>
-
-                            <p:outputLabel value="Department" >
+                            <p:spacer width="40" height="1"></p:spacer>
+                            <p:outputLabel value="Billing Department" >
                             </p:outputLabel>
                             <p:selectOneMenu 
                                 id="cmdFromDepartment"
@@ -48,17 +40,17 @@
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="To Department / Lab" >
+                            <p:outputLabel value="Peformed Institution" >
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.toInstitution}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
+                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="From (Billed)" >
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Analyzer" >
                             </p:outputLabel>
                             <p:selectOneMenu value="#{reportController.machine}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -69,34 +61,49 @@
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="From (Billed)" >
+
+                            <p:outputLabel value="Bill Date From" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="dd MMMM yyyy"></p:datePicker>
-                            <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="From (Billed)" >
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Bill Date To" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
                             <p:commandButton ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
                             </p:commandButton>
+                            <p:commandButton ajax="false" value="Download"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+
                         </h:panelGrid>
 
 
-                        <p:dataTable value="#{reportController.reportLabTestCounts}" var="c">
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.category}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.testName}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Caterogy" >
-                                <h:outputText value="#{c.testCount}" ></h:outputText>
-                            </p:column>
+                        <p:dataTable id="tbl" value="#{reportController.reportList}" var="catReport"
+                                     paginator="true"
+                                     rows="10"
+                                     
+                                     >
+                            <p:subTable var="item" value="#{catReport.items}">
+                                <f:facet name="header">
+                                     <h:outputText value="Total for #{catReport.category} : #{catReport.total}" />
+                                </f:facet>
 
+                                <p:column headerText="Test Name">
+                                    <h:outputText value="#{item.testName}" />
+                                </p:column>
+
+                                <p:column headerText="Test Count">
+                                    <h:outputText value="#{item.testCount}" />
+                                </p:column>
+
+                               
+                            </p:subTable>
                         </p:dataTable>
+
 
                     </p:panel>
 

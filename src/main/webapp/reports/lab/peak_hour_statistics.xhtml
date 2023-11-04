@@ -14,17 +14,17 @@
 
 
 
-                    <p:panel header="Investigation Wise Report" >
+                    <p:panel header="Peak Hour Statistic Report" >
                         <h:panelGrid columns="5" >
                             <p:outputLabel value="From (Billed) Date" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             <p:spacer width="20"></p:spacer>
                             <p:outputLabel value="To (Billed) Date" >
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.toDate}"
-                                          pattern="dd MMMM yyyy"></p:datePicker>
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
 
 
@@ -53,7 +53,7 @@
                                 filter="true"
                                 >
                                 <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                <f:selectItems value="#{departmentController.listAllDepatrments()}"
                                                var="d"
                                                itemLabel="#{d.name}"
                                                itemValue="#{d}"></f:selectItems>
@@ -71,17 +71,28 @@
                                 <f:selectItem itemLabel="Invoice Time"/>
                             </p:selectOneMenu>
                             
-                            <p:outputLabel value="CC Name"></p:outputLabel>
+                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
                             <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItem itemLabel="CC name"/>
+                                <f:selectItems value="#{collectingCentreController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}" ></f:selectItems>
                             </p:selectOneMenu>
                             
                             <p:spacer></p:spacer>
                             
-                            <p:outputLabel value="CC Route"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccRoute}">
-                                <f:selectItem itemLabel="CC Route"/>
+                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
+                            <p:selectOneMenu value="#{reportController.ccRoute}"
+                                             filter="true"
+                                             filterMatchMode="contains">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{routeController.items}"
+                                               var="r"
+                                               itemLabel="#{r.name}"
+                                               itemValue="#{r}"
+                                              />
                             </p:selectOneMenu>
+                            
 
                             <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>
@@ -91,12 +102,12 @@
                         <h:panelGrid columns="2">
                             <h:outputLabel value="From Date :  "/>
                             <h:outputLabel value="#{reportController.fromDate}"  >
-                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                             
                             <h:outputLabel value="To Date :  "/>
                             <h:outputLabel value="#{reportController.toDate}"  >
-                                        <f:convertDateTime pattern="dd MMMM yyyy" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                             
                             <h:outputLabel value="Institution/Branch :  "/>

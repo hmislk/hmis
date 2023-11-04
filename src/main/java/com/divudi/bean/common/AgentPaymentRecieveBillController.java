@@ -59,6 +59,9 @@ public class AgentPaymentRecieveBillController implements Serializable {
     private InstitutionFacade institutionFacade;
     @EJB
     AgentHistoryFacade agentHistoryFacade;
+    
+    @Inject
+    private PaymentSchemeController paymentSchemeController;
 
     private PatientEncounter patientEncounter;
     private BillItem currentBillItem;
@@ -83,8 +86,7 @@ public class AgentPaymentRecieveBillController implements Serializable {
     public AgentPaymentRecieveBillController() {
     }
 
-    @Inject
-    private PaymentSchemeController paymentSchemeController;
+    
 
     private boolean errorCheck() {
         if (getCurrent().getFromInstitution() == null) {

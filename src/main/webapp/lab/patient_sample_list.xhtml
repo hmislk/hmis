@@ -15,9 +15,9 @@
                     <p:panel header="Sample List" >
                         <h:panelGrid columns="2" >
                             <p:outputLabel value="From" ></p:outputLabel>
-                            <p:calendar value="#{patientInvestigationController.fromDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                             <p:outputLabel value="To" ></p:outputLabel>
-                            <p:calendar value="#{patientInvestigationController.toDate}" pattern="dd MMMM yyyy hh:mm:ss a" ></p:calendar>
+                            <p:calendar value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                         </h:panelGrid>
                         <h:panelGrid columns="3" >
                             <p:commandButton value="Process" action="#{patientInvestigationController.listPatientSamples()}" ajax="false" ></p:commandButton>
@@ -32,7 +32,7 @@
                             </p:column>
                             <p:column width="180" headerText="Collected At" sortBy="#{ps.sampledAt}" >
                                 <p:outputLabel value="#{ps.sampledAt}" >
-                                    <f:convertDateTime pattern="dd MMM yy hh:mm a" ></f:convertDateTime>
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
                                 </p:outputLabel>
                             </p:column>
                             <p:column width="90" headerText="ID" filterBy="#{ps.idStr}" sortBy="#{ps.idStr}" filterMatchMode="contains">

@@ -36,7 +36,7 @@
                             </td>
                             <td style="text-align: left;  width: 35%; ">
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.dateOfAdmission}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -52,7 +52,7 @@
                             </td>
                             <td style="text-align: left;  width: 35%; ">
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.dateOfAdmission}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -68,7 +68,7 @@
                             </td>
                             <td style="text-align: left;  width: 35%; ">
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.dateOfDischarge}" >
-                                    <f:convertDateTime pattern="dd MMMM yyyy" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                 </h:outputLabel>
                             </td>
                         </tr>
@@ -84,7 +84,7 @@
                             </td>
                             <td style="text-align: left;  width: 35%;">
                                 <h:outputLabel value="#{cc.attrs.patientEncounter.dateOfDischarge}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="hh:mm"  />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"  />
                                 </h:outputLabel>
                             </td>
                         </tr>      

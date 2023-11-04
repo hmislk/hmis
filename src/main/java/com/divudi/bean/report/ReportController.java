@@ -1,7 +1,10 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.InstitutionController;
-import com.divudi.data.ReportLabTestCount;
+import com.divudi.data.BillType;
+import com.divudi.data.CategoryCount;
+import com.divudi.data.ItemCount;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -11,19 +14,31 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
 import com.divudi.facade.BillItemFacade;
 import com.divudi.java.CommonFunctions;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -54,48 +69,274 @@ public class ReportController implements Serializable {
     private String processBy;
     private String ccName;
     private String ccRoute;
-    
+    private Date financialYear;
+
     private double investigationResult;
-    
+
     private String visitType;
     private Patient patient;
     private String diagnosis;
     private Doctor referingDoctor;
-    
-     private Investigation investigation;
-    
-    
-   
+
+    private Investigation investigation;
+    private Speciality currentSpeciality;
+
+    private String priorityType;
+    private String patientMrn;
+
+    private String status;
+    private String refDocName;
+    private String totalAverage;
+    private String visit;
 
     private List<Bill> bills;
-    private List<ReportLabTestCount> reportLabTestCounts;
+    private List<ItemCount> reportLabTestCounts;
+    private List<CategoryCount> reportList;
+    
+    private Date warrentyStartDate;
+    private Date warrentyEndDate;
+    
+    private Date amcStartDate;
+    private Date amcEndDate;
+    private PaymentMethod paymentMethod;
 
     public ReportController() {
     }
 
+    // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
     public void processLabTestCount() {
-        String jpql = "select new com.divudi.data.ReportLabTestCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
-                + " and bi.bill.billDate between :fd and :td ";
-
-        Map m = new HashMap();
+                + " and bi.bill.billDate between :fd and :td "
+                + " and TYPE(bi.item) = Investigation ";
+        Map<String, Object> m = new HashMap<>();
         m.put("can", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
 
-        jpql += " group by bi.item ";
+        if (fromInstitution != null) {
+            jpql += " and bi.bill.fromInstitution=:fi ";
+            m.put("fi", fromInstitution);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and bi.bill.toInstitution=:ti ";
+            m.put("ti", toInstitution);
+        }
+
+        if (fromDepartment != null) {
+            jpql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        if (machine != null) {
+            jpql += " and bi.item.machine=:machine ";
+            m.put("machine", machine);
+        }
+
+        jpql += " group by bi.item.category.name, bi.item.name ";
         jpql += " order by bi.item.category.name, bi.item.name";
 
-        //String category, String testName, Long testCount
-//        BillItem bi = new BillItem();
-//        bi.getItem().getCategory().getName();
-//        bi.getBill().getBillDate();
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+        // Unchecked cast here
+        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
 
-        reportLabTestCounts = billItemFacade.findLightsByJpql(jpql, m);
-        System.out.println("reportLabTestCounts = " + reportLabTestCounts.size());
+        Map<String, CategoryCount> categoryReports = new HashMap<>();
+
+        for (ItemCount count : reportLabTestCounts) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
+                    .getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        }
+
+        // Convert the map values to a list to be used in the JSF page
+        reportList = new ArrayList<>(categoryReports.values());
+    }
+
+    public void processPharmacySaleItemCount() {
+        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+                + " from BillItem bi "
+                + " where bi.bill.cancelled=:can "
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType=:bitype ";
+        Map<String, Object> m = new HashMap<>();
+
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype", BillType.PharmacySale);
+
+        if (fromInstitution != null) {
+            jpql += " and bi.bill.fromInstitution=:fi ";
+            m.put("fi", fromInstitution);
+        }
+
+        if (fromDepartment != null) {
+            jpql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        jpql += " group by bi.item.category.name, bi.item.name ";
+        jpql += " order by bi.item.category.name, bi.item.name";
+
+        // Unchecked cast here
+        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
+
+        Map<String, CategoryCount> categoryReports = new HashMap<>();
+
+        for (ItemCount count : reportLabTestCounts) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
+                    .getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        }
+
+        // Convert the map values to a list to be used in the JSF page
+        reportList = new ArrayList<>(categoryReports.values());
+    }
+
+    public void processOpdServiceCount() {
+        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+                + " from BillItem bi "
+                + " where bi.bill.cancelled=:can "
+                + " and bi.bill.billDate between :fd and :td "
+                + " and bi.bill.billType=:bitype ";
+        Map<String, Object> m = new HashMap<>();
+
+        m.put("can", false);
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("bitype", BillType.OpdBill);
+
+        if (fromInstitution != null) {
+            jpql += " and bi.bill.fromInstitution=:fi ";
+            m.put("fi", fromInstitution);
+        }
+
+        if (fromDepartment != null) {
+            jpql += " and bi.bill.fromDepartment=:fdept ";
+            m.put("fdept", fromDepartment);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and bi.bill.toInstitution=:ti ";
+            m.put("ti", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment=:tdept ";
+            m.put("tdept", toDepartment);
+        }
+
+        jpql += " group by bi.item.category.name, bi.item.name ";
+        jpql += " order by bi.item.category.name, bi.item.name";
+
+        // Unchecked cast here
+        reportLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, m);
+
+        Map<String, CategoryCount> categoryReports = new HashMap<>();
+
+        for (ItemCount count : reportLabTestCounts) {
+            categoryReports.computeIfAbsent(count.getCategory(), k -> new CategoryCount(k, new ArrayList<>(), 0L))
+                    .getItems().add(count);
+            categoryReports.get(count.getCategory()).setTotal(categoryReports.get(count.getCategory()).getTotal() + count.getTestCount());
+        }
+
+        // Convert the map values to a list to be used in the JSF page
+        reportList = new ArrayList<>(categoryReports.values());
+    }
+
+    public void downloadLabTestCount() {
+        Workbook workbook = exportToExcel(reportList, "Test Count");
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=test_counts.xlsx");
+
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void downloadPharmacySaleItemCount() {
+        Workbook workbook = exportToExcel(reportList, "Sale Item Count");
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=Sale_Item_Count.xlsx");
+
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void downloadOpdServiceCount() {
+        Workbook workbook = exportToExcel(reportList, "Opd Service Count");
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/vnd.ms-excel");
+        response.setHeader("Content-Disposition", "attachment; filename=service_count.xlsx");
+
+        try (ServletOutputStream outputStream = response.getOutputStream()) {
+            workbook.write(outputStream);
+            fc.responseComplete();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Workbook exportToExcel(List<CategoryCount> reportList, String reportName) {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet(reportName);
+        int rowCount = 0;
+        int cateColNo = 0;
+        int itemColNo = 1;
+        int catCountColNo = 2;
+        int itemCountColNo = 3;
+        Long grandTotal = 0l;
+
+        Row reportHeaderRow = sheet.createRow(rowCount++);
+        Cell headerRowCatCell = reportHeaderRow.createCell(cateColNo);
+        headerRowCatCell.setCellValue("Category");
+        Cell headerRowItemCell = reportHeaderRow.createCell(itemColNo);
+        headerRowItemCell.setCellValue("Item");
+        Cell headerRowCatCountCell = reportHeaderRow.createCell(catCountColNo);
+        headerRowCatCountCell.setCellValue("Category Count");
+        Cell headerRowItemCountCell = reportHeaderRow.createCell(itemCountColNo);
+        headerRowItemCountCell.setCellValue("Item Count");
+
+        for (CategoryCount catCount : reportList) {
+            Row headerRow = sheet.createRow(rowCount++);
+            Cell headerCell1 = headerRow.createCell(cateColNo);
+            headerCell1.setCellValue(catCount.getCategory());
+            Cell headerCell2 = headerRow.createCell(catCountColNo);
+            headerCell2.setCellValue(catCount.getTotal());
+            grandTotal += catCount.getTotal();
+
+            for (ItemCount itemCount : catCount.getItems()) {
+                Row itemRow = sheet.createRow(rowCount++);
+                Cell cell1 = itemRow.createCell(itemColNo);
+                cell1.setCellValue(itemCount.getTestName());
+                Cell cell2 = itemRow.createCell(itemCountColNo);
+                cell2.setCellValue(itemCount.getTestCount());
+            }
+        }
+
+        Row reportFooterRow = sheet.createRow(rowCount++);
+        Cell reportFooterCellTotal = reportFooterRow.createCell(cateColNo);
+        reportFooterCellTotal.setCellValue("Grand Total");
+        Cell reportFooterRowItemCell = reportFooterRow.createCell(itemCountColNo);
+        reportFooterRowItemCell.setCellValue(grandTotal);
+
+        return workbook;
     }
 
     public String navigateToAssetRegister() {
@@ -103,7 +344,7 @@ public class ReportController implements Serializable {
             institutionController.fillItems();
         }
 
-        return "/reports/asset_register";
+        return "/reports/assets/asset_register";
     }
 
     public String navigateToLabReportsTestCount() {
@@ -112,7 +353,7 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/test_count";
     }
-    
+
     public String navigateToLabPeakHourStatistics() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
@@ -126,64 +367,221 @@ public class ReportController implements Serializable {
         }
         return "/reports/lab/investigation_wise_report";
     }
+
+    public String navigateToExternalLaborataryWorkloadReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/external_laboratary_workload";
+    }
+
     public String navigateToLabOrganismAntibioticSensitivityReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/organism_antibiotic_sensitivity";
     }
-    
+
     public String navigateToLabRegisterReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
         return "/reports/lab/lab_register";
     }
+
+    public String navigateToTurnAroundTimeDetails() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/turn_around_time_details";
+    }
+
+    public String navigateToAnnualTestStatistics() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/annual_test_statistics";
+    }
+
     public String navigateToPoStatusReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
 
-        return "/reports/po_status_report";
+        return "/reports/assets/po_status_report";
     }
 
     public String navigateToEmployeeAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/employee_asset_issue";
+        return "/reports/assets/employee_asset_issue";
     }
 
     public String navigateToFixedAssetIssue() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/fixed_asset_issue";
+        return "/reports/assets/fixed_asset_issue";
     }
 
     public String navigateToAssetWarentyExpireReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/asset_warranty_expire_report";
+        return "/reports/assets/asset_warranty_expire_report";
     }
 
     public String navigateToAssetGrnReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/asset_grn_report";
+        return "/reports/assets/asset_grn_report";
     }
 
     public String navigateToAssetTransferReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
         }
-        return "/reports/assest_transfer_report";
+        return "/reports/assets/assest_transfer_report";
+
+    }
+    
+    public String navigateToAssetAmcExpiryReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assets/assest_amc_expiry_report";
 
     }
 
+    public String navigateToAssetAmcReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/assets/amc_report";
+
+    }
+    public String navigateToTurnAroundTimeHourly() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/turn_around_time_hourly";
+
+    }
+
+    public String navigateToCollectionCenterStatement() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/collection_center_statement";
+
+    }
+
+    public String navigateToManagementAdmissionCountReport() {
+
+        return "/reports/managementReports/admission_count(consultant_wise)";
+    }
+
+    public String navigateToSurgeryWiseCount() {
+
+        return "/reports/managementReports/surgery_wise_count";
+    }
     
+    public String navigateToSurgeryCountDoctorWise() {
+
+        return "/reports/managementReports/surgery_count_doctor_wise";
+    }
+    
+    public String navigateToLeaveReport() {
+
+        return "/reports/HRReports/leave_report";
+    }
+    
+    public String navigateToLeaveReportSummery() {
+
+        return "/reports/HRReports/leave_report_summery";
+    }
+    
+     public String navigateToLateLeaveDetails() {
+
+        return "/reports/HRReports/late_leave_details";
+    }
+     
+      public String navigateToLeaveSummeryReport() {
+
+        return "/reports/HRReports/leave_summery_report";
+    }
+
+    public String navigateToDepartmentReports() {
+
+        return "/reports/HRReports/department_report";
+    } 
+    
+    public String navigateToEmployeeDetails() {
+
+        return "/reports/HRReports/employee_details";
+    }
+    
+    public String navigateToEmployeeToRetired() {
+
+        return "/reports/HRReports/employee_to_retired";
+    }
+    
+    public String navigateToStaffShiftReport() {
+
+        return "/reports/HRReports/staff_shift_report";
+    }
+    
+    public String navigateToRosterTimeAndVerifyTime() {
+
+        return "/reports/HRReports/rosterTabel_verify_time";
+    }
+    
+    public String navigateToEmployeeEndofProbation() {
+
+        return "/reports/HRReports/employee_end_of_probation";
+    }
+    
+    public String navigateToAttendanceReport() {
+
+        return "/reports/HRReports/attendance_report";
+    }
+    
+    public String navigateToLateInAndEarlyOut() {
+
+        return "/reports/HRReports/late_in_and_early_out";
+    }
+    
+    public String navigateToStaffShiftDetailsByStaff() {
+
+        return "/reports/HRReports/staff_shift_details_by_staff";
+    }
+    
+    public String navigateToVerifiedReport() {
+
+        return "/reports/HRReports/verified_report";
+    }
+    
+    public String navigateToHeadCountReport() {
+
+        return "/reports/HRReports/head_count";
+    }
+    public String navigateToFingerPrintRecordByLogged() {
+
+        return "/reports/HRReports/fingerprint_record_by_logged";
+    }
+    
+    public String navigateToFingerPrintRecordByVerified() {
+
+        return "/reports/HRReports/fingerprint_record_by_verified";
+    }
+    
+    public String navigateToFingerPrintRecordNoShiftSettled() {
+
+        return "/reports/HRReports/fingerprint_record_no_shift_settled";
+    }
+
     public Department getFromDepartment() {
         return fromDepartment;
     }
@@ -262,13 +660,12 @@ public class ReportController implements Serializable {
         }
         return fromDate;
     }
-    public Sex[] getSex() {
-        return Sex.values();
-    }
 
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
+    
+    
 
     public Date getToDate() {
         if (toDate == null) {
@@ -305,28 +702,20 @@ public class ReportController implements Serializable {
         this.bills = bills;
     }
 
-    public List<ReportLabTestCount> getReportLabTestCounts() {
+    public List<ItemCount> getReportLabTestCounts() {
         return reportLabTestCounts;
     }
 
-    public void setReportLabTestCounts(List<ReportLabTestCount> reportLabTestCounts) {
+    public void setReportLabTestCounts(List<ItemCount> reportLabTestCounts) {
         this.reportLabTestCounts = reportLabTestCounts;
     }
 
-    public String getCcRoute() {
-        return ccRoute;
+    public List<CategoryCount> getReportList() {
+        return reportList;
     }
 
-    public void setCcRoute(String ccRoute) {
-        this.ccRoute = ccRoute;
-    }
-
-    public String getCcName() {
-        return ccName;
-    }
-
-    public void setCcName(String ccName) {
-        this.ccName = ccName;
+    public void setReportList(List<CategoryCount> reportList) {
+        this.reportList = reportList;
     }
 
     public String getProcessBy() {
@@ -337,12 +726,20 @@ public class ReportController implements Serializable {
         this.processBy = processBy;
     }
 
-    public Patient getPatient() {
-        return patient;
+    public String getCcName() {
+        return ccName;
     }
 
-    public void setPatient(Patient patient) {
-        this.patient = patient;
+    public void setCcName(String ccName) {
+        this.ccName = ccName;
+    }
+
+    public String getCcRoute() {
+        return ccRoute;
+    }
+
+    public void setCcRoute(String ccRoute) {
+        this.ccRoute = ccRoute;
     }
 
     public double getInvestigationResult() {
@@ -353,13 +750,24 @@ public class ReportController implements Serializable {
         this.investigationResult = investigationResult;
     }
 
-    
     public String getVisitType() {
         return visitType;
     }
 
+    public Sex[] getSex() {
+        return Sex.values();
+    }
+
     public void setVisitType(String visitType) {
         this.visitType = visitType;
+    }
+
+    public Patient getPatient() {
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
     }
 
     public String getDiagnosis() {
@@ -384,6 +792,125 @@ public class ReportController implements Serializable {
 
     public void setInvestigation(Investigation investigation) {
         this.investigation = investigation;
+    }
+
+    public String getPriorityType() {
+        return priorityType;
+    }
+
+    public void setPriorityType(String priorityType) {
+        this.priorityType = priorityType;
+    }
+
+    public String getPatientMrn() {
+        return patientMrn;
+    }
+
+    public void setPatientMrn(String patientMrn) {
+        this.patientMrn = patientMrn;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getTotalAverage() {
+        return totalAverage;
+    }
+
+    public void setTotalAverage(String totalAverage) {
+        this.totalAverage = totalAverage;
+    }
+
+    public String getVisit() {
+        return visit;
+    }
+    
+
+    public void setVisit(String visit) {
+        this.visit = visit;
+    }
+
+    public String getRefDocName() {
+        return refDocName;
+    }
+
+    public void setRefDocName(String refDocName) {
+        this.refDocName = refDocName;
+    }
+
+    public Date getFinancialYear() {
+        return financialYear;
+    }
+
+    public void setFinancialYear(Date financialYear) {
+        this.financialYear = financialYear;
+    }
+
+    public Speciality getCurrentSpeciality() {
+        return currentSpeciality;
+    }
+
+    public void setCurrentSpeciality(Speciality currentSpeciality) {
+        this.currentSpeciality = currentSpeciality;
+    }
+
+    public Date getWarrentyStartDate() {
+        if (warrentyStartDate == null) {
+            warrentyStartDate = CommonFunctions.getEndOfDay();
+        }
+        return warrentyStartDate;
+    }
+
+    public void setWarrentyStartDate(Date warrentyStartDate) {
+        this.warrentyStartDate = warrentyStartDate;
+    }
+
+    public Date getWarrentyEndDate() {
+        if (warrentyEndDate == null) {
+            warrentyEndDate = CommonFunctions.getEndOfMonth(toDate);
+        }
+      
+        return warrentyEndDate;
+    }
+
+    public void setWarrentyEndDate(Date warrentyEndDate) {
+        this.warrentyEndDate = warrentyEndDate;
+    }
+
+    public Date getAmcStartDate() {
+        if (amcStartDate == null) {
+            amcStartDate = CommonFunctions.getEndOfDay();
+        }
+        return amcStartDate;
+    }
+
+    public void setAmcStartDate(Date amcStartDate) {
+        this.amcStartDate = amcStartDate;
+    }
+
+    public Date getAmcEndDate() {
+        if (amcEndDate == null) {
+            amcEndDate = CommonFunctions.getEndOfMonth(toDate);
+        }
+      
+        return amcEndDate;
+    }
+
+    public void setAmcEndDate(Date amcEndDate) {
+        this.amcEndDate = amcEndDate;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }

@@ -43,6 +43,16 @@
                                     </h:outputText>
                                     <p:inputText autocomplete="off"  value="#{institutionController.current.institutionCode}"  style="width: 650px">
                                     </p:inputText> 
+                                    
+                                    <h:outputText id="lblRoute" value="Route" ></h:outputText>
+                                    <p:autoComplete value="#{institutionController.current.route}"
+                                                    completeMethod="#{routeController.completeRoute}"
+                                                    var="r"
+                                                    itemLabel="#{r.name}"
+                                                    itemValue="#{r}"
+                                                    forceSelection="true"
+                                                    >
+                                    </p:autoComplete>
 
                                     <h:outputText value="Point of Issue No" >                                        
                                     </h:outputText>

@@ -49,10 +49,10 @@
                             </p:selectBooleanCheckbox>
                             <h:outputLabel value="From Date"/>
                             <p:calendar id="fdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
-                                        value="#{storeReportsStock.fromDate}" pattern="yyyy MM dd hh:mm:ss a" />
+                                        value="#{storeReportsStock.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             <h:outputLabel value="To Date"/>
                             <p:calendar id="tdate" disabled="#{!storeReportsStock.reportKeyWord.bool1}"
-                                        value="#{storeReportsStock.toDate}" pattern="yyyy MM dd hh:mm:ss a" />
+                                        value="#{storeReportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                         </h:panelGrid>
                         <h:panelGrid columns="4" > 
                             <p:spacer width="80" height="1"/>
@@ -157,7 +157,7 @@
                                         <h:outputLabel value="GRN Date"/>                                     
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.lastPurchaseBillItem.bill.createdAt}" >
-                                        <f:convertDateTime pattern="dd/MM/yyyy" />
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
 <!--                                <p:column style="text-align: right;">

@@ -118,9 +118,16 @@ public class PaymentSchemeController implements Serializable {
                 UtilityController.addErrorMessage("Please Fill Credit Card Number and Bank");
                 return true;
             }
-
         }
 
+        if (paymentMethod == PaymentMethod.ewallet) {
+            if (paymentMethodData.getEwallet().getInstitution() == null
+                    || paymentMethodData.getEwallet().getNo() == null) {
+                UtilityController.addErrorMessage("Please Fill eWallet Reference Number and Bank");
+                return true;
+            }
+        }
+        
         return false;
     }
 

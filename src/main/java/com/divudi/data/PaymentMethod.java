@@ -19,6 +19,7 @@ public enum PaymentMethod {
     Cheque,
     Slip,
     ewallet,
+    PatientDeposit,
     OnlineSettlement;
 
     public String getLabel() {
@@ -43,13 +44,14 @@ public enum PaymentMethod {
                 return "Staff Payment";
             case ewallet:
                 return "e-Wallet Payment";
+            case PatientDeposit:
+                return "Patient Deposit";
             default:
                 return this.toString();
 
         }
     }
-    
-    
+
     public String getInHandLabel() {
         switch (this) {
             case Agent:
@@ -77,5 +79,5 @@ public enum PaymentMethod {
 
         }
     }
-    
+
 }

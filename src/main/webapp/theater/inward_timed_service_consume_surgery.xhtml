@@ -68,7 +68,7 @@
 
                                     <p:outputLabel value="StartTime:"/>
                                     <p:calendar id="startTime"  value="#{inwardTimedItemController.timedEncounterComponent.billFee.patientItem.fromTime}" 
-                                                pattern="dd MMMM yyyy hh mm ss a" class="w-100">                             
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100">                             
                                     </p:calendar>                                                                      
 
 
@@ -92,25 +92,25 @@
                             <p:column headerText="Start Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.fromTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />                                      
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />                                      
                             </p:column>                               
                             <p:column headerText="Stopped Time">
                                 <p:calendar navigator="true"  
                                             value="#{ti.billFee.patientItem.toTime}" 
-                                            pattern="dd MMMM yyyy hh mm ss a" />  
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />  
                             </p:column>
                             <p:column headerText="Total">
                                 #{ti.billFee.patientItem.serviceValue}
                             </p:column>
                             <p:column >
                                 <h:outputLabel value="#{ti.billFee.createdAt}">
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy" />
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                 </h:outputLabel>                                                   
                                 <br/>
                                 <h:panelGroup rendered="#{ti.billFee.retired}" >
                                     <h:outputLabel style="color: red;" value="Deleted at " />
                                     <h:outputLabel style="color: red;"  value="#{ti.billFee.retiredAt}" >
-                                        <f:convertDateTime pattern="dd MMM yyyy"/>
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>

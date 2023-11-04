@@ -141,7 +141,7 @@
                                             </p:column>
                                             <p:column headerText="Expiry">
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >
-                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="dd MM yyyy"  ></f:convertDateTime>
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                                 </h:outputLabel>
 
                                             </p:column>
@@ -307,7 +307,7 @@
                                                 </p:column>
                                                 <p:column headerText="Date of Birth">
                                                     <h:outputLabel value="#{apt.person.dob}" >
-                                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                                     </h:outputLabel>
                                                 </p:column>
                                                 <p:ajax event="itemSelect" process="@this" update=":#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} panSearch"

@@ -50,13 +50,13 @@
                                         <h:outputLabel value= "Visit Date" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
                                         </h:outputLabel>
                                         <h:outputLabel value="#{viewEncounterController.encounter.createdAt}" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
-                                            <f:convertDateTime pattern="dd MMMM yyyy" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
 
                                         <h:outputLabel value= "Visit Time" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
                                         </h:outputLabel>
                                         <h:outputLabel value="#{viewEncounterController.encounter.createdAt}" rendered="#{viewEncounterController.encounter.createdAt ne null}" >
-                                            <f:convertDateTime pattern="hh:mm a" />
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                         </h:outputLabel>
 
                                         <h:outputLabel value= "Doctor" rendered="#{not empty viewEncounterController.encounter.creater.webUserPerson.nameWithTitle}" >
