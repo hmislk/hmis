@@ -1,5 +1,6 @@
 package com.divudi.data.lab;
 
+@Deprecated
 public class SysMexTypeA {
 
     int startNum = 1;

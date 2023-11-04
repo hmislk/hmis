@@ -328,6 +328,7 @@ public class LimsMiddlewareController {
         }
     }
 
+    @Deprecated
     private String msgFromSysmex(String msg) {
         return extractDataFromSysMexTypeA(msg);
     }
@@ -455,6 +456,7 @@ public class LimsMiddlewareController {
         return sysMex;
     }
 
+    @Deprecated
     public String extractDataFromSysMexTypeA(String msg) {
         SysMexTypeA a = new SysMexTypeA();
         a.setInputString(msg);
