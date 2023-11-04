@@ -4,6 +4,7 @@ import com.divudi.bean.common.InstitutionController;
 import com.divudi.data.BillType;
 import com.divudi.data.CategoryCount;
 import com.divudi.data.ItemCount;
+import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillItem;
@@ -97,6 +98,7 @@ public class ReportController implements Serializable {
     
     private Date amcStartDate;
     private Date amcEndDate;
+    private PaymentMethod paymentMethod;
 
     public ReportController() {
     }
@@ -827,6 +829,7 @@ public class ReportController implements Serializable {
     public String getVisit() {
         return visit;
     }
+    
 
     public void setVisit(String visit) {
         this.visit = visit;
@@ -900,6 +903,14 @@ public class ReportController implements Serializable {
 
     public void setAmcEndDate(Date amcEndDate) {
         this.amcEndDate = amcEndDate;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
 }
