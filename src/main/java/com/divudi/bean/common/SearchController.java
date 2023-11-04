@@ -292,7 +292,7 @@ public class SearchController implements Serializable {
         patientInvestigations = null;
         searchKeyword = null;
     }
-    
+
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
         maxResult = 50;
         bills = null;
@@ -4800,6 +4800,18 @@ public class SearchController implements Serializable {
     }
 
     public void markRefundBillItem(PatientInvestigation pi) {
+        if (pi == null) {
+            System.out.println("pi null");
+            return;
+        }
+        if (pi.getBillItem() == null) {
+            System.out.println("pi bi null= " + pi);
+            return;
+        }
+        if (pi.getBillItem().getId() == null) {
+            System.out.println("pi.getBillItem() id null = " + pi.getBillItem());
+            return;
+        }
         String sql;
         Map m = new HashMap();
         sql = "select bi from BillItem bi "

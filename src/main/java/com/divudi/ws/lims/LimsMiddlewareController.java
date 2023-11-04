@@ -374,11 +374,19 @@ public class LimsMiddlewareController {
                 String testCode = codeParts.length > 1 ? codeParts[1].trim() : "";
                 System.out.println("testCode = " + testCode);
                 String value = parts[3].trim();
+                Double dblValue = 0.0;
                 System.out.println("value = " + value);
+                try {
+                    dblValue = Double.parseDouble(value);
+                } catch (Exception e) {
+                    dblValue = 0.0;
+
+                }
 
                 switch (testCode) {
                     case "WBC":
-                        sysMex.setWbc(value);
+                        Double wbc = dblValue * 1000;
+                        sysMex.setWbc(wbc + "");
                         break;
                     case "RBC":
                         sysMex.setRbc(value);
@@ -399,7 +407,8 @@ public class LimsMiddlewareController {
                         sysMex.setMchc(value);
                         break;
                     case "PLT":
-                        sysMex.setPlt(value);
+                        Double plt = dblValue * 1000;
+                        sysMex.setPlt(plt + "");
                         break;
                     case "NEUT%":
                         sysMex.setNeutPercentage(value);
