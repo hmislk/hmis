@@ -14,7 +14,7 @@ import com.divudi.data.MessageType;
 import com.divudi.data.lab.Dimension;
 import com.divudi.data.lab.DimensionTestResult;
 import com.divudi.data.lab.SampleRequestType;
-import com.divudi.data.lab.SysMex;
+import com.divudi.data.lab.SysMexOld;
 import com.divudi.data.lab.SysMexAdf1;
 import com.divudi.data.lab.SysMexAdf2;
 import com.divudi.ejb.CommonFunctions;
@@ -431,7 +431,7 @@ public class PatientInvestigationController implements Serializable {
 
     private String msgFromSysmex() {
         String temMsgs = "";
-        SysMex sysMex = new SysMex();
+        SysMexOld sysMex = new SysMexOld();
         sysMex.setInputStringBytesSpaceSeperated(msg);
 
         
