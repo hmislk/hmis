@@ -6,6 +6,7 @@
 package com.divudi.ejb;
 
 import com.divudi.data.RestAuthenticationType;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.entity.Sms;
 import com.divudi.entity.UserPreference;
 import com.divudi.facade.EmailFacade;
@@ -98,8 +99,9 @@ public class SmsManagerEjb {
             e.setSentSuccessfully(Boolean.TRUE);
             e.setPending(false);
             getSmsFacade().edit(e);
-            boolean sent = sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), pf);
-            e.setSentSuccessfully(sent);
+            SmsSentResponse sent = sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), pf);
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
             e.setSentAt(new Date());
             getSmsFacade().edit(e);
         }
@@ -213,10 +215,13 @@ public class SmsManagerEjb {
 
     }
 
-    public boolean sendSmsByApplicationPreference(String number, String message, UserPreference pf) {
+    public SmsSentResponse sendSmsByApplicationPreference(String number, String message, UserPreference pf) {
+        SmsSentResponse r = new SmsSentResponse();
         if (null == pf.getSmsAuthenticationType()) {
             System.out.println("This authentication is NOT supported to send SMS yet.");
-            return false;
+            r.setSentSuccefully(false);
+            r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
+            return r;
         } else {
             switch (pf.getSmsAuthenticationType()) {
                 case NONE:
@@ -225,7 +230,9 @@ public class SmsManagerEjb {
                     return sendSmsByApplicationPreferenceNoAuthentication(number, message, pf);
                 default:
                     System.out.println("This authentication is NOT supported to send SMS yet.");
-                    return false;
+                    r.setSentSuccefully(false);
+                    r.setReceivedMessage("This authentication is NOT supported to send SMS yet.");
+                    return r;
             }
         }
     }
@@ -287,8 +294,9 @@ public class SmsManagerEjb {
         }
     }
 
-    public boolean sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
+    public SmsSentResponse sendSmsByApplicationPreferenceNoAuthentication(String number, String message, UserPreference pf) {
         Map<String, String> m = new HashMap();
+        SmsSentResponse r = new SmsSentResponse();
         m.put(pf.getSmsUsernameParameterName(), pf.getSmsUsername());
         m.put(pf.getSmsPasswordParameterName(), pf.getSmsPassword());
         if (pf.getSmsUserAliasParameterName() != null && !pf.getSmsUserAliasParameterName().trim().equals("")) {
@@ -300,11 +308,17 @@ public class SmsManagerEjb {
         String res = executePost(pf.getSmsUrl(), m);
         System.out.println(res);
         if (res == null) {
-            return false;
+            r.setSentSuccefully(false);
+            r.setReceivedMessage(res);
+            return r;
         } else if (res.toUpperCase().contains("OK")) {
-            return true;
+            r.setSentSuccefully(true);
+            r.setReceivedMessage(res);
+            return r;
         } else {
-            return false;
+            r.setSentSuccefully(false);
+            r.setReceivedMessage(res);
+            return r;
         }
 
     }
@@ -323,8 +337,6 @@ public class SmsManagerEjb {
         System.out.println(res);
         return res;
     }
-
-   
 
     public SmsFacade getSmsFacade() {
         return smsFacade;
