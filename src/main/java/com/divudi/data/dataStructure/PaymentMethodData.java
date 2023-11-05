@@ -1,5 +1,7 @@
 package com.divudi.data.dataStructure;
 
+import com.divudi.data.PaymentMethod;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,7 +15,9 @@ public class PaymentMethodData {
     private ComponentDetail slip;
     private ComponentDetail ewallet;
     private ComponentDetail patient_deposit;
-    private List<ComponentDetail> multiplePaymentMethod;
+    private ComponentDetail paymentMethodMultiple;
+    
+    private PaymentMethod paymentMethod;
 
     public ComponentDetail getCreditCard() {
         if (creditCard == null) {
@@ -73,14 +77,29 @@ public class PaymentMethodData {
         this.patient_deposit = patient_deposit;
     }
 
-    public List<ComponentDetail> getMultiplePaymentMethod() {
-        return multiplePaymentMethod;
+    
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
     }
 
-    public void setMultiplePaymentMethod(List<ComponentDetail> multiplePaymentMethod) {
-        this.multiplePaymentMethod = multiplePaymentMethod;
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
     }
 
+    public ComponentDetail getPaymentMethodMultiple() {
+        if(paymentMethodMultiple==null){
+            paymentMethodMultiple = new ComponentDetail();
+            paymentMethodMultiple.getMultiplePaymentMethodComponentDetails();
+        }
+        return paymentMethodMultiple;
+    }
+
+    public void setPaymentMethodMultiple(ComponentDetail paymentMethodMultiple) {
+        this.paymentMethodMultiple = paymentMethodMultiple;
+    }
+
+    
     
     
 }

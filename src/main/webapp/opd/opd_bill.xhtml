@@ -409,7 +409,10 @@
                                             </div>
                                         </div>
                                         <div class="row" >
-                                            <h:panelGroup layout="block" id="paymentDetails" class="col-12" >
+                                            <h:panelGroup 
+                                                layout="block" 
+                                                id="paymentDetails" 
+                                                class="col-12" >
                                                 <h:panelGroup id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
                                                     <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
@@ -425,7 +428,7 @@
                                                 <h:panelGroup id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
                                                     <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
-                                                <h:panelGroup id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMthods'}" >
+                                                <h:panelGroup id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
                                                     <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
                                             </h:panelGroup>

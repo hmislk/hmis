@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-       xmlns:cc="http://java.sun.com/jsf/composite"
+      xmlns:cc="http://java.sun.com/jsf/composite"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pa="http://java.sun.com/jsf/composite/paymentMethod">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -14,23 +15,52 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
-        <ui:repeat value="#{cc.attrs.paymentMethodData.multiplePaymentMethod}" var="pm" >
-            <h:outputText value="#{pm.no}" ></h:outputText>
-            <h:outputText value="#{pm.institution.name}" ></h:outputText>
+
+
+        <ui:repeat rendered="false" value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" var="pm" >
+            1.    <h1>#{pm}</h1>
         </ui:repeat>
-        
-        
-        
-        <h:panelGrid columns="3">            
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.no}" id="refno"/>                                
-            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}" >
-                <f:selectItem itemLabel="Select Bank"/>
-                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-            </p:selectOneMenu>
-<!--            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.comment}"  id="memo"/>
-            <p:watermark value="Memo" for="memo" />-->
-            <p:watermark value="Card Ref. No." for="refno" />
-        </h:panelGrid>
+
+        <p:dataTable value="#{cc.attrs.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" var="pm" >
+            <p:column >
+                <p:selectOneMenu   
+                    id="pay" 
+                    value="#{pm.paymentMethod}"
+                    class="w-100">  
+                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                    <f:selectItems 
+                        value="#{enumController.getPaymentMethodsNonCreditExceptMultiple}"  
+                        var="pm1"
+                        itemLabel="#{pm1.label}"
+                        itemValue="#{pm1}"/>
+                    <p:ajax process="pay" 
+                            update="paymentDetails"
+                            event="change"/>
+                </p:selectOneMenu>
+            </p:column>
+            <p:column >
+                <h:panelGroup layout="block" id="paymentDetails" class="col-12" >
+                    <h:panelGroup id="creditCard" rendered="#{pm.paymentMethod eq 'Card'}" >
+                        <pa:creditCard paymentMethodData="#{pm.paymentMethodData}"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="eWallet"  rendered="#{pm.paymentMethod eq 'ewallet'}" >
+                        <pa:ewallet paymentMethodData="#{pm.paymentMethodData}"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="cheque"  rendered="#{pm.paymentMethod eq 'Cheque'}" >
+                        <pa:cheque paymentMethodData="#{pm.paymentMethodData}"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="slip"  rendered="#{pm.paymentMethod eq 'Slip'}" >
+                        <pa:slip paymentMethodData="#{pm.paymentMethodData}"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="patientDeposit"  rendered="#{pm.paymentMethod eq 'PatientDeposit'}" >
+                        <pa:patient_deposit paymentMethodData="#{pm.paymentMethodData}"/>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+
+            </p:column>
+        </p:dataTable>
+
+
     </cc:implementation>
 </html>
