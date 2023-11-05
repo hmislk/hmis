@@ -408,6 +408,7 @@
                                                 </p:commandButton>
                                             </div>
                                         </div>
+                                        
                                         <div class="row" >
                                             <h:panelGroup layout="block" id="paymentDetails" class="col-12" >
                                                 <h:panelGroup id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
@@ -427,6 +428,7 @@
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
+                                        
                                         <div class="row" >
                                             <div class="col-md-12" >
                                                 <p:inputText value="#{opdBillController.comment}" placeholder="Comments" id="comment"/>
