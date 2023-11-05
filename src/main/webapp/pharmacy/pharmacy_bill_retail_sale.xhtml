@@ -287,29 +287,27 @@
 
                                     </p:panel>
                                 </div>
+
                                 <div class="col-md-5">
-                                    <p:panel style="width: 590px">
+                                    <p:panel header="Payment Details" class="w-100">
 
-
-                                        <f:facet name="header" >
-                                            <h:panelGrid columns="20"  >
-
-                                                <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                                                <p:selectOneMenu   id="pay" value="#{pharmacySaleController.paymentMethod}">    
-                                                    <f:selectItems value="#{enumController.paymentMethods}"/>
+                                        <div class="row" >
+                                            <div class="col" >
+                                                <p:selectOneMenu   id="pay"
+                                                                   class="mx-1" value="#{pharmacySaleController.paymentMethod}">    
+                                                    <f:selectItems value="#{enumController.paymentMethods}" var="p" itemLabel="#{p.label}"
+                                                                   itemValue="#{p}"/>
                                                     <p:ajax process="@this cmbPs cmbPs2" 
-                                                            update="pBillDetails creditCard cheque slip tvPt" 
+                                                            update="pBillDetails panelPaymentDetails tvPt" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
-
-
 
                                                 <p:selectOneMenu   id="cmbPs" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}">   
                                                     <f:selectItem itemLabel="Discount Scheme"/>
                                                     <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay " 
-                                                            update="pBillDetails creditCard cheque slip" 
+                                                            update="pBillDetails panelPaymentDetails" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
@@ -317,26 +315,13 @@
                                                 <p:selectOneMenu   id="cmbPs2" value="#{pharmacySaleController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}">   
                                                     <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
                                                     <p:ajax process="@this pay " 
-                                                            update="pBillDetails creditCard cheque slip" 
+                                                            update="pBillDetails panelPaymentDetails" 
                                                             event="change"  
                                                             listener="#{pharmacySaleController.changeListener()}"/>
                                                 </p:selectOneMenu>
 
-
-
-                                                <h:panelGroup id="creditCard" style="display: #{pharmacySaleController.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                                    <pa:creditCard paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                                </h:panelGroup>
-
-                                                <h:panelGroup id="cheque" style="display: #{pharmacySaleController.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                                    <pa:cheque paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                                </h:panelGroup>
-
-                                                <h:panelGroup id="slip" style="display: #{pharmacySaleController.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                                    <pa:slip paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
-                                                </h:panelGroup>
-                                                
                                                 <p:commandButton ajax="false" accesskey="s" value="Settle" 
+                                                                 class="mx-1"
                                                                  onclick="if (!confirm('Are you sure?'))
                                                                              return false"
                                                                  action="#{pharmacySaleController.settleBillWithPay}" >
@@ -348,14 +333,66 @@
 
                                                 <p:commandButton accesskey="n" value="New Pharmacy Bill"  
                                                                  ajax="false" action="pharmacy_bill_retail_sale"
-
+                                                                 class="mx-1"
                                                                  actionListener="#{pharmacySaleController.resetAll()}"  ></p:commandButton>
+                                            </div>
+                                        </div>
+                                        <div class="row" >
+                                            <h:panelGroup id="panelPaymentDetails" class="row">
+
+                                                <div class="col" >
+                                                    <h:panelGroup id="creditCard" rendered="#{pharmacySaleController.paymentMethod eq 'Card'}">
+                                                        <pa:creditCard paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup id="ptdeposit" rendered="#{pharmacySaleController.paymentMethod eq 'PatientDeposit'}">
+                                                        <pa:patient_deposit paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup id="ewallet" rendered="#{pharmacySaleController.paymentMethod eq 'ewallet'}" >
+                                                        <pa:ewallet paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                    </h:panelGroup>
 
 
-                                            </h:panelGrid>
+                                                    <h:panelGroup id="cheque" rendered="#{pharmacySaleController.paymentMethod eq 'Cheque'}" >
+                                                        <pa:cheque paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup id="slip" rendered="#{pharmacySaleController.paymentMethod eq 'Slip'}">
+                                                        <pa:slip paymentMethodData="#{pharmacySaleController.paymentMethodData}"/>
+                                                    </h:panelGroup>
+                                                </div>
+
+                                            </h:panelGroup>
+                                        </div>
 
 
-                                        </f:facet>
+
+
+
+                                        <h:panelGrid columns="20"  >
+
+
+
+
+
+
+
+
+
+
+
+                                        </h:panelGrid>
+
+
+
+
+
+
+
+
+
+
                                         <p:panelGrid columns="2">
                                             <p:outputLabel value="Referring Doctor" ></p:outputLabel>
                                             <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacySaleController.preBill.referredBy}" 

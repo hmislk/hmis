@@ -8,7 +8,11 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">
+<<<<<<< HEAD
         <jta-data-source>jdbc/arogyaaudit</jta-data-source>
+=======
+        <jta-data-source>jdbc/arogyaAudit</jta-data-source>
+>>>>>>> f93f002282563046f1f2e60a6ba0dcbf000e7ab2
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="javax.persistence.schema-generation.database.action" value="create-or-extend-tables"/>
