@@ -485,7 +485,9 @@ public class Person implements Serializable {
 
     public void setTitle(Title title) {
         this.title = title;
-
+        if (title == null) {
+            return;
+        }
         switch (this.title) {
             case Dr:
             case Master:
