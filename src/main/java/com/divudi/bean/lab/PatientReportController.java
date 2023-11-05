@@ -15,6 +15,7 @@ import com.divudi.data.InvestigationItemValueType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.MessageType;
 import com.divudi.data.Sex;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.lab.Selectable;
 import com.divudi.ejb.EmailManagerEjb;
 import com.divudi.ejb.PatientReportBean;
@@ -1445,9 +1446,10 @@ public class PatientReportController implements Serializable {
             e.setPending(false);
             getSmsFacade().create(e);
 
-            boolean sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(),
+            SmsSentResponse sent = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(),
                     sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sent);
+            e.setSentSuccessfully(sent.isSentSuccefully());
+            e.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(e);
         }
 
