@@ -425,6 +425,9 @@
                                                 <h:panelGroup id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
                                                     <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                                 </h:panelGroup>
+                                                <h:panelGroup id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMthods'}" >
+                                                    <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                         <div class="row" >

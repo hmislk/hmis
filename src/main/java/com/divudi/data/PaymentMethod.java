@@ -20,7 +20,8 @@ public enum PaymentMethod {
     Slip,
     ewallet,
     PatientDeposit,
-    OnlineSettlement;
+    OnlineSettlement,
+    MultiplePaymentMthods;
 
     public String getLabel() {
         switch (this) {

@@ -1,5 +1,7 @@
 package com.divudi.data.dataStructure;
 
+import java.util.List;
+
 /**
  * Open Hospital Management Information System
  * Dr M H B Ariyaratne
@@ -11,6 +13,7 @@ public class PaymentMethodData {
     private ComponentDetail slip;
     private ComponentDetail ewallet;
     private ComponentDetail patient_deposit;
+    private List<ComponentDetail> multiplePaymentMethod;
 
     public ComponentDetail getCreditCard() {
         if (creditCard == null) {
@@ -23,6 +26,9 @@ public class PaymentMethodData {
         this.creditCard = creditCard;
     }
 
+    
+    
+    
     public ComponentDetail getCheque() {
         if (cheque == null) {
             cheque = new ComponentDetail();
@@ -66,4 +72,15 @@ public class PaymentMethodData {
     public void setPatient_deposit(ComponentDetail patient_deposit) {
         this.patient_deposit = patient_deposit;
     }
+
+    public List<ComponentDetail> getMultiplePaymentMethod() {
+        return multiplePaymentMethod;
+    }
+
+    public void setMultiplePaymentMethod(List<ComponentDetail> multiplePaymentMethod) {
+        this.multiplePaymentMethod = multiplePaymentMethod;
+    }
+
+    
+    
 }
