@@ -375,9 +375,6 @@
                                                             event="change"
                                                             listener="#{opdBillController.listnerForPaymentMethodChange()}"/>
                                                 </p:selectOneMenu>
-                                                <ui:repeat value="#{opdBillController.paymentMethodData.paymentMethodMultiple.multiplePaymentMethodComponentDetails}" var="s" >
-                                                    <h1>#{s.paymentMethodData.cash.totalValue}</h1>
-                                                </ui:repeat>
                                             </div>
                                             <div class="col-4" >
                                                 <p:selectOneMenu   
