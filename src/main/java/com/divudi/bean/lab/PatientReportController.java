@@ -72,6 +72,7 @@ import org.primefaces.event.CellEditEvent;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import javax.faces.context.FacesContext;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -233,24 +234,39 @@ public class PatientReportController implements Serializable {
         }
         currentPatientReport = pr;
     }
-    
+
     public void preparePatientReportByIdForRequestsWithoutExpiary() {
         currentPatientReport = null;
         if (encryptedPatientReportId == null) {
             return;
         }
-        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
-        Long id = 0l;
+
+        String decodedIdStr;
+        try {
+            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+
+        String idStr = getSecurityController().decrypt(decodedIdStr);
+        if (idStr == null || idStr.trim().isEmpty()) {
+            // Handle the situation where decryption returns null or an empty string
+            return;
+        }
+
+        Long id;
         try {
             id = Long.parseLong(idStr);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
+            // Handle the exception, possibly with logging
             return;
         }
+
         PatientReport pr = getFacade().find(id);
-        if (pr == null) {
-            return;
+        if (pr != null) {
+            currentPatientReport = pr;
         }
-        currentPatientReport = pr;
     }
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
