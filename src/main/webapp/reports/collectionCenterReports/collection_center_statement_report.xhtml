@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+                    <p:panel header="Collection Center Statement Report" >
+                        <h:panelGrid columns="5" >
+                            <p:outputLabel value="From Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.fromDate}" 
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="To Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            <p:outputLabel value="Institution/Branch" >
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdInstitution"
+                                value="#{reportController.institution}"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{institutionController.items}"
+                                               var="i"
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"></f:selectItems>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+
+                            <p:outputLabel value="Agent Name" />
+                            <p:autoComplete converter="deal" value="#{agentReferenceBookController.agentReferenceBook.institution}" 
+                                            forceSelection="true" 
+                                            completeMethod="#{agencyController.completeAgency}" 
+                                            var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                <p:column>#{vt.institutionCode}</p:column>
+                                <p:column>#{vt.name}</p:column>
+                                <f:ajax event="itemSelect" execute="@this" render="tabView" 
+                                        listener="#{agentReferenceBookController.listnerChannelAgentSelect}" />
+                            </p:autoComplete>
+                            
+                            <p:outputLabel value="Agent Code" />
+                           <p:selectOneMenu 
+                              
+                                value="null"
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="Select Agent Code"></f:selectItem>
+                                
+
+                            </p:selectOneMenu>
+
+
+                           
+
+                            <p:spacer width="20"></p:spacer><!-- comment -->
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+
+                        </h:panelGrid>
+                        <h3>Have to make Summary letter with test name get download</h3>
+                        <h:panelGrid columns="2">
+                           
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportController.fromDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportController.toDate}"  >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
+
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable value="null" var="c">
+                            <p:column headerText="CC Code" >
+                                <h:outputText value="" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Leaf No" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="MRN" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Patient Name" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice Date" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoice No" >
+                                <h:outputText value="null" ></h:outputText>
+                            </p:column>
+                            
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
