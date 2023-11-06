@@ -9,25 +9,26 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-
-        <div class="row" >
-            <div class="col" >
-                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.no}" id="refno"/>                                
-            </div>
-            <div class="col" >
-                <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}" >
-                    <f:selectItem itemLabel="Select Bank"/>
-                    <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
-                </p:selectOneMenu>
-                <p:watermark value="Card Ref. No." for="refno" />
-            </div>
-            <div class="col" >
-
-            </div>
+        <div class="col" >
+            <h:panelGroup rendered="#{cc.attrs.valueRequired}" class="mx-1" >
+                <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"  id="txtVal"/>
+                <p:watermark value="Value" for="txtVal" />
+            </h:panelGroup>
+            <p:inputText class="mx-1" 
+                autocomplete="off"   
+                value="#{cc.attrs.paymentMethodData.creditCard.no}" id="refno"/>                                
+            <p:selectOneMenu value="#{cc.attrs.paymentMethodData.creditCard.institution}" class="mx-1" >
+                <f:selectItem itemLabel="Select Bank"/>
+                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+            </p:selectOneMenu>
+            <p:watermark value="Card Ref. No." for="refno" />
         </div>
+
+
     </cc:implementation>
 </html>
