@@ -9,13 +9,19 @@
     <!-- INTERFACE -->
     <cc:interface>
         <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-<!--        <h:panelGrid columns="1">
-            <p:inputText autocomplete="off"   value="#{cc.attrs.paymentMethodData.cash.comment}"  id="memo"/>
-            <p:watermark value="Memo" for="memo" />
-        </h:panelGrid>-->
+        <div class="col" >
+            <p:inputText 
+                autocomplete="off"   
+                value="#{cc.attrs.paymentMethodData.cash.totalValue}" 
+                id="txtVal">
+                <p:ajax process="@this" ></p:ajax>
+            </p:inputText>
+            <p:watermark value="Value" for="txtVal" />
+        </div>
     </cc:implementation>
 </html>
