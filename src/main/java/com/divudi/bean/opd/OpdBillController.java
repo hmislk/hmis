@@ -12,6 +12,7 @@ import com.divudi.data.FeeType;
 import com.divudi.data.MessageType;
 import com.divudi.data.PaymentMethod;
 import com.divudi.data.Sex;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.Title;
 import com.divudi.data.dataStructure.BillListWithTotals;
 import com.divudi.data.dataStructure.ComponentDetail;
@@ -1169,12 +1170,16 @@ public class OpdBillController implements Serializable {
         s.setSmsType(MessageType.OpdBillSettle);
         getSmsFacade().create(s);
 
-        boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
-        if (sent) {
+        SmsSentResponse sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
+        if (sent.isSentSuccefully()) {
             s.setSentSuccessfully(true);
+            s.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(s);
             UtilityController.addSuccessMessage("Sms send");
         } else {
+            s.setSentSuccessfully(false);
+            s.setReceivedMessage(sent.getReceivedMessage());
+            getSmsFacade().edit(s);
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
     }

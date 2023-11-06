@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 
 import com.divudi.data.ApplicationInstitution;
 import com.divudi.data.MessageType;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.hr.ReportKeyWord;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.SmsManagerEjb;
@@ -113,26 +114,27 @@ public class SmsController implements Serializable {
         for (Sms e : smses) {
             e.setSentSuccessfully(Boolean.TRUE);
             getSmsFacade().edit(e);
-            boolean sentSuccessfully = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
-            e.setSentSuccessfully(sentSuccessfully);
+            SmsSentResponse sentSuccessfully = smsManager.sendSmsByApplicationPreference(e.getReceipientNumber(), e.getSendingMessage(), sessionController.getApplicationPreference());
+            e.setSentSuccessfully(sentSuccessfully.isSentSuccefully());
+            e.setReceivedMessage(sentSuccessfully.getReceivedMessage());
             e.setSentAt(new Date());
             getSmsFacade().edit(e);
         }
     }
 
-    public boolean sendSms(String number, String message, String username, String password, String sendingAlias) {
+    public SmsSentResponse sendSms(String number, String message, String username, String password, String sendingAlias) {
         return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
     }
 
-    public boolean sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
+    public SmsSentResponse sendSmsPromo(String number, String message, String username, String password, String sendingAlias) {
         return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
     }
 
-    public boolean sendSms(String number, String message) {
+    public SmsSentResponse sendSms(String number, String message) {
         return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
     }
 
-    public boolean sendSmsPromo(String number, String message) {
+    public SmsSentResponse sendSmsPromo(String number, String message) {
         return smsManager.sendSmsByApplicationPreference(number, message, sessionController.getApplicationPreference());
     }
 
@@ -147,14 +149,15 @@ public class SmsController implements Serializable {
         }
         Sms e = new Sms();
         e.setSentSuccessfully(Boolean.TRUE);
-        boolean sent = sendSmsPromo(sendingNo, msg);
+        SmsSentResponse sent = sendSmsPromo(sendingNo, msg);
 
-        if (sent) {
+        if (sent.isSentSuccefully()) {
             e.setSentSuccessfully(true);
             e.setSentAt(new Date());
             e.setCreatedAt(new Date());
             e.setCreater(getSessionController().getLoggedUser());
             e.setBill(b);
+            e.setReceivedMessage(sent.getReceivedMessage());
             e.setSmsType(smsType);
             e.setSendingMessage(msg);
             getSmsFacade().create(e);
@@ -270,9 +273,19 @@ public class SmsController implements Serializable {
             JsfUtil.addErrorMessage("No SMS selected");
             return;
         }
-        boolean sendSms = smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
-        if (sendSms == true) {
+        SmsSentResponse sendSms = smsManager.sendSmsByApplicationPreference(selectedSms.getReceipientNumber(), selectedSms.getSendingMessage(), sessionController.getApplicationPreference());
+        if (sendSms == null) {
+            JsfUtil.addErrorMessage("No send SMS. Programming");
+        } else if (sendSms.isSentSuccefully()) {
+            selectedSms.setSentSuccessfully(true);
+            selectedSms.setReceivedMessage(sendSms.getReceivedMessage());
             getSmsFacade().edit(selectedSms);
+            JsfUtil.addSuccessMessage("Sent SUccessfully");
+        } else {
+            selectedSms.setSentSuccessfully(false);
+            selectedSms.setReceivedMessage(sendSms.getReceivedMessage());
+            getSmsFacade().edit(selectedSms);
+            JsfUtil.addSuccessMessage("Sending failed");
         }
     }
 

@@ -63,11 +63,21 @@
                             <p:column headerText="Message" styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.sendingMessage}"/>
                             </p:column>
-                            <p:column headerText="Phone Number" styleClass="alignTop" width="15">
+                            <p:column headerText="Reason For Failure" styleClass="alignTop" width="15">
+                                <h:outputLabel value="#{sms.receivedMessage}"/>
+                            </p:column>
+                            <p:column headerText="Phone Number"
+                                      filterBy="#{sms.receipientNumber}" 
+                                      filterMatchMode="contains"
+                                      styleClass="alignTop" width="15">
                                 <h:outputLabel value="#{sms.receipientNumber}"/>
                             </p:column>
-                            <p:column headerText="Action" styleClass="alignTop" width="15">
-                                <p:commandButton value="Send Now" actionListener="#{smsController.setSelectedSms(sms)}" action="#{smsController.sentUnsentSms}">
+                            <p:column headerText="Action" 
+                                      styleClass="alignTop" 
+                                      width="15">
+                                <p:commandButton value="Send Now" 
+                                                 actionListener="#{smsController.setSelectedSms(sms)}" 
+                                                 action="#{smsController.sentUnsentSms}">
                                 </p:commandButton>
 
                             </p:column>
