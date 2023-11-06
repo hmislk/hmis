@@ -1390,6 +1390,27 @@ public class OpdBillController implements Serializable {
         tmp.setBillType(BillType.OpdBathcBill);
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
+        tmp.setInstitution(sessionController.getInstitution());
+        tmp.setDepartment(sessionController.getDepartment());
+        tmp.setFromInstitution(sessionController.getInstitution());
+        tmp.setFromDepartment(sessionController.getDepartment());
+        tmp.setPatient(patient);
+        tmp.setInsId(
+                getBillNumberGenerator().institutionBillNumberGenerator(
+                        getSessionController().getInstitution(), 
+                        BillType.OpdBathcBill,
+                        BillClassType.BilledBill, 
+                        BillNumberSuffix.NONE));
+        tmp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
+                getSessionController().getInstitution(), 
+                getSessionController().getDepartment(), 
+                BillType.OpdBathcBill, 
+                BillClassType.BilledBill));
+        tmp.setGrantTotal(total);
+        tmp.setDiscount(discount);
+        tmp.setBillTime(new Date());
+        tmp.setBillTotal(netTotal);
+        tmp.setBillDate(new Date());
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(tmp);
