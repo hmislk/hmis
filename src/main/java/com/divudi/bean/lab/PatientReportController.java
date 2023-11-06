@@ -233,6 +233,25 @@ public class PatientReportController implements Serializable {
         }
         currentPatientReport = pr;
     }
+    
+    public void preparePatientReportByIdForRequestsWithoutExpiary() {
+        currentPatientReport = null;
+        if (encryptedPatientReportId == null) {
+            return;
+        }
+        String idStr = getSecurityController().decrypt(encryptedPatientReportId);
+        Long id = 0l;
+        try {
+            id = Long.parseLong(idStr);
+        } catch (Exception e) {
+            return;
+        }
+        PatientReport pr = getFacade().find(id);
+        if (pr == null) {
+            return;
+        }
+        currentPatientReport = pr;
+    }
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
         String j = "select r from PatientReport r "
@@ -582,7 +601,7 @@ public class PatientReportController implements Serializable {
         }
         String calString = "";
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
-            
+
             if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
                     System.out.println("varchar");
@@ -599,7 +618,7 @@ public class PatientReportController implements Serializable {
                     priv.setStrValue(numberWithFormatter + "");
                 }
             }
-            
+
             if (priv.getInvestigationItem().getIxItemType() == InvestigationItemType.Calculation) {
                 String sql = "select i "
                         + " from IxCal i "
@@ -1082,6 +1101,23 @@ public class PatientReportController implements Serializable {
     }
 
     public String smsBody(PatientReport r) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        String temId = getSecurityController().encrypt(r.getId().toString());
+        try {
+            temId = URLEncoder.encode(temId, "UTF-8");
+        } catch (UnsupportedEncodingException ex) {
+            // Handle the exception
+        }
+        String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + " is ready. "
+                + url;
+        return b;
+    }
+
+    public String smsBody(PatientReport r, boolean old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
         String temId = currentPatientReport.getId() + "";
@@ -1801,17 +1837,17 @@ public class PatientReportController implements Serializable {
     }
 
     public void createNewReport(PatientInvestigation pi) {
-        if(pi==null){
+        if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
-            return ;
+            return;
         }
-        if(pi.getInvestigation()==null){
+        if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
-            return ;
+            return;
         }
-        if(pi.getInvestigation().getReportedAs()==null){
+        if (pi.getInvestigation().getReportedAs() == null) {
             JsfUtil.addErrorMessage("No Reported as for Investigation for Patient Report");
-            return ;
+            return;
         }
         Investigation ix = (Investigation) pi.getInvestigation().getReportedAs();
         currentReportInvestigation = ix;
