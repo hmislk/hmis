@@ -24,7 +24,6 @@ import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.CommonFunctions;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.ejb.StaffBean;
-import com.divudi.entity.AuditEvent;
 import com.divudi.entity.Bill;
 import com.divudi.entity.BillComponent;
 import com.divudi.entity.BillEntry;
@@ -76,15 +75,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -236,6 +231,7 @@ public class OpdBillController implements Serializable {
 
     private Long billId;
     private int opdSummaryIndex;
+    private int opdAnalyticsIndex;
 
     /**
      *
@@ -245,6 +241,14 @@ public class OpdBillController implements Serializable {
     public String navigateToSearchPatients() {
         patientController.setSearchedPatients(null);
         return "/opd/patient_search";
+    }
+    
+    public String navigateToOpdAnalyticsIndex() {
+        return "/opd/analytics/index";
+    }
+    
+    public String navigateToOpdBatchBillList() {
+        return "/opd/analytics/batch_bill_list";
     }
 
     public String navigateToSearchOpdBills() {
@@ -1386,6 +1390,27 @@ public class OpdBillController implements Serializable {
         tmp.setBillType(BillType.OpdBathcBill);
         tmp.setPaymentScheme(paymentScheme);
         tmp.setPaymentMethod(paymentMethod);
+        tmp.setInstitution(sessionController.getInstitution());
+        tmp.setDepartment(sessionController.getDepartment());
+        tmp.setFromInstitution(sessionController.getInstitution());
+        tmp.setFromDepartment(sessionController.getDepartment());
+        tmp.setPatient(patient);
+        tmp.setInsId(
+                getBillNumberGenerator().institutionBillNumberGenerator(
+                        getSessionController().getInstitution(), 
+                        BillType.OpdBathcBill,
+                        BillClassType.BilledBill, 
+                        BillNumberSuffix.NONE));
+        tmp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(
+                getSessionController().getInstitution(), 
+                getSessionController().getDepartment(), 
+                BillType.OpdBathcBill, 
+                BillClassType.BilledBill));
+        tmp.setGrantTotal(total);
+        tmp.setDiscount(discount);
+        tmp.setBillTime(new Date());
+        tmp.setBillTotal(netTotal);
+        tmp.setBillDate(new Date());
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         getBillFacade().create(tmp);
@@ -2792,6 +2817,8 @@ public class OpdBillController implements Serializable {
     public String navigateToBillContactNumbers() {
         return "/admin/bill_contact_numbers.xhtml";
     }
+    
+    
 
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {
@@ -2906,6 +2933,14 @@ public class OpdBillController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    public int getOpdAnalyticsIndex() {
+        return opdAnalyticsIndex;
+    }
+
+    public void setOpdAnalyticsIndex(int opdAnalyticsIndex) {
+        this.opdAnalyticsIndex = opdAnalyticsIndex;
     }
 
 }

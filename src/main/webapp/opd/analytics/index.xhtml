@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <p:panel header="OPD Analytics">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p:accordionPanel 
+                                activeIndex="#{cashierReportController.reportCashierIndex}">
+                                <p:ajax process="@this"></p:ajax>
+                                <p:tab title="Lists">
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton class="w-100" 
+                                                             ajax="false"
+                                                             value="Batch Bill List" 
+                                                             action="#{opdBillController.navigateToOpdBatchBillList()}" />
+                                        </div>
+                                    </h:form>
+                                </p:tab>
+                            </p:accordionPanel>
+                        </div>
+                        <div class="col-md-9">
+                            <ui:insert name="subcontent" >
+
+                            </ui:insert>
+                        </div>
+                    </div>
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
