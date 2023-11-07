@@ -132,6 +132,12 @@
                                                                      styleClass="mx-1 mb-2">
                                                         <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
                                                     </p:commandButton>
+                                                    <p:commandButton value="OPD Package Bill" 
+                                                                     action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
+                                                                     ajax="false" 
+                                                                     styleClass="mx-1 mb-2">
+                                                        <f:setPropertyActionListener value="#{p}" target="#{patientController.current}" />
+                                                    </p:commandButton>
                                                     <p:commandButton value="Admit" 
                                                                      action="#{patientController.navigateToAdmitFromPatientProfile()}" 
                                                                      ajax="false" 
