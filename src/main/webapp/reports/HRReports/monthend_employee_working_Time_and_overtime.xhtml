@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Employee Worked Day Report (Salary Cycle)" >
+                    <p:panel header="Month end employee working time + Over time report by (Minutes) summery" >
                         <p:panelGrid columns="4" class="w-100">
 
                             <p:outputLabel value="Salary Cycle" ></p:outputLabel>
@@ -96,18 +96,19 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
+
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:selectBooleanCheckbox id="myCheckbox" value="" />
-                            <p:outputLabel for="myCheckbox" value="Aditional Details" class="ml-2" />
                             <p:commandButton class="m-2" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
                             </p:commandButton>
                             <p:commandButton class="m-2" ajax="false" value="Download"
                                              action="#{reportController.downloadLabTestCount}">
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Print"
+                            <p:commandButton class="m-2" ajax="false" value="Print All"
+                                             action="#{reportController.downloadLabTestCount}">
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Print(Summery)"
                                              action="#{reportController.downloadLabTestCount}">
                             </p:commandButton>
                         </div>
@@ -115,45 +116,89 @@
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
-                                     rows="10">
-                            <p:column headerText="Staff Code">
+                                     rows="10"
+                                     
+                                     >
+                            <p:column headerText="Code">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Staff">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Worked Days ">
+                            <p:column headerText="Week 1">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Worked Days Before ">
+                            <p:column headerText="Week 2 ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Worked Days This">
+                            <p:column headerText="Week 3">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Worked Days Additional ">
+                            <p:column headerText="Week 4">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="No Pay Leave">
+                            <p:column headerText="Week 5">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late No Pay Days ">
+                            <p:column headerText="Total ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Merchantile Days ">
+                            <p:column headerText="Entitled ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Poya Days ">
+                            <p:column headerText="Over TIme">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Off Days">
+                            <p:column headerText="OT Value">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Remarks ">
                                 <h:outputText value="" />
                             </p:column>
+                           
 
                         </p:dataTable>
+                        <p:dataTable class="my-2">
+                                <p:column headerText="Code">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Staff">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sun">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Mon">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Tue">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Wed">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Thur">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Fri">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Sat">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Total">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Entitled">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="OT">
+                                    <h:outputText value="" />
+                                </p:column>
+                                <p:column headerText="Value">
+                                    <h:outputText value="" />
+                                </p:column>
+                            </p:dataTable>
 
 
                     </p:panel>
