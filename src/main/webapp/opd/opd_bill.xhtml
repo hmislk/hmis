@@ -358,12 +358,13 @@
                                 </div>
                                 <div class="col-md-6" >
                                     <p:panel class="w-100 form">
-                                        <div class="row" >
+                                        <div class="row my-1" >
                                             <div class="col-3" >
                                                 <p:selectOneMenu   
                                                     id="pay" 
+                                                    style="max-width: 100%;"
                                                     value="#{opdBillController.paymentMethod}"
-                                                    class="w-100">     
+                                                    >     
                                                     <f:selectItems 
                                                         value="#{enumController.paymentMethods}"  
                                                         var="pm"
@@ -396,47 +397,67 @@
                                                     value="Settle"
                                                     ajax="false"
                                                     action="#{opdBillController.settleOpdBill()}" 
-                                                    class="btn btn-success mx-1"
+                                                    class="ui-button-success mx-1"
                                                     >
                                                 </p:commandButton>
                                                 <p:commandButton 
                                                     value="Patient Lookup" 
                                                     ajax="false"
-                                                    class="btn btn-warning mx-1" 
+                                                    class="ui-button-warning mx-1" 
                                                     action="#{patientController.navigateToSearchPatients()}" 
                                                     >
                                                 </p:commandButton>
                                             </div>
                                         </div>
-                                        
-                                        <div class="row" >
-                                            <h:panelGroup layout="block" id="paymentDetails" class="col-12" >
-                                                <h:panelGroup id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                                    <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
-                                                    <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
-                                                    <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
-                                                    <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
-                                                    <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
-                                                </h:panelGroup>
+
+                                        <h:panelGroup 
+                                            id="paymentDetails"  >
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"  
+                                                id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
+                                                <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                        </div>
-                                        
-                                        <div class="row" >
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="eWallet"  rendered="#{opdBillController.paymentMethod eq 'ewallet'}" >
+                                                <pa:ewallet paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
+                                                <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
+                                                <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup 
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
+                                                <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block" 
+                                                id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" >
+                                                <pa:multiple_payment_methods paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <div class="row my-1" >
                                             <div class="col-md-12" >
                                                 <p:inputText value="#{opdBillController.comment}" placeholder="Comments" id="comment"/>
                                                 <p:commandButton value="Mark Foreigner" 
-                                                                 class="btn m-1"
+                                                                 class="mx-1"
                                                                  action="#{opdBillController.markAsForeigner}" rendered="#{!opdBillController.foreigner}" ajax="false" ></p:commandButton>
                                                 <p:commandButton value="Mark Local" 
-                                                                 class="btn m-1"
+                                                                 class="mx-1"
                                                                  action="#{opdBillController.markAsLocal}" rendered="#{opdBillController.foreigner}" ajax="false" ></p:commandButton>
                                                 <!--                                                <p:commandButton value="Print Last Bill" 
                                                                                                                  class="btn m-1"
@@ -445,6 +466,14 @@
                                                                                                 </p:commandButton>-->
                                             </div>
 
+
+
+
+
+                                        </div>
+
+
+                                        <div class="row my-1" >
                                             <div class="col-md-12" >
                                                 <p:panelGrid 
                                                     columns="2" 
@@ -625,8 +654,9 @@
                                                 </p:panelGrid>
 
                                             </div>
+                                        </div>
 
-
+                                        <div class="row my-1" >
                                             <div class="col-md-12">
 
                                                 <h:panelGroup id="panelBillTotals" class="w-100">
@@ -665,14 +695,6 @@
                                                 </h:panelGroup>
                                             </div>
                                         </div>
-
-
-
-
-
-
-
-
 
 
                                     </p:panel>
