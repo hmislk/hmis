@@ -586,6 +586,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/employee_worked_day_report";
     }
+    
+    public String navigateToEmployeeWorkedDayReportSalaryCycle() {
+
+        return "/reports/HRReports/employee_worked_day_report_salary_cycle";
+    }
 
 
     public Department getFromDepartment() {
