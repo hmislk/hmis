@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Late In and Early Out Report" >
+                    <p:panel header="Finger Print Approve" >
 
                         <p:panelGrid columns="4" class="w-100">
                             <p:outputLabel value="From Date" class="mx-2" >
@@ -69,8 +69,10 @@
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            
 
-                            <p:outputLabel value="Designation" class="mx-2" >
+                            <p:outputLabel value="Staff Designation" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -78,47 +80,25 @@
                             </p:selectOneMenu>
                             
                             
-
-                            <p:outputLabel value="Roster" class="mx-2" >
+                            
+                            <p:outputLabel value="Staff Roster" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Shift" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-
-                            
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            
-                            <p:outputLabel value="In Minute" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
                             
                             
-
-                            <p:outputLabel value="Out Minute" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
 
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
+                            <p:commandButton class="m-2" ajax="false" value="Process Not Approved" action="null" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Download"
+                            <p:commandButton class="m-2" ajax="false" value="Process Approved"
+                                             action="null">
+                            </p:commandButton>
+                            <p:commandButton class="m-2" ajax="false" value="Approved Selected"
                                              action="null">
                             </p:commandButton>
                         </div>
@@ -133,43 +113,28 @@
                             <p:column headerText="EMP Name">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Department Name ">
+                            <p:column headerText="Time Type">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift In Time ">
+                            <p:column headerText="Verified Date">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="In Checked ">
+                            <p:column headerText="Verified Time">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late In Minute Varified  ">
+                            <p:column headerText="Logged Date">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late In Minute Varified(With in 10 Mins) ">
+                            <p:column headerText="Logged Time">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late In Minute Varified(Aftre 10 Mins) ">
+                            <p:column headerText="Approved By">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift Out Time ">
+                            <p:column headerText="Approved At">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Out Checked  ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Early Out Minute Varified ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Early Out Minute Varified(With in 10 Mins)  ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Early Out Minute Varified(Aftre 10 Mins) ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Late In Seconds Varified ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Early Out Minute Varified (Seconds)">
+                            <p:column headerText="Comments/Remarks">
                                 <h:outputText value="" />
                             </p:column>
 

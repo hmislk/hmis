@@ -9,19 +9,21 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Finger Print Record By Verified" >
+                    <p:panel header="Finger Print Record By No Shift Settled" >
 
-                        <h:panelGrid columns="5" class="w-100">
+                        <p:panelGrid columns="4" class="w-100">
                             <p:outputLabel value="From Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value="" 
+                                          class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            <p:spacer width="40px"></p:spacer>
+                            
 
                             <p:outputLabel value="To Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value=""
+                                          class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
                             <p:outputLabel value="Institution" class="mx-2" >
@@ -37,7 +39,7 @@
                                                itemValue="#{d}" ></f:selectItems>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40px"></p:spacer>
+                            
                             
                             <p:outputLabel value="Department" class="mx-2" >
                             </p:outputLabel>
@@ -54,16 +56,16 @@
 
                             <p:outputLabel value="Employee" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40px"></p:spacer>
+                            
 
                             <p:outputLabel value="Staff Category" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
@@ -72,23 +74,23 @@
 
                             <p:outputLabel value="Staff Designation" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40px"></p:spacer>
+                            
                             
                             <p:outputLabel value="Staff Roster" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
 
 
 
-                        </h:panelGrid>
+                        </p:panelGrid>
 
                         <div class="d-flex align-items-center my-2">
                             <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
