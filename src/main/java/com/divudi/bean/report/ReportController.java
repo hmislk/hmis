@@ -611,6 +611,26 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/finger_analysis_report_by_salary_cycle";
     }
+    
+    public String navigateToFingerPrintApprove() {
+
+        return "/reports/HRReports/finger_print_approve";
+    }
+    
+    public String navigateToLeaveForm() {
+
+        return "/reports/HRReports/leave_form";
+    }
+    
+    public String navigateToAdditionalFormReportVerification() {
+
+        return "/reports/HRReports/additional_form_report_veification";
+    }
+    
+    public String navigateToOnlineFormStatus() {
+
+        return "/reports/HRReports/online_form_status";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;

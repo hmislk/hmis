@@ -47,6 +47,7 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -66,8 +67,8 @@ import org.primefaces.event.TabChangeEvent;
 
 /**
  *
- * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)
- * Acting Consultant (Health Informatics)
+ * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
+ * Consultant (Health Informatics)
  */
 @Named
 @SessionScoped
@@ -81,11 +82,9 @@ public class BillPackageController implements Serializable {
     @EJB
     private BillItemFacade billItemFacade;
     private boolean printPreview;
-    private String patientTabId = "tabNewPt";
     //Interface Data
     private PaymentScheme paymentScheme;
     PaymentMethod paymentMethod;
-    private Patient newPatient;
     private Patient searchedPatient;
     private Doctor referredBy;
     private Institution creditCompany;
@@ -119,14 +118,12 @@ public class BillPackageController implements Serializable {
     private BillComponentFacade billComponentFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
-    //Temprory Variable
-    private Patient tmpPatient;
     List<Bill> bills;
     @Inject
     private BillSearch billSearch;
     private YearMonthDay yearMonthDay;
     PaymentMethodData paymentMethodData;
-    
+
     Institution referredByInstitution;
     String referralId;
 
@@ -154,11 +151,6 @@ public class BillPackageController implements Serializable {
         return Title.values();
     }
 
-    public void dateChangeListen() {
-        getNewPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
-
-    }
-
     public Sex[] getSex() {
         return Sex.values();
     }
@@ -183,19 +175,27 @@ public class BillPackageController implements Serializable {
     }
 
     private void savePatient() {
-        if (getPatientTabId().equals("tabNewPt")) {
-            getNewPatient().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().setCreatedAt(new Date());
-
-            getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
-            getNewPatient().getPerson().setCreatedAt(new Date());
-
-            getPersonFacade().create(getNewPatient().getPerson());
-            getPatientFacade().create(getNewPatient());
-            tmpPatient = getNewPatient();
-
-        } else if (getPatientTabId().equals("tabSearchPt")) {
-            tmpPatient = getSearchedPatient();
+        if (getSearchedPatient() == null) {
+            JsfUtil.addErrorMessage("No Patient to save");
+            return;
+        }
+        if (getSearchedPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("No person");
+            return;
+        }
+        if (getSearchedPatient().getPerson().getId() == null) {
+            getSearchedPatient().getPerson().setCreater(getSessionController().getLoggedUser());
+            getSearchedPatient().getPerson().setCreatedAt(new Date());
+            getPersonFacade().create(getSearchedPatient().getPerson());
+        } else {
+            getPersonFacade().edit(getSearchedPatient().getPerson());
+        }
+        if (getSearchedPatient().getId() == null) {
+            getSearchedPatient().setCreater(getSessionController().getLoggedUser());
+            getSearchedPatient().setCreatedAt(new Date());
+            getPatientFacade().create(getSearchedPatient());
+        } else {
+            getPatientFacade().edit(getSearchedPatient());
         }
     }
 
@@ -379,7 +379,7 @@ public class BillPackageController implements Serializable {
 
         temp.setBillDate(new Date());
         temp.setBillTime(new Date());
-        temp.setPatient(tmpPatient);
+        temp.setPatient(getSearchedPatient());
 //        temp.setPatientEncounter(patientEncounter);
         temp.setPaymentMethod(paymentMethod);
         temp.setPaymentScheme(getPaymentScheme());
@@ -409,26 +409,23 @@ public class BillPackageController implements Serializable {
     }
 
     private boolean errorCheck() {
-        if (getPatientTabId().toString().equals("tabNewPt")) {
 
-            if (getNewPatient().getPerson().getName() == null
-                    || getNewPatient().getPerson().getName().trim().equals("")
-                    || getNewPatient().getPerson().getSex() == null
-                    || getNewPatient().getPerson().getDob() == null) {
-                UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
-                return true;
-            }
+        if (getSearchedPatient().getPerson().getName() == null
+                || getSearchedPatient().getPerson().getName().trim().equals("")
+                || getSearchedPatient().getPerson().getSex() == null
+                || getSearchedPatient().getPerson().getDob() == null) {
+            UtilityController.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
+            return true;
+        }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getNewPatient().getPerson().getDob(), getNewPatient().getPerson().getSex(), getNewPatient().getPerson().getTitle())) {
-                UtilityController.addErrorMessage("Check Title,Age,Sex");
-                return true;
-            }
+        if (!com.divudi.java.CommonFunctions.checkAgeSex(getSearchedPatient().getPerson().getDob(), getSearchedPatient().getPerson().getSex(), getSearchedPatient().getPerson().getTitle())) {
+            UtilityController.addErrorMessage("Check Title,Age,Sex");
+            return true;
+        }
 
-            if (getNewPatient().getPerson().getPhone().length() < 1) {
-                UtilityController.addErrorMessage("Phone Number is Required it should be fill");
-                return true;
-            }
-
+        if (getSearchedPatient().getPerson().getPhone().length() < 1) {
+            UtilityController.addErrorMessage("Phone Number is Required it should be fill");
+            return true;
         }
 
         if (getLstBillEntries().isEmpty()) {
@@ -449,16 +446,6 @@ public class BillPackageController implements Serializable {
             return true;
         }
 
-//        if (paymentScheme.getPaymentMethod() == PaymentMethod.Cash) {
-//            if (cashPaid == 0.0) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//            if (cashPaid < getNetTotal()) {
-//                UtilityController.addErrorMessage("Please select tendered amount correctly");
-//                return true;
-//            }
-//        }
         return false;
     }
 
@@ -508,8 +495,7 @@ public class BillPackageController implements Serializable {
             tmp.setItem(i);
             addEntry(tmp);
         }
-
-        //UtilityController.addSuccessMessage("Item Added");
+        UtilityController.addSuccessMessage("Item Added");
     }
 
     public void clearBillItemValues() {
@@ -557,7 +543,6 @@ public class BillPackageController implements Serializable {
     }
 
     public void clearBillValues() {
-        setNewPatient(null);
         setSearchedPatient(null);
         setReferredBy(null);
         setCreditCompany(null);
@@ -571,7 +556,6 @@ public class BillPackageController implements Serializable {
         setLstBillEntries(null);
         setLstBillFees(null);
         setStaff(null);
-        setPatientTabId("tabNewPt");
         lstBillEntries = new ArrayList<BillEntry>();
         //   setForeigner(false);
         calTotals();
@@ -615,25 +599,16 @@ public class BillPackageController implements Serializable {
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
     }
 
-    public void onTabChange(TabChangeEvent event) {
-        setPatientTabId(event.getTab().getId());
-
-    }
-
-    public BillFacade getEjbFacade() {
+    private BillFacade getEjbFacade() {
         return billFacade;
     }
 
-    public void setEjbFacade(BillFacade ejbFacade) {
+    private void setEjbFacade(BillFacade ejbFacade) {
         this.billFacade = ejbFacade;
     }
 
-    public SessionController getSessionController() {
+    private SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 
     public BillPackageController() {
@@ -666,28 +641,6 @@ public class BillPackageController implements Serializable {
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
         calTotals();
-    }
-
-    public String getPatientTabId() {
-        return patientTabId;
-    }
-
-    public void setPatientTabId(String patientTabId) {
-        this.patientTabId = patientTabId;
-    }
-
-    public Patient getNewPatient() {
-        if (newPatient == null) {
-            newPatient = new Patient();
-            Person p = new Person();
-
-            newPatient.setPerson(p);
-        }
-        return newPatient;
-    }
-
-    public void setNewPatient(Patient newPatient) {
-        this.newPatient = newPatient;
     }
 
     public Patient getSearchedPatient() {
@@ -890,14 +843,6 @@ public class BillPackageController implements Serializable {
         this.billFeeFacade = billFeeFacade;
     }
 
-    private Patient getTmpPatient() {
-        return tmpPatient;
-    }
-
-    public void setTmpPatient(Patient tmpPatient) {
-        this.tmpPatient = tmpPatient;
-    }
-
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
     }
@@ -948,6 +893,14 @@ public class BillPackageController implements Serializable {
 
     public void setReferralId(String referralId) {
         this.referralId = referralId;
+    }
+
+    String navigateToNewOpdPackageBill(Patient patient) {
+        clearBillItemValues();
+        clearBillValues();
+        printPreview = false;
+        searchedPatient = patient;
+        return "/opd/opd_bill_package";
     }
 
     /**

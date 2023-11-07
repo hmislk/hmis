@@ -147,7 +147,7 @@
                                                 <p:commandButton   class="w-100"  ajax="false" value="1. Fingerprint Record by Logged" action="#{reportController.navigateToFingerPrintRecordByLogged()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="2. Fingerprint Record by Verified" action="#{reportController.navigateToFingerPrintRecordByVerified()}" />
                                                 <p:commandButton   class="w-100"  ajax="false" value="3. Fingerprint Record by No Shift Settled" action="#{reportController.navigateToFingerPrintRecordNoShiftSettled()}" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="4. Fingerprint Approve" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="4. Fingerprint Approve" action="#{reportController.navigateToFingerPrintApprove()}"/>
                                             </div>
 
                                         </p:tab>
@@ -156,9 +156,9 @@
                                     <p:accordionPanel>
                                         <p:tab title="Form">
                                             <div class="d-grid gap-2">
-                                                <p:commandButton   class="w-100"  ajax="false" value="1. Leave Form" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="2. Additinal Form Report Verification" />
-                                                <p:commandButton   class="w-100"  ajax="false" value="3. Online Form Status" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="1. Leave Form" action="#{reportController.navigateToLeaveForm()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="2. Additinal Form Report Verification" action="#{reportController.navigateToAdditionalFormReportVerification()}" />
+                                                <p:commandButton   class="w-100"  ajax="false" value="3. Online Form Status" action="#{reportController.navigateToOnlineFormStatus()}" />
                                             </div>
                                         </p:tab>
                                     </p:accordionPanel>

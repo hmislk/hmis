@@ -139,6 +139,8 @@ public class PatientController implements Serializable {
     @Inject
     OpdBillController opdBillController;
     @Inject
+    BillPackageController billPackageController;
+    @Inject
     OpdPreBillController opdPreBillController;
     @Inject
     AdmissionController admissionController;
@@ -557,6 +559,14 @@ public class PatientController implements Serializable {
             return "";
         }
         return opdBillController.navigateToNewOpdBill(current);
+    }
+    
+    public String navigateToOpdPackageBillFromOpdPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return billPackageController.navigateToNewOpdPackageBill(current);
     }
 
     public String navigateToOpdBillForCashier() {
