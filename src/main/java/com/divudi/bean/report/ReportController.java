@@ -601,7 +601,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/month_end_employee_nopay_report_by_minutes";
     }
+    
+    public String navigateToMonthEndEmployeeSummery() {
 
+        return "/reports/HRReports/month_end_employee_summery";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
