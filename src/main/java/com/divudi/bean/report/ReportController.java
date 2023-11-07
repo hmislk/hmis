@@ -591,6 +591,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/employee_worked_day_report_salary_cycle";
     }
+    
+    public String navigateToMonthendEmployeeWorkingTimeAndOvertime() {
+
+        return "/reports/HRReports/monthend_employee_working_Time_and_overtime";
+    }
 
 
     public Department getFromDepartment() {
