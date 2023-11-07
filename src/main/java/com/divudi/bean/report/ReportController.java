@@ -596,6 +596,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/monthend_employee_working_Time_and_overtime";
     }
+    
+    public String navigateToMonthEndEmployeeNoPayReportByMinutes() {
+
+        return "/reports/HRReports/month_end_employee_nopay_report_by_minutes";
+    }
 
 
     public Department getFromDepartment() {
