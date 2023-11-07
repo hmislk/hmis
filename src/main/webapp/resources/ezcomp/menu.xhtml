@@ -190,6 +190,9 @@
                         </p:submenu>
                         <p:menuitem ajax="false" action="/lab/report_for_opd_print" value="Lab Report print" icon="fa fa-file-medical" rendered="true" />
                         <p:menuitem ajax="false" action="#{cashierReportController.navigateToOpdSummeries()}" value="Summaries" icon="fa fa-list-alt"></p:menuitem>
+                        <p:menuitem ajax="false" 
+                                    action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
+                                    value="Analytics" icon="fa fa-list-alt"></p:menuitem>
                         <p:submenu 
                             id="smOpdManager"
                             label="Manager"

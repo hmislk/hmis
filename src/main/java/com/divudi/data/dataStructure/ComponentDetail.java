@@ -5,9 +5,12 @@
  */
 package com.divudi.data.dataStructure;
 
+import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -20,8 +23,33 @@ public class ComponentDetail {
     private Institution institution;
     private Date date;
     private Patient patient;
+    private double totalValue;
+    private PaymentMethod paymentMethod;
+    private List<ComponentDetail> multiplePaymentMethodComponentDetails;
+    private PaymentMethodData paymentMethodData;
+
+    public List<ComponentDetail> getMultiplePaymentMethodComponentDetails() {
+        System.out.println("getMultiplePaymentMethod");
+        System.out.println("multiplePaymentMethod = " + multiplePaymentMethodComponentDetails);
+        if (multiplePaymentMethodComponentDetails == null) {
+            multiplePaymentMethodComponentDetails = new ArrayList<>();
+        }
+        System.out.println("multiplePaymentMethod.isEmpty() = " + multiplePaymentMethodComponentDetails.isEmpty());
+        if (multiplePaymentMethodComponentDetails.isEmpty()) {
+            multiplePaymentMethodComponentDetails.add(new ComponentDetail());
+        }
+        System.out.println("multiplePaymentMethod.size() = " + multiplePaymentMethodComponentDetails.size());
+        return multiplePaymentMethodComponentDetails;
+    }
     
-    
+    public void addAnotherPaymentDetail(){
+        ComponentDetail cd = new ComponentDetail();
+        getMultiplePaymentMethodComponentDetails().add(cd);
+    }
+
+    public void setMultiplePaymentMethod(List<ComponentDetail> multiplePaymentMethod) {
+        this.multiplePaymentMethodComponentDetails = multiplePaymentMethod;
+    }
 
     public Institution getInstitution() {
         return institution;
@@ -62,5 +90,34 @@ public class ComponentDetail {
     public void setPatient(Patient patient) {
         this.patient = patient;
     }
+
+    public double getTotalValue() {
+        return totalValue;
+    }
+
+    public void setTotalValue(double totalValue) {
+        this.totalValue = totalValue;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if(paymentMethodData==null){
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+    
+    
 
 }

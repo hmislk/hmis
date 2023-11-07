@@ -44,11 +44,6 @@
                                                 <p:ajax process="cmbTitle" update="txtNewSex" ></p:ajax>
                                                 <p:ajax event="change" process="cmbTitle" update="txtNewSex" ></p:ajax>
                                             </p:selectOneMenu>
-                                            <p:outputLabel value="Sex:"  class="form-label" />
-                                            <p:selectOneMenu id="txtNewSex2" value="#{patientController.current.person.title}" class="form-control" >
-                                                <f:selectItem itemLabel="Select Gender" />
-                                                <f:selectItems value="#{billController.title}" />
-                                            </p:selectOneMenu>
 
 
                                         </div>

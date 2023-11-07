@@ -11,6 +11,7 @@ import com.divudi.data.InvestigationItemType;
 import com.divudi.data.InvestigationReportType;
 import com.divudi.data.ItemType;
 import com.divudi.data.MessageType;
+import com.divudi.data.SmsSentResponse;
 import com.divudi.data.lab.Dimension;
 import com.divudi.data.lab.DimensionTestResult;
 import com.divudi.data.lab.SampleRequestType;
@@ -955,10 +956,11 @@ public class PatientInvestigationController implements Serializable {
         UserPreference ap = sessionController.getApplicationPreference();
 
       
-        boolean sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
+        SmsSentResponse sent = smsManagerEjb.sendSmsByApplicationPreference(s.getReceipientNumber(), s.getSendingMessage(), ap);
 
-        if (sent) {
+        if (sent.isSentSuccefully()) {
             s.setSentSuccessfully(true);
+            s.setReceivedMessage(sent.getReceivedMessage());
             getSmsFacade().edit(s);
             
             getCurrent().getBillItem().getBill().setSmsed(true);
@@ -969,6 +971,9 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(getCurrent().getBillItem().getBill());
             UtilityController.addSuccessMessage("Sms send");
         } else {
+            s.setSentSuccessfully(false);
+            s.setReceivedMessage(sent.getReceivedMessage());
+            getSmsFacade().edit(s);
             JsfUtil.addErrorMessage("Sending SMS Failed.");
         }
 //        getLabReportSearchByInstitutionController().createPatientInvestigaationList();

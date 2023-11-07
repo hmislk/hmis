@@ -46,14 +46,14 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
-                                    <p:commandButton value="PRINT" ajax="false"  icon="pi pi-print" >
+                                    <p:commandButton value="PRINT!!!" ajax="false"  icon="pi pi-print" >
                                         <p:printer target="fiveFivePaperWithHeadingsA" ></p:printer>
                                     </p:commandButton>
-                                    <h:panelGroup id="fiveFivePaperWithHeadingsA">
-                                        <ui:repeat value="#{opdBillController.bills}" var="b">
-                                            <bi:five_five_paper_with_headings bill="#{b}"/>                        
-                                        </ui:repeat>
-                                    </h:panelGroup>
+
+                                    <ui:repeat id="fiveFivePaperWithHeadingsA" value="#{opdBillController.bills}" var="b">
+                                        <bi:five_five_paper_with_headings bill="#{b}"/>                        
+                                    </ui:repeat>
+
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
@@ -211,7 +211,7 @@
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaper'}">
                         <div class="nonPrintBlock">
-                            <p:commandButton value="Print" ajax="false" action="#"  >
+                            <p:commandButton value="Print Five Five" ajax="false"  >
                                 <p:printer target="fiveFivePaperWithHeadingsB" ></p:printer>
                             </p:commandButton>
 
