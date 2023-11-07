@@ -614,7 +614,7 @@ public class ReportController implements Serializable {
     
     public String navigateToFingerPrintApprove() {
 
-        return "/reports/HRReports/finger_print_approve";
+        return "/reports/HRReports/fingerprint_approve";
     }
     
     public String navigateToLeaveForm() {
