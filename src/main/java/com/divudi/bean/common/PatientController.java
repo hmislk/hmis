@@ -492,6 +492,8 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission";
     }
+    
+    
 
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
