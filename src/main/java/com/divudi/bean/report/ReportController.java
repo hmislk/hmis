@@ -581,6 +581,12 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_record_no_shift_settled";
     }
+    
+    public String navigateToEmployeeWorkedDayReport() {
+
+        return "/reports/HRReports/employee_worked_day_report";
+    }
+
 
     public Department getFromDepartment() {
         return fromDepartment;
