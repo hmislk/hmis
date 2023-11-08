@@ -9,51 +9,26 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Good In Transit" >
+                    <p:panel header="Leave Form" >
 
                         <p:panelGrid columns="4" class="w-100">
-                            <p:outputLabel value="Date & Time" class="mx-2" >
+                            <p:outputLabel value="From Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value="" 
                                           class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-
-                            <p:outputLabel value="Receive Branch" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            
-                            <p:outputLabel value="Receive Store" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
-                            
                             
 
-                            <p:outputLabel value="Issue Branch" class="mx-2" >
+                            <p:outputLabel value="To Date" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
                             
-                            
-                            
-                            <p:outputLabel value="Issue Store" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            
-                            <p:outputLabel value="Item Name/Code" class="mx-2" >
+
+                            <p:outputLabel value="Staff" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -62,7 +37,7 @@
                             
                             
 
-                            <p:outputLabel value="Item Category" class="mx-2" >
+                            <p:outputLabel value="Leave Type" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -71,7 +46,7 @@
                             
                             
 
-                            <p:outputLabel value="Show only Pending Documents" class="mx-2" >
+                            <p:outputLabel value="Without Cancel" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -80,12 +55,26 @@
                             
                             
                             
-                            <p:outputLabel value="Transit Store/Staff" class="mx-2" >
+                            <p:outputLabel value="Leave Approved Person" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Search Created Date " class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+
+                            <p:outputLabel value="Search Shift Date " class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             
                             
 
@@ -104,61 +93,40 @@
                                      paginator="true"
                                      rows="10">
 
-                            <p:column headerText="Item Code">
+                            <p:column headerText="Form Number ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Issue Qty">
+                            <p:column headerText="Staff">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Issue Doc. Type ">
+                            <p:column headerText="Code ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Issuing Branch">
+                            <p:column headerText="From">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Issuing Store	">
+                            <p:column headerText="To">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Issue Doc. Approval Date">
+                            <p:column headerText="Leave Type ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Issue Prepared By">
+                            <p:column headerText="Shift Name ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Receipt Qty">
+                            <p:column headerText="Request Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Receipt Stock Value">
+                            <p:column headerText="Approved By">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Receipt Approval Stock Value">
+                            <p:column headerText="Leave Approved Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Receipt Doc. No">
+                            <p:column headerText="Comment">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Receipt Doc. Type ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receiving Branch">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receiving Store">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Doc. Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Doc. Approval Date">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Prepared By">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Approved By">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Receipt Approval Status">
+                            <p:column headerText="Creater ">
                                 <h:outputText value="" />
                             </p:column>
 
