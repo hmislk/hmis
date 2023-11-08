@@ -11,7 +11,7 @@
         <ui:composition template="/reports/index.xhtml" class="w-100 border">
             <ui:define name="subcontent">
                 <h:form class="w-100">
-                    <p:panel header="Daily Return" class="w-100">
+                    <p:panel header="Income Category Wise Report" class="w-100">
                         <h:panelGrid columns="5" class="w-100 ">
                             <p:outputLabel value="From (Billed) Date" >
                             </p:outputLabel>
@@ -28,42 +28,70 @@
                             <p:selectOneMenu value="#{reportController.institution}" id="institutionMenu" required="true">
                                 <f:selectItem itemLabel="Select Institution Type"/>
                                 <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>
+                                <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
                             </p:selectOneMenu>
                             <p:spacer/>
-                            <p:outputLabel value="Department">
+                            <!--                            <p:outputLabel value="Department">
+                                                        </p:outputLabel>
+                                                        <p:selectOneMenu 
+                                                            id="cmdDepartment"
+                                                            value="#{reportController.department}" 
+                                                            filter="true"
+                                                            >
+                                                            <f:selectItem itemLabel="All"></f:selectItem>
+                                                            <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
+                                                                           var="d"
+                                                                           itemLabel="#{d.name}"
+                                                                           itemValue="#{d}"></f:selectItems>
+                                                        </p:selectOneMenu>-->
+
+                            <p:outputLabel value="Service Group" >
                             </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select service group"/>
+
                             </p:selectOneMenu>
 
+
+                            <p:outputLabel value="Visit type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select visit type"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer></p:spacer>
+                            <p:outputLabel value="Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select type"/>
+                            </p:selectOneMenu>
                             
-                           
-                            
+                            <p:outputLabel value="Pay Mode" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select type"/>
+                            </p:selectOneMenu>
+                            <p:spacer></p:spacer>
                             <p:outputLabel value="Professionality" for="institutionMenu"></p:outputLabel>
                             <p:selectOneRadio>
                                 <f:selectItem itemLabel="With Professional"></f:selectItem>
                                 <f:selectItem itemLabel="Without Professional"></f:selectItem>
                             </p:selectOneRadio>
                             
-                           <p:outputLabel value="Type" for=""></p:outputLabel>
-                            <p:selectOneRadio>
-                                <f:selectItem itemLabel="Summary"></f:selectItem>
-                                <f:selectItem itemLabel="Detail"></f:selectItem>
-                            </p:selectOneRadio>
-                           <p:spacer/>
-                           <p:commandButton ajax="false" value="Process" action="null" >
+                            <p:outputLabel value="Admission Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select type"/>
+                                <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                            </p:selectOneMenu>
+                            <p:spacer></p:spacer><!-- comment -->
+                            <p:spacer></p:spacer><!-- comment -->
+                             <p:spacer></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" >
                             </p:commandButton>
                         </h:panelGrid><br />
-                        
+
                         <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
                                      rowKey="#{b}" 
                                      rows="#{searchController.rows}"
@@ -73,22 +101,43 @@
                                      rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
 
                             <f:facet name="header" >
-                                <p:outputLabel value="Asset Register Reports" />                                
+                                <p:outputLabel value="Income Category Wise Report" />                                
                             </f:facet>
-                            
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Item Service" >
+                                    <p:outputLabel value="Group Name" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Item Count" >
+                                    <p:outputLabel value="Quantity" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Base Price" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Discount" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Sponser Discount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Hospital Fee" >
@@ -98,18 +147,18 @@
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Discount Amount" >
-                                    </p:outputLabel>
-                                </f:facet> 
-                            </p:column>
-                            
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Total Hospital Fee" >
+                                    <p:outputLabel value="Sponser Payable" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
                             
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Patient Fee" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Professional Fee" >
@@ -119,12 +168,10 @@
                             
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Total Amount" >
+                                    <p:outputLabel value="Total" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
-                            
-                           
                             
                         </p:dataTable>
 
