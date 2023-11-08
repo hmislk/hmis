@@ -49,6 +49,7 @@ import com.divudi.facade.BillSessionFacade;
 import com.divudi.facade.PatientFacade;
 import com.divudi.facade.PatientInvestigationFacade;
 import com.divudi.facade.PersonFacade;
+import com.divudi.facade.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -260,6 +261,33 @@ public class BillPackageMedicalController implements Serializable {
         }
     }
 
+    private Patient savePatient(Patient p) {
+
+        if (p == null) {
+            return null;
+        }
+        if (p.getPerson() == null) {
+            return null;
+        }
+        
+        if (p.getPerson().getId() == null) {
+            p.getPerson().setCreater(sessionController.getLoggedUser());
+            p.getPerson().setCreatedAt(new Date());
+            personFacade.create(p.getPerson());
+        } else {
+            personFacade.edit(p.getPerson());
+        }
+        
+        if (p.getId() == null) {
+            p.setCreater(sessionController.getLoggedUser());
+            p.setCreatedAt(new Date());
+            patientFacade.create(p);
+        } else {
+            patientFacade.edit(p);
+        }
+        
+        return p;
+    }
     public void putToBills() {
         bills = new ArrayList<>();
         Set<Department> billDepts = new HashSet<>();
@@ -286,13 +314,21 @@ public class BillPackageMedicalController implements Serializable {
             bills.add(myBill);
         }
     }
+    
+    public String navigateToMedicalPakageBillingFromMenu() {
+        clearBillValues();
+        setSearchedPatient(getNewPatient());
+
+        return "/opd_bill_package_medical";
+    }
+
 
     public void settleBill() {
 
         if (errorCheck()) {
             return;
         }
-        savePatient();
+        savePatient(getSearchedPatient());
         if (getBillBean().checkDepartment(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp);

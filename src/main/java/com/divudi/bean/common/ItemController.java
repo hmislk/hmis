@@ -1109,7 +1109,7 @@ public class ItemController implements Serializable {
         List<Item> suggestions;
         String sql;
         if (query == null) {
-            suggestions = new ArrayList<>();
+            suggestions = new ArrayList<>();    
         } else {
             sql = "select c from Item c where c.retired=false "
                     + " and (c.inactive=false or c.inactive is null) "
