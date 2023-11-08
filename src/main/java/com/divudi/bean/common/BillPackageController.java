@@ -126,6 +126,7 @@ public class BillPackageController implements Serializable {
 
     Institution referredByInstitution;
     String referralId;
+    private Patient newPatient;
 
     public PaymentMethod getPaymentMethod() {
         return paymentMethod;
@@ -541,6 +542,26 @@ public class BillPackageController implements Serializable {
         getLstBillItems();
         calTotals();
     }
+    
+    public Patient getNewPatient() {
+        if (newPatient == null) {
+            newPatient = new Patient();
+            Person p = new Person();
+            
+            newPatient.setPerson(p);
+        }
+        return newPatient;
+    }
+    
+    public String navigateToMedicalPakageBillingFromMenu() {
+        clearBillValues();
+        setSearchedPatient(getNewPatient());
+//        appointmentController.prepereForInwardAppointPatient();
+//        appointmentController.setSearchedPatient(getCurrent());
+//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+//        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/opd_bill_package_medical";
+    }
 
     public void clearBillValues() {
         setSearchedPatient(null);
@@ -901,6 +922,10 @@ public class BillPackageController implements Serializable {
         printPreview = false;
         searchedPatient = patient;
         return "/opd/opd_bill_package";
+    }
+
+    public void setNewPatient(Patient newPatient) {
+        this.newPatient = newPatient;
     }
 
     /**
