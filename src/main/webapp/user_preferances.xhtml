@@ -13,6 +13,10 @@
                 <div class="row d-flex justify-content-center align-items-center" style="height: 100vh;">
                     <div class="col-2"></div>
                     <div class="col-8">
+                        <h1>
+                            <h:outputLabel value="/#{sessionController.primeTheme}/theme.css"/>
+                        </h1>
+                        
                         <h:form>
                             <p:panel header="User Preferances" class="w-75" >
                                 <f:facet name="header" >
@@ -26,6 +30,7 @@
                                         class="w-75"
                                         id="themeSelectMenu" 
                                         value="#{themeController.theme}">
+                                        <f:selectItem itemLabel="Select" ></f:selectItem>
                                         <f:selectItems value="#{themeController.themes}" />
                                     </p:selectOneMenu>
 
@@ -34,8 +39,7 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         value="Save" 
-                                        action="#{themeController.saveTheme}"
-                                        onclick="PrimeFaces.changeTheme($('#{themeController.theme}'));"></p:commandButton>
+                                        action="#{themeController.saveTheme}"></p:commandButton>
                                 </f:facet>
                             </p:panel>
                            
