@@ -14,6 +14,7 @@ import com.divudi.entity.Doctor;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Item;
 import com.divudi.entity.Patient;
+import com.divudi.entity.Service;
 import com.divudi.entity.Speciality;
 import com.divudi.entity.lab.Investigation;
 import com.divudi.entity.lab.Machine;
@@ -80,6 +81,7 @@ public class ReportController implements Serializable {
 
     private Investigation investigation;
     private Speciality currentSpeciality;
+    private Service service;
 
     private String priorityType;
     private String patientMrn;
@@ -963,4 +965,13 @@ public class ReportController implements Serializable {
         this.paymentMethod = paymentMethod;
     }
 
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
+    }
+
+    
 }
