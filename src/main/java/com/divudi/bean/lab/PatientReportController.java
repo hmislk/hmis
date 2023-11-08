@@ -39,6 +39,7 @@ import com.divudi.facade.PatientReportFacade;
 import com.divudi.facade.PatientReportItemValueFacade;
 import com.divudi.facade.SmsFacade;
 import com.divudi.facade.TestFlagFacade;
+import com.divudi.facade.UserPreferenceFacade;
 import com.divudi.facade.util.JsfUtil;
 import com.lowagie.text.DocumentException;
 import java.io.File;
@@ -240,16 +241,19 @@ public class PatientReportController implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
+        System.out.println("encryptedPatientReportId = " + encryptedPatientReportId);
 
         String decodedIdStr;
         try {
             decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
+            System.out.println("decodedIdStr = " + decodedIdStr);
         } catch (UnsupportedEncodingException e) {
             // Handle the exception, possibly with logging
             return;
         }
 
         String idStr = getSecurityController().decrypt(decodedIdStr);
+        System.out.println("idStr = " + idStr);
         if (idStr == null || idStr.trim().isEmpty()) {
             // Handle the situation where decryption returns null or an empty string
             return;
@@ -258,12 +262,59 @@ public class PatientReportController implements Serializable {
         Long id;
         try {
             id = Long.parseLong(idStr);
+            System.out.println("id = " + id);
         } catch (NumberFormatException e) {
             // Handle the exception, possibly with logging
             return;
         }
 
         PatientReport pr = getFacade().find(id);
+        System.out.println("pr = " + pr);
+        if (pr != null) {
+            currentPatientReport = pr;
+        }
+    }
+
+    public void preparePatientReportForReportLink() {
+        currentPatientReport = null;
+        if (encryptedPatientReportId == null) {
+            return;
+        }
+        System.out.println("encryptedPatientReportId = " + encryptedPatientReportId);
+
+        String decodedIdStr;
+        try {
+            decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
+            System.out.println("decodedIdStr = " + decodedIdStr);
+        } catch (UnsupportedEncodingException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if(securityKey==null||securityKey.trim().equals("")){
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
+
+        String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId,securityKey);
+        
+        System.out.println("idStr = " + idStr);
+        if (idStr == null || idStr.trim().isEmpty()) {
+            // Handle the situation where decryption returns null or an empty string
+            return;
+        }
+
+        Long id;
+        try {
+            id = Long.parseLong(idStr);
+            System.out.println("id = " + id);
+        } catch (NumberFormatException e) {
+            // Handle the exception, possibly with logging
+            return;
+        }
+
+        PatientReport pr = getFacade().find(id);
+        System.out.println("pr = " + pr);
         if (pr != null) {
             currentPatientReport = pr;
         }
@@ -1117,15 +1168,37 @@ public class PatientReportController implements Serializable {
     }
 
     public String smsBody(PatientReport r) {
+        String securityKey = sessionController.getApplicationPreference().getEncrptionKey();
+        if(securityKey==null||securityKey.trim().equals("")){
+            sessionController.getApplicationPreference().setEncrptionKey(securityController.generateRandomKey(10));
+            sessionController.savePreferences(sessionController.getApplicationPreference());
+        }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
+        System.out.println("r.getId().toString() = " + r.getId().toString());
+        String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(),securityKey);
+        String url = commonController.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
+        System.out.println("url = " + url);
+        String b = "Your "
+                + r.getPatientInvestigation().getInvestigation().getName()
+                + " is ready. "
+                + url;
+        return b;
+    }
+    
+    public String smsBody(PatientReport r, String old) {
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, 1);
+        System.out.println("r.getId().toString() = " + r.getId().toString());
         String temId = getSecurityController().encrypt(r.getId().toString());
+        System.out.println("temId = " + temId);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             // Handle the exception
         }
         String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
+        System.out.println("url = " + url);
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
