@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Leave Form" >
+                    <p:panel header="Stock Ledger" >
 
                         <p:panelGrid columns="4" class="w-100">
                             <p:outputLabel value="From Date" class="mx-2" >
@@ -28,7 +28,7 @@
 
                             
 
-                            <p:outputLabel value="Staff" class="mx-2" >
+                            <p:outputLabel value="Branch/Institution" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -37,7 +37,7 @@
                             
                             
 
-                            <p:outputLabel value="Leave Type" class="mx-2" >
+                            <p:outputLabel value="Store" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -46,7 +46,7 @@
                             
                             
 
-                            <p:outputLabel value="Without Cancel" class="mx-2" >
+                            <p:outputLabel value="Item" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -55,29 +55,14 @@
                             
                             
                             
-                            <p:outputLabel value="Leave Approved Person" class="mx-2" >
+                            <p:outputLabel value="Document Type" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
                             
-                            <p:outputLabel value="Search Created Date " class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value="" 
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-
                             
-
-                            <p:outputLabel value="Search Shift Date " class="mx-2" >
-                            </p:outputLabel>
-                            <p:datePicker value=""
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            
-                            
-
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center my-2">
@@ -93,40 +78,82 @@
                                      paginator="true"
                                      rows="10">
 
-                            <p:column headerText="Form Number ">
+                            <p:column headerText="S.No.">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Staff">
+                            <p:column headerText="Store">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Code ">
+                            <p:column headerText="Item Category / Drug Form">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="From">
+                            <p:column headerText="Item Code">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="To">
+                            <p:column headerText="Item Name">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Leave Type ">
+                            <p:column headerText="UOM">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift Name ">
+                            <p:column headerText="Transaction Type">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Request Date ">
+                            <p:column headerText="Doc No.">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Approved By">
+                            <p:column headerText="Doc Date">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Leave Approved Date ">
+                            <p:column headerText="Ref Doc No.">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Comment">
+                            <p:column headerText="Ref Doc Date">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Creater ">
+                            <p:column headerText="From Store">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="To Store">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Document Type">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Stock In Quantity">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Stock Out Quantity">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Closing Stock">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Rate">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Closing Stock Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Locator">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Batch Code">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="MRP">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Expiry Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Inserted Date">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="UserName">
                                 <h:outputText value="" />
                             </p:column>
 
