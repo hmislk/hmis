@@ -241,19 +241,16 @@ public class PatientReportController implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
-        System.out.println("encryptedPatientReportId = " + encryptedPatientReportId);
 
         String decodedIdStr;
         try {
             decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
-            System.out.println("decodedIdStr = " + decodedIdStr);
         } catch (UnsupportedEncodingException e) {
             // Handle the exception, possibly with logging
             return;
         }
 
         String idStr = getSecurityController().decrypt(decodedIdStr);
-        System.out.println("idStr = " + idStr);
         if (idStr == null || idStr.trim().isEmpty()) {
             // Handle the situation where decryption returns null or an empty string
             return;
@@ -262,14 +259,12 @@ public class PatientReportController implements Serializable {
         Long id;
         try {
             id = Long.parseLong(idStr);
-            System.out.println("id = " + id);
         } catch (NumberFormatException e) {
             // Handle the exception, possibly with logging
             return;
         }
 
         PatientReport pr = getFacade().find(id);
-        System.out.println("pr = " + pr);
         if (pr != null) {
             currentPatientReport = pr;
         }
@@ -280,12 +275,10 @@ public class PatientReportController implements Serializable {
         if (encryptedPatientReportId == null) {
             return;
         }
-        System.out.println("encryptedPatientReportId = " + encryptedPatientReportId);
 
         String decodedIdStr;
         try {
             decodedIdStr = URLDecoder.decode(encryptedPatientReportId, "UTF-8");
-            System.out.println("decodedIdStr = " + decodedIdStr);
         } catch (UnsupportedEncodingException e) {
             // Handle the exception, possibly with logging
             return;
@@ -298,7 +291,6 @@ public class PatientReportController implements Serializable {
 
         String idStr = getSecurityController().decryptAlphanumeric(encryptedPatientReportId,securityKey);
         
-        System.out.println("idStr = " + idStr);
         if (idStr == null || idStr.trim().isEmpty()) {
             // Handle the situation where decryption returns null or an empty string
             return;
@@ -307,14 +299,12 @@ public class PatientReportController implements Serializable {
         Long id;
         try {
             id = Long.parseLong(idStr);
-            System.out.println("id = " + id);
         } catch (NumberFormatException e) {
             // Handle the exception, possibly with logging
             return;
         }
 
         PatientReport pr = getFacade().find(id);
-        System.out.println("pr = " + pr);
         if (pr != null) {
             currentPatientReport = pr;
         }
@@ -671,16 +661,12 @@ public class PatientReportController implements Serializable {
 
             if (priv.getInvestigationItem().getFormatString() != null && !priv.getInvestigationItem().getFormatString().trim().equals("")) {
                 if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Varchar) {
-                    System.out.println("varchar");
                     double tmpDbl = CommonController.extractDoubleValue(priv.getStrValue());
                     priv.setStrValue(CommonController.formatNumber(tmpDbl, priv.getInvestigationItem().getFormatString()));
                     priv.setDoubleValue(tmpDbl);
                 } else if (priv.getInvestigationItem().getIxItemValueType() == InvestigationItemValueType.Double) {
-                    System.out.println("double");
                     Double numberWithLargeNumberOfDecimals = priv.getDoubleValue();
-                    System.out.println("numberWithLargeNumberOfDecimals = " + numberWithLargeNumberOfDecimals);
                     Double numberWithFormatter = CommonController.formatDouble(numberWithLargeNumberOfDecimals, priv.getInvestigationItem().getFormatString());
-                    System.out.println("numberWithFormatter = " + numberWithFormatter);
                     priv.setDoubleValue(numberWithFormatter);
                     priv.setStrValue(numberWithFormatter + "");
                 }
@@ -1175,10 +1161,8 @@ public class PatientReportController implements Serializable {
         }
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        System.out.println("r.getId().toString() = " + r.getId().toString());
         String temId = getSecurityController().encryptAlphanumeric(r.getId().toString(),securityKey);
         String url = commonController.getBaseUrl() + "faces/requests/ix.xhtml?id=" + temId;
-        System.out.println("url = " + url);
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
@@ -1189,16 +1173,13 @@ public class PatientReportController implements Serializable {
     public String smsBody(PatientReport r, String old) {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
-        System.out.println("r.getId().toString() = " + r.getId().toString());
         String temId = getSecurityController().encrypt(r.getId().toString());
-        System.out.println("temId = " + temId);
         try {
             temId = URLEncoder.encode(temId, "UTF-8");
         } catch (UnsupportedEncodingException ex) {
             // Handle the exception
         }
         String url = commonController.getBaseUrl() + "faces/requests/report1.xhtml?id=" + temId;
-        System.out.println("url = " + url);
         String b = "Your "
                 + r.getPatientInvestigation().getInvestigation().getName()
                 + " is ready. "
