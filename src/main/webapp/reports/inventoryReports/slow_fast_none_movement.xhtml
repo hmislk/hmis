@@ -9,9 +9,36 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Leave Form" >
+                    <p:panel header="Slow/Fast/None Movement Report" >
 
                         <p:panelGrid columns="4" class="w-100">
+                            
+
+                            
+                            <p:outputLabel value="Branch" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+
+                            <p:outputLabel value="Store" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            <p:outputLabel value="Date Slab" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
                             <p:outputLabel value="From Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value="" 
@@ -19,34 +46,14 @@
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
                             
-
                             <p:outputLabel value="To Date" class="mx-2" >
                             </p:outputLabel>
                             <p:datePicker value=""
                                           class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-
-                            
-
-                            <p:outputLabel value="Staff" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
                             
                             
-
-                            <p:outputLabel value="Leave Type" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            
-
-                            <p:outputLabel value="Without Cancel" class="mx-2" >
+                            <p:outputLabel value="Drug Form" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -55,26 +62,40 @@
                             
                             
                             
-                            <p:outputLabel value="Leave Approved Person" class="mx-2" >
+                            <p:outputLabel value="Item Name" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
                             
-                            <p:outputLabel value="Search Created Date " class="mx-2" >
+                            
+                            
+                            <p:outputLabel value="Rreport Type" class="mx-2" >
                             </p:outputLabel>
-                            <p:datePicker value="" 
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
                             
 
-                            <p:outputLabel value="Search Shift Date " class="mx-2" >
+                            <p:outputLabel value="Sort Type" class="mx-2" >
                             </p:outputLabel>
-                            <p:datePicker value=""
-                                          class="w-100"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems ></f:selectItems>
+                            </p:selectOneMenu>
+                            
+                            
+                            
+                            <p:outputLabel value="Bill Type" class="mx-2" >
+                            </p:outputLabel>
+                            <p:selectOneMenu class="w-100">
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems></f:selectItems>
+                            </p:selectOneMenu>
+                            
                             
                             
 
@@ -93,40 +114,34 @@
                                      paginator="true"
                                      rows="10">
 
-                            <p:column headerText="Form Number ">
+                            <p:column headerText="Sl No.">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Staff">
+                            <p:column headerText="Item Code">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Code ">
+                            <p:column headerText="Item Name ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="From">
+                            <p:column headerText="Drug Form">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="To">
+                            <p:column headerText="Supplier ( Last Purchase )">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Leave Type ">
+                            <p:column headerText="Quantity">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift Name ">
+                            <p:column headerText="Cost Value">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Request Date ">
+                            <p:column headerText="Sale Value">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Approved By">
+                            <p:column headerText="Value of QIH">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Leave Approved Date ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Comment">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Creater ">
+                            <p:column headerText="QIH">
                                 <h:outputText value="" />
                             </p:column>
 
