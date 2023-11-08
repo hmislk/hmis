@@ -694,6 +694,11 @@ public class ReportController implements Serializable {
 
         return "/reports/inpatientReports/admission_category_wise_admission";
     }
+     
+     public String navigateToStockTransferReport() {
+
+        return "/reports/inventoryReports/stock_transfer_report";
+    }
 
 
     public Department getFromDepartment() {
