@@ -122,9 +122,16 @@
                                      rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
 
                             <f:facet name="header" >
-                                <p:outputLabel value="Income Category Wise Report" />                                
+                                <p:outputLabel value="Service Category Wise Bill Detail Report" />                                
                             </f:facet>
 
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Group Code" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
                                     <p:outputLabel value="Group Name" >
@@ -134,55 +141,41 @@
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Quantity" >
+                                    <p:outputLabel value="Service Code" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Base Price" >
+                                    <p:outputLabel value="Service Name" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Discount" >
+                                    <p:outputLabel value="Consultant Name" >
                                     </p:outputLabel>
                                 </f:facet> 
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Sponser Discount" >
+                                    <p:outputLabel value="Quantity" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Hospital Fee" >
+                                    <p:outputLabel value="Quantity Total" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
 
                             <p:column style="text-align: left;" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Sponser Payable" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Patient Fee" >
-                                    </p:outputLabel>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column style="text-align: left;" >
-                                <f:facet name="header" >
-                                    <p:outputLabel value="Professional Fee" >
+                                    <p:outputLabel value="Amount" >
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -193,6 +186,8 @@
                                     </p:outputLabel>
                                 </f:facet>
                             </p:column>
+
+                            
 
                         </p:dataTable>
 
