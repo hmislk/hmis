@@ -9,19 +9,15 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="consumption" >
+                    <p:panel header="Closing Stock Report" >
                         <p:panelGrid columns="4" class="w-100">
 
-                            <p:outputLabel value="  From Date">
+                            <p:outputLabel value="  Till Date">
                             </p:outputLabel>
                             <p:datePicker value="#{reportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" ></p:datePicker>
-                            <p:outputLabel value="  To Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                          class=""></p:datePicker>
+
 
                             <p:outputLabel value="Branch" >
                             </p:outputLabel>
@@ -63,7 +59,7 @@
                             </p:selectOneMenu>
 
 
-                            <p:outputLabel value="Items" >
+                            <p:outputLabel value="Item Code" >
                             </p:outputLabel>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -73,7 +69,18 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
+
+                            <p:outputLabel value="Item Name" >
+                            </p:outputLabel>
+                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value=""
+                                               var="i"
+                                               itemLabel=""
+                                               itemValue=""
+                                               ></f:selectItems>
+                            </p:selectOneMenu>
+
                             <p:outputLabel value="Stock type" >
                             </p:outputLabel>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
@@ -84,8 +91,8 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Stock Procurement Type" >
+
+                            <p:outputLabel value="Is Consignment Item" >
                             </p:outputLabel>
                             <p:selectOneMenu value="" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -95,8 +102,8 @@
                                                itemValue=""
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
-                            
+
+
 
                         </p:panelGrid>
 
@@ -110,26 +117,50 @@
 
 
                         <p:dataTable id="tbl" value="" 
-                                     paginator="true"
+                                     
                                      rows="10">
-                            
-                            <p:column headerText="Department summery Department">
+
+                            <p:column headerText="S.No">
                                 <h:outputText value="" />
                             </p:column>
 
-                            <p:column headerText="COvid-19 Expenses">
+                            <p:column headerText="Item Category">
                                 <h:outputText value="" />
                             </p:column>
 
-                            <p:column headerText="Other Expenses">
+                            <p:column headerText="Item Code">
                                 <h:outputText value="" />
                             </p:column>
 
-                            <p:column headerText="Net Total">
+                            <p:column headerText="Item Name">
                                 <h:outputText value="" />
                             </p:column>
 
-                            
+                            <p:column headerText="UOM">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Closing Stock">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Closing Stock Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="ON Date">
+                                <h:outputText value="" />
+                            </p:column>
+
+
+                            <f:facet name="footer">
+                                
+                                <p:column>
+                                    <h:outputText value="Total:" />
+                                </p:column>
+                                <p:column>
+                                    <h:outputText value="" />
+                                </p:column>
+                            </f:facet>
+
+
                         </p:dataTable>
                     </p:panel>
 
