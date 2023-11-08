@@ -150,6 +150,9 @@ public class PatientController implements Serializable {
     private PaymentSchemeController paymentSchemeController;
     @Inject
     BillBeanController billBeanController;
+    @Inject
+    BillPackageMedicalController billPackageMedicalController;
+    
     /**
      *
      * Class Variables
@@ -507,6 +510,20 @@ public class PatientController implements Serializable {
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
         return "/inward/inward_appointment";
+    }
+    
+    public String navigateToMedicalPakageBillingFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        billPackageMedicalController.clearBillValues();
+        billPackageMedicalController.setSearchedPatient(getCurrent());
+//        appointmentController.prepereForInwardAppointPatient();
+//        appointmentController.setSearchedPatient(getCurrent());
+//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+//        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/opd_bill_package_medical";
     }
 
     public String navigateToBillingForCashierFromPatientProfile() {
