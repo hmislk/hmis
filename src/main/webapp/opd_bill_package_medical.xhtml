@@ -55,8 +55,11 @@
                                     <h:panelGrid columns="1" class="w-100">
 
                                         <h:panelGroup id="panelPatient" class="w-100">
-
-                                            <p:tabView id="tvPt" class="w-100"  >
+                                            
+                                            <h:panelGrid columns="1" >
+                                                <ez:patientDetail patient="#{billPackageMedicalController.searchedPatient}"/>  
+                                                <h1>#{billPackageMedicalController.searchedPatient}</h1>
+<!--                                            <p:tabView id="tvPt" class="w-100"  >
                                                 <p:ajax event="tabChange"  process="@this" listener="#{billPackageMedicalController.onTabChange}" />
 
                                                 <p:tab id="tabNewPt" title="New Patient"  >
@@ -91,8 +94,8 @@
 
                                                 </p:tab>
 
-                                            </p:tabView>
-
+                                            </p:tabView>-->
+                                            </h:panelGrid>
                                         </h:panelGroup>
 
                                         <h:panelGroup id="panelIx" class="w-100">
