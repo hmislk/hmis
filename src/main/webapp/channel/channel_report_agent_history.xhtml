@@ -12,12 +12,12 @@
         <h:form>
             <p:panel header="Cannel Agent Reperence Book">
                 <p:panel>
-                    <h:panelGrid columns="2" >
+                    <p:panelGrid columns="2" >
                         <h:outputLabel value="From Date"/>
-                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss"  >
+                        <p:calendar value="#{channelReportController.fromDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  >
                         </p:calendar>
                         <h:outputLabel value="To Date"/>
-                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMM yyyy HH:mm:ss" >
+                        <p:calendar value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss" >
                         </p:calendar>
                         <p:outputLabel value="Agent Name" />
                         <p:autoComplete converter="deal" value="#{channelReportController.institution}" styleClass="mediuminput"
@@ -27,10 +27,11 @@
                             <p:column>#{vt.name}</p:column>
                         </p:autoComplete>
 
-
-                        <p:commandButton action="#{channelReportController.createAgentHistoryTable}" value="Fill" ajax="false" ></p:commandButton> 
-                        <h:panelGrid columns="2">
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
+                    </p:panelGrid> 
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                            <p:commandButton action="#{channelReportController.createAgentHistoryTable}" value="Fill" ajax="false" ></p:commandButton> 
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-right: 10px; margin-left: 10px">
                                 <p:printer target="reportPrint"  />
                             </p:commandButton>
 
@@ -38,22 +39,24 @@
                                 <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_history"  />
                             </p:commandButton>
                         </h:panelGrid>
-                    </h:panelGrid> 
+                    
                 </p:panel>
                 <p:panel id="reportPrint">
                     <p:dataTable value="#{channelReportController.agentHistorys}" var="a" id="tbl1" rowIndexVar="i">
                         <f:facet name="header">
-                            <p:outputLabel value="From - " />
-                            <p:outputLabel value="#{channelReportController.fromDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            </p:outputLabel>
-                            <p:outputLabel value=" - To - " />
-                            <p:outputLabel value="#{channelReportController.toDate}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            </p:outputLabel>
                             <p:outputLabel value=" Channel Agent " />
                             <p:outputLabel value="#{channelReportController.institution.name}" />
-                            <p:outputLabel value=" History" />
+                            <p:outputLabel class="ml-1" value=" History" />
+                            <br></br>
+                            <p:outputLabel value="From :" />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.fromDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            </p:outputLabel>
+                            <p:outputLabel class="ml-5" value="To :" />
+                            <p:outputLabel class="ml-2" value="#{channelReportController.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
+                            </p:outputLabel>
+                            
                         </f:facet>
                         <p:column>
                             <f:facet name="header">
