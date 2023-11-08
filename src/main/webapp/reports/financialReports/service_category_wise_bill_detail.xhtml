@@ -29,6 +29,7 @@
                             <p:datePicker
                                 pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
+                                <p:spacer width="20"></p:spacer>
                             <p:outputLabel value="Admission Type" for="institutionMenu"></p:outputLabel>
                             <p:selectOneMenu id="institutionMenu" required="true">
                                 <f:selectItem itemLabel="Select Institution Type"/>
@@ -72,6 +73,8 @@
                                                itemValue="#{d}"></f:selectItems>
                             </p:selectOneMenu>
 
+                            <p:spacer width="20"></p:spacer>
+                            
                             <p:outputLabel value="Visit Type" >
                             </p:outputLabel>
                             <p:selectOneMenu >
@@ -86,6 +89,7 @@
 
                             </p:selectOneMenu>
 
+                            <p:spacer width="20"></p:spacer>
 
                             <p:outputLabel value="Service Name" >
                             </p:outputLabel>
@@ -94,7 +98,7 @@
 
                             </p:selectOneMenu>
 
-                            <p:spacer></p:spacer>
+                           
                             <p:outputLabel value="Type" >
                             </p:outputLabel>
                             <p:selectOneMenu >
