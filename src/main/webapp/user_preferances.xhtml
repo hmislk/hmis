@@ -9,30 +9,29 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                
+
                 <div class="row d-flex justify-content-center align-items-center" style="height: 100vh;">
                     <div class="col-2"></div>
                     <div class="col-8">
                         <h1>
                             <h:outputLabel value="/#{sessionController.primeTheme}/theme.css"/>
                         </h1>
-                        
+
                         <h:form>
                             <p:panel header="User Preferances" class="w-75" >
                                 <f:facet name="header" >
                                     <h:outputText value="User Preferences"></h:outputText>
                                 </f:facet>
-                                
+
                                 <p:panelGrid columns="3" class="w-100">
                                     <h:outputText value="Theme"></h:outputText>
                                     <p:spacer height="1" width="30"></p:spacer>
-                                    <p:selectOneMenu 
-                                        class="w-75"
-                                        id="themeSelectMenu" 
-                                        value="#{themeController.theme}">
-                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                        <f:selectItems value="#{themeController.themes}" />
+                                    <p:selectOneMenu class="w-75" id="themeSelectMenu" value="#{themeController.theme}">
+                                        <f:selectItem itemLabel="Select Theme" itemValue="" noSelectionOption="true" />
+                                        <f:selectItems value="#{themeController.themes.entrySet()}" var="entry" 
+                                                       itemLabel="#{entry.value}" itemValue="#{entry.key}" />
                                     </p:selectOneMenu>
+
 
                                 </p:panelGrid>
                                 <f:facet name="footer" >
@@ -42,7 +41,7 @@
                                         action="#{themeController.saveTheme}"></p:commandButton>
                                 </f:facet>
                             </p:panel>
-                           
+
                         </h:form>
                     </div>
                     <div class="col-2"></div>
