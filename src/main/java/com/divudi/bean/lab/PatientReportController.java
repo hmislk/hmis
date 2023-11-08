@@ -236,6 +236,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void preparePatientReportByIdForRequestsWithoutExpiary() {
+        System.out.println("preparePatientReportByIdForRequestsWithoutExpiary");
         currentPatientReport = null;
         if (encryptedPatientReportId == null) {
             return;
