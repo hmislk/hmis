@@ -633,6 +633,41 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/online_form_status";
     }
+    
+    public String navigateToGoodInTransit() {
+
+        return "/reports/inventoryReports/good_in_transit";
+    }
+    
+    public String navigateToGrnReport() {
+
+        return "/reports/inventoryReports/grn_report";
+    }
+    
+    public String navigateToSlowFastNoneMovement() {
+
+        return "/reports/inventoryReports/slow_fast_none_movement";
+    }
+    
+    public String navigateToBeforeStockTaking() {
+
+        return "/reports/inventoryReports/before_stock_taking";
+    }
+    
+    public String navigateToAfterStockTaking() {
+
+        return "/reports/inventoryReports/after_stock_taking";
+    }
+    
+    public String navigateToStockLedger() {
+
+        return "/reports/inventoryReports/stock_ledger";
+    }
+    
+    public String navigateToExpiryItem() {
+
+        return "/reports/inventoryReports/expiry_item";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
