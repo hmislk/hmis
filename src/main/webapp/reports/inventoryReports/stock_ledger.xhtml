@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Finger Print Approve" >
+                    <p:panel header="Leave Form" >
 
                         <p:panelGrid columns="4" class="w-100">
                             <p:outputLabel value="From Date" class="mx-2" >
@@ -26,35 +26,9 @@
                                           class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            <p:outputLabel value="Institution" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu
-                                value="#{reportController.fromInstitution}" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
                             
-                            
-                            
-                            <p:outputLabel value="Department" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu
-                                value="#{reportController.fromDepartment}" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
 
-                            <p:outputLabel value="Employee" class="mx-2" >
+                            <p:outputLabel value="Staff" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -63,7 +37,7 @@
                             
                             
 
-                            <p:outputLabel value="Staff Category" class="mx-2" >
+                            <p:outputLabel value="Leave Type" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -72,7 +46,7 @@
                             
                             
 
-                            <p:outputLabel value="Staff Designation" class="mx-2" >
+                            <p:outputLabel value="Without Cancel" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -81,60 +55,78 @@
                             
                             
                             
-                            <p:outputLabel value="Staff Roster" class="mx-2" >
+                            <p:outputLabel value="Leave Approved Person" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Search Created Date " class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                            
+
+                            <p:outputLabel value="Search Shift Date " class="mx-2" >
+                            </p:outputLabel>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
                             
                             
 
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center my-2">
-                            <p:commandButton class="m-2" ajax="false" value="Process Not Approved" action="null" >
+                            <p:commandButton class="m-2" ajax="false" value="Process" action="null" >
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Process Approved"
+                            <p:commandButton class="m-2" ajax="false" value="Download"
                                              action="null">
                             </p:commandButton>
-                            <p:commandButton class="m-2" ajax="false" value="Approved Selected"
-                                             action="null">
-                            </p:commandButton>
+                            
                         </div>
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
                                      rows="10">
 
-                            <p:column headerText="EMP No">
+                            <p:column headerText="Form Number ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="EMP Name">
+                            <p:column headerText="Staff">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Time Type">
+                            <p:column headerText="Code ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Verified Date">
+                            <p:column headerText="From">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Verified Time">
+                            <p:column headerText="To">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Logged Date">
+                            <p:column headerText="Leave Type ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Logged Time">
+                            <p:column headerText="Shift Name ">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Request Date ">
                                 <h:outputText value="" />
                             </p:column>
                             <p:column headerText="Approved By">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Approved At">
+                            <p:column headerText="Leave Approved Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Comments/Remarks">
+                            <p:column headerText="Comment">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Creater ">
                                 <h:outputText value="" />
                             </p:column>
 
