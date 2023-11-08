@@ -699,6 +699,12 @@ public class ReportController implements Serializable {
 
         return "/reports/inventoryReports/stock_transfer_report";
     }
+     
+     public String navigateToCostOfGoodsSold() {
+
+        return "/reports/inventoryReports/cost_of_goods_sold";
+    }
+
 
 
     public Department getFromDepartment() {
