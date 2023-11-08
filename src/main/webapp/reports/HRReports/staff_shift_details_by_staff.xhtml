@@ -10,25 +10,25 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Staff Shift Details By Staff Report" >
-                        <h:panelGrid columns="5" class="w-100">
+                        <p:panelGrid columns="4" class="w-100">
 
                             <p:outputLabel value="Salary Cycle" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
                             
-                            <p:spacer width="40px"></p:spacer>
+                            
                             
                             <p:outputLabel value="Staff" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
                             
-                        </h:panelGrid>
+                        </p:panelGrid>
                         
                         <div class="d-flex align-items-center my-2">
                             <p:commandButton class="m-2" ajax="false" value="Process" action="null" >

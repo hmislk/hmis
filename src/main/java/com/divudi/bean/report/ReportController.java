@@ -581,6 +581,56 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/fingerprint_record_no_shift_settled";
     }
+    
+    public String navigateToEmployeeWorkedDayReport() {
+
+        return "/reports/HRReports/employee_worked_day_report";
+    }
+    
+    public String navigateToEmployeeWorkedDayReportSalaryCycle() {
+
+        return "/reports/HRReports/employee_worked_day_report_salary_cycle";
+    }
+    
+    public String navigateToMonthendEmployeeWorkingTimeAndOvertime() {
+
+        return "/reports/HRReports/monthend_employee_working_Time_and_overtime";
+    }
+    
+    public String navigateToMonthEndEmployeeNoPayReportByMinutes() {
+
+        return "/reports/HRReports/month_end_employee_nopay_report_by_minutes";
+    }
+    
+    public String navigateToMonthEndEmployeeSummery() {
+
+        return "/reports/HRReports/month_end_employee_summery";
+    }
+    
+    public String navigateToFingerAnalysisReportBySalaryCycle() {
+
+        return "/reports/HRReports/finger_analysis_report_by_salary_cycle";
+    }
+    
+    public String navigateToFingerPrintApprove() {
+
+        return "/reports/HRReports/fingerprint_approve";
+    }
+    
+    public String navigateToLeaveForm() {
+
+        return "/reports/HRReports/leave_form";
+    }
+    
+    public String navigateToAdditionalFormReportVerification() {
+
+        return "/reports/HRReports/additional_form_report_veification";
+    }
+    
+    public String navigateToOnlineFormStatus() {
+
+        return "/reports/HRReports/online_form_status";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;

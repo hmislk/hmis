@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="Late In and Early Out Report" >
+                    <p:panel header="Leave Form" >
 
                         <p:panelGrid columns="4" class="w-100">
                             <p:outputLabel value="From Date" class="mx-2" >
@@ -26,35 +26,9 @@
                                           class="w-100"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            <p:outputLabel value="Institution" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu
-                                value="#{reportController.fromInstitution}" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{institutionController.collectingCentresAndManagedInstitutions}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
                             
-                            
-                            
-                            <p:outputLabel value="Department" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu
-                                value="#{reportController.fromDepartment}" 
-                                filter="true"
-                                class="w-100 ">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getInsDepartments(reportController.fromInstitution)}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
 
-                            <p:outputLabel value="Employee" class="mx-2" >
+                            <p:outputLabel value="Staff" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -63,14 +37,16 @@
                             
                             
 
-                            <p:outputLabel value="Staff Category" class="mx-2" >
+                            <p:outputLabel value="Leave Type" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
+                            
+                            
 
-                            <p:outputLabel value="Designation" class="mx-2" >
+                            <p:outputLabel value="Without Cancel" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -78,40 +54,29 @@
                             </p:selectOneMenu>
                             
                             
-
-                            <p:outputLabel value="Roster" class="mx-2" >
+                            
+                            <p:outputLabel value="Leave Approved Person" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
-
-                            <p:outputLabel value="Shift" class="mx-2" >
+                            
+                            <p:outputLabel value="Search Created Date " class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:datePicker value="" 
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
 
-                            
-                            <p:spacer ></p:spacer>
-                            <p:spacer ></p:spacer>
-                            
-                            <p:outputLabel value="In Minute" class="mx-2" >
-                            </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems ></f:selectItems>
-                            </p:selectOneMenu>
-                            
                             
 
-                            <p:outputLabel value="Out Minute" class="mx-2" >
+                            <p:outputLabel value="Search Shift Date " class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu class="w-100">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems></f:selectItems>
-                            </p:selectOneMenu>
+                            <p:datePicker value=""
+                                          class="w-100"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            
+                            
 
                         </p:panelGrid>
 
@@ -121,55 +86,47 @@
                             <p:commandButton class="m-2" ajax="false" value="Download"
                                              action="null">
                             </p:commandButton>
+                            
                         </div>
 
                         <p:dataTable id="tbl" value="" 
                                      paginator="true"
                                      rows="10">
 
-                            <p:column headerText="EMP No">
+                            <p:column headerText="Form Number ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="EMP Name">
+                            <p:column headerText="Staff">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Department Name ">
+                            <p:column headerText="Code ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift In Time ">
+                            <p:column headerText="From">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="In Checked ">
+                            <p:column headerText="To">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late In Minute Varified  ">
+                            <p:column headerText="Leave Type ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late In Minute Varified(With in 10 Mins) ">
+                            <p:column headerText="Shift Name ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Late In Minute Varified(Aftre 10 Mins) ">
+                            <p:column headerText="Request Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Shift Out Time ">
+                            <p:column headerText="Approved By">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Out Checked  ">
+                            <p:column headerText="Leave Approved Date ">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Early Out Minute Varified ">
+                            <p:column headerText="Comment">
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerText="Early Out Minute Varified(With in 10 Mins)  ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Early Out Minute Varified(Aftre 10 Mins) ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Late In Seconds Varified ">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Early Out Minute Varified (Seconds)">
+                            <p:column headerText="Creater ">
                                 <h:outputText value="" />
                             </p:column>
 

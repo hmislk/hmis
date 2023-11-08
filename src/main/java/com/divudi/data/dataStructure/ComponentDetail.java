@@ -5,12 +5,14 @@
  */
 package com.divudi.data.dataStructure;
 
+import com.divudi.bean.opd.OpdBillController;
 import com.divudi.data.PaymentMethod;
 import com.divudi.entity.Institution;
 import com.divudi.entity.Patient;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.inject.Inject;
 
 /**
  *
@@ -18,6 +20,8 @@ import java.util.List;
  */
 public class ComponentDetail {
 
+    @Inject
+    OpdBillController opdBillController;
     private String no;
     private String comment;
     private Institution institution;
