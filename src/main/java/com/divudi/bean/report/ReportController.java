@@ -631,6 +631,11 @@ public class ReportController implements Serializable {
 
         return "/reports/HRReports/online_form_status";
     }
+    
+    public String navigateToAdmissionDischargeReport() {
+
+        return "/reports/inpatientReports/admission_discharge_report";
+    }
 
     public Department getFromDepartment() {
         return fromDepartment;
