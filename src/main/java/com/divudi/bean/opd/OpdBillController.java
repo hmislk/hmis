@@ -1981,6 +1981,13 @@ public class OpdBillController implements Serializable {
         setVat(billVat);
         setNetPlusVat(getVat() + getNetTotal());
 
+        
+        if(getSessionController()!=null){
+            if(getSessionController().getLoggedPreference()!=null){
+                
+            }
+        }
+        
         if (getSessionController().getLoggedPreference().isPartialPaymentOfOpdBillsAllowed()) {
             ////// // System.out.println("cashPaid = " + cashPaid);
             ////// // System.out.println("billNet = " + billNet);
