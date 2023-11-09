@@ -705,6 +705,10 @@ public class ReportController implements Serializable {
         return "/reports/inventoryReports/cost_of_goods_sold";
     }
 
+     public String navigateToDiscount() {
+
+        return "/reports/financialReports/discount";
+    }
 
 
     public Department getFromDepartment() {
