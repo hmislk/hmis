@@ -781,6 +781,7 @@ public class SessionController implements Serializable, HttpSessionListener {
     private boolean isFirstVisit() {
         String j = "Select w from WebUser w order by w.id";
         WebUser ws = getFacede().findFirstByJpql(j);
+        System.out.println("ws = " + ws);
         if (ws == null) {
             UtilityController.addSuccessMessage("First Visit");
             return true;
