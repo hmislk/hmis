@@ -15,10 +15,7 @@
             <p:panel header="Cannel Agent Reperence Book">
                 <f:facet name="header">
                     <p:outputLabel value="Cannel Agent Reperence Book" />
-                    <p:commandButton id="btnBack" value="Back" 
-                                     action="/channel/channel_reports" style="float: right;"
-                                     ajax="false">
-                    </p:commandButton>
+                    
                 </f:facet>
                 <p:panel>
                     <h:panelGrid columns="2">
@@ -48,14 +45,18 @@
                             <p:inputText id="val2" value="#{channelReportTempController.searchKeyword.val1}" />
                         </h:panelGrid>
                     </h:panelGrid>
-                    <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBookIssuedBillList}" value="Fill" ajax="false" ></p:commandButton> 
-                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
+                    
+                    <h:panelGrid columns="3" class="my-2">
+                        <p:commandButton action="#{channelReportTempController.createChannelAgentReferenceBookIssuedBillList}" value="Fill" ajax="false" ></p:commandButton> 
+                    <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" style="margin-right: 10px; margin-left: 10px" >
                         <p:printer target="reportPrint"  />
                     </p:commandButton>
 
                     <p:commandButton actionListener="#{channelReportTempController.createChannelAgentReferenceBookIssuedBillList}" ajax="false" value="Excel" styleClass="noPrintButton"  >
                         <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_referece_book"  />
                     </p:commandButton> 
+                    </h:panelGrid>
+                    
 
                 </p:panel>
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder">

@@ -139,6 +139,8 @@ public class PatientController implements Serializable {
     @Inject
     OpdBillController opdBillController;
     @Inject
+    BillPackageController billPackageController;
+    @Inject
     OpdPreBillController opdPreBillController;
     @Inject
     AdmissionController admissionController;
@@ -148,6 +150,9 @@ public class PatientController implements Serializable {
     private PaymentSchemeController paymentSchemeController;
     @Inject
     BillBeanController billBeanController;
+    @Inject
+    BillPackageMedicalController billPackageMedicalController;
+    
     /**
      *
      * Class Variables
@@ -492,6 +497,8 @@ public class PatientController implements Serializable {
         admissionController.getCurrent().setPatient(current);
         return "/inward/inward_admission";
     }
+    
+    
 
     public String navigateToInwardAppointmentFromPatientProfile() {
         if (current == null) {
@@ -503,6 +510,20 @@ public class PatientController implements Serializable {
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
         return "/inward/inward_appointment";
+    }
+    
+    public String navigateToMedicalPakageBillingFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        billPackageMedicalController.clearBillValues();
+        billPackageMedicalController.setSearchedPatient(getCurrent());
+//        appointmentController.prepereForInwardAppointPatient();
+//        appointmentController.setSearchedPatient(getCurrent());
+//        appointmentController.getCurrentAppointment().setPatient(getCurrent());
+//        appointmentController.getCurrentBill().setPatient(getCurrent());
+        return "/opd_bill_package_medical";
     }
 
     public String navigateToBillingForCashierFromPatientProfile() {
@@ -555,6 +576,14 @@ public class PatientController implements Serializable {
             return "";
         }
         return opdBillController.navigateToNewOpdBill(current);
+    }
+    
+    public String navigateToOpdPackageBillFromOpdPatient() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        return billPackageController.navigateToNewOpdPackageBill(current);
     }
 
     public String navigateToOpdBillForCashier() {

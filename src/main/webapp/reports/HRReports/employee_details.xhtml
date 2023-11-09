@@ -10,11 +10,12 @@
             <ui:define name="subcontent">
                 <h:form >
                     <p:panel header="Employee Details Report" >
-                        <h:panelGrid columns="4" class="w-100">
+                        <p:panelGrid columns="4" class="w-100">
 
                             <p:outputLabel value="Institution" class="mx-2" >
                             </p:outputLabel>
                             <p:selectOneMenu
+                                class="w-100"
                                 value="#{reportController.fromInstitution}" 
                                 filter="true">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
@@ -41,7 +42,7 @@
                             
                             <p:outputLabel value="Staff Category" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
@@ -50,14 +51,14 @@
                             
                             <p:outputLabel value="Staff Designation" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
                             
                             <p:outputLabel value="Staff Roster" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
@@ -66,13 +67,13 @@
                             
                             <p:outputLabel value="Date" class="mx-2" >
                             </p:outputLabel>
-                            <p:datePicker  
+                            <p:datePicker class="w-100" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}">
                             </p:datePicker>
                             
                             <p:outputLabel value="Qualification" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems></f:selectItems>
                             </p:selectOneMenu>
@@ -81,12 +82,12 @@
                             
                             <p:outputLabel value="Without Resign" class="mx-2" >
                             </p:outputLabel>
-                            <p:selectOneMenu>
+                            <p:selectOneMenu class="w-100">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems ></f:selectItems>
                             </p:selectOneMenu>
                             
-                        </h:panelGrid>
+                        </p:panelGrid>
                         
                         <div class="d-flex align-items-center my-2">
                             <p:commandButton class="m-2" ajax="false" value="Process" action="null" >

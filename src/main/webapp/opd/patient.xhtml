@@ -91,8 +91,13 @@
                                     <p:outputLabel value="Credit Limit:" rendered="#{patientController.current.hasAnAccount}" />
                                     <p:outputLabel value="#{patientController.current.creditLimit}" rendered="#{patientController.current.hasAnAccount}" />
 
-
+                                   
+                                    
                                 </p:panelGrid>
+                                 <!-- Barcode -->
+                                    <h:panelGroup  style="text-align: center; width: 100%;" layout="block">
+                                        <p:barcode value="#{patientController.current.idStr}" type="code39" cache="false" style="width:20%;" />
+                                    </h:panelGroup>
                             </div>
                             <div  class="col-md-4 d-flex flex-column  gap-2" >
                                 <p:commandButton value="Admit" 
@@ -110,6 +115,12 @@
                                 <p:commandButton value="OPD Bill for Cashier"
                                                  class="w-100"
                                                  action="#{patientController.navigateToOpdBillFromOpdPatient()}" ajax="false" styleClass="mx-2">
+                                </p:commandButton>
+                                <p:commandButton value="OPD Packages" 
+                                                 action="#{patientController.navigateToOpdPackageBillFromOpdPatient()}" 
+                                                 ajax="false"
+                                                 class="w-100"
+                                                 styleClass="mx-2">
                                 </p:commandButton>
                                 <p:commandButton value="Accept Payments" action="#{patientController.toEmrPatientProfile()}" ajax="false" styleClass="mx-2">
                                 </p:commandButton>

@@ -1,0 +1,200 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body class="w-100 border">
+
+        <ui:composition template="/reports/index.xhtml" class="w-100 border">
+            <ui:define name="subcontent">
+                <h:form class="w-100">
+                    <p:panel header="Service Category Wise Bill Detail Report" class="w-100">
+                        <h:panelGrid columns="5" class="w-100 ">
+                            <p:outputLabel value="Discharge Date" >
+                            </p:outputLabel>
+                            <p:datePicker 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="Service Added Date" >
+                            </p:outputLabel>
+                            <p:datePicker value="#{reportController.toDate}"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+
+                            <p:outputLabel value="Invoice Date" >
+                            </p:outputLabel>
+                            <p:datePicker
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+
+                                <p:spacer width="20"></p:spacer>
+                            <p:outputLabel value="Admission Type" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneMenu id="institutionMenu" required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{admissionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Room Category" for="institutionMenu"></p:outputLabel>
+                            <p:selectOneMenu required="true">
+                                <f:selectItem itemLabel="Select Institution Type"/>
+                                <f:selectItems value="#{roomCategoryController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                <!--                               <p:ajax process="@this" update="cmdDepartment"></p:ajax>-->
+                            </p:selectOneMenu>
+
+
+                            <p:spacer/>
+                            <p:outputLabel value="Service Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                                id="cmdDepartment"
+                                value="#{reportController.department}" 
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.items}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Billed Department">
+                            </p:outputLabel>
+                            <p:selectOneMenu 
+                               
+                                filter="true"
+                                >
+                                <f:selectItem itemLabel="All"></f:selectItem>
+                                <f:selectItems value="#{departmentController.items}"
+                                               var="d"
+                                               itemLabel="#{d.name}"
+                                               itemValue="#{d}"></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+                            
+                            <p:outputLabel value="Visit Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select visit type"/>
+
+                            </p:selectOneMenu>
+                            
+                            <p:outputLabel value="Service Group" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select service group"/>
+
+                            </p:selectOneMenu>
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <p:outputLabel value="Service Name" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select service name"/>
+
+                            </p:selectOneMenu>
+
+                           
+                            <p:outputLabel value="Type" >
+                            </p:outputLabel>
+                            <p:selectOneMenu >
+                                <f:selectItem itemLabel="Select type"/>
+                            </p:selectOneMenu>
+
+                            
+                            <p:spacer></p:spacer><!-- comment -->
+                            <p:spacer></p:spacer><!-- comment -->
+                            <p:spacer></p:spacer>
+                            <p:commandButton ajax="false" value="Process" action="null" >
+                            </p:commandButton>
+                        </h:panelGrid><br />
+
+                        <p:dataTable value="#{searchController.telephoneNumbers}" var="b" id="tb1" rowIndexVar="i"
+                                     rowKey="#{b}" 
+                                     rows="#{searchController.rows}"
+                                     selection="#{searchController.selectedTelephoneNumbers}"
+                                     paginator="true"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="20, 50, 100, 1000, 1500" class="w-100">
+
+                            <f:facet name="header" >
+                                <p:outputLabel value="Service Category Wise Bill Detail Report" />                                
+                            </f:facet>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Group Code" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Group Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Service Code" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Service Name" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Consultant Name" >
+                                    </p:outputLabel>
+                                </f:facet> 
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Quantity" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Quantity Total" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Amount" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column style="text-align: left;" >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Total" >
+                                    </p:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            
+
+                        </p:dataTable>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
